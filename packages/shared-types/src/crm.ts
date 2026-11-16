@@ -9,7 +9,7 @@ export interface LeadDto {
   temperature: Temperature; budgetMin: number | null; budgetMax: number | null; location: string | null;
   propertyType: string | null; requirements: string | null; buyingTimeline: BuyingTimeline;
   assignedMembershipId: string | null; assignee: { id: string; name: string } | null;
-  score: number | null; lastContactedAt: string | null; nextFollowUpAt: string | null;
+  score: number | null; scoreOverridden: boolean; siteVisitRequested: boolean; lastContactedAt: string | null; nextFollowUpAt: string | null;
   customFields: Record<string, string | number | boolean>; tags: { id: string; name: string; color: string }[];
   lostReasonId: string | null; lostNote: string | null; createdAt: string; updatedAt: string;
 }

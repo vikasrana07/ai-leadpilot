@@ -3,6 +3,8 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import cookieParser from 'cookie-parser';
 import { AnalyticsModule } from './analytics/analytics.module.js';
+import { AiModule } from './ai/ai.module.js';
+import { AiTrigger } from './ai/ai-trigger.js';
 import { AuditModule } from './audit/audit.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CaptureModule } from './capture/capture.module.js';
@@ -33,10 +35,10 @@ import { LiveWhatsAppClient, MockWhatsAppClient, WHATSAPP_CLIENT } from './whats
 @Global()
 @Module({
   providers: [
-    SecretBox, LiveWhatsAppClient, MockWhatsAppClient,
+    SecretBox, AiTrigger, LiveWhatsAppClient, MockWhatsAppClient,
     { provide: WHATSAPP_CLIENT, inject: [ENV, LiveWhatsAppClient, MockWhatsAppClient], useFactory: (env: Env, live: LiveWhatsAppClient, mock: MockWhatsAppClient) => (env.WHATSAPP_MODE === 'live' ? live : mock) },
   ],
-  exports: [SecretBox, WHATSAPP_CLIENT, MockWhatsAppClient],
+  exports: [SecretBox, AiTrigger, WHATSAPP_CLIENT, MockWhatsAppClient],
 })
 class IntegrationsCoreModule {}
 
@@ -48,7 +50,7 @@ class IntegrationsCoreModule {}
       // NOTE: in-memory store. Phase 5 swaps in the Redis store so limits hold across API instances.
       useFactory: (env: Env) => [{ name: 'default', ttl: 60_000, limit: env.THROTTLE_GLOBAL_LIMIT }],
     }),
-    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, TeamModule, RolesModule, HealthModule,
+    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, AiModule, TeamModule, RolesModule, HealthModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

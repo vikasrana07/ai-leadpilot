@@ -206,3 +206,38 @@ export type WhatsappTemplate = Prisma.WhatsappTemplateModel
  * Raw inbound provider deliveries. `payloadHash` is unique per channel: an identical redelivery is acknowledged and ignored.
  */
 export type WebhookEvent = Prisma.WebhookEventModel
+/**
+ * Model AiAssistant
+ * 
+ */
+export type AiAssistant = Prisma.AiAssistantModel
+/**
+ * Model AiRun
+ * 
+ */
+export type AiRun = Prisma.AiRunModel
+/**
+ * Model AiToolExecution
+ * 
+ */
+export type AiToolExecution = Prisma.AiToolExecutionModel
+/**
+ * Model KnowledgeDocument
+ * 
+ */
+export type KnowledgeDocument = Prisma.KnowledgeDocumentModel
+/**
+ * Model KnowledgeChunk
+ * 
+ */
+export type KnowledgeChunk = Prisma.KnowledgeChunkModel
+/**
+ * Model ScoringRuleSet
+ * 
+ */
+export type ScoringRuleSet = Prisma.ScoringRuleSetModel
+/**
+ * Model LeadScore
+ * 
+ */
+export type LeadScore = Prisma.LeadScoreModel

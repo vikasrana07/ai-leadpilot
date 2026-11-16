@@ -175,6 +175,20 @@ describe('inbound WhatsApp messages', () => {
   });
 });
 
+describe('message ordering', () => {
+  it('orders by server receipt time, so a customer reply in the same second as ours is never treated as older', async () => {
+    const phone = '919871234567';
+    await post(waText(phone, 'first')); const c = await findConvo(owner, phone.slice(2));
+    const sent = await ctx.http().post(`/conversations/${c.id}/messages`).set(auth(owner.accessToken)).send({ text: 'reply right away' });
+    expect(sent.status).toBe(201);
+    // the customer answers with a provider timestamp (1-second precision) that is EARLIER than our reply's millisecond time
+    const stale = JSON.stringify({ object: 'whatsapp_business_account', entry: [{ changes: [{ field: 'messages', value: { metadata: { phone_number_id: PHONE_ID }, contacts: [{ wa_id: phone, profile: { name: 'T' } }], messages: [{ from: phone, id: `wamid.ORD${RUN}`, timestamp: String(Math.floor(Date.now() / 1000) - 2), type: 'text', text: { body: 'second' } }] } }] }] });
+    await post(stale);
+    const msgs = (await ctx.http().get(`/conversations/${c.id}/messages`).set(auth(owner.accessToken))).body.items.map((m: { body: string }) => m.body);
+    expect(msgs).toEqual(['first', 'reply right away', 'second']);
+  });
+});
+
 describe('outbound messaging rules', () => {
   let convoId = ''; const phone = '919866666666';
   beforeAll(async () => { await post(waText(phone, 'hello')); convoId = (await findConvo(owner, phone.slice(2))).id; });

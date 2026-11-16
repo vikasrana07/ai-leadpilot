@@ -155,3 +155,31 @@ export const ConsentStatus = {
 } as const
 
 export type ConsentStatus = (typeof ConsentStatus)[keyof typeof ConsentStatus]
+
+
+export const AiRunStatus = {
+  RUNNING: 'RUNNING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED'
+} as const
+
+export type AiRunStatus = (typeof AiRunStatus)[keyof typeof AiRunStatus]
+
+
+export const DocumentStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED: 'FAILED'
+} as const
+
+export type DocumentStatus = (typeof DocumentStatus)[keyof typeof DocumentStatus]
+
+
+export const ScoreSource = {
+  RULES: 'RULES',
+  MANUAL: 'MANUAL'
+} as const
+
+export type ScoreSource = (typeof ScoreSource)[keyof typeof ScoreSource]

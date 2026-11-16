@@ -83,7 +83,14 @@ export const ModelName = {
   ConversationNote: 'ConversationNote',
   Consent: 'Consent',
   WhatsappTemplate: 'WhatsappTemplate',
-  WebhookEvent: 'WebhookEvent'
+  WebhookEvent: 'WebhookEvent',
+  AiAssistant: 'AiAssistant',
+  AiRun: 'AiRun',
+  AiToolExecution: 'AiToolExecution',
+  KnowledgeDocument: 'KnowledgeDocument',
+  KnowledgeChunk: 'KnowledgeChunk',
+  ScoringRuleSet: 'ScoringRuleSet',
+  LeadScore: 'LeadScore'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -347,6 +354,8 @@ export const LeadScalarFieldEnum = {
   lastContactedAt: 'lastContactedAt',
   nextFollowUpAt: 'nextFollowUpAt',
   customFields: 'customFields',
+  scoreOverridden: 'scoreOverridden',
+  siteVisitRequested: 'siteVisitRequested',
   lostReasonId: 'lostReasonId',
   lostNote: 'lostNote',
   mergedIntoId: 'mergedIntoId',
@@ -600,6 +609,132 @@ export const WebhookEventScalarFieldEnum = {
 } as const
 
 export type WebhookEventScalarFieldEnum = (typeof WebhookEventScalarFieldEnum)[keyof typeof WebhookEventScalarFieldEnum]
+
+
+export const AiAssistantScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  enabled: 'enabled',
+  name: 'name',
+  businessIdentity: 'businessIdentity',
+  businessDescription: 'businessDescription',
+  languages: 'languages',
+  tone: 'tone',
+  welcomeMessage: 'welcomeMessage',
+  systemInstructions: 'systemInstructions',
+  workingHours: 'workingHours',
+  handoverRules: 'handoverRules',
+  allowedTools: 'allowedTools',
+  model: 'model',
+  temperature: 'temperature',
+  maxReplyChars: 'maxReplyChars',
+  fallbackMessage: 'fallbackMessage',
+  disclosureText: 'disclosureText',
+  monthlyTokenCap: 'monthlyTokenCap',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiAssistantScalarFieldEnum = (typeof AiAssistantScalarFieldEnum)[keyof typeof AiAssistantScalarFieldEnum]
+
+
+export const AiRunScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  conversationId: 'conversationId',
+  triggerMessageId: 'triggerMessageId',
+  status: 'status',
+  model: 'model',
+  promptVersion: 'promptVersion',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  latencyMs: 'latencyMs',
+  error: 'error',
+  trace: 'trace',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt'
+} as const
+
+export type AiRunScalarFieldEnum = (typeof AiRunScalarFieldEnum)[keyof typeof AiRunScalarFieldEnum]
+
+
+export const AiToolExecutionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  runId: 'runId',
+  tool: 'tool',
+  input: 'input',
+  result: 'result',
+  status: 'status',
+  idempotencyKey: 'idempotencyKey',
+  createdAt: 'createdAt'
+} as const
+
+export type AiToolExecutionScalarFieldEnum = (typeof AiToolExecutionScalarFieldEnum)[keyof typeof AiToolExecutionScalarFieldEnum]
+
+
+export const KnowledgeDocumentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  title: 'title',
+  filename: 'filename',
+  mime: 'mime',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  storageKey: 'storageKey',
+  status: 'status',
+  error: 'error',
+  chunkCount: 'chunkCount',
+  category: 'category',
+  uploadedByUserId: 'uploadedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type KnowledgeDocumentScalarFieldEnum = (typeof KnowledgeDocumentScalarFieldEnum)[keyof typeof KnowledgeDocumentScalarFieldEnum]
+
+
+export const KnowledgeChunkScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  documentId: 'documentId',
+  ordinal: 'ordinal',
+  content: 'content',
+  embeddingModel: 'embeddingModel',
+  createdAt: 'createdAt'
+} as const
+
+export type KnowledgeChunkScalarFieldEnum = (typeof KnowledgeChunkScalarFieldEnum)[keyof typeof KnowledgeChunkScalarFieldEnum]
+
+
+export const ScoringRuleSetScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  version: 'version',
+  rules: 'rules',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt'
+} as const
+
+export type ScoringRuleSetScalarFieldEnum = (typeof ScoringRuleSetScalarFieldEnum)[keyof typeof ScoringRuleSetScalarFieldEnum]
+
+
+export const LeadScoreScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  score: 'score',
+  temperature: 'temperature',
+  breakdown: 'breakdown',
+  ruleVersion: 'ruleVersion',
+  source: 'source',
+  reason: 'reason',
+  actorUserId: 'actorUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type LeadScoreScalarFieldEnum = (typeof LeadScoreScalarFieldEnum)[keyof typeof LeadScoreScalarFieldEnum]
 
 
 export const SortOrder = {

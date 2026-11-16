@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import type { BuyingTimeline, Prisma, Temperature } from '@leadpilot/database';
-import { leadFieldsSchema, TEMPERATURES, TIMELINES, type ImportInput, type LeadListQuery } from '@leadpilot/validation';
+import type { BuyingTimeline, Prisma } from '@leadpilot/database';
+import { leadFieldsSchema, TIMELINES, type ImportInput, type LeadListQuery } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
 import type { Actor } from '../common/actor.js';
@@ -25,7 +25,7 @@ const ALIASES: Record<string, string> = {
   'property type': 'propertyType', property_type: 'propertyType', type: 'propertyType', configuration: 'propertyType',
   requirements: 'requirements', requirement: 'requirements', notes: 'requirements', remarks: 'requirements',
   timeline: 'timeline', 'buying timeline': 'timeline',
-  temperature: 'temperature', tags: 'tags', 'assigned to': 'assignedTo', assignee: 'assignedTo', 'agent email': 'assignedTo', 'assigned_to': 'assignedTo',
+  tags: 'tags', 'assigned to': 'assignedTo', assignee: 'assignedTo', 'agent email': 'assignedTo', 'assigned_to': 'assignedTo',
 };
 
 /** Parses amounts such as "85,00,000", "₹1.2 Cr", "85 L", "50k" into rupees. */
@@ -86,7 +86,7 @@ export class LeadImportService {
       if (!defaultStage) throw new BadRequestException({ code: 'no_pipeline', message: 'This workspace has no pipeline stages yet' });
       const canAssign = a.permissions.has('lead:assign') || a.permissions.has('lead:write:all');
 
-      interface Parsed { row: number; data: ReturnType<typeof leadFieldsSchema.parse>; phoneNorm: string | null; emailNorm: string | null; stageId: string; sourceId: string | null; assignee: string | null; tags: string[]; temperature: Temperature; timeline: BuyingTimeline; custom: Record<string, string | number | boolean> }
+      interface Parsed { row: number; data: ReturnType<typeof leadFieldsSchema.parse>; phoneNorm: string | null; emailNorm: string | null; stageId: string; sourceId: string | null; assignee: string | null; tags: string[]; timeline: BuyingTimeline; custom: Record<string, string | number | boolean> }
       const valid: Parsed[] = [];
       const invalid: ImportRowError[] = [];
 
@@ -114,8 +114,6 @@ export class LeadImportService {
         const tl = get('timeline'); const tlKey = tl.toUpperCase().replace(/[\s-]+/g, '_');
         const timeline = !tl ? 'UNKNOWN' : (TIMELINES as readonly string[]).includes(tlKey) ? (tlKey as BuyingTimeline) : TIMELINE_ALIASES[tl.toLowerCase()];
         if (tl && !timeline) errors.push(`Unknown timeline "${tl}"`);
-        const tp = get('temperature').toUpperCase();
-        if (tp && !(TEMPERATURES as readonly string[]).includes(tp)) errors.push(`Unknown temperature "${get('temperature')}"`);
         const assignedEmail = get('assignedTo').toLowerCase();
         const assignee = assignedEmail ? memberByEmail.get(assignedEmail) ?? null : null;
         if (assignedEmail && !assignee) errors.push(`"${assignedEmail}" is not an active team member`);
@@ -132,7 +130,7 @@ export class LeadImportService {
           else custom[key] = v;
         });
         if (errors.length || !parsed.success || !stage) { invalid.push({ row: rowNo, errors }); return; }
-        valid.push({ row: rowNo, data: parsed.data, phoneNorm: phone?.norm ?? null, emailNorm: normalizeEmail(parsed.data.email), stageId: stage.id, sourceId: source?.id ?? null, assignee, tags: get('tags').split(/[;|]/).map((t) => t.trim()).filter(Boolean).slice(0, 10), temperature: (tp || 'UNKNOWN') as Temperature, timeline: timeline ?? 'UNKNOWN', custom });
+        valid.push({ row: rowNo, data: parsed.data, phoneNorm: phone?.norm ?? null, emailNorm: normalizeEmail(parsed.data.email), stageId: stage.id, sourceId: source?.id ?? null, assignee, tags: get('tags').split(/[;|]/).map((t) => t.trim()).filter(Boolean).slice(0, 10), timeline: timeline ?? 'UNKNOWN', custom });
       });
 
       // duplicates: against the database and within the file
@@ -162,7 +160,7 @@ export class LeadImportService {
       await tx.lead.createMany({
         data: toCreate.map((v, i): Prisma.LeadCreateManyInput => ({
           id: ids[i] as string, tenantId: a.tenantId, name: v.data.name, phone: v.data.phone, phoneNorm: v.phoneNorm, email: v.data.email, emailNorm: v.emailNorm,
-          sourceId: v.sourceId, stageId: v.stageId, temperature: v.temperature, budgetMinMinor: toMinor(v.data.budgetMin), budgetMaxMinor: toMinor(v.data.budgetMax),
+          sourceId: v.sourceId, stageId: v.stageId, budgetMinMinor: toMinor(v.data.budgetMin), budgetMaxMinor: toMinor(v.data.budgetMax),
           location: v.data.location, propertyType: v.data.propertyType, requirements: v.data.requirements, buyingTimeline: v.timeline,
           assignedMembershipId: v.assignee ?? rr.next(), customFields: v.custom, createdByUserId: a.userId,
         })),

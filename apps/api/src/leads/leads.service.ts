@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Inject, Inj
 import { Prisma, type TxClient } from '@leadpilot/database';
 import type { BulkInput, CreateLeadInput, LeadListQuery, StageChangeInput, UpdateLeadInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
+import { ScoringService } from '../ai/scoring/scoring.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import type { Actor } from '../common/actor.js';
 import { toMinor } from '../common/money.js';
@@ -15,7 +16,7 @@ export interface DuplicateInfo { id: string; name: string; phone: string | null;
 
 @Injectable()
 export class LeadsService {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(ScoringService) private readonly scoring: ScoringService) {}
 
   // ------------------------------------------------------------------ access control
   /** Row-level scoping for reads: `lead:read:all` sees everything, `lead:read:own` only assigned leads. */
@@ -183,7 +184,7 @@ export class LeadsService {
       data: {
         id, tenantId: a.tenantId, name: input.name, phone: phone?.display ?? null, phoneNorm: phone?.norm ?? null,
         email: input.email ?? null, emailNorm, sourceId: await this.sourceId(tx, a.tenantId, input.sourceKey, opts.defaultSource), stageId: stage.id,
-        temperature: input.temperature ?? 'UNKNOWN', budgetMinMinor: toMinor(input.budgetMin), budgetMaxMinor: toMinor(input.budgetMax),
+        temperature: 'UNKNOWN', budgetMinMinor: toMinor(input.budgetMin), budgetMaxMinor: toMinor(input.budgetMax),
         location: input.location ?? null, propertyType: input.propertyType ?? null, requirements: input.requirements ?? null,
         buyingTimeline: input.buyingTimeline ?? 'UNKNOWN', assignedMembershipId: assignee,
         nextFollowUpAt: input.nextFollowUpAt ? new Date(input.nextFollowUpAt) : null, customFields: customFields ?? {}, createdByUserId: a.userId,
@@ -192,6 +193,7 @@ export class LeadsService {
     await this.activity(tx, a, id, 'created', { source: opts.defaultSource });
     if (assignee) await this.activity(tx, a, id, 'assigned', { to: assignee });
     await this.auditLead(tx, a, 'lead.created', id, { assigned: assignee !== null });
+    await this.scoring.rescore(tx, a.tenantId, id, a.userId);
     const lead = await tx.lead.findUniqueOrThrow({ where: { id }, include: LEAD_INCLUDE });
     return { lead, duplicates };
   }
@@ -219,7 +221,6 @@ export class LeadsService {
         if ((p?.display ?? null) !== cur.phone) { data.phone = p?.display ?? null; data.phoneNorm = p?.norm ?? null; changed.push('phone'); }
       }
       if (input.email !== undefined && (input.email ?? null) !== cur.email) { data.email = input.email ?? null; data.emailNorm = normalizeEmail(input.email); changed.push('email'); }
-      if (input.temperature !== undefined && input.temperature !== cur.temperature) set('temperature', input.temperature, 'temperature');
       if (input.budgetMin !== undefined) set('budgetMinMinor', toMinor(input.budgetMin), 'budgetMin');
       if (input.budgetMax !== undefined) set('budgetMaxMinor', toMinor(input.budgetMax), 'budgetMax');
       if (input.location !== undefined && input.location !== cur.location) set('location', input.location, 'location');
@@ -244,6 +245,7 @@ export class LeadsService {
         const emailNorm = (data.emailNorm as string | null | undefined) ?? cur.emailNorm;
         if ((data.phoneNorm !== undefined || data.emailNorm !== undefined) && !(phoneNorm || emailNorm)) throw new BadRequestException({ code: 'validation_error', message: 'Invalid request', details: [{ path: 'phone', message: 'A lead needs a phone number or an email' }] });
         await tx.lead.update({ where: { id }, data });
+        await this.scoring.rescore(tx, a.tenantId, id, a.userId);
         if (changed.length) { await this.activity(tx, a, id, 'updated', { fields: changed }); await this.auditLead(tx, a, 'lead.updated', id, { fields: changed }); }
       }
       const row = await tx.lead.findUniqueOrThrow({ where: { id }, include: LEAD_INCLUDE });

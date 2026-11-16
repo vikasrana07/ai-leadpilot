@@ -357,6 +357,9 @@ model Lead {
   lastContactedAt      DateTime?      @map("last_contacted_at") @db.Timestamptz(3)
   nextFollowUpAt       DateTime?      @map("next_follow_up_at") @db.Timestamptz(3)
   customFields         Json           @default("{}") @map("custom_fields")
+  /// A manager set the score by hand; automatic scoring records history but does not change `score` until the override is cleared
+  scoreOverridden      Boolean        @default(false) @map("score_overridden")
+  siteVisitRequested   Boolean        @default(false) @map("site_visit_requested")
   lostReasonId         String?        @map("lost_reason_id") @db.Uuid
   lostNote             String?        @map("lost_note")
   mergedIntoId         String?        @map("merged_into_id") @db.Uuid
@@ -730,4 +733,162 @@ model WebhookEvent {
   @@unique([channelId, payloadHash])
   @@index([tenantId, createdAt])
   @@map("webhook_events")
+}
+
+
+// ======================================================================= Phase 4: AI
+
+enum AiRunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+enum DocumentStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum ScoreSource {
+  RULES
+  MANUAL
+}
+
+model AiAssistant {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId            String   @unique @map("tenant_id") @db.Uuid
+  enabled             Boolean  @default(false)
+  name                String   @default("Assistant")
+  businessIdentity    String   @default("") @map("business_identity")
+  businessDescription String   @default("") @map("business_description")
+  languages           String[] @default(["en"])
+  tone                String   @default("friendly")
+  welcomeMessage      String   @default("") @map("welcome_message")
+  systemInstructions  String   @default("") @map("system_instructions")
+  /// { enabled, timezone, days: { mon: {start,end}|null, ... } }
+  workingHours        Json     @default("{}") @map("working_hours")
+  /// { keywords: string[], onNegotiation: bool, onComplaint: bool }
+  handoverRules       Json     @default("{}") @map("handover_rules")
+  allowedTools        String[] @default([]) @map("allowed_tools")
+  model               String?
+  temperature         Float    @default(0.3)
+  maxReplyChars       Int      @default(600) @map("max_reply_chars")
+  fallbackMessage     String   @default("Thanks for your message. A member of our team will get back to you shortly.") @map("fallback_message")
+  disclosureText      String   @default("") @map("disclosure_text")
+  monthlyTokenCap     Int?     @map("monthly_token_cap")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("ai_assistants")
+}
+
+model AiRun {
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String      @map("tenant_id") @db.Uuid
+  conversationId   String      @map("conversation_id") @db.Uuid
+  triggerMessageId String?     @map("trigger_message_id") @db.Uuid
+  status           AiRunStatus @default(RUNNING)
+  model            String?
+  promptVersion    String      @map("prompt_version")
+  inputTokens      Int         @default(0) @map("input_tokens")
+  outputTokens     Int         @default(0) @map("output_tokens")
+  latencyMs        Int?        @map("latency_ms")
+  error            String?
+  /// tool calls, retrieved chunk ids, guard decisions, final reply (customer text is NOT duplicated here)
+  trace            Json        @default("{}")
+  createdAt        DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  completedAt      DateTime?   @map("completed_at") @db.Timestamptz(3)
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, conversationId, createdAt(sort: Desc)])
+  @@map("ai_runs")
+}
+
+model AiToolExecution {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  runId          String   @map("run_id") @db.Uuid
+  tool           String
+  input          Json
+  result         Json
+  status         String
+  idempotencyKey String   @map("idempotency_key")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, runId])
+  @@map("ai_tool_executions")
+}
+
+model KnowledgeDocument {
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String         @map("tenant_id") @db.Uuid
+  title            String
+  filename         String
+  mime             String
+  sizeBytes        Int            @map("size_bytes")
+  sha256           String
+  storageKey       String         @map("storage_key")
+  status           DocumentStatus @default(PENDING)
+  error            String?
+  chunkCount       Int            @default(0) @map("chunk_count")
+  category         String?
+  uploadedByUserId String?        @map("uploaded_by_user_id") @db.Uuid
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt        DateTime?      @map("deleted_at") @db.Timestamptz(3)
+
+  chunks KnowledgeChunk[]
+
+  @@index([tenantId, status])
+  @@map("knowledge_documents")
+}
+
+model KnowledgeChunk {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  documentId     String   @map("document_id") @db.Uuid
+  ordinal        Int
+  content        String
+  embedding      Unsupported("vector(1536)")?
+  embeddingModel String   @map("embedding_model")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  document KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, documentId])
+  @@map("knowledge_chunks")
+}
+
+model ScoringRuleSet {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  version   Int
+  /// criteria with points, thresholds for hot/warm
+  rules     Json
+  createdBy String?  @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([tenantId, version])
+  @@map("scoring_rule_sets")
+}
+
+model LeadScore {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String      @map("tenant_id") @db.Uuid
+  leadId      String      @map("lead_id") @db.Uuid
+  score       Int
+  temperature String
+  breakdown   Json
+  ruleVersion Int         @map("rule_version")
+  source      ScoreSource
+  reason      String?
+  actorUserId String?     @map("actor_user_id") @db.Uuid
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([tenantId, leadId, createdAt(sort: Desc)])
+  @@map("lead_scores")
 }

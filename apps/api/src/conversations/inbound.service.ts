@@ -5,6 +5,7 @@ import type { Actor } from '../common/actor.js';
 import { normalizeEmail, normalizePhone } from '../common/phone.js';
 import { DbService } from '../db/db.module.js';
 import { LeadsService } from '../leads/leads.service.js';
+import { AiTrigger } from '../ai/ai-trigger.js';
 import { RealtimeService } from '../realtime/realtime.module.js';
 
 export interface InboundMessage {
@@ -35,7 +36,7 @@ function previewOf(m: { type: string; body: string | null }): string {
 
 @Injectable()
 export class InboundService {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(LeadsService) private readonly leads: LeadsService, @Inject(RealtimeService) private readonly rt: RealtimeService) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(LeadsService) private readonly leads: LeadsService, @Inject(RealtimeService) private readonly rt: RealtimeService, @Inject(AiTrigger) private readonly aiTrigger: AiTrigger) {}
 
   /** Machine actor for creating leads from inbound traffic: may create leads in its own tenant, nothing else. */
   private systemActor(tenantId: string): Actor {
@@ -61,7 +62,8 @@ export class InboundService {
     let isNewConversation = false;
     if (!conversationId) {
       conversationId = uuidv7(); isNewConversation = true;
-      await tx.conversation.create({ data: { id: conversationId, tenantId, channelId: channel.id, leadId, externalThreadId, assignedMembershipId: lead.assignedMembershipId, lastMessageAt: at } });
+      const assistant = await tx.aiAssistant.findUnique({ where: { tenantId }, select: { enabled: true } });
+      await tx.conversation.create({ data: { id: conversationId, tenantId, channelId: channel.id, leadId, externalThreadId, assignedMembershipId: lead.assignedMembershipId, lastMessageAt: at, mode: assistant?.enabled ? 'AI' : 'HUMAN' } });
       await tx.leadActivity.create({ data: { id: uuidv7(), tenantId, leadId, type: 'conversation_started', data: { channel: channel.type } } });
     }
     return { conversationId, leadId, isNewConversation, existingConvo, lead };
@@ -77,14 +79,14 @@ export class InboundService {
 
       // De-duplication: INSERT ... ON CONFLICT DO NOTHING on (channel, provider message id); a redelivery changes nothing.
       const inserted = await tx.message.createMany({
-        data: [{ id: uuidv7(), tenantId: input.tenantId, conversationId, channelId: input.channel.id, direction: 'INBOUND', senderType: 'CUSTOMER', type: input.message.type, body: input.message.body, media: input.message.media as Prisma.InputJsonValue | undefined, status: 'DELIVERED', externalId: input.message.externalId, createdAt: input.message.at }],
+        data: [{ id: uuidv7(), tenantId: input.tenantId, conversationId, channelId: input.channel.id, direction: 'INBOUND', senderType: 'CUSTOMER', type: input.message.type, body: input.message.body, media: input.message.media as Prisma.InputJsonValue | undefined, status: 'DELIVERED', externalId: input.message.externalId }], // createdAt = server receipt time: provider timestamps have 1-second precision and would mis-order replies sent within the same second
         skipDuplicates: true,
       });
       if (inserted.count === 0) return { duplicate: true as const, conversationId, leadId, assigned: existingConvo?.assignedMembershipId ?? null, messageId: null as string | null, preview: '' };
 
       const msg = await tx.message.findFirstOrThrow({ where: { channelId: input.channel.id, externalId: input.message.externalId }, select: { id: true } });
       const preview = previewOf(input.message);
-      await tx.conversation.update({ where: { id: conversationId }, data: { lastInboundAt: input.message.at, lastMessageAt: input.message.at, lastMessagePreview: preview, unreadCount: { increment: 1 }, status: 'OPEN', closedAt: null } });
+      await tx.conversation.update({ where: { id: conversationId }, data: { lastInboundAt: new Date(Math.min(input.message.at.getTime(), Date.now())), lastMessageAt: new Date(), lastMessagePreview: preview, unreadCount: { increment: 1 }, status: 'OPEN', closedAt: null } });
 
       if (input.channel.type === 'WHATSAPP') {
         const optOut = input.message.type === 'TEXT' && OPT_OUT.test(input.message.body ?? '');
@@ -99,6 +101,7 @@ export class InboundService {
 
     if (!result.duplicate) {
       this.rt.publish(input.tenantId, { type: 'message.created', conversationId: result.conversationId, assignedMembershipId: result.assigned, data: { messageId: result.messageId, direction: 'INBOUND' } });
+      if (result.messageId) this.aiTrigger.fire({ tenantId: input.tenantId, conversationId: result.conversationId, messageId: result.messageId });
     }
     return { duplicate: result.duplicate, conversationId: result.conversationId, leadId: result.leadId };
   }

@@ -123,7 +123,7 @@ describe('dashboard analytics (verified against a known fixture)', () => {
     const m = Object.fromEntries(st.map((x: { key: string; id: string }) => [x.key, x.id]));
     // fixture: 6 leads. 2 qualified, 1 won, 1 lost, 2 HOT (one open, one won), sources: manual x4, api x2 (via csv)
     const ids: string[] = [];
-    for (let i = 0; i < 6; i++) ids.push((await mk(a, { name: `Fx ${i}`, phone: `9955500${i}01`, temperature: i < 2 ? 'HOT' : 'UNKNOWN' })).body.id);
+    for (let i = 0; i < 6; i++) ids.push((await mk(a, { name: `Fx ${i}`, phone: `9955500${i}01`, ...(i < 2 ? { budgetMax: 9_000_000, location: 'Baner', propertyType: '2 BHK apartment', requirements: 'Wants a quiet society near a school', buyingTimeline: 'WITHIN_30_DAYS' } : {}) })).body.id);
     const mv = (id: string, key: string, extra: object = {}) => ctx.http().post(`/leads/${id}/stage`).set(auth(a.accessToken)).send({ stageId: m[key], ...extra });
     await mv(ids[0] as string, 'qualified');
     await mv(ids[1] as string, 'negotiation'); await mv(ids[1] as string, 'won');

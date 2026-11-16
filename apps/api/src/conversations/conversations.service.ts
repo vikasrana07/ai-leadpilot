@@ -173,8 +173,8 @@ export class ConversationsService {
     this.requireReply(a);
     const assigned = await this.tx(a, async (tx) => {
       const c = await this.mustFind(tx, a, id);
-      const t = await tx.tenant.findUniqueOrThrow({ where: { id: a.tenantId }, select: { settings: true } });
-      if (!(t.settings as { ai?: { enabled?: boolean } } | null)?.ai?.enabled) throw new ConflictException({ code: 'ai_not_configured', message: 'The AI assistant is not set up yet, so there is nothing to hand this conversation back to.' });
+      const ai = await tx.aiAssistant.findUnique({ where: { tenantId: a.tenantId }, select: { enabled: true } });
+      if (!ai?.enabled) throw new ConflictException({ code: 'ai_not_configured', message: 'The AI assistant is switched off, so there is nothing to hand this conversation back to. Turn it on in AI Assistant settings.' });
       await tx.conversation.update({ where: { id }, data: { mode: 'AI' } });
       await this.rec(tx, a, 'conversation.handback', id);
       return c.assignedMembershipId;
@@ -204,16 +204,26 @@ export class ConversationsService {
   }
 
   // ------------------------------------------------------------------ outbound
-  async send(a: Actor, id: string, input: SendInput) {
+  send(a: Actor, id: string, input: SendInput) {
     this.requireReply(a);
     if (!a.userId) throw new ForbiddenException({ code: 'forbidden', message: 'Sending needs a signed-in sender' });
+    return this.sendAs(a, id, input, 'AGENT');
+  }
+
+  /** The AI assistant replies through exactly the same channel rules (24h window, opt-out, channel status) as a human. */
+  sendAi(tenantId: string, id: string, text: string) {
+    const actor: Actor = { tenantId, userId: null, membershipId: null, permissions: new Set(['conversation:read:all', 'conversation:reply']), requestId: undefined, ip: undefined };
+    return this.sendAs(actor, id, { text }, 'AI');
+  }
+
+  private async sendAs(a: Actor, id: string, input: SendInput, who: 'AGENT' | 'AI') {
     const prep = await this.tx(a, async (tx) => {
       const c = await this.mustFind(tx, a, id);
       if (input.idempotencyKey) {
         const dupe = await tx.message.findUnique({ where: { tenantId_idempotencyKey: { tenantId: a.tenantId, idempotencyKey: input.idempotencyKey } } });
         if (dupe) return { kind: 'existing' as const, messageId: dupe.id };
       }
-      if (c.mode === 'AI') throw new ConflictException({ code: 'join_required', message: 'The AI assistant is handling this conversation. Join it first to reply.' });
+      if (who === 'AGENT' && c.mode === 'AI') throw new ConflictException({ code: 'join_required', message: 'The AI assistant is handling this conversation. Join it first to reply.' });
       const lead = await tx.lead.findUniqueOrThrow({ where: { id: c.leadId }, select: { phone: true, phoneNorm: true } });
       let template: { name: string; language: string; params: string[] } | null = null;
       if (c.channel.type === 'WHATSAPP') {
@@ -233,7 +243,7 @@ export class ConversationsService {
 
       const body = input.text ?? `Template: ${input.template?.name}`;
       const msgId = uuidv7();
-      await tx.message.create({ data: { id: msgId, tenantId: a.tenantId, conversationId: id, channelId: c.channelId, direction: 'OUTBOUND', senderType: 'AGENT', senderUserId: a.userId, type: template ? 'TEMPLATE' : 'TEXT', body, template: template ?? undefined, status: c.channel.type === 'WHATSAPP' ? 'QUEUED' : 'DELIVERED', idempotencyKey: input.idempotencyKey ?? null } });
+      await tx.message.create({ data: { id: msgId, tenantId: a.tenantId, conversationId: id, channelId: c.channelId, direction: 'OUTBOUND', senderType: who, senderUserId: who === 'AGENT' ? a.userId : null, type: template ? 'TEMPLATE' : 'TEXT', body, template: template ?? undefined, status: c.channel.type === 'WHATSAPP' ? 'QUEUED' : 'DELIVERED', idempotencyKey: input.idempotencyKey ?? null } });
       await tx.conversation.update({ where: { id }, data: { lastMessageAt: new Date(), lastMessagePreview: body.slice(0, 140), unreadCount: 0, status: 'OPEN', closedAt: null } });
       return { kind: 'new' as const, messageId: msgId, channel: c.channel, channelId: c.channelId, to: lead.phoneNorm, template, text: input.text ?? null, assigned: c.assignedMembershipId };
     });

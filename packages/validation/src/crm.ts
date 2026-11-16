@@ -12,7 +12,6 @@ export const leadFieldsSchema = z.object({
   phone: optText(32),
   email: z.string().trim().toLowerCase().email().max(254).nullish().transform((v) => v || null),
   sourceKey: z.string().trim().max(60).optional(),
-  temperature: z.enum(TEMPERATURES).optional(),
   budgetMin: money,
   budgetMax: money,
   location: optText(200),
@@ -193,3 +192,35 @@ export const widgetSessionSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(254).optional(),
 }).refine((v) => Boolean(v.phone) || Boolean(v.email), { message: 'Share a phone number or an email so we can follow up', path: ['phone'] });
 export const widgetMessageSchema = z.object({ text: z.string().trim().min(1).max(2000) });
+
+// --- AI (phase 4)
+export const AI_TOOLS = ['get_business_info', 'search_properties', 'get_lead_details', 'update_lead', 'calculate_lead_score', 'check_availability', 'create_appointment', 'assign_agent', 'create_followup', 'handover_to_human'] as const;
+/** Tools that exist but cannot be switched on until their module ships (appointments: phase 5). */
+export const UNAVAILABLE_AI_TOOLS = ['check_availability', 'create_appointment'] as const;
+export const AI_LANGUAGES = ['en', 'hi', 'hinglish'] as const;
+export const AI_TONES = ['friendly', 'professional', 'concise', 'warm'] as const;
+
+const dayHours = z.object({ start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/) }).nullable();
+export const assistantSchema = z.object({
+  enabled: z.boolean(),
+  name: z.string().trim().min(1).max(40),
+  businessIdentity: z.string().trim().max(300),
+  businessDescription: z.string().trim().max(2000),
+  languages: z.array(z.enum(AI_LANGUAGES)).min(1).max(3),
+  tone: z.enum(AI_TONES),
+  welcomeMessage: z.string().trim().max(500),
+  systemInstructions: z.string().trim().max(4000),
+  workingHours: z.object({ enabled: z.boolean(), days: z.object({ mon: dayHours, tue: dayHours, wed: dayHours, thu: dayHours, fri: dayHours, sat: dayHours, sun: dayHours }) }),
+  handoverRules: z.object({ keywords: z.array(z.string().trim().min(2).max(40)).max(30), onNegotiation: z.boolean(), onComplaint: z.boolean() }),
+  allowedTools: z.array(z.enum(AI_TOOLS)).max(10).refine((t) => !t.some((x) => (UNAVAILABLE_AI_TOOLS as readonly string[]).includes(x)), { message: 'Scheduling tools become available when appointments ship (phase 5)' }),
+  model: z.string().trim().max(60).nullable(),
+  temperature: z.number().min(0).max(1),
+  maxReplyChars: z.number().int().min(100).max(1500),
+  fallbackMessage: z.string().trim().min(1).max(500),
+  disclosureText: z.string().trim().max(200),
+  monthlyTokenCap: z.number().int().min(10_000).max(100_000_000).nullable(),
+});
+export type AssistantInput = z.infer<typeof assistantSchema>;
+
+export const knowledgeSearchSchema = z.object({ q: z.string().trim().min(2).max(500), limit: z.number().int().min(1).max(10).default(5) });
+export const documentUpdateSchema = z.object({ title: z.string().trim().min(1).max(160).optional(), category: z.string().trim().max(60).nullable().optional() });

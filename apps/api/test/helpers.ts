@@ -29,9 +29,11 @@ export const WEB_ORIGIN = process.env.WEB_ORIGIN ?? 'http://localhost:3100';
 
 export interface TestCtx { app: INestApplication; mail: FakeMail; http: () => ReturnType<typeof request>; close: () => Promise<void> }
 
-export async function createTestApp(): Promise<TestCtx> {
+export async function createTestApp(overrides: { provide: unknown; useValue: unknown }[] = []): Promise<TestCtx> {
   const mail = new FakeMail();
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(MailService).useValue(mail).compile();
+  let builder = Test.createTestingModule({ imports: [AppModule] }).overrideProvider(MailService).useValue(mail);
+  for (const o of overrides) builder = builder.overrideProvider(o.provide as never).useValue(o.useValue);
+  const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>({ rawBody: true });
   configureApp(app, loadEnv());
   await app.init();
@@ -69,7 +71,7 @@ export async function cleanup(): Promise<void> {
     const like = `it-${RUN}-%`;
     const t = await pool.query(`SELECT DISTINCT m.tenant_id FROM memberships m JOIN users u ON u.id = m.user_id WHERE u.email LIKE $1`, [like]);
     const ids = t.rows.map((r) => r.tenant_id as string);
-    for (const t of ['messages', 'conversation_notes', 'conversations', 'webhook_events', 'consents', 'widget_configs', 'channels', 'integration_credentials', 'whatsapp_templates']) await pool.query(`DELETE FROM ${t} WHERE tenant_id = ANY($1)`, [ids]);
+    for (const t of ['ai_tool_executions', 'ai_runs', 'knowledge_chunks', 'knowledge_documents', 'lead_scores', 'scoring_rule_sets', 'ai_assistants', 'messages', 'conversation_notes', 'conversations', 'webhook_events', 'consents', 'widget_configs', 'channels', 'integration_credentials', 'whatsapp_templates']) await pool.query(`DELETE FROM ${t} WHERE tenant_id = ANY($1)`, [ids]);
     await pool.query('DELETE FROM leads WHERE tenant_id = ANY($1)', [ids]);
     await pool.query('DELETE FROM invitations WHERE tenant_id = ANY($1)', [ids]);
     await pool.query('DELETE FROM audit_logs WHERE tenant_id = ANY($1) OR actor_user_id IN (SELECT id FROM users WHERE email LIKE $2)', [ids, like]);

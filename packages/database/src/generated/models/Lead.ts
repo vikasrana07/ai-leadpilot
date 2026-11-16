@@ -60,6 +60,8 @@ export type LeadMinAggregateOutputType = {
   scoreUpdatedAt: Date | null
   lastContactedAt: Date | null
   nextFollowUpAt: Date | null
+  scoreOverridden: boolean | null
+  siteVisitRequested: boolean | null
   lostReasonId: string | null
   lostNote: string | null
   mergedIntoId: string | null
@@ -91,6 +93,8 @@ export type LeadMaxAggregateOutputType = {
   scoreUpdatedAt: Date | null
   lastContactedAt: Date | null
   nextFollowUpAt: Date | null
+  scoreOverridden: boolean | null
+  siteVisitRequested: boolean | null
   lostReasonId: string | null
   lostNote: string | null
   mergedIntoId: string | null
@@ -123,6 +127,8 @@ export type LeadCountAggregateOutputType = {
   lastContactedAt: number
   nextFollowUpAt: number
   customFields: number
+  scoreOverridden: number
+  siteVisitRequested: number
   lostReasonId: number
   lostNote: number
   mergedIntoId: number
@@ -168,6 +174,8 @@ export type LeadMinAggregateInputType = {
   scoreUpdatedAt?: true
   lastContactedAt?: true
   nextFollowUpAt?: true
+  scoreOverridden?: true
+  siteVisitRequested?: true
   lostReasonId?: true
   lostNote?: true
   mergedIntoId?: true
@@ -199,6 +207,8 @@ export type LeadMaxAggregateInputType = {
   scoreUpdatedAt?: true
   lastContactedAt?: true
   nextFollowUpAt?: true
+  scoreOverridden?: true
+  siteVisitRequested?: true
   lostReasonId?: true
   lostNote?: true
   mergedIntoId?: true
@@ -231,6 +241,8 @@ export type LeadCountAggregateInputType = {
   lastContactedAt?: true
   nextFollowUpAt?: true
   customFields?: true
+  scoreOverridden?: true
+  siteVisitRequested?: true
   lostReasonId?: true
   lostNote?: true
   mergedIntoId?: true
@@ -350,6 +362,8 @@ export type LeadGroupByOutputType = {
   lastContactedAt: Date | null
   nextFollowUpAt: Date | null
   customFields: runtime.JsonValue
+  scoreOverridden: boolean
+  siteVisitRequested: boolean
   lostReasonId: string | null
   lostNote: string | null
   mergedIntoId: string | null
@@ -405,6 +419,8 @@ export type LeadWhereInput = {
   lastContactedAt?: Prisma.DateTimeNullableFilter<"Lead"> | Date | string | null
   nextFollowUpAt?: Prisma.DateTimeNullableFilter<"Lead"> | Date | string | null
   customFields?: Prisma.JsonFilter<"Lead">
+  scoreOverridden?: Prisma.BoolFilter<"Lead"> | boolean
+  siteVisitRequested?: Prisma.BoolFilter<"Lead"> | boolean
   lostReasonId?: Prisma.UuidNullableFilter<"Lead"> | string | null
   lostNote?: Prisma.StringNullableFilter<"Lead"> | string | null
   mergedIntoId?: Prisma.UuidNullableFilter<"Lead"> | string | null
@@ -444,6 +460,8 @@ export type LeadOrderByWithRelationInput = {
   lastContactedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   nextFollowUpAt?: Prisma.SortOrderInput | Prisma.SortOrder
   customFields?: Prisma.SortOrder
+  scoreOverridden?: Prisma.SortOrder
+  siteVisitRequested?: Prisma.SortOrder
   lostReasonId?: Prisma.SortOrderInput | Prisma.SortOrder
   lostNote?: Prisma.SortOrderInput | Prisma.SortOrder
   mergedIntoId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -486,6 +504,8 @@ export type LeadWhereUniqueInput = Prisma.AtLeast<{
   lastContactedAt?: Prisma.DateTimeNullableFilter<"Lead"> | Date | string | null
   nextFollowUpAt?: Prisma.DateTimeNullableFilter<"Lead"> | Date | string | null
   customFields?: Prisma.JsonFilter<"Lead">
+  scoreOverridden?: Prisma.BoolFilter<"Lead"> | boolean
+  siteVisitRequested?: Prisma.BoolFilter<"Lead"> | boolean
   lostReasonId?: Prisma.UuidNullableFilter<"Lead"> | string | null
   lostNote?: Prisma.StringNullableFilter<"Lead"> | string | null
   mergedIntoId?: Prisma.UuidNullableFilter<"Lead"> | string | null
@@ -525,6 +545,8 @@ export type LeadOrderByWithAggregationInput = {
   lastContactedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   nextFollowUpAt?: Prisma.SortOrderInput | Prisma.SortOrder
   customFields?: Prisma.SortOrder
+  scoreOverridden?: Prisma.SortOrder
+  siteVisitRequested?: Prisma.SortOrder
   lostReasonId?: Prisma.SortOrderInput | Prisma.SortOrder
   lostNote?: Prisma.SortOrderInput | Prisma.SortOrder
   mergedIntoId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -565,6 +587,8 @@ export type LeadScalarWhereWithAggregatesInput = {
   lastContactedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
   nextFollowUpAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Lead"> | Date | string | null
   customFields?: Prisma.JsonWithAggregatesFilter<"Lead">
+  scoreOverridden?: Prisma.BoolWithAggregatesFilter<"Lead"> | boolean
+  siteVisitRequested?: Prisma.BoolWithAggregatesFilter<"Lead"> | boolean
   lostReasonId?: Prisma.UuidNullableWithAggregatesFilter<"Lead"> | string | null
   lostNote?: Prisma.StringNullableWithAggregatesFilter<"Lead"> | string | null
   mergedIntoId?: Prisma.UuidNullableWithAggregatesFilter<"Lead"> | string | null
@@ -594,6 +618,8 @@ export type LeadCreateInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -633,6 +659,8 @@ export type LeadUncheckedCreateInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -666,6 +694,8 @@ export type LeadUpdateInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -705,6 +735,8 @@ export type LeadUncheckedUpdateInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -741,6 +773,8 @@ export type LeadCreateManyInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -770,6 +804,8 @@ export type LeadUpdateManyMutationInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -802,6 +838,8 @@ export type LeadUncheckedUpdateManyInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -844,6 +882,8 @@ export type LeadCountOrderByAggregateInput = {
   lastContactedAt?: Prisma.SortOrder
   nextFollowUpAt?: Prisma.SortOrder
   customFields?: Prisma.SortOrder
+  scoreOverridden?: Prisma.SortOrder
+  siteVisitRequested?: Prisma.SortOrder
   lostReasonId?: Prisma.SortOrder
   lostNote?: Prisma.SortOrder
   mergedIntoId?: Prisma.SortOrder
@@ -881,6 +921,8 @@ export type LeadMaxOrderByAggregateInput = {
   scoreUpdatedAt?: Prisma.SortOrder
   lastContactedAt?: Prisma.SortOrder
   nextFollowUpAt?: Prisma.SortOrder
+  scoreOverridden?: Prisma.SortOrder
+  siteVisitRequested?: Prisma.SortOrder
   lostReasonId?: Prisma.SortOrder
   lostNote?: Prisma.SortOrder
   mergedIntoId?: Prisma.SortOrder
@@ -912,6 +954,8 @@ export type LeadMinOrderByAggregateInput = {
   scoreUpdatedAt?: Prisma.SortOrder
   lastContactedAt?: Prisma.SortOrder
   nextFollowUpAt?: Prisma.SortOrder
+  scoreOverridden?: Prisma.SortOrder
+  siteVisitRequested?: Prisma.SortOrder
   lostReasonId?: Prisma.SortOrder
   lostNote?: Prisma.SortOrder
   mergedIntoId?: Prisma.SortOrder
@@ -1158,6 +1202,8 @@ export type LeadCreateWithoutTenantInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1195,6 +1241,8 @@ export type LeadUncheckedCreateWithoutTenantInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1260,6 +1308,8 @@ export type LeadScalarWhereInput = {
   lastContactedAt?: Prisma.DateTimeNullableFilter<"Lead"> | Date | string | null
   nextFollowUpAt?: Prisma.DateTimeNullableFilter<"Lead"> | Date | string | null
   customFields?: Prisma.JsonFilter<"Lead">
+  scoreOverridden?: Prisma.BoolFilter<"Lead"> | boolean
+  siteVisitRequested?: Prisma.BoolFilter<"Lead"> | boolean
   lostReasonId?: Prisma.UuidNullableFilter<"Lead"> | string | null
   lostNote?: Prisma.StringNullableFilter<"Lead"> | string | null
   mergedIntoId?: Prisma.UuidNullableFilter<"Lead"> | string | null
@@ -1289,6 +1339,8 @@ export type LeadCreateWithoutStageInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1326,6 +1378,8 @@ export type LeadUncheckedCreateWithoutStageInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1385,6 +1439,8 @@ export type LeadCreateWithoutSourceInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1422,6 +1478,8 @@ export type LeadUncheckedCreateWithoutSourceInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1481,6 +1539,8 @@ export type LeadCreateWithoutTagsInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1519,6 +1579,8 @@ export type LeadUncheckedCreateWithoutTagsInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1567,6 +1629,8 @@ export type LeadUpdateWithoutTagsInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1605,6 +1669,8 @@ export type LeadUncheckedUpdateWithoutTagsInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1637,6 +1703,8 @@ export type LeadCreateWithoutNotesInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1675,6 +1743,8 @@ export type LeadUncheckedCreateWithoutNotesInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1723,6 +1793,8 @@ export type LeadUpdateWithoutNotesInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1761,6 +1833,8 @@ export type LeadUncheckedUpdateWithoutNotesInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1793,6 +1867,8 @@ export type LeadCreateWithoutActivitiesInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1831,6 +1907,8 @@ export type LeadUncheckedCreateWithoutActivitiesInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1879,6 +1957,8 @@ export type LeadUpdateWithoutActivitiesInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1917,6 +1997,8 @@ export type LeadUncheckedUpdateWithoutActivitiesInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1949,6 +2031,8 @@ export type LeadCreateWithoutTransitionsInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -1987,6 +2071,8 @@ export type LeadUncheckedCreateWithoutTransitionsInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -2035,6 +2121,8 @@ export type LeadUpdateWithoutTransitionsInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2073,6 +2161,8 @@ export type LeadUncheckedUpdateWithoutTransitionsInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2107,6 +2197,8 @@ export type LeadCreateManyTenantInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -2136,6 +2228,8 @@ export type LeadUpdateWithoutTenantInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2173,6 +2267,8 @@ export type LeadUncheckedUpdateWithoutTenantInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2208,6 +2304,8 @@ export type LeadUncheckedUpdateManyWithoutTenantInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2239,6 +2337,8 @@ export type LeadCreateManyStageInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -2268,6 +2368,8 @@ export type LeadUpdateWithoutStageInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2305,6 +2407,8 @@ export type LeadUncheckedUpdateWithoutStageInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2340,6 +2444,8 @@ export type LeadUncheckedUpdateManyWithoutStageInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2371,6 +2477,8 @@ export type LeadCreateManySourceInput = {
   lastContactedAt?: Date | string | null
   nextFollowUpAt?: Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: string | null
   lostNote?: string | null
   mergedIntoId?: string | null
@@ -2400,6 +2508,8 @@ export type LeadUpdateWithoutSourceInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2437,6 +2547,8 @@ export type LeadUncheckedUpdateWithoutSourceInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2472,6 +2584,8 @@ export type LeadUncheckedUpdateManyWithoutSourceInput = {
   lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2562,6 +2676,8 @@ export type LeadSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   lastContactedAt?: boolean
   nextFollowUpAt?: boolean
   customFields?: boolean
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: boolean
   lostNote?: boolean
   mergedIntoId?: boolean
@@ -2602,6 +2718,8 @@ export type LeadSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lastContactedAt?: boolean
   nextFollowUpAt?: boolean
   customFields?: boolean
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: boolean
   lostNote?: boolean
   mergedIntoId?: boolean
@@ -2637,6 +2755,8 @@ export type LeadSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lastContactedAt?: boolean
   nextFollowUpAt?: boolean
   customFields?: boolean
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: boolean
   lostNote?: boolean
   mergedIntoId?: boolean
@@ -2672,6 +2792,8 @@ export type LeadSelectScalar = {
   lastContactedAt?: boolean
   nextFollowUpAt?: boolean
   customFields?: boolean
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
   lostReasonId?: boolean
   lostNote?: boolean
   mergedIntoId?: boolean
@@ -2681,7 +2803,7 @@ export type LeadSelectScalar = {
   updatedAt?: boolean
 }
 
-export type LeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "phone" | "phoneNorm" | "email" | "emailNorm" | "sourceId" | "stageId" | "temperature" | "budgetMinMinor" | "budgetMaxMinor" | "location" | "propertyType" | "requirements" | "buyingTimeline" | "assignedMembershipId" | "score" | "scoreUpdatedAt" | "lastContactedAt" | "nextFollowUpAt" | "customFields" | "lostReasonId" | "lostNote" | "mergedIntoId" | "createdByUserId" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["lead"]>
+export type LeadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "phone" | "phoneNorm" | "email" | "emailNorm" | "sourceId" | "stageId" | "temperature" | "budgetMinMinor" | "budgetMaxMinor" | "location" | "propertyType" | "requirements" | "buyingTimeline" | "assignedMembershipId" | "score" | "scoreUpdatedAt" | "lastContactedAt" | "nextFollowUpAt" | "customFields" | "scoreOverridden" | "siteVisitRequested" | "lostReasonId" | "lostNote" | "mergedIntoId" | "createdByUserId" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["lead"]>
 export type LeadInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   stage?: boolean | Prisma.PipelineStageDefaultArgs<ExtArgs>
@@ -2743,6 +2865,11 @@ export type $LeadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     lastContactedAt: Date | null
     nextFollowUpAt: Date | null
     customFields: runtime.JsonValue
+    /**
+     * A manager set the score by hand; automatic scoring records history but does not change `score` until the override is cleared
+     */
+    scoreOverridden: boolean
+    siteVisitRequested: boolean
     lostReasonId: string | null
     lostNote: string | null
     mergedIntoId: string | null
@@ -3202,6 +3329,8 @@ export interface LeadFieldRefs {
   readonly lastContactedAt: Prisma.FieldRef<"Lead", 'DateTime'>
   readonly nextFollowUpAt: Prisma.FieldRef<"Lead", 'DateTime'>
   readonly customFields: Prisma.FieldRef<"Lead", 'Json'>
+  readonly scoreOverridden: Prisma.FieldRef<"Lead", 'Boolean'>
+  readonly siteVisitRequested: Prisma.FieldRef<"Lead", 'Boolean'>
   readonly lostReasonId: Prisma.FieldRef<"Lead", 'String'>
   readonly lostNote: Prisma.FieldRef<"Lead", 'String'>
   readonly mergedIntoId: Prisma.FieldRef<"Lead", 'String'>

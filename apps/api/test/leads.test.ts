@@ -76,10 +76,10 @@ describe('lead CRUD, validation and duplicates', () => {
   });
   it('updates fields, records changed fields in history, and soft-deletes only with permission', async () => {
     const l = (await mk(owner, { name: 'Upd Lead', phone: '9822200001' })).body;
-    const up = await ctx.http().patch(`/leads/${l.id}`).set(auth(owner.accessToken)).send({ location: 'Baner', temperature: 'WARM' });
-    expect(up.body).toMatchObject({ location: 'Baner', temperature: 'WARM' });
+    const up = await ctx.http().patch(`/leads/${l.id}`).set(auth(owner.accessToken)).send({ location: 'Baner', budgetMax: 9_000_000 });
+    expect(up.body).toMatchObject({ location: 'Baner', budgetMax: 9_000_000, score: 30, temperature: 'COLD' });
     const tl = await ctx.http().get(`/leads/${l.id}/activity`).set(auth(owner.accessToken));
-    expect(tl.body.find((a: { type: string }) => a.type === 'updated').data.fields).toEqual(expect.arrayContaining(['location', 'temperature']));
+    expect(tl.body.find((a: { type: string }) => a.type === 'updated').data.fields).toEqual(expect.arrayContaining(['location', 'budgetMax']));
     expect((await ctx.http().delete(`/leads/${l.id}`).set(auth(manager.accessToken))).status).toBe(403);
     expect((await ctx.http().delete(`/leads/${l.id}`).set(auth(owner.accessToken))).status).toBe(204);
     expect((await ctx.http().get(`/leads/${l.id}`).set(auth(owner.accessToken))).status).toBe(404);
