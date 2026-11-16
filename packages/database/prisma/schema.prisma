@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Conventions (see docs/decisions/0001): UUID ids generated app-side (UUIDv7), UTC timestamps,
+// tenant_id on every tenant-owned table with RLS (see migrations/*_rls).
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum MembershipStatus {
+  ACTIVE
+  INVITED
+  DEACTIVATED
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+model Tenant {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  email           String
+  phone           String?
+  logoUrl         String?      @map("logo_url")
+  industry        String
+  industryPackId  String       @default("real_estate") @map("industry_pack_id")
+  website         String?
+  address         String?
+  timezone        String       @default("Asia/Kolkata")
+  currency        String       @default("INR")
+  planKey         String       @default("internal") @map("plan_key")
+  status          TenantStatus @default(ACTIVE)
+  settings        Json         @default("{}")
+  onboardingState Json         @default("{}") @map("onboarding_state")
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  memberships Membership[]
+  roles       Role[]
+
+  @@map("tenants")
+}
+
+model User {
+  id              String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String     @unique @db.Citext
+  passwordHash    String     @map("password_hash")
+  name            String
+  emailVerifiedAt DateTime?  @map("email_verified_at") @db.Timestamptz(3)
+  status          UserStatus @default(ACTIVE)
+  failedLogins    Int        @default(0) @map("failed_logins")
+  lockedUntil     DateTime?  @map("locked_until") @db.Timestamptz(3)
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  memberships              Membership[]
+  sessions                 Session[]
+  emailVerificationTokens  EmailVerificationToken[]
+  passwordResetTokens      PasswordResetToken[]
+
+  @@map("users")
+}
+
+// Global catalogue of permission keys (read-only for the app role).
+model Permission {
+  key         String           @id
+  description String
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model Role {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  key       String // owner | manager | agent (system roles) or custom [LATER]
+  name      String
+  isSystem  Boolean  @default(true) @map("is_system")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  permissions RolePermission[]
+  memberships Membership[]
+  invitations Invitation[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@map("roles")
+}
+
+model RolePermission {
+  tenantId      String @map("tenant_id") @db.Uuid
+  roleId        String @map("role_id") @db.Uuid
+  permissionKey String @map("permission_key")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionKey], references: [key])
+
+  @@id([roleId, permissionKey])
+  @@index([tenantId])
+  @@map("role_permissions")
+}
+
+model Membership {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String           @map("tenant_id") @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  roleId    String           @map("role_id") @db.Uuid
+  status    MembershipStatus @default(ACTIVE)
+  invitedBy String?          @map("invited_by") @db.Uuid
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@map("memberships")
+}
+
+model Invitation {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String    @map("tenant_id") @db.Uuid
+  email      String    @db.Citext
+  roleId     String    @map("role_id") @db.Uuid
+  tokenHash  String    @unique @map("token_hash")
+  invitedBy  String    @map("invited_by") @db.Uuid
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(3)
+  acceptedAt DateTime? @map("accepted_at") @db.Timestamptz(3)
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, email])
+  @@map("invitations")
+}
+
+// Global. Refresh tokens are opaque, stored hashed. family_id groups a rotation chain for reuse detection.
+model Session {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  familyId         String    @map("family_id") @db.Uuid
+  refreshTokenHash String    @unique @map("refresh_token_hash")
+  rotatedAt        DateTime? @map("rotated_at") @db.Timestamptz(3)
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz(3)
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz(3)
+  ip               String?
+  userAgent        String?   @map("user_agent")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastUsedAt       DateTime  @default(now()) @map("last_used_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("sessions")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// Append-only: the app role has INSERT + SELECT only (see RLS migration).
+model AuditLog {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String?  @map("tenant_id") @db.Uuid
+  actorUserId  String?  @map("actor_user_id") @db.Uuid
+  action       String
+  resourceType String?  @map("resource_type")
+  resourceId   String?  @map("resource_id")
+  metadata     Json     @default("{}")
+  requestId    String?  @map("request_id")
+  ip           String?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, action])
+  @@map("audit_logs")
+}
+
+model OutboxEvent {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  type        String
+  payload     Json
+  status      String    @default("pending") // pending | processed | failed
+  attempts    Int       @default(0)
+  availableAt DateTime  @default(now()) @map("available_at") @db.Timestamptz(3)
+  processedAt DateTime? @map("processed_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([status, availableAt])
+  @@index([tenantId])
+  @@map("outbox_events")
+}
