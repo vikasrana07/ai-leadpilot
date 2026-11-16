@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Inject, Patch, Put } from '@nestjs/common';
-import { onboardingProgressSchema, updateTenantSchema, type OnboardingProgress, type UpdateTenantInput } from '@leadpilot/validation';
+import { assignmentSettingsSchema, onboardingProgressSchema, updateTenantSchema, type OnboardingProgress, type UpdateTenantInput } from '@leadpilot/validation';
 import { CurrentTenant, RequirePermissions } from '../common/decorators.js';
 import type { TenantRequestContext } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
@@ -18,6 +18,17 @@ export class TenantsController {
   @RequirePermissions('settings:manage')
   update(@CurrentTenant() ctx: TenantRequestContext, @Body(new ZodPipe(updateTenantSchema)) body: UpdateTenantInput) {
     return this.tenants.update(ctx, body);
+  }
+
+  @Get('assignment')
+  assignment(@CurrentTenant() ctx: TenantRequestContext) {
+    return this.tenants.getAssignment(ctx);
+  }
+
+  @Put('assignment')
+  @RequirePermissions('settings:manage')
+  setAssignment(@CurrentTenant() ctx: TenantRequestContext, @Body(new ZodPipe(assignmentSettingsSchema)) body: { strategy: 'manual' | 'round_robin' }) {
+    return this.tenants.setAssignment(ctx, body.strategy);
   }
 
   @Get('onboarding')

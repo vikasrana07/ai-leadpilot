@@ -39,6 +39,23 @@ export class TenantsService {
     });
   }
 
+  /** Lead assignment strategy. Switching to round robin resets the rotation cursor. */
+  setAssignment(ctx: TenantRequestContext, strategy: 'manual' | 'round_robin') {
+    return this.db.tenantTx(ctx, async (tx) => {
+      const t = await tx.tenant.findUniqueOrThrow({ where: { id: ctx.tenantId }, select: { settings: true } });
+      const settings = (t.settings ?? {}) as Record<string, unknown>;
+      await tx.tenant.update({ where: { id: ctx.tenantId }, data: { settings: { ...settings, assignment: { strategy, cursor: null } } } });
+      await this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'tenant.assignment_changed', resourceType: 'tenant', resourceId: ctx.tenantId, metadata: { strategy }, requestId: ctx.requestId, ip: ctx.ip });
+      return { strategy };
+    });
+  }
+
+  async getAssignment(ctx: TenantRequestContext): Promise<{ strategy: 'manual' | 'round_robin' }> {
+    const t = await this.db.tenantTx(ctx, (tx) => tx.tenant.findUniqueOrThrow({ where: { id: ctx.tenantId }, select: { settings: true } }));
+    const a = (t.settings as { assignment?: { strategy?: string } } | null)?.assignment;
+    return { strategy: a?.strategy === 'round_robin' ? 'round_robin' : 'manual' };
+  }
+
   async getOnboarding(ctx: TenantRequestContext): Promise<unknown> {
     const t = await this.db.tenantTx(ctx, (tx) => tx.tenant.findUniqueOrThrow({ where: { id: ctx.tenantId }, select: { onboardingState: true } }));
     return t.onboardingState;

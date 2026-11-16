@@ -65,6 +65,7 @@ export async function cleanup(): Promise<void> {
     const like = `it-${RUN}-%`;
     const t = await pool.query(`SELECT DISTINCT m.tenant_id FROM memberships m JOIN users u ON u.id = m.user_id WHERE u.email LIKE $1`, [like]);
     const ids = t.rows.map((r) => r.tenant_id as string);
+    await pool.query('DELETE FROM leads WHERE tenant_id = ANY($1)', [ids]);
     await pool.query('DELETE FROM invitations WHERE tenant_id = ANY($1)', [ids]);
     await pool.query('DELETE FROM audit_logs WHERE tenant_id = ANY($1) OR actor_user_id IN (SELECT id FROM users WHERE email LIKE $2)', [ids, like]);
     await pool.query('DELETE FROM tenants WHERE id = ANY($1)', [ids]);
