@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { z } from 'zod';
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import {
@@ -12,10 +13,13 @@ import { ZodPipe } from '../common/zod.pipe.js';
 import { Inject as InjectToken } from '@nestjs/common';
 import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
+import { BotGuard } from '../security/turnstile.js';
 import { AuthService, type ClientMeta, type IssuedSession } from './auth.service.js';
+import { supportMe } from '../support/support-access.js';
 import { ACCESS_TTL_SECONDS } from './token.service.js';
 
 // Resolved per request so deployments/tests can tune it via THROTTLE_AUTH_LIMIT (validated in config/env.ts).
+const mfaLoginSchema = z.object({ challengeToken: z.string().min(20).max(2000), code: z.string().trim().regex(/^\d{6}$/, 'Enter the 6-digit code').optional(), recoveryCode: z.string().trim().min(8).max(32).optional() }).refine((v) => !!v.code !== !!v.recoveryCode, 'Send either a code or a recovery code');
 const AUTH_THROTTLE = { default: { limit: () => Number(process.env.THROTTLE_AUTH_LIMIT ?? 10), ttl: 60_000 } };
 
 @Controller('auth')
@@ -44,7 +48,7 @@ export class AuthController {
     return wantsBody ? { ...s.context, accessToken: s.accessToken, refreshToken: s.refreshToken } : s.context;
   }
 
-  @Public() @Throttle(AUTH_THROTTLE) @Post('register') @HttpCode(201)
+  @Public() @UseGuards(BotGuard) @Throttle(AUTH_THROTTLE) @Post('register') @HttpCode(201)
   async register(@Body(new ZodPipe(registerSchema)) body: RegisterInput, @Req() req: AppRequest, @Res({ passthrough: true }) res: Response) {
     const session = await this.auth.register(body, this.meta(req));
     // Same status/shape for existing emails (the user gets an email instead): no account enumeration.
@@ -52,9 +56,17 @@ export class AuthController {
     return this.respond(req, res, session);
   }
 
-  @Public() @Throttle(AUTH_THROTTLE) @Post('login') @HttpCode(200)
+  @Public() @UseGuards(BotGuard) @Throttle(AUTH_THROTTLE) @Post('login') @HttpCode(200)
   async login(@Body(new ZodPipe(loginSchema)) body: LoginInput, @Req() req: AppRequest, @Res({ passthrough: true }) res: Response) {
-    return this.respond(req, res, await this.auth.login(body, this.meta(req)));
+    const r = await this.auth.login(body, this.meta(req));
+    if ('mfaRequired' in r) return r; // no cookies, no session: the client must complete the second step
+    return this.respond(req, res, r);
+  }
+
+  /** Second step of sign-in for accounts with MFA. Throttled; per-account lockout lives in MfaService. */
+  @Public() @Throttle(AUTH_THROTTLE) @Post('mfa/verify') @HttpCode(200)
+  async mfaVerify(@Body(new ZodPipe(mfaLoginSchema)) body: z.infer<typeof mfaLoginSchema>, @Req() req: AppRequest, @Res({ passthrough: true }) res: Response) {
+    return this.respond(req, res, await this.auth.loginWithMfa(body.challengeToken, { code: body.code, recoveryCode: body.recoveryCode }, this.meta(req)));
   }
 
   @Public() @Throttle(AUTH_THROTTLE) @Post('refresh') @HttpCode(200)
@@ -73,7 +85,8 @@ export class AuthController {
   }
 
   @NoTenant() @Get('me')
-  me(@CurrentAuth() auth: AuthContext) {
+  async me(@CurrentAuth() auth: AuthContext, @Req() req: AppRequest) {
+    if (req.support) return supportMe(req, await this.auth.workspaceName(auth.activeTenantId as string)); // platform support session
     return this.auth.buildContext(auth.userId, auth.activeTenantId);
   }
 
@@ -94,7 +107,7 @@ export class AuthController {
     return this.auth.resendVerification(auth.userId);
   }
 
-  @Public() @Throttle(AUTH_THROTTLE) @Post('forgot-password') @HttpCode(202)
+  @Public() @UseGuards(BotGuard) @Throttle(AUTH_THROTTLE) @Post('forgot-password') @HttpCode(202)
   async forgot(@Body(new ZodPipe(forgotPasswordSchema)) body: { email: string }) {
     await this.auth.forgotPassword(body.email);
     return { message: 'If an account exists for that email, a reset link is on its way.' };

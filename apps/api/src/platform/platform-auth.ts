@@ -1,10 +1,11 @@
-import { type CanActivate, type ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { type CanActivate, type ExecutionContext, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { jwtVerify, SignJWT } from 'jose';
 import { PLATFORM_COOKIE } from '../common/middleware.js';
 import type { AppRequest } from '../common/request-context.js';
 import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
 import { DbService } from '../db/db.module.js';
+import { MfaService } from '../mfa/mfa.service.js';
 
 /** Different audience and secret from tenant tokens: a tenant token can never open the console and vice versa (ADR-0003). */
 const AUDIENCE = 'platform-console';
@@ -31,7 +32,7 @@ export class PlatformTokens {
 
 @Injectable()
 export class PlatformGuard implements CanActivate {
-  constructor(@Inject(PlatformTokens) private readonly tokens: PlatformTokens, @Inject(DbService) private readonly db: DbService) {}
+  constructor(@Inject(PlatformTokens) private readonly tokens: PlatformTokens, @Inject(DbService) private readonly db: DbService, @Inject(MfaService) private readonly mfa: MfaService, @Inject(ENV) private readonly env: Env) {}
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const req = ctx.switchToHttp().getRequest<PlatformRequest>();
     const h = req.header('authorization');
@@ -41,6 +42,10 @@ export class PlatformGuard implements CanActivate {
     // Every call re-checks the admin row, so disabling an admin takes effect immediately. Same error for every failure.
     const admin = id ? await this.db.prisma.platformAdmin.findUnique({ where: { id }, select: { id: true, email: true, name: true, status: true } }) : null;
     if (!admin || admin.status !== 'ACTIVE') throw new UnauthorizedException({ code: 'unauthenticated', message: 'Platform sign-in required' });
+    // PLATFORM_REQUIRE_MFA: an admin without a second factor can only reach the MFA set-up routes.
+    if (this.env.PLATFORM_REQUIRE_MFA && !req.path.startsWith('/platform/security') && !(await this.mfa.isEnabled({ type: 'platform_admin', id: admin.id }))) {
+      throw new ForbiddenException({ code: 'mfa_enrollment_required', message: 'Two-step verification is required for platform admins. Set it up first.' });
+    }
     req.platformAdmin = { id: admin.id, email: admin.email, name: admin.name };
     return true;
   }

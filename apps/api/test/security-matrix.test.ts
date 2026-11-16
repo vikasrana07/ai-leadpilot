@@ -45,13 +45,22 @@ const PUBLIC_ALLOWLIST: Record<string, string> = {
   'POST /auth/register': 'signup', 'POST /auth/login': 'login', 'POST /auth/refresh': 'refresh cookie', 'POST /auth/logout': 'logout', 'POST /auth/verify-email': 'token', 'POST /auth/forgot-password': 'token flow', 'POST /auth/reset-password': 'token flow',
   'POST /auth/invitations/accept': 'invite token', 'GET /auth/invitations/:token': 'invite token preview', 'POST /auth/invitations/preview': 'invite token preview',
   'POST /webhooks/razorpay': 'HMAC signature', 'GET /webhooks/whatsapp/:key': 'Meta verify challenge', 'POST /webhooks/whatsapp/:key': 'HMAC signature',
-  'POST /platform/auth/login': 'platform login', 'POST /platform/auth/logout': 'platform logout',
+  'POST /auth/mfa/verify': 'second sign-in step (challenge token + code, throttled, lockout)', 'POST /platform/auth/mfa': 'platform second sign-in step', 'POST /platform/auth/login': 'platform login', 'POST /platform/auth/logout': 'platform logout',
 };
 describe('route inventory', () => {
+  it('public-API (/v1) routes are all guarded by ApiKeyGuard; only the OpenAPI description is open (key-authenticated families are covered by public-api.test.ts)', async () => {
+    const v1 = routes.filter((r) => r.path.startsWith('/v1'));
+    expect(v1.length).toBeGreaterThan(10);
+    const open = [];
+    for (const r of v1.filter((x) => x.path !== '/v1/openapi.json')) { const res = await ctx.http()[r.method.toLowerCase() as 'get'](fill(r.path)).send({}); if (res.status !== 401) open.push(`${label(r)} -> ${res.status}`); }
+    expect(open).toEqual([]);
+    expect((await ctx.http().get('/v1/openapi.json')).status).toBe(200);
+  });
+
   it('discovers a plausible number of routes', () => { expect(routes.length).toBeGreaterThan(150); });
 
   it('public routes are exactly the reviewed allow-list (plus signature/key/token-authenticated families)', () => {
-    const unexpected = routes.filter((r) => r.isPublic && !r.path.startsWith('/platform') && !r.path.startsWith('/widget') && !r.path.startsWith('/public') && !(label(r) in PUBLIC_ALLOWLIST)).map(label);
+    const unexpected = routes.filter((r) => r.isPublic && !r.path.startsWith('/platform') && !r.path.startsWith('/widget') && !r.path.startsWith('/public') && !r.path.startsWith('/v1') && !(label(r) in PUBLIC_ALLOWLIST)).map(label);
     expect(unexpected, 'new @Public() routes must be reviewed and added to PUBLIC_ALLOWLIST').toEqual([]);
   });
 
@@ -92,7 +101,7 @@ describe('permission declarations', () => {
    */
   const SERVICE_ENFORCED = new Set([
     'GET /billing/summary', 'GET /billing/plans', 'GET /notifications', 'GET /notifications/unread-count', 'POST /notifications/:id/read', 'POST /notifications/read-all', 'GET /notifications/preferences', 'PUT /notifications/preferences',
-    'GET /realtime/stream', 'GET /tenant', 'GET /tenant/onboarding', 'GET /tasks', 'POST /tasks', 'PATCH /tasks/:id', 'DELETE /tasks/:id', 'GET /sla', 'GET /roles',
+    'GET /realtime/stream', 'GET /tenant', 'GET /tenant/onboarding', 'GET /tasks', 'POST /tasks', 'PATCH /tasks/:id', 'DELETE /tasks/:id', 'GET /sla', 'GET /roles', 'GET /security/workspace',
     'DELETE /appointments/availability/exceptions/:id', 'DELETE /leads/:id', 'DELETE /leads/:id/score/override', 'GET /analytics/overview', 'GET /appointments', 'GET /appointments/:id', 'GET /appointments/availability', 'GET /appointments/slots',
     'GET /conversations', 'GET /conversations/:id', 'GET /conversations/:id/messages', 'GET /conversations/:id/messages/:mid/media', 'GET /conversations/:id/notes', 'GET /leads', 'GET /leads/:id', 'GET /leads/:id/activity', 'GET /leads/:id/notes',
     'GET /leads/:id/score', 'GET /leads/export', 'GET /leads/meta', 'GET /leads/tags', 'GET /pipeline/board', 'GET /pipeline/stages', 'GET /scoring/rules', 'GET /team/workload', 'GET /tenant/assignment', 'PATCH /appointments/:id', 'PATCH /leads/:id',

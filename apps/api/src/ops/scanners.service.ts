@@ -4,6 +4,7 @@ import { DEFAULT_SLA, type AutomationTrigger, type SlaSettings } from '@leadpilo
 import { AiTrigger } from '../ai/ai-trigger.js';
 import { DbService } from '../db/db.module.js';
 import { AGENT_REMINDER_HOURS } from './event-notifier.js';
+import { LifecycleJobs } from './lifecycle-jobs.js';
 import { BillingLifecycle } from './billing-lifecycle.js';
 import { OutboxService } from './outbox.service.js';
 
@@ -21,7 +22,7 @@ export interface ScanReport { tenantId: string; upcoming: number; inactive: numb
 @Injectable()
 export class ScannersService {
   private readonly log = new Logger('Scanners');
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(OutboxService) private readonly outbox: OutboxService, @Inject(AiTrigger) private readonly aiTrigger: AiTrigger, @Inject(BillingLifecycle) private readonly billing: BillingLifecycle) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(OutboxService) private readonly outbox: OutboxService, @Inject(AiTrigger) private readonly aiTrigger: AiTrigger, @Inject(BillingLifecycle) private readonly billing: BillingLifecycle, @Inject(LifecycleJobs) private readonly lifecycle: LifecycleJobs) {}
 
   async scanAll(now = new Date()): Promise<ScanReport[]> {
     const tenants = await this.db.prisma.$queryRaw<{ id: string }[]>`SELECT id FROM list_active_tenant_ids()`;
@@ -56,6 +57,7 @@ export class ScannersService {
       r.queuedRuns = (await tx.automationRun.findMany({ where: { tenantId, status: 'QUEUED', createdAt: { lt: new Date(now.getTime() - 45_000) } }, select: { id: true }, take: 200 })).map((x) => x.id);
     });
     await this.billing.tick(tenantId, now).catch((e: unknown) => this.log.error(`Billing tick failed for tenant ${tenantId}: ${e instanceof Error ? e.message : String(e)}`));
+    await this.lifecycle.retentionTick(tenantId, now).catch((e: unknown) => this.log.error(`Retention failed for tenant ${tenantId}: ${e instanceof Error ? e.message : String(e)}`));
     for (const t of aiRecover) { this.aiTrigger.fire({ tenantId, ...t }); r.aiRecovered++; }
     return r;
   }

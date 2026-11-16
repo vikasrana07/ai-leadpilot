@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { SupportAccessButton } from '@/components/support/support-start';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -42,6 +43,7 @@ export default function PlatformTenant() {
     <>
       <PageHeader title={t.name} breadcrumbs={[{ label: 'Tenants', href: '/platform/tenants' }, { label: t.name }]} description={`${t.email} · ${t.industry} · created ${fmtDate(t.createdAt)}`}
         actions={<><Button onClick={() => setAction('plan')}>Assign plan</Button>{suspended ? <Button variant="primary" onClick={() => setAction('reactivate')}>Reactivate</Button> : <Button variant="danger" onClick={() => setAction('suspend')}>Suspend</Button>}</>} />
+      <div className="mb-3 flex justify-end"><SupportAccessButton tenantId={id} /></div>
       <div className="grid gap-3 lg:grid-cols-2">
         <Card><CardHeader><CardTitle>Subscription</CardTitle><div className="flex gap-1.5"><Badge tone={suspended ? 'danger' : 'success'}>{t.status}</Badge><Badge>{e.planName}</Badge></div></CardHeader><CardBody className="divide-y divide-border text-[13px]">
           {[['Status', e.status + (e.restricted ? ' (read-only)' : '')], ['Provider', s?.provider ?? 'none'], ['Trial ends', fmtDate(s?.trialEndsAt)], ['Period ends', fmtDate(s?.currentPeriodEnd)], ['Grace ends', fmtDate(s?.graceEndsAt)], ['Pending plan', s?.pendingPlanKey ?? '—'], ['Cancel at period end', s?.cancelAtPeriodEnd ? 'Yes' : 'No']].map(([l, v]) => <div key={l} className="flex justify-between py-1.5"><span className="text-muted-foreground">{l}</span><span>{v}</span></div>)}

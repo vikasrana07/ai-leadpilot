@@ -7,6 +7,7 @@ import { AuditService } from '../audit/audit.service.js';
 import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
 import { DbService } from '../db/db.module.js';
+import { MfaService } from '../mfa/mfa.service.js';
 import { MailService } from '../mail/mail.module.js';
 import { TenantsService } from '../tenants/tenants.service.js';
 import { generateToken, hashToken } from './crypto.js';
@@ -41,6 +42,7 @@ export class AuthService {
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(TenantsService) private readonly tenants: TenantsService,
     @Inject(ENV) private readonly env: Env,
+    @Inject(MfaService) private readonly mfa: MfaService,
   ) {}
 
   // ---------------------------------------------------------------- registration & verification
@@ -102,7 +104,7 @@ export class AuthService {
   }
 
   // ---------------------------------------------------------------- login / refresh / logout
-  async login(input: LoginInput, meta: ClientMeta): Promise<IssuedSession> {
+  async login(input: LoginInput, meta: ClientMeta): Promise<IssuedSession | { mfaRequired: true; challengeToken: string }> {
     const user = await this.db.prisma.user.findUnique({ where: { email: input.email } });
     if (!user) {
       await this.passwords.verifyDummy(input.password);
@@ -120,11 +122,26 @@ export class AuthService {
       throw new UnauthorizedException(INVALID_CREDENTIALS); // identical for every failure mode
     }
     if (user.failedLogins > 0 || user.lockedUntil) await this.db.prisma.user.update({ where: { id: user.id }, data: { failedLogins: 0, lockedUntil: null } });
-    const workspaces = await this.listWorkspaces(user.id);
+    // Second factor: the password alone does not open a session for an account with MFA. The short-lived challenge proves step one passed.
+    if (await this.mfa.isEnabled({ type: 'user', id: user.id })) return { mfaRequired: true, challengeToken: await this.mfa.signChallenge({ type: 'user', id: user.id }) };
+    return this.finishLogin(user.id, meta);
+  }
+
+  /** Completes sign-in after MFA: verifies the challenge and the code, then issues the session exactly like a password-only login. */
+  async loginWithMfa(challengeToken: string, proof: { code?: string | undefined; recoveryCode?: string | undefined }, meta: ClientMeta): Promise<IssuedSession> {
+    const userId = await this.mfa.readChallenge(challengeToken, 'user');
+    const user = await this.db.prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, status: true } });
+    if (!user || user.status !== 'ACTIVE') throw new UnauthorizedException({ code: 'mfa_challenge_expired', message: 'Your sign-in expired. Sign in again.' });
+    await this.mfa.verify({ type: 'user', id: user.id, label: user.email }, proof, meta.ip);
+    return this.finishLogin(user.id, meta);
+  }
+
+  private async finishLogin(userId: string, meta: ClientMeta): Promise<IssuedSession> {
+    const workspaces = await this.listWorkspaces(userId);
     const defaultTenant = workspaces[0]?.tenantId ?? null;
-    const session = await this.issueSession(user.id, defaultTenant, meta);
+    const session = await this.issueSession(userId, defaultTenant, meta);
     if (defaultTenant) {
-      await this.audit.recordStandalone({ tenantId: defaultTenant, actorUserId: user.id, action: 'auth.login', requestId: meta.requestId, ip: meta.ip });
+      await this.audit.recordStandalone({ tenantId: defaultTenant, actorUserId: userId, action: 'auth.login', requestId: meta.requestId, ip: meta.ip });
     }
     return session;
   }
@@ -233,6 +250,11 @@ export class AuthService {
       }),
     );
     return rows.map((m) => ({ tenantId: m.tenant.id, name: m.tenant.name, roleKey: m.role.key, roleName: m.role.name }));
+  }
+
+  /** Name of a workspace (support sessions have no membership to read it from). */
+  async workspaceName(tenantId: string): Promise<string> {
+    return this.db.tenantTx({ tenantId }, async (tx) => (await tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { name: true } })).name);
   }
 
   async buildContext(userId: string, activeTenantId: string | null): Promise<AuthContextResponse> {

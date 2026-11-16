@@ -111,7 +111,15 @@ export const ModelName = {
   BillingEvent: 'BillingEvent',
   InvoiceCounter: 'InvoiceCounter',
   PlatformAdmin: 'PlatformAdmin',
-  PlatformAuditLog: 'PlatformAuditLog'
+  PlatformAuditLog: 'PlatformAuditLog',
+  IdempotencyKey: 'IdempotencyKey',
+  WebhookEndpoint: 'WebhookEndpoint',
+  WebhookDelivery: 'WebhookDelivery',
+  SupportAccessSession: 'SupportAccessSession',
+  MfaCredential: 'MfaCredential',
+  MfaRecoveryCode: 'MfaRecoveryCode',
+  DataExport: 'DataExport',
+  TenantDeletionRequest: 'TenantDeletionRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -478,6 +486,8 @@ export const ApiKeyScalarFieldEnum = {
   createdBy: 'createdBy',
   lastUsedAt: 'lastUsedAt',
   revokedAt: 'revokedAt',
+  expiresAt: 'expiresAt',
+  requestCount: 'requestCount',
   createdAt: 'createdAt'
 } as const
 
@@ -1080,6 +1090,135 @@ export const PlatformAuditLogScalarFieldEnum = {
 } as const
 
 export type PlatformAuditLogScalarFieldEnum = (typeof PlatformAuditLogScalarFieldEnum)[keyof typeof PlatformAuditLogScalarFieldEnum]
+
+
+export const IdempotencyKeyScalarFieldEnum = {
+  tenantId: 'tenantId',
+  key: 'key',
+  apiKeyId: 'apiKeyId',
+  requestHash: 'requestHash',
+  statusCode: 'statusCode',
+  response: 'response',
+  createdAt: 'createdAt'
+} as const
+
+export type IdempotencyKeyScalarFieldEnum = (typeof IdempotencyKeyScalarFieldEnum)[keyof typeof IdempotencyKeyScalarFieldEnum]
+
+
+export const WebhookEndpointScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  url: 'url',
+  description: 'description',
+  events: 'events',
+  enabled: 'enabled',
+  disabledReason: 'disabledReason',
+  consecutiveFailures: 'consecutiveFailures',
+  secretPrefix: 'secretPrefix',
+  secretCiphertext: 'secretCiphertext',
+  secretWrappedKey: 'secretWrappedKey',
+  secretKeyId: 'secretKeyId',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebhookEndpointScalarFieldEnum = (typeof WebhookEndpointScalarFieldEnum)[keyof typeof WebhookEndpointScalarFieldEnum]
+
+
+export const WebhookDeliveryScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  endpointId: 'endpointId',
+  eventId: 'eventId',
+  eventType: 'eventType',
+  payload: 'payload',
+  test: 'test',
+  status: 'status',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  lastStatusCode: 'lastStatusCode',
+  lastError: 'lastError',
+  lastLatencyMs: 'lastLatencyMs',
+  createdAt: 'createdAt',
+  deliveredAt: 'deliveredAt'
+} as const
+
+export type WebhookDeliveryScalarFieldEnum = (typeof WebhookDeliveryScalarFieldEnum)[keyof typeof WebhookDeliveryScalarFieldEnum]
+
+
+export const SupportAccessSessionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  adminId: 'adminId',
+  adminName: 'adminName',
+  reason: 'reason',
+  startedAt: 'startedAt',
+  expiresAt: 'expiresAt',
+  endedAt: 'endedAt',
+  ip: 'ip'
+} as const
+
+export type SupportAccessSessionScalarFieldEnum = (typeof SupportAccessSessionScalarFieldEnum)[keyof typeof SupportAccessSessionScalarFieldEnum]
+
+
+export const MfaCredentialScalarFieldEnum = {
+  subjectType: 'subjectType',
+  subjectId: 'subjectId',
+  ciphertext: 'ciphertext',
+  wrappedKey: 'wrappedKey',
+  keyId: 'keyId',
+  confirmedAt: 'confirmedAt',
+  lastUsedStep: 'lastUsedStep',
+  failedAttempts: 'failedAttempts',
+  lockedUntil: 'lockedUntil',
+  createdAt: 'createdAt'
+} as const
+
+export type MfaCredentialScalarFieldEnum = (typeof MfaCredentialScalarFieldEnum)[keyof typeof MfaCredentialScalarFieldEnum]
+
+
+export const MfaRecoveryCodeScalarFieldEnum = {
+  id: 'id',
+  subjectType: 'subjectType',
+  subjectId: 'subjectId',
+  codeHash: 'codeHash',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type MfaRecoveryCodeScalarFieldEnum = (typeof MfaRecoveryCodeScalarFieldEnum)[keyof typeof MfaRecoveryCodeScalarFieldEnum]
+
+
+export const DataExportScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  requestedByUserId: 'requestedByUserId',
+  status: 'status',
+  storageKey: 'storageKey',
+  sizeBytes: 'sizeBytes',
+  error: 'error',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  expiresAt: 'expiresAt'
+} as const
+
+export type DataExportScalarFieldEnum = (typeof DataExportScalarFieldEnum)[keyof typeof DataExportScalarFieldEnum]
+
+
+export const TenantDeletionRequestScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  requestedByUserId: 'requestedByUserId',
+  reason: 'reason',
+  status: 'status',
+  requestedAt: 'requestedAt',
+  purgeAfter: 'purgeAfter',
+  canceledAt: 'canceledAt'
+} as const
+
+export type TenantDeletionRequestScalarFieldEnum = (typeof TenantDeletionRequestScalarFieldEnum)[keyof typeof TenantDeletionRequestScalarFieldEnum]
 
 
 export const SortOrder = {

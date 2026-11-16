@@ -346,3 +346,43 @@ export type PlatformAdmin = Prisma.PlatformAdminModel
  * 
  */
 export type PlatformAuditLog = Prisma.PlatformAuditLogModel
+/**
+ * Model IdempotencyKey
+ * 
+ */
+export type IdempotencyKey = Prisma.IdempotencyKeyModel
+/**
+ * Model WebhookEndpoint
+ * 
+ */
+export type WebhookEndpoint = Prisma.WebhookEndpointModel
+/**
+ * Model WebhookDelivery
+ * 
+ */
+export type WebhookDelivery = Prisma.WebhookDeliveryModel
+/**
+ * Model SupportAccessSession
+ * 
+ */
+export type SupportAccessSession = Prisma.SupportAccessSessionModel
+/**
+ * Model MfaCredential
+ * 
+ */
+export type MfaCredential = Prisma.MfaCredentialModel
+/**
+ * Model MfaRecoveryCode
+ * 
+ */
+export type MfaRecoveryCode = Prisma.MfaRecoveryCodeModel
+/**
+ * Model DataExport
+ * 
+ */
+export type DataExport = Prisma.DataExportModel
+/**
+ * Model TenantDeletionRequest
+ * 
+ */
+export type TenantDeletionRequest = Prisma.TenantDeletionRequestModel

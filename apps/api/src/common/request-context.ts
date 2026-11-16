@@ -17,7 +17,15 @@ export interface TenantRequestContext {
   ip: string | undefined;
 }
 
+/** Set when the request carries a platform support-access token (read-only, time-limited, audited). */
+export interface SupportContext { sessionId: string; adminId: string; adminName: string; reason: string; expiresAt: Date }
+
+export interface ApiKeyContext { id: string; tenantId: string; scopes: readonly string[]; createdBy: string }
+
 export interface AppRequest extends Request {
+  /** Set by ApiKeyGuard on public-API (`/v1`) requests. */
+  apiKey?: ApiKeyContext;
+  support?: SupportContext;
   requestId: string;
   auth?: AuthContext;
   tenant?: TenantRequestContext;

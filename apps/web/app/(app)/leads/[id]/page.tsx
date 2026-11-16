@@ -17,6 +17,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
+import { LeadPrivacyMenu } from '@/components/privacy/lead-privacy';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -113,6 +114,7 @@ export default function LeadDetailPage() {
       <PageHeader title={l.name} breadcrumbs={[{ label: 'Leads', href: '/leads' }, { label: l.name }]} actions={<>
         {can('lead:write:all') ? <Button onClick={() => setMergeOpen(true)}><GitMerge className="h-4 w-4" aria-hidden />Merge duplicates</Button> : null}
         {l.canWrite ? <Button onClick={() => setEditOpen(true)}><Pencil className="h-4 w-4" aria-hidden />Edit</Button> : null}
+        <LeadPrivacyMenu leadId={id} leadName={l.name} />
         {can('lead:delete') ? <Button variant="ghost" size="icon" aria-label="Delete lead" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4" /></Button> : null}
       </>} />
 

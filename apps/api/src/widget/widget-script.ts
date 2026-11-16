@@ -19,6 +19,7 @@ export const WIDGET_JS = String.raw`(function () {
     opts = opts || {};
     var headers = { 'content-type': 'application/json' };
     if (state.token) headers.authorization = 'Bearer ' + state.token.t;
+    if (opts.botToken) headers['x-turnstile-token'] = opts.botToken;
     return fetch(api + path, { method: opts.method || 'GET', headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) { var err = new Error((j.error && j.error.message) || 'Something went wrong'); err.status = r.status; throw err; } return j; }); });
   }
@@ -33,6 +34,34 @@ export const WIDGET_JS = String.raw`(function () {
     if (!cfg.enabled) return;
     state.cfg = cfg; build();
   }).catch(function () { /* widget stays hidden if the key or origin is not valid */ });
+
+  /* Bot check (Cloudflare Turnstile). Only when the owner's server has it switched on: config.botCheck = { mode, siteKey }. */
+  var tsPromise = null;
+  function loadTurnstile() {
+    if (window.turnstile) return Promise.resolve(window.turnstile);
+    if (!tsPromise) tsPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; s.async = true;
+      s.onload = function () { resolve(window.turnstile); }; s.onerror = function () { tsPromise = null; reject(new Error('Could not load the verification check. Please try again.')); };
+      document.head.appendChild(s);
+    });
+    return tsPromise;
+  }
+  function botToken(mount) {
+    var bc = state.cfg && state.cfg.botCheck;
+    if (!bc) return Promise.resolve(undefined);
+    if (bc.mode === 'mock') return Promise.resolve('mock-pass');
+    return loadTurnstile().then(function (ts) {
+      return new Promise(function (resolve, reject) {
+        var holder = el('div'); (mount || document.body).appendChild(holder);
+        var id = ts.render(holder, { sitekey: bc.siteKey, execution: 'execute', appearance: 'interaction-only',
+          callback: function (t) { holder.remove(); resolve(t); },
+          'error-callback': function () { holder.remove(); reject(new Error('Verification failed. Please try again.')); },
+          'timeout-callback': function () { holder.remove(); reject(new Error('Verification timed out. Please try again.')); } });
+        ts.execute(id);
+      });
+    });
+  }
 
   function build() {
     var cfg = state.cfg;
@@ -85,7 +114,7 @@ export const WIDGET_JS = String.raw`(function () {
         e.preventDefault(); err.textContent = ''; go.disabled = true;
         var v = contact.value.trim(); var payload = { key: key, name: name.value.trim() };
         if (v.indexOf('@') > -1) payload.email = v; else payload.phone = v;
-        req('/widget/sessions', { method: 'POST', body: payload }).then(function (r) {
+        botToken(root).then(function (bt) { return req('/widget/sessions', { method: 'POST', body: payload, botToken: bt }); }).then(function (r) {
           state.token = { t: r.token }; try { localStorage.setItem(STORE, JSON.stringify(state.token)); } catch (x) { /* storage unavailable */ }
           showChat();
         }).catch(function (x) { err.textContent = x.message; go.disabled = false; });

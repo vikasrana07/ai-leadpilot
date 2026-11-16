@@ -20,7 +20,7 @@ export function BillingBanner() {
     return () => window.removeEventListener('lp:billing', h);
   }, [qc]);
   const s = q.data;
-  if (!s || s.status === 'INTERNAL') return null;
+  if (!s || s.status === 'INTERNAL' || (s as { pendingDeletionAt?: string | null }).pendingDeletionAt) return null; // the deletion banner explains read-only mode in that case
 
   let tone: 'info' | 'warning' | 'danger' | null = null; let text = '';
   if (s.restricted) { tone = 'danger'; text = s.trialEndsAt && !s.currentPeriodEnd ? 'Your free trial has ended. Your workspace is read-only: you can view and export, but changes are paused.' : 'Your subscription is not active. Your workspace is read-only until a plan is active. Nothing has been deleted.'; }

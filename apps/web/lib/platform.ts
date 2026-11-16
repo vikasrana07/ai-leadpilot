@@ -12,6 +12,7 @@ export async function platformApi<T>(path: string, init: { method?: string; body
   if (!res.ok) {
     const env = (json ?? {}) as Envelope;
     if (res.status === 401 && typeof window !== 'undefined' && !path.startsWith('/auth/') && !window.location.pathname.startsWith('/platform/login')) window.location.assign('/platform/login');
+    if (res.status === 403 && env.error?.code === 'mfa_enrollment_required' && typeof window !== 'undefined' && !window.location.pathname.startsWith('/platform/security')) window.location.assign('/platform/security');
     throw new ApiError(res.status, env.error?.code ?? 'error', env.error?.message ?? 'Request failed', env.error?.details);
   }
   return json as T;

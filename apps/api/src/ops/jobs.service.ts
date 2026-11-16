@@ -3,7 +3,9 @@ import { Queue, Worker, type ConnectionOptions, type Job } from 'bullmq';
 import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
 import { AutomationEngine } from './automation-engine.js';
+import { LifecycleJobs } from './lifecycle-jobs.js';
 import { OutboxRelay } from './outbox-relay.js';
+import { WebhookDispatcher } from './webhook-dispatcher.js';
 import { ScannersService } from './scanners.service.js';
 
 export const RUNS_QUEUE = 'automation-runs';
@@ -34,6 +36,8 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     @Inject(AutomationEngine) private readonly engine: AutomationEngine,
     @Inject(OutboxRelay) private readonly relay: OutboxRelay,
     @Inject(ScannersService) private readonly scanners: ScannersService,
+    @Inject(WebhookDispatcher) private readonly webhooks: WebhookDispatcher,
+    @Inject(LifecycleJobs) private readonly lifecycle: LifecycleJobs,
   ) {}
 
   get running(): boolean { return this.runsQueue !== null; }
@@ -74,13 +78,19 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
   private async drain(): Promise<void> {
     if (this.relayBusy) return;
     this.relayBusy = true;
-    try { while ((await this.relay.drainOnce()) > 0) { /* keep going until the outbox is empty */ } }
+    try {
+      while ((await this.relay.drainOnce()) > 0) { /* keep going until the outbox is empty */ }
+      while ((await this.webhooks.drainOnce()) > 0) { /* then send due webhook deliveries */ }
+    }
     catch (e) { this.log.error(`relay: ${e instanceof Error ? e.message : String(e)}`); }
     finally { this.relayBusy = false; }
   }
 
   async maintenance(): Promise<void> {
     const reports = await this.scanners.scanAll();
+    // data lifecycle: queued workspace exports, expired export files, workspaces past their deletion cooling-off period
+    await this.lifecycle.processExports().catch((e: unknown) => this.log.error(`exports: ${e instanceof Error ? e.message : String(e)}`));
+    await this.lifecycle.purgeDueTenants().catch((e: unknown) => this.log.error(`tenant purge: ${e instanceof Error ? e.message : String(e)}`));
     // Orphaned QUEUED runs (job lost, manual retry, stale RUNNING reset) are re-enqueued with a per-minute generation so BullMQ does not drop
     // them as duplicates. Double delivery is harmless: the engine claims a run with a compare-and-set.
     const generation = Math.floor(Date.now() / 60_000);

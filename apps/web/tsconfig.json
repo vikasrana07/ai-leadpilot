@@ -36,7 +36,11 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "node_modules/.cache/next-e2e/types/**/*.ts",
-    "node_modules/.cache/next-e2e/dev/types/**/*.ts"
+    "node_modules/.cache/next-e2e/dev/types/**/*.ts",
+    "node_modules/.cache/next-f2/types/**/*.ts",
+    "node_modules/.cache/next-f2/dev/types/**/*.ts",
+    "node_modules/.cache/next-f3/types/**/*.ts",
+    "node_modules/.cache/next-f3/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

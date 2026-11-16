@@ -3,6 +3,7 @@ import { BadRequestException, ConflictException, Inject, Injectable, NotFoundExc
 import type { Prisma } from '@leadpilot/database';
 import { type PlanInput, FEATURE_KEYS, LIMIT_KEYS, withGst } from '@leadpilot/validation';
 import { z } from 'zod';
+import { MfaService, type MfaProof } from '../mfa/mfa.service.js';
 import { PasswordService } from '../auth/password.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import { EntitlementsService } from '../billing/entitlements.service.js';
@@ -22,6 +23,7 @@ export class PlatformService {
   constructor(
     @Inject(DbService) private readonly db: DbService, @Inject(PasswordService) private readonly passwords: PasswordService, @Inject(PlatformTokens) private readonly tokens: PlatformTokens,
     @Inject(AuditService) private readonly audit: AuditService, @Inject(EntitlementsService) private readonly ent: EntitlementsService,
+    @Inject(MfaService) readonly mfa: MfaService,
   ) {}
 
   /** Append-only record of everything a platform admin does. */
@@ -30,7 +32,7 @@ export class PlatformService {
   }
 
   // ------------------------------------------------------------------ auth
-  async login(email: string, password: string, meta: Meta): Promise<{ token: string; admin: PlatformAdminCtx }> {
+  async login(email: string, password: string, meta: Meta): Promise<{ token: string; admin: PlatformAdminCtx } | { mfaRequired: true; challengeToken: string }> {
     if (!this.tokens.enabled) throw new UnauthorizedException(INVALID);
     const a = await this.db.prisma.platformAdmin.findUnique({ where: { email } });
     if (!a) { await this.passwords.verifyDummy(password); await this.log(null, meta, { action: 'platform.login_failed', metadata: { reason: 'unknown' } }); throw new UnauthorizedException(INVALID); }
@@ -41,11 +43,29 @@ export class PlatformService {
       await this.log({ id: a.id, email: a.email, name: a.name }, meta, { action: 'platform.login_failed', metadata: { reason: locked ? 'locked' : a.status !== 'ACTIVE' ? 'disabled' : 'bad_password' } });
       throw new UnauthorizedException(INVALID);
     }
-    await this.db.prisma.platformAdmin.update({ where: { id: a.id }, data: { failedLogins: 0, lockedUntil: null, lastLoginAt: new Date() } });
+    await this.db.prisma.platformAdmin.update({ where: { id: a.id }, data: { failedLogins: 0, lockedUntil: null } });
+    // The password alone does not open the console for an admin with MFA: they get a short-lived challenge and must prove the second factor.
+    if (await this.mfa.isEnabled({ type: 'platform_admin', id: a.id })) return { mfaRequired: true, challengeToken: await this.mfa.signChallenge({ type: 'platform_admin', id: a.id }) };
+    return this.finishLogin(a, meta);
+  }
+
+  private async finishLogin(a: { id: string; email: string; name: string }, meta: Meta): Promise<{ token: string; admin: PlatformAdminCtx }> {
+    await this.db.prisma.platformAdmin.update({ where: { id: a.id }, data: { lastLoginAt: new Date() } });
     const admin = { id: a.id, email: a.email, name: a.name };
     await this.log(admin, meta, { action: 'platform.login' });
     return { token: await this.tokens.sign(a.id), admin };
   }
+
+  async loginWithMfa(challengeToken: string, proof: MfaProof, meta: Meta): Promise<{ token: string; admin: PlatformAdminCtx }> {
+    const id = await this.mfa.readChallenge(challengeToken, 'platform_admin');
+    const a = await this.db.prisma.platformAdmin.findUnique({ where: { id }, select: { id: true, email: true, name: true, status: true } });
+    if (!a || a.status !== 'ACTIVE') throw new UnauthorizedException({ code: 'mfa_challenge_expired', message: 'Your sign-in expired. Sign in again.' });
+    await this.mfa.verify({ type: 'platform_admin', id: a.id, label: a.email }, proof, meta.ip);
+    return this.finishLogin(a, meta);
+  }
+
+  /** MFA management for the signed-in admin. */
+  mfaSubject(a: PlatformAdminCtx) { return { type: 'platform_admin' as const, id: a.id, label: a.email }; }
 
   // ------------------------------------------------------------------ overview
   async metrics() {

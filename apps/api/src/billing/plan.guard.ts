@@ -1,4 +1,4 @@
-import { type CanActivate, type ExecutionContext, Inject, Injectable } from '@nestjs/common';
+import { type CanActivate, type ExecutionContext, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { FeatureKey } from '@leadpilot/validation';
 import { BILLING_EXEMPT, REQUIRE_FEATURE } from '../common/billing-meta.js';
@@ -20,6 +20,9 @@ export class PlanGuard implements CanActivate {
     const feature = this.reflector.getAllAndOverride<FeatureKey | undefined>(REQUIRE_FEATURE, targets);
     if (exempt && !feature) return true;
     const e = await this.ent.get(req.tenant.tenantId);
+    if (e.pendingDeletionAt && !exempt && !SAFE.has(req.method)) {
+      throw new HttpException({ code: 'pending_deletion', message: 'This workspace is scheduled for deletion and is read-only. The owner can cancel the deletion in Settings.', details: { purgeAfter: e.pendingDeletionAt } }, HttpStatus.FORBIDDEN);
+    }
     if (e.restricted && !exempt && !SAFE.has(req.method)) {
       throw paymentRequired('subscription_required', e.status === 'EXPIRED' && e.trialEndsAt && !e.currentPeriodEnd ? 'Your free trial has ended. Choose a plan to keep making changes.' : 'Your subscription is not active. Renew or choose a plan to keep making changes.', { plan: e.planKey });
     }

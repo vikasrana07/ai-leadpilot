@@ -40,14 +40,14 @@ afterAll(async () => { await owner$.end(); await ctx.close(); await cleanup(); }
 
 describe('envelope encryption', () => {
   const box = new SecretBox({ LOCAL_MASTER_KEY: randomBytes(32).toString('base64') } as never);
-  it('round-trips, never stores plaintext, and binds ciphertext to its tenant', () => {
-    const sealed = box.seal({ accessToken: 'EAAG-secret-token' }, 'tenantA:whatsapp');
+  it('round-trips, never stores plaintext, and binds ciphertext to its tenant', async () => {
+    const sealed = await box.seal({ accessToken: 'EAAG-secret-token' }, 'tenantA:whatsapp');
     expect(JSON.stringify(sealed)).not.toContain('EAAG-secret-token');
-    expect(box.open(sealed, 'tenantA:whatsapp')).toEqual({ accessToken: 'EAAG-secret-token' });
-    expect(() => box.open(sealed, 'tenantB:whatsapp')).toThrow(); // copied to another tenant's row
+    expect(await box.open(sealed, 'tenantA:whatsapp')).toEqual({ accessToken: 'EAAG-secret-token' });
+    await expect(box.open(sealed, 'tenantB:whatsapp')).rejects.toThrow(); // copied to another tenant's row
     const raw = Buffer.from(sealed.ciphertext, 'base64'); raw[20] = (raw[20] as number) ^ 1;
     const tampered = { ...sealed, ciphertext: raw.toString('base64') };
-    expect(() => box.open(tampered, 'tenantA:whatsapp')).toThrow();
+    await expect(box.open(tampered, 'tenantA:whatsapp')).rejects.toThrow();
   });
   it('rejects a master key of the wrong length', () => { expect(() => new LocalKeyProvider(Buffer.alloc(16).toString('base64'))).toThrow(); });
 });

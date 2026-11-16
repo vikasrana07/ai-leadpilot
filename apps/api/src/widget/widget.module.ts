@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, Header, Headers, HttpCode, Inject, Injectable, Module, NotFoundException, Post, Query, Req, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Header, Headers, HttpCode, Inject, Injectable, Module, NotFoundException, Post, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { createHash, randomUUID } from 'node:crypto';
 import { jwtVerify, SignJWT } from 'jose';
@@ -13,6 +13,7 @@ import { ZodPipe } from '../common/zod.pipe.js';
 import { ConversationsModule } from '../conversations/conversations.module.js';
 import { InboundService } from '../conversations/inbound.service.js';
 import { DbService } from '../db/db.module.js';
+import { BotGuard, TurnstileService } from '../security/turnstile.js';
 import { WIDGET_JS } from './widget-script.js';
 
 interface WidgetRow { tenant_id: string; channel_id: string; enabled: boolean; allowed_origins: string[]; theme: { color?: string; position?: string }; title: string; greeting: string }
@@ -22,7 +23,7 @@ const SESSION_TTL = '7d';
 @Injectable()
 export class WidgetPublicService {
   private readonly key: Uint8Array;
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(InboundService) private readonly inbound: InboundService, @Inject(ENV) env: Env) { this.key = new TextEncoder().encode(env.JWT_ACCESS_SECRET); }
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(InboundService) private readonly inbound: InboundService, @Inject(TurnstileService) private readonly turnstile: TurnstileService, @Inject(ENV) env: Env) { this.key = new TextEncoder().encode(env.JWT_ACCESS_SECRET); }
 
   private async widgetByKey(pk: string): Promise<WidgetRow | null> {
     if (!/^pk_[A-Za-z0-9_-]{10,60}$/.test(pk)) return null;
@@ -39,7 +40,7 @@ export class WidgetPublicService {
     const w = await this.widgetByKey(pk);
     if (!w) throw new NotFoundException({ code: 'not_found', message: 'Unknown widget' });
     this.assertOrigin(origin, w);
-    return { enabled: w.enabled, title: w.title, greeting: w.greeting, color: w.theme.color ?? '#3f55e8', position: w.theme.position ?? 'right' };
+    return { enabled: w.enabled, title: w.title, greeting: w.greeting, color: w.theme.color ?? '#3f55e8', position: w.theme.position ?? 'right', ...(this.turnstile.clientConfig ? { botCheck: this.turnstile.clientConfig } : {}) };
   }
 
   async createSession(input: z.infer<typeof widgetSessionSchema>, origin: string | undefined) {
@@ -93,7 +94,7 @@ class WidgetPublicController {
   @Public() @Throttle({ default: { limit: 60, ttl: 60_000 } }) @Get('widget/config')
   config(@Query('key') key: string | undefined, @Headers('origin') origin: string | undefined) { return this.svc.config(key ?? '', origin); }
 
-  @Public() @Throttle({ default: { limit: 10, ttl: 60_000 } }) @Post('widget/sessions') @HttpCode(201)
+  @Public() @UseGuards(BotGuard) @Throttle({ default: { limit: 10, ttl: 60_000 } }) @Post('widget/sessions') @HttpCode(201)
   session(@Body(new ZodPipe(widgetSessionSchema)) b: z.infer<typeof widgetSessionSchema>, @Headers('origin') origin: string | undefined) { return this.svc.createSession(b, origin); }
 
   @Public() @Throttle({ default: { limit: 30, ttl: 60_000 } }) @Post('widget/messages') @HttpCode(201)

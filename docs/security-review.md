@@ -21,19 +21,19 @@ Scope: authorisation, tenant isolation, SSRF, file access, rate limits, sensitiv
 | 6 | Low | `.env.example` was not itself a valid configuration (empty optional secrets failed validation) | **Fixed** (`KEY=` means unset); test keeps `.env.example` valid |
 | 7 | Low | Queries issued concurrently on one transaction connection (deprecated in `pg`, removed in pg 9) | **Fixed** (14 sites → `series()`) |
 | 8 | Low | `GET /roles` visible to every member (role names and permission keys) | **Accepted**: not sensitive; UI needs it |
-| 9 | High (compliance) | No way to honour a data principal's erasure or access request | **Mitigated**: `POST /privacy/leads/:id/erase` (owner only, irreversible, confirmation + reason, one audited `SECURITY DEFINER` function, content-free audit entry) and `GET /privacy/leads/:id/export`; tested across all tables. **Not built:** tenant-wide export/deletion at contract end, a retention job, a UI for these (API-only) |
+| 9 | High (compliance) | No way to honour a data principal's erasure or access request | **Mitigated**: `POST /privacy/leads/:id/erase` (owner only, irreversible, confirmation + reason, one audited `SECURITY DEFINER` function, content-free audit entry) and `GET /privacy/leads/:id/export`; tested across all tables. **Phase 8 added:** UI for lead export/erasure, tenant-wide export (async, owner-only), tenant deletion with cooling-off + table-complete purge, retention job. **Still open:** streaming export for very large workspaces; legal confirmation of what must be retained after deletion (invoices) and of retention defaults; backups keep purged data until they age out |
 
 ## Open items (not fixed)
 | Severity | Item | Why open / what is needed |
 |---|---|---|
-| **High for production** | Master encryption key is a local provider (`LOCAL_MASTER_KEY` env, injected from Secrets Manager in the reference deployment). No KMS-backed provider; `wrap`/`unwrap` are synchronous in the interface | Needs an interface change + re-wrap migration; until then the key is as safe as the secret store. Decide before launch |
-| Medium | No bot protection (CAPTCHA/Turnstile) on public widget/lead-capture endpoints; only rate limits and origin allow-lists | Needs a provider choice |
-| Medium | No MFA for tenant users or platform admins; email verification is not enforced at login | Product decision |
+| ~~High for production~~ **Built, unverified against AWS** | Master key was local-only | `KEY_PROVIDER=kms` (AWS KMS envelope), per-record key ids, re-wrap script, production refuses the local key unless explicitly accepted (ADR-0047). Tested with a fake KMS only: **run it against a real KMS key in staging before launch** |
+| ~~Medium~~ **Built, unverified against Cloudflare** | No bot protection on public endpoints | Turnstile server verification (fail closed) on register, login, forgot-password and widget sessions, web forms and `widget.js` wired; `off` refused in production without an explicit override (ADR-0048). Needs real Turnstile keys and a browser test; lead-capture (API-key) endpoints are not challenged |
+| ~~Medium~~ **Built (TOTP)** / Open | No MFA | TOTP MFA for users and platform admins with recovery codes, lockout, replay protection, workspace and platform requirement switches (ADR-0049); tested and set-up/sign-in verified in a real browser for tenant users. **Still open:** email verification is not enforced at login; no WebAuthn; no admin MFA-reset UI; platform second step not browser-tested |
 | Medium | CSP `script-src 'unsafe-inline'` (Next bootstrap scripts) | A nonce-based CSP requires dynamic rendering of every page |
-| Medium | Raw webhook payloads are stored without a retention job (personal data) | Scheduled purge job not built |
+| ~~Medium~~ **Closed (Phase 8)** | Raw webhook payloads stored without a retention job | Daily retention purge (default 30 days, per-workspace, platform minimum), tested; see ADR-0053 |
 | Low | Platform console has no IP allow-list/WAF; impersonation deliberately absent | Deployment-level control |
 | Low | Rate limiting is per IP; behind a load balancer `trust proxy` is `1` (one hop) | Correct for one ALB; adjust if CloudFront/another proxy is added |
 | Info | `pnpm audit --prod`: no known vulnerabilities at review time | Re-run in CI/regularly |
 
 ## Gate statement
-The Phase 7 gate says "no open high-severity findings". **Honest status:** the one high compliance gap (no erasure/export) now has a tested mechanism for the main case (one lead). The remaining **high-for-production** item is the key-management choice (KMS). Treat that as a launch blocker until a decision is recorded, and get an external review.
+The Phase 7 gate says "no open high-severity findings". **Honest status:** the one high compliance gap (no erasure/export) now has a tested mechanism for the main case (one lead). The three blockers (KMS key provider, bot protection, MFA) are now built and tested with doubles; **KMS and Turnstile must still be exercised against the real services**, and an independent review is still recommended.

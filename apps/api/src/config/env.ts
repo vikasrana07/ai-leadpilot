@@ -11,6 +11,12 @@ const schema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET must be at least 32 chars'),
   REDIS_URL: z.string().url().default('redis://localhost:6380'),
   PUBLIC_API_URL: z.string().url().optional(),
+  /** Master key for envelope encryption: `local` (LOCAL_MASTER_KEY from the secret store) or `kms` (AWS KMS, KMS_KEY_ID). See ADR-0007. */
+  KEY_PROVIDER: z.enum(['local', 'kms']).default('local'),
+  KMS_KEY_ID: z.string().min(1).optional(),
+  KMS_REGION: z.string().optional(),
+  /** Production refuses the local key unless this is explicitly set (an accepted, documented risk). */
+  ALLOW_LOCAL_KEY_IN_PRODUCTION: bool,
   LOCAL_MASTER_KEY: z.string().min(40, 'LOCAL_MASTER_KEY must be base64 of 32 random bytes (openssl rand -base64 32)'),
   S3_ENDPOINT: z.string().url().optional(),
   S3_REGION: z.string().default('us-east-1'),
@@ -59,7 +65,32 @@ const schema = z.object({
   /** Service Accounting Code on invoices. Confirm the right code with your chartered accountant before going live. */
   INVOICE_SAC: z.string().regex(/^\d{4,8}$/).default('998314'),
   /** Platform console (separate from tenant auth). Unset = the console is disabled. */
+  /** Platform admins without MFA are held at the Security page until they enrol (recommended for production). */
+  PLATFORM_REQUIRE_MFA: bool,
   PLATFORM_JWT_SECRET: z.string().min(32).optional(),
+  // ---- Data lifecycle (Phase 8). Platform-wide defaults and hard minimums for per-workspace retention settings.
+  RETENTION_WEBHOOK_PAYLOAD_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
+  RETENTION_SOFT_DELETED_LEAD_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
+  /** No workspace may configure a retention period shorter than this (protects against accidental or malicious data loss). */
+  RETENTION_MIN_DAYS: z.coerce.number().int().min(1).max(365).default(7),
+  DELETION_COOLING_OFF_DAYS: z.coerce.number().int().min(0).max(90).default(14),
+  EXPORT_TTL_DAYS: z.coerce.number().int().min(1).max(30).default(7),
+  /** Requests per minute allowed per public-API key. */
+  API_KEY_RATE_LIMIT_PER_MIN: z.coerce.number().int().min(1).default(120),
+  /** Bot check on public endpoints (register, login, forgot-password, widget sessions). off | mock (dev/test: token "mock-pass") | live (Cloudflare Turnstile). */
+  TURNSTILE_MODE: z.enum(['off', 'mock', 'live']).default('off'),
+  TURNSTILE_SECRET: z.string().min(1).optional(),
+  /** Public site key handed to the widget (the web app uses NEXT_PUBLIC_TURNSTILE_SITE_KEY). */
+  TURNSTILE_SITE_KEY: z.string().min(1).optional(),
+  /** Production refuses TURNSTILE_MODE=off unless this is set (an accepted, documented risk). */
+  TURNSTILE_ALLOW_OFF_IN_PRODUCTION: bool,
+  /** Outbound webhooks. PRIVATE targets (loopback, RFC1918...) and plain http are refused unless this is on; it exists for local tests only and is rejected in production. */
+  WEBHOOK_ALLOW_PRIVATE_TARGETS: bool,
+  WEBHOOK_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(12).default(6),
+  WEBHOOK_BACKOFF_BASE_MS: z.coerce.number().int().min(1).default(30_000),
+  WEBHOOK_TIMEOUT_MS: z.coerce.number().int().min(100).max(30_000).default(8000),
+  /** Consecutive exhausted deliveries after which an endpoint is switched off (and owners notified). */
+  WEBHOOK_DISABLE_AFTER: z.coerce.number().int().min(1).default(10),
   THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(10),
   THROTTLE_GLOBAL_LIMIT: z.coerce.number().int().positive().default(300),
 });
@@ -71,9 +102,15 @@ export function loadEnv(raw: NodeJS.ProcessEnv = process.env): Env {
     if (e.NODE_ENV === 'production' && e.WHATSAPP_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['WHATSAPP_MODE'], message: 'mock mode is not allowed in production' });
     if (e.NODE_ENV === 'production' && e.VIRUS_SCAN_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['VIRUS_SCAN_MODE'], message: 'mock virus scanning is not allowed in production' });
     if (e.AI_PROVIDER === 'mock' && e.NODE_ENV === 'production') ctx.addIssue({ code: 'custom', path: ['AI_PROVIDER'], message: 'the mock AI provider is not allowed in production' });
+    if (e.KEY_PROVIDER === 'kms' && !e.KMS_KEY_ID) ctx.addIssue({ code: 'custom', path: ['KMS_KEY_ID'], message: 'KMS_KEY_ID is required when KEY_PROVIDER=kms' });
+    if (e.NODE_ENV === 'production' && e.KEY_PROVIDER === 'local' && !e.ALLOW_LOCAL_KEY_IN_PRODUCTION) ctx.addIssue({ code: 'custom', path: ['KEY_PROVIDER'], message: 'KEY_PROVIDER=local is not allowed in production (use kms, or set ALLOW_LOCAL_KEY_IN_PRODUCTION=true to accept the risk)' });
+    if (e.TURNSTILE_MODE === 'live' && (!e.TURNSTILE_SECRET || !e.TURNSTILE_SITE_KEY)) ctx.addIssue({ code: 'custom', path: ['TURNSTILE_SECRET'], message: 'TURNSTILE_SECRET and TURNSTILE_SITE_KEY are required when TURNSTILE_MODE=live' });
+    if (e.NODE_ENV === 'production' && e.TURNSTILE_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['TURNSTILE_MODE'], message: 'the mock bot check is not allowed in production' });
+    if (e.NODE_ENV === 'production' && e.TURNSTILE_MODE === 'off' && !e.TURNSTILE_ALLOW_OFF_IN_PRODUCTION) ctx.addIssue({ code: 'custom', path: ['TURNSTILE_MODE'], message: 'TURNSTILE_MODE=off is not allowed in production (use live, or set TURNSTILE_ALLOW_OFF_IN_PRODUCTION=true to accept the risk)' });
     if (e.NODE_ENV === 'production' && e.RAZORPAY_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['RAZORPAY_MODE'], message: 'the mock payment provider is not allowed in production' });
     if (e.RAZORPAY_MODE === 'live') for (const k of ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET'] as const) if (!e[k]) ctx.addIssue({ code: 'custom', path: [k], message: `${k} is required when RAZORPAY_MODE=live` });
     if (e.NODE_ENV === 'production' && !e.SELLER_GSTIN) ctx.addIssue({ code: 'custom', path: ['SELLER_GSTIN'], message: 'SELLER_GSTIN is required in production (printed on invoices)' });
+    if (e.NODE_ENV === 'production' && e.WEBHOOK_ALLOW_PRIVATE_TARGETS) ctx.addIssue({ code: 'custom', path: ['WEBHOOK_ALLOW_PRIVATE_TARGETS'], message: 'private webhook targets are not allowed in production' });
     if (!!e.SMTP_USER !== !!e.SMTP_PASS) ctx.addIssue({ code: 'custom', path: ['SMTP_PASS'], message: 'SMTP_USER and SMTP_PASS must be set together' });
     if (e.AI_PROVIDER === 'openai' && !e.OPENAI_API_KEY) ctx.addIssue({ code: 'custom', path: ['OPENAI_API_KEY'], message: 'OPENAI_API_KEY is required when AI_PROVIDER=openai' });
   }).safeParse(Object.fromEntries(Object.entries(raw).filter(([, v]) => v !== ''))); // `KEY=` in a .env file means "unset"

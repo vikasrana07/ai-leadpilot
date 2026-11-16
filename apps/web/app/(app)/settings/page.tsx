@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/page/page-header';
+import { WorkspacePrivacy } from '@/components/privacy/workspace-privacy';
+import { SupportAccessCard } from '@/components/support/support-access-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
@@ -145,7 +147,7 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" description="Your workspace profile, appearance and security." />
-      <div className="space-y-6"><BusinessProfile /><Assignment /><ResponseTime /><Appearance /><Sessions /></div>
+      <div className="space-y-6"><BusinessProfile /><Assignment /><ResponseTime /><Appearance /><Sessions /><SupportAccessCard /><WorkspacePrivacy /></div>
     </>
   );
 }

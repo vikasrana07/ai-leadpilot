@@ -6,6 +6,8 @@ import { IS_PUBLIC, NO_TENANT, PERMISSIONS_META } from './decorators.js';
 import type { AppRequest } from './request-context.js';
 import { TokenService } from '../auth/token.service.js';
 import { DbService } from '../db/db.module.js';
+import { MfaService } from '../mfa/mfa.service.js';
+import { authenticateSupport, supportTenantContext } from '../support/support-access.js';
 
 function extractToken(req: AppRequest): string | undefined {
   const h = req.header('authorization');
@@ -29,6 +31,10 @@ export class AuthGuard implements CanActivate {
     const token = extractToken(req);
     const claims = token ? await this.tokens.verifyAccess(token) : null;
 
+    // Platform support access (read-only, time-limited, audited): a different token audience, validated and restricted in one place.
+    const support = !claims && token && !isPublic ? await this.tokens.verifySupport(token) : null;
+    if (support) { await authenticateSupport(this.db, req, support); return true; }
+
     if (claims) {
       // A revoked/expired session or disabled user invalidates the access token immediately.
       const session = await this.db.prisma.session.findUnique({
@@ -47,7 +53,7 @@ export class AuthGuard implements CanActivate {
 /** Resolves tenant context from the authenticated user's validated membership. Never trusts client-supplied tenant ids. */
 @Injectable()
 export class TenantGuard implements CanActivate {
-  constructor(@Inject(Reflector) private readonly reflector: Reflector, @Inject(DbService) private readonly db: DbService) {}
+  constructor(@Inject(Reflector) private readonly reflector: Reflector, @Inject(DbService) private readonly db: DbService, @Inject(MfaService) private readonly mfa: MfaService) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const skip =
@@ -58,13 +64,14 @@ export class TenantGuard implements CanActivate {
     const auth = req.auth;
     if (!auth) throw new UnauthorizedException({ code: 'unauthenticated', message: 'Authentication required' });
     if (!auth.activeTenantId) throw new ForbiddenException({ code: 'no_workspace', message: 'No active workspace selected' });
+    if (req.support) { req.tenant = supportTenantContext(req); return true; } // synthetic read-only member; rules already applied by AuthGuard
 
     const membership = await this.db.tenantTx({ tenantId: auth.activeTenantId, userId: auth.userId }, (tx) =>
       tx.membership.findUnique({
         where: { tenantId_userId: { tenantId: auth.activeTenantId as string, userId: auth.userId } },
         select: {
           id: true, status: true,
-          tenant: { select: { status: true } },
+          tenant: { select: { status: true, settings: true } },
           role: { select: { key: true, permissions: { select: { permissionKey: true } } } },
         },
       }),
@@ -72,6 +79,11 @@ export class TenantGuard implements CanActivate {
     // Same error for "not a member", "deactivated" and "tenant suspended": do not reveal which.
     if (!membership || membership.status !== 'ACTIVE' || membership.tenant.status !== 'ACTIVE') {
       throw new ForbiddenException({ code: 'workspace_access_denied', message: 'You do not have access to this workspace' });
+    }
+    // Workspace policy: when the owner requires two-step verification, members without it are held back from workspace data until they enrol
+    // (the Security page and /auth/* are not tenant routes, so they can still do that).
+    if ((membership.tenant.settings as { requireMfa?: boolean } | null)?.requireMfa === true && !(await this.mfa.isEnabled({ type: 'user', id: auth.userId }))) {
+      throw new ForbiddenException({ code: 'mfa_enrollment_required', message: 'Your workspace requires two-step verification. Set it up in Security to continue.' });
     }
     req.tenant = {
       tenantId: auth.activeTenantId,

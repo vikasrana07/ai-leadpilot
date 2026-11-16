@@ -15,6 +15,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
 import { ME_KEY } from '@/lib/auth';
+import { useBotCheck } from '@/lib/turnstile';
 import { handleApiError } from '@/lib/forms';
 import type { AuthContextResponse } from '@leadpilot/shared-types';
 
@@ -27,12 +28,13 @@ export default function RegisterPage() {
     defaultValues: { industry: 'real_estate' },
   });
 
+  const bot = useBotCheck();
   async function onSubmit(values: RegisterInput) {
     try {
-      const res = await api<AuthContextResponse | { message: string }>('/auth/register', { method: 'POST', body: values });
+      const res = await api<AuthContextResponse | { message: string }>('/auth/register', { method: 'POST', body: values, ...(await bot.getToken().then((t) => (t ? { headers: { 'x-turnstile-token': t } } : {}))) });
       if ('user' in res) { qc.setQueryData(ME_KEY, res); router.replace('/onboarding'); }
       else setPending(true);
-    } catch (e) { handleApiError(e, setError); }
+    } catch (e) { bot.reset(); handleApiError(e, setError); }
   }
 
   if (pending) {
@@ -50,6 +52,7 @@ export default function RegisterPage() {
         <Field label="Work email" htmlFor="email" error={errors.email?.message}><Input id="email" type="email" autoComplete="email" aria-invalid={!!errors.email} {...register('email')} /></Field>
         <Field label="Business name" htmlFor="businessName" error={errors.businessName?.message}><Input id="businessName" autoComplete="organization" aria-invalid={!!errors.businessName} {...register('businessName')} /></Field>
         <Field label="Password" htmlFor="password" error={errors.password?.message} hint="At least 10 characters with upper, lower case and a number."><Input id="password" type="password" autoComplete="new-password" aria-invalid={!!errors.password} {...register('password')} /></Field>
+        {bot.widget}
         <Button type="submit" variant="primary" size="lg" className="w-full" loading={isSubmitting}>Create workspace</Button>
       </form>
     </AuthLayout>

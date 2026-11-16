@@ -59,7 +59,7 @@ export class ChannelsService {
     catch (e) { throw new BadRequestException({ code: 'whatsapp_verification_failed', message: e instanceof WhatsAppApiError ? `WhatsApp rejected these details: ${e.message}` : 'Could not reach WhatsApp to verify these details' }); }
     return this.db.tenantTx(ctx, async (tx) => {
       if (await tx.channel.findFirst({ where: { tenantId: ctx.tenantId, type: 'WHATSAPP', externalId: input.phoneNumberId }, select: { id: true } })) throw new ConflictException({ code: 'already_connected', message: 'This WhatsApp number is already connected' });
-      const sealed = this.box.seal({ accessToken: input.accessToken, appSecret: input.appSecret }, this.aad(ctx.tenantId, 'whatsapp'));
+      const sealed = await this.box.seal({ accessToken: input.accessToken, appSecret: input.appSecret }, this.aad(ctx.tenantId, 'whatsapp'));
       const credId = uuidv7();
       await tx.integrationCredential.create({ data: { id: credId, tenantId: ctx.tenantId, provider: 'whatsapp', ...sealed, lastVerifiedAt: new Date() } });
       const channel = await tx.channel.create({ data: {
@@ -91,7 +91,7 @@ export class ChannelsService {
     const { channel } = await this.credentialsFor(ctx.tenantId, id, ctx.userId);
     try { await this.wa.getPhoneNumber(channel.externalId ?? '', input); } catch (e) { throw new BadRequestException({ code: 'whatsapp_verification_failed', message: e instanceof WhatsAppApiError ? `WhatsApp rejected these details: ${e.message}` : 'Could not verify' }); }
     await this.db.tenantTx(ctx, async (tx) => {
-      const sealed = this.box.seal(input, this.aad(ctx.tenantId, 'whatsapp'));
+      const sealed = await this.box.seal(input, this.aad(ctx.tenantId, 'whatsapp'));
       await tx.integrationCredential.update({ where: { id: channel.credentialId as string }, data: { ...sealed, lastVerifiedAt: new Date(), status: 'active' } });
       await tx.channel.update({ where: { id }, data: { status: 'ACTIVE' } });
       await this.rec(ctx, tx, 'integration.whatsapp_credentials_rotated', id);
@@ -112,7 +112,7 @@ export class ChannelsService {
       const channel = await tx.channel.findFirst({ where: { id: channelId, tenantId, type: 'WHATSAPP' } });
       if (!channel?.credentialId) throw new NotFoundException({ code: 'not_found', message: 'Channel not found' });
       const c = await tx.integrationCredential.findUniqueOrThrow({ where: { id: channel.credentialId } });
-      const secret = this.box.open({ ciphertext: c.ciphertext, wrappedKey: c.wrappedKey, keyId: c.keyId }, this.aad(tenantId, 'whatsapp'));
+      const secret = await this.box.open({ ciphertext: c.ciphertext, wrappedKey: c.wrappedKey, keyId: c.keyId }, this.aad(tenantId, 'whatsapp'));
       return { channel, creds: { accessToken: secret.accessToken as string, appSecret: secret.appSecret as string } };
     });
   }

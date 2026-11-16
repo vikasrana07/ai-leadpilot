@@ -12,6 +12,8 @@ export interface Entitlements {
   planKey: string; planName: string; status: EffectiveStatus;
   /** Writes are refused (402) until the workspace pays: trial over, grace over, or cancelled period over. Reads, exports and billing keep working. */
   restricted: boolean;
+  /** Set while the owner has asked for the workspace to be deleted: read-only until the date, cancelable. */
+  pendingDeletionAt: string | null;
   inGrace: boolean; graceEndsAt: string | null; trialEndsAt: string | null; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; pendingPlanKey: string | null;
   /** null = unlimited */
   limits: Record<LimitKey, number | null>;
@@ -51,6 +53,7 @@ export class EntitlementsService {
   async compute(tx: TxClient, tenantId: string, now = new Date()): Promise<Entitlements> {
     const tenant = await tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { planKey: true } });
     const sub = await tx.subscription.findUnique({ where: { tenantId } });
+    const deletion = await tx.tenantDeletionRequest.findFirst({ where: { tenantId, status: 'PENDING' }, select: { purgeAfter: true } });
     const planKey = sub?.planKey ?? tenant.planKey;
     const plan = await tx.plan.findUnique({ where: { key: planKey }, include: { entitlements: true } });
     let status: EffectiveStatus = sub?.status ?? 'INTERNAL';
@@ -65,7 +68,7 @@ export class EntitlementsService {
     for (const k of LIMIT_KEYS) { const e = plan?.entitlements.find((x) => x.key === k); limits[k] = !plan ? 0 : !e ? 0 : !e.enabled ? 0 : e.limit; }
     for (const k of FEATURE_KEYS) features[k] = plan?.entitlements.find((x) => x.key === k)?.enabled ?? false;
     return {
-      planKey, planName: plan?.name ?? planKey, status, restricted: status === 'EXPIRED', inGrace: status === 'PAST_DUE',
+      planKey, planName: plan?.name ?? planKey, status, restricted: status === 'EXPIRED' || deletion !== null, pendingDeletionAt: deletion?.purgeAfter.toISOString() ?? null, inGrace: status === 'PAST_DUE',
       graceEndsAt: sub?.graceEndsAt?.toISOString() ?? null, trialEndsAt: sub?.trialEndsAt?.toISOString() ?? null, currentPeriodEnd: sub?.currentPeriodEnd?.toISOString() ?? null,
       cancelAtPeriodEnd: sub?.cancelAtPeriodEnd ?? false, pendingPlanKey: sub?.pendingPlanKey ?? null, limits, features,
     };
@@ -113,5 +116,5 @@ export class EntitlementsService {
 }
 
 function labelOf(k: FeatureKey): string {
-  return ({ ai_assistant: 'The AI assistant', automations: 'Automations', web_widget: 'The website chat widget', csv_export: 'CSV export' } as const)[k];
+  return ({ ai_assistant: 'The AI assistant', automations: 'Automations', web_widget: 'The website chat widget', csv_export: 'CSV export', api_access: 'The public API and webhooks' } as const)[k];
 }

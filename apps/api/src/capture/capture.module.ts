@@ -1,8 +1,9 @@
 import { Body, Controller, Delete, Get, Headers, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post, Req, UnauthorizedException } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import { apiKeyCreateSchema, captureLeadSchema, type CaptureLeadInput } from '@leadpilot/validation';
+import { apiKeyCreateSchema, captureLeadSchema, type ApiKeyCreateInput, type CaptureLeadInput } from '@leadpilot/validation';
 import { randomBytes } from 'node:crypto';
 import { v7 as uuidv7 } from 'uuid';
+import { EntitlementsService } from '../billing/entitlements.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import { hashToken } from '../auth/crypto.js';
 import type { Actor } from '../common/actor.js';
@@ -18,19 +19,23 @@ const KEY_PREFIX = 'lp_live_';
 
 @Injectable()
 export class ApiKeysService {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(EntitlementsService) private readonly ent: EntitlementsService) {}
 
   list(ctx: TenantRequestContext) {
-    return this.db.tenantTx(ctx, (tx) => tx.apiKey.findMany({ where: { tenantId: ctx.tenantId, revokedAt: null }, orderBy: { createdAt: 'desc' }, select: { id: true, name: true, keyPrefix: true, scopes: true, lastUsedAt: true, createdAt: true } }));
+    return this.db.tenantTx(ctx, (tx) => tx.apiKey.findMany({ where: { tenantId: ctx.tenantId, revokedAt: null }, orderBy: { createdAt: 'desc' }, select: { id: true, name: true, keyPrefix: true, scopes: true, lastUsedAt: true, createdAt: true, expiresAt: true, requestCount: true } }).then((rows) => rows.map((r) => ({ ...r, requestCount: Number(r.requestCount) }))));
   }
 
   /** The plaintext key is returned exactly once. Only its SHA-256 hash is stored. */
-  create(ctx: TenantRequestContext, name: string) {
+  async create(ctx: TenantRequestContext, input: ApiKeyCreateInput) {
+    // Keys for the versioned public API need a plan that includes it; the original lead-capture key does not.
+    if (input.scopes.some((x) => x !== 'leads:create')) await this.ent.assertFeature(ctx.tenantId, 'api_access');
+    const { name } = input;
+    const expiresAt = input.expiresInDays ? new Date(Date.now() + input.expiresInDays * 86_400_000) : null;
     const key = `${KEY_PREFIX}${randomBytes(24).toString('base64url')}`;
     return this.db.tenantTx(ctx, async (tx) => {
-      const row = await tx.apiKey.create({ data: { id: uuidv7(), tenantId: ctx.tenantId, name, keyPrefix: key.slice(0, 12), keyHash: hashToken(key), scopes: ['leads:create'], createdBy: ctx.userId } });
-      await this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'integration.api_key_created', resourceType: 'api_key', resourceId: row.id, metadata: { name }, requestId: ctx.requestId, ip: ctx.ip });
-      return { id: row.id, name, key, keyPrefix: row.keyPrefix, scopes: row.scopes };
+      const row = await tx.apiKey.create({ data: { id: uuidv7(), tenantId: ctx.tenantId, name, keyPrefix: key.slice(0, 12), keyHash: hashToken(key), scopes: input.scopes, expiresAt, createdBy: ctx.userId } });
+      await this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'integration.api_key_created', resourceType: 'api_key', resourceId: row.id, metadata: { name, scopes: input.scopes, expiresAt: expiresAt?.toISOString() ?? null }, requestId: ctx.requestId, ip: ctx.ip });
+      return { id: row.id, name, key, keyPrefix: row.keyPrefix, scopes: row.scopes, expiresAt: row.expiresAt };
     });
   }
 
@@ -50,9 +55,9 @@ export class CaptureService {
   async capture(rawKey: string | undefined, input: CaptureLeadInput, meta: { ip: string | undefined; requestId: string }) {
     const invalid = new UnauthorizedException({ code: 'invalid_api_key', message: 'Invalid API key' });
     if (!rawKey || !rawKey.startsWith(KEY_PREFIX) || rawKey.length > 100) throw invalid;
-    const found = await this.db.userTx(null, (tx) => tx.$queryRaw<{ id: string; tenant_id: string; scopes: string[]; revoked_at: Date | null }[]>`SELECT * FROM find_api_key_by_hash(${hashToken(rawKey)})`);
+    const found = await this.db.userTx(null, (tx) => tx.$queryRaw<{ id: string; tenant_id: string; scopes: string[]; revoked_at: Date | null; expires_at: Date | null }[]>`SELECT * FROM find_api_key_by_hash(${hashToken(rawKey)})`);
     const key = found[0];
-    if (!key || key.revoked_at || !key.scopes.includes('leads:create')) throw invalid;
+    if (!key || key.revoked_at || (key.expires_at && key.expires_at <= new Date()) || !key.scopes.includes('leads:create')) throw invalid;
     // Machine actor: may create/assign leads in its own tenant, nothing else.
     const actor: Actor = { tenantId: key.tenant_id, userId: null, membershipId: null, permissions: new Set(['lead:write:all', 'lead:assign']), requestId: meta.requestId, ip: meta.ip, apiKeyId: key.id };
     return this.db.tenantTx({ tenantId: key.tenant_id }, async (tx) => {
@@ -77,7 +82,7 @@ class ApiKeysController {
   constructor(@Inject(ApiKeysService) private readonly keys: ApiKeysService) {}
   @Get() @RequirePermissions('integration:manage') list(@CurrentTenant() ctx: TenantRequestContext) { return this.keys.list(ctx); }
   @Post() @HttpCode(201) @RequirePermissions('integration:manage')
-  create(@CurrentTenant() ctx: TenantRequestContext, @Body(new ZodPipe(apiKeyCreateSchema)) b: { name: string }) { return this.keys.create(ctx, b.name); }
+  create(@CurrentTenant() ctx: TenantRequestContext, @Body(new ZodPipe(apiKeyCreateSchema)) b: ApiKeyCreateInput) { return this.keys.create(ctx, b); }
   @Delete(':id') @HttpCode(204) @RequirePermissions('integration:manage')
   revoke(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.keys.revoke(ctx, id); }
 }

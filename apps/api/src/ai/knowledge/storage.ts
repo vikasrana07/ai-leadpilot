@@ -1,4 +1,4 @@
-import { CreateBucketCommand, DeleteObjectCommand, GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { CreateBucketCommand, DeleteObjectCommand, DeleteObjectsCommand, ListObjectsV2Command, GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { ENV } from '../../common/tokens.js';
 import type { Env } from '../../config/env.js';
@@ -8,6 +8,8 @@ export interface ObjectStorage {
   put(key: string, body: Buffer, contentType: string): Promise<void>;
   get(key: string): Promise<Buffer>;
   delete(key: string): Promise<void>;
+  /** Deletes every object under a prefix (tenant purge). Returns how many were deleted. */
+  deletePrefix(prefix: string): Promise<number>;
 }
 export const OBJECT_STORAGE = Symbol('OBJECT_STORAGE');
 
@@ -40,4 +42,15 @@ export class S3Storage implements ObjectStorage, OnModuleInit {
     return Buffer.from(await (r.Body as { transformToByteArray(): Promise<Uint8Array> }).transformToByteArray());
   }
   async delete(key: string): Promise<void> { await this.s3.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key })); }
+  async deletePrefix(prefix: string): Promise<number> {
+    if (!prefix.startsWith('tenants/') || !prefix.endsWith('/') || prefix.length < 'tenants/x/'.length) throw new Error('refusing to delete an unsafe prefix');
+    let total = 0; let token: string | undefined;
+    do {
+      const page = await this.s3.send(new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix, ContinuationToken: token }));
+      const keys = (page.Contents ?? []).flatMap((o) => (o.Key ? [{ Key: o.Key }] : []));
+      if (keys.length) { await this.s3.send(new DeleteObjectsCommand({ Bucket: this.bucket, Delete: { Objects: keys, Quiet: true } })); total += keys.length; }
+      token = page.IsTruncated ? page.NextContinuationToken : undefined;
+    } while (token);
+    return total;
+  }
 }

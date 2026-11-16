@@ -16,6 +16,8 @@ import { NotificationBell } from './notification-bell';
 import { ThemeSwitcher } from './theme-switcher';
 import { WorkspaceSwitcher } from './workspace-switcher';
 import { BillingBanner } from './billing-banner';
+import { DeletionBanner } from './deletion-banner';
+import { SupportBanner } from './support-banner';
 import { VerifyEmailBanner } from './verify-banner';
 
 const STORAGE_KEY = 'lp-sidebar-collapsed';
@@ -72,7 +74,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Dropdown>
           </div>
         </header>
+        <SupportBanner />
         <VerifyEmailBanner />
+        <DeletionBanner />
         <BillingBanner />
         <main id="main" className="min-h-0 flex-1 overflow-y-auto">
           <AnimatePresence mode="wait" initial={false}>

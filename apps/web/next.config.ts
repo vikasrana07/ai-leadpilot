@@ -10,12 +10,12 @@ const apiOrigin = (() => { try { return new URL(process.env.NEXT_PUBLIC_API_URL 
  */
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://checkout.razorpay.com`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://checkout.razorpay.com https://challenges.cloudflare.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   `connect-src 'self' ${apiOrigin} https://api.razorpay.com https://lumberjack.razorpay.com${isDev ? ' ws: wss:' : ''}`,
-  'frame-src https://api.razorpay.com https://checkout.razorpay.com',
+  'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com',
   "frame-ancestors 'none'",
   "object-src 'none'",
   "base-uri 'self'",

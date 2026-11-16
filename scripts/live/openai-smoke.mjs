@@ -1,0 +1,17 @@
+// Verifies the LIVE OpenAI client and measures latency. Usage:
+//   OPENAI_API_KEY=sk-... [AI_CHAT_MODEL=gpt-4o-mini] [AI_EMBEDDING_MODEL=text-embedding-3-small] [RUNS=20] node scripts/live/openai-smoke.mjs
+// Costs a few cents. For the full golden-conversation evaluation run:  EVAL_LIVE=1 OPENAI_API_KEY=... pnpm --filter @leadpilot/api eval
+import { check, finish, need } from './_lib.mjs';
+need('OPENAI_API_KEY');
+const { OpenAiLlm } = await import('../../apps/api/dist/ai/llm.js');
+const env = { OPENAI_API_KEY: process.env.OPENAI_API_KEY, AI_EMBEDDING_MODEL: process.env.AI_EMBEDDING_MODEL ?? 'text-embedding-3-small' };
+const llm = new OpenAiLlm(env); const model = process.env.AI_CHAT_MODEL ?? 'gpt-4o-mini'; const runs = Number(process.env.RUNS ?? 20);
+console.log(`OpenAI smoke (chat ${model}, embeddings ${env.AI_EMBEDDING_MODEL})`);
+const tool = { name: 'get_business_info', description: 'Returns the business address and opening hours.', parameters: { type: 'object', properties: { topic: { type: 'string', enum: ['address', 'hours'] } }, required: ['topic'], additionalProperties: false } };
+const base = { model, temperature: 0.2, maxTokens: 200 };
+await check('chat reply works and reports token usage', async () => { const r = await llm.chat({ ...base, messages: [{ role: 'system', content: 'Reply in one short sentence.' }, { role: 'user', content: 'Say hello to a property buyer.' }], tools: [] }); if (!r.content || !r.usage.inputTokens) throw new Error('empty reply or no usage'); return `${r.usage.inputTokens}+${r.usage.outputTokens} tokens`; });
+await check('strict-schema tool calling returns valid arguments', async () => { const r = await llm.chat({ ...base, messages: [{ role: 'system', content: 'Use tools to answer.' }, { role: 'user', content: 'What are your opening hours?' }], tools: [tool] }); const t = r.toolCalls[0]; if (!t || t.name !== 'get_business_info') throw new Error('no tool call'); const a = JSON.parse(t.arguments); if (a.topic !== 'hours') throw new Error(`unexpected args ${t.arguments}`); });
+await check('embeddings have the expected dimension (1536)', async () => { const [v] = await llm.embed(['2 BHK near Baner with parking']); if (v.length !== 1536) throw new Error(`got ${v.length}`); });
+await check('Hinglish prompt gets a coherent reply (read it yourself)', async () => { const r = await llm.chat({ ...base, messages: [{ role: 'system', content: 'You are a polite real-estate assistant. Reply in the customer\'s language style, max 2 sentences.' }, { role: 'user', content: 'Bhaiya 2 bhk ka budget 80 lakh hai, Pune mein kuch hai kya?' }], tools: [] }); return JSON.stringify(r.content).slice(0, 160); });
+await check(`latency over ${runs} sequential chat turns (budget: p95 < 8 s for the whole reply)`, async () => { const ms = []; for (let i = 0; i < runs; i++) { const t = performance.now(); await llm.chat({ ...base, messages: [{ role: 'system', content: 'You are a real-estate assistant. Reply in at most 3 sentences.' }, { role: 'user', content: 'I want a 3BHK in Pune under 1.2 crore, what do you suggest?' }], tools: [] }); ms.push(performance.now() - t); } ms.sort((a, b) => a - b); const p95 = ms[Math.min(ms.length - 1, Math.floor(0.95 * ms.length))]; console.log(`        p50 ${Math.round(ms[ms.length >> 1])} ms, p95 ${Math.round(p95)} ms`); if (p95 > 6000) throw new Error('p95 above 6 s: no headroom for tools, debounce and WhatsApp send within 8 s'); });
+finish();

@@ -4,12 +4,12 @@ import { z } from 'zod';
 /** Numeric limits. A plan row with `limit: null` and `enabled: true` means unlimited. */
 export const LIMIT_KEYS = ['seats', 'ai_tokens_monthly', 'whatsapp_messages_monthly', 'active_automations', 'knowledge_mb'] as const;
 /** On/off features. */
-export const FEATURE_KEYS = ['ai_assistant', 'automations', 'web_widget', 'csv_export'] as const;
+export const FEATURE_KEYS = ['ai_assistant', 'automations', 'web_widget', 'csv_export', 'api_access'] as const;
 export type LimitKey = (typeof LIMIT_KEYS)[number];
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
 export const ENTITLEMENT_LABELS: Record<LimitKey | FeatureKey, string> = {
   seats: 'Team seats', ai_tokens_monthly: 'AI tokens / month', whatsapp_messages_monthly: 'WhatsApp messages sent / month (fair use)', active_automations: 'Active automations', knowledge_mb: 'Knowledge base storage (MB)',
-  ai_assistant: 'AI assistant', automations: 'Automations', web_widget: 'Website chat widget', csv_export: 'CSV export',
+  ai_assistant: 'AI assistant', automations: 'Automations', web_widget: 'Website chat widget', csv_export: 'CSV export', api_access: 'Public API and webhooks',
 };
 
 export const SUBSCRIPTION_STATUSES = ['TRIALING', 'ACTIVE', 'PAST_DUE', 'CANCELED', 'EXPIRED'] as const;

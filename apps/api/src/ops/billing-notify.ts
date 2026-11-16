@@ -4,7 +4,7 @@ import { DbService } from '../db/db.module.js';
 import { MailService } from '../mail/mail.module.js';
 import { NotificationsService, type CreatedNotification } from './notifications.service.js';
 
-export interface OwnerNotice { type: Extract<NotificationType, 'billing' | 'quota'>; title: string; body?: string; link?: string; email?: { subject: string; text: string } }
+export interface OwnerNotice { type: Extract<NotificationType, 'billing' | 'quota' | 'privacy' | 'integration' | 'security'>; title: string; body?: string; link?: string; email?: { subject: string; text: string } }
 
 /** Tells a workspace's owners about billing and quota events: in-app always (respecting their mute preferences), email for the serious ones. */
 @Injectable()

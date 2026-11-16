@@ -128,7 +128,16 @@ export const captureLeadSchema = z.object({
   propertyType: z.string().trim().max(80).optional(),
 }).refine((v) => Boolean(v.phone) || Boolean(v.email), { message: 'Provide a phone number or an email', path: ['phone'] });
 export type CaptureLeadInput = z.infer<typeof captureLeadSchema>;
-export const apiKeyCreateSchema = z.object({ name: z.string().trim().min(1).max(80) });
+/** `leads:create` is the original server-to-server capture scope (`POST /public/leads`); the rest are for the versioned public API (`/v1`). */
+export const API_SCOPES = ['leads:create', 'leads:read', 'leads:write', 'leads:delete', 'conversations:read', 'appointments:read', 'appointments:write'] as const;
+export type ApiScope = (typeof API_SCOPES)[number];
+export type ApiKeyCreateInput = z.infer<typeof apiKeyCreateSchema>;
+export const apiKeyCreateSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  scopes: z.array(z.enum(API_SCOPES)).min(1).max(API_SCOPES.length).default(['leads:create']),
+  /** Optional lifetime in days (1 to 730). No value = the key does not expire. */
+  expiresInDays: z.number().int().min(1).max(730).optional(),
+});
 
 export const assignmentSettingsSchema = z.object({ strategy: z.enum(['manual', 'round_robin']) });
 

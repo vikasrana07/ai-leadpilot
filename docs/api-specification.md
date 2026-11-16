@@ -96,3 +96,24 @@ All `/billing/*` routes keep working when a workspace is read-only. `GET /billin
 ## Privacy (Phase 7, data-principal rights)
 `GET /privacy/leads/:id/export` (`lead:export` + `lead:read:all`: managers and owners) returns everything held about the lead (profile, notes, activity, consents, scores, appointments, tasks, conversations and messages, merged duplicates). `POST /privacy/leads/:id/erase` `{reason, confirm: "ERASE"}` (`lead:delete`: owners) irreversibly deletes it all, including raw webhook payloads mentioning the phone number; returns row counts; 404 for unknown or other-tenant ids. Both are audited (`privacy.lead_exported`, `privacy.lead_erased`; counts and reason only).
 `GET /health` liveness · `GET /health/ready` → `{status, db, redis}` (503 only when the database is down).
+
+## Data lifecycle (Phase 8). Owner/`settings:manage`; all stay available in a read-only workspace
+`GET|PUT /privacy/retention` `{webhookPayloadDays, softDeletedLeadDays, closedConversationDays|null, auditLogDays|null}` (400 below the platform minimum) · `POST /privacy/retention/preview` → counts that the next run would delete (nothing is deleted).
+`GET /privacy/exports` · `POST /privacy/exports` (202; 409 `export_in_progress`) · `GET /privacy/exports/:id/download` (gzip JSON; 404 when not ready, expired, or another workspace's). Owner only.
+`GET /privacy/workspace/deletion` · `POST /privacy/workspace/deletion` `{reason, confirm: "DELETE WORKSPACE", password}` (owner; 401 `invalid_password`, 409 `deletion_pending`) · `POST /privacy/workspace/deletion/cancel`. While pending, writes elsewhere return **403 `pending_deletion`** (`details.purgeAfter`); `GET /billing/summary` carries `pendingDeletionAt`.
+Platform console: `GET /platform/deletion-requests`.
+
+
+## Public API v1 and webhooks (Phase 8)
+**Auth:** `Authorization: Bearer lp_live_…` (create keys under *API keys*; scopes `leads:read|write|delete`, `conversations:read`, `appointments:read|write`; `leads:create` is the legacy capture scope). Plan feature `api_access`. Limits: 120 requests/minute per key (`X-RateLimit-*`, 429 + `Retry-After`). Envelopes: `{data}` / lists `{data, page, limit, total}`; errors are the standard `{error:{code,message,requestId,details}}`. Machine-readable description: `GET /v1/openapi.json` (public).
+`GET /v1/me` · `GET /v1/meta` · `GET|POST /v1/leads` · `GET|PATCH|DELETE /v1/leads/:id` · `POST /v1/leads/:id/stage` · `GET|POST /v1/leads/:id/notes` · `GET /v1/conversations[/:id[/messages]]` · `GET /v1/appointments[/:id]` · `POST /v1/appointments` (409 `slot_taken`/`lead_busy`). POSTs accept `Idempotency-Key`.
+`POST /api-keys` now takes `{name, scopes[], expiresInDays?}`; `GET /api-keys` adds `scopes`, `expiresAt`, `requestCount`, `lastUsedAt`.
+
+**Webhook endpoints** (`integration:manage`, plan `api_access`): `GET /webhooks/events` · `GET|POST /webhooks/endpoints` `{url (https), events[], description?}` (secret returned once) · `PATCH|DELETE /webhooks/endpoints/:id` (`enabled` switches on/off; switching on clears failures) · `POST …/:id/rotate-secret` · `POST …/:id/test` · `GET …/:id/deliveries` · `GET /webhooks/deliveries/:id` (the payload sent) · `POST /webhooks/deliveries/:id/redeliver`.
+**What receivers get:** `POST` JSON `{id, type, createdAt, test, data}` (ids only) with `X-LeadPilot-Timestamp`, `X-LeadPilot-Signature: v1=HMAC_SHA256(secret, timestamp + "." + body)`, `X-LeadPilot-Event`, `X-LeadPilot-Delivery`. Any 2xx is success; retries with backoff then `FAILED`. Events: `lead.created|assigned|stage_changed|temperature_changed`, `message.inbound`, `conversation.handover`, `appointment.booked|rescheduled|confirmed|cancelled|completed|no_show`, `task.due`, `sla.breached`.
+
+## Reports (Phase 8; `analytics:read:own|team|all`)
+`GET /reports/:key?range=today|yesterday|7d|30d|month|custom&from&to` for `key` in `acquisition, funnel, agents, response, appointments, ai, automations` → `{report, range, scope, summary, series, tables}` (agents see only their own lead/conversation reports; `agents`, `ai`, `automations` are manager-only: 403). `GET /reports/:key/export?…&table=<name>` → CSV (plan `csv_export`, audited).
+
+## Support access (Phase 8)
+Platform: `POST /platform/tenants/:id/support-session` `{reason (≥10), password, minutes ≤ 30}` · `GET /platform/support-sessions?tenantId` · `POST /platform/support-sessions/:id/end`. Workspace: `GET /support-session` → `{active, adminName?, reason?, expiresAt?}` (the banner) · `POST /support-session/end` (support token only) · `GET|PUT /support-access` `{enabled}` (`settings:manage`; off ends open sessions). Support tokens are read-only: writes 403 `support_session_read_only`; blocked areas 403 `blocked_for_support`; an ended/expired session 401 `support_session_ended`.

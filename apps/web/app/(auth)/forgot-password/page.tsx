@@ -11,15 +11,17 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
+import { useBotCheck } from '@/lib/turnstile';
 import { handleApiError } from '@/lib/forms';
 
 type Values = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
+  const bot = useBotCheck();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<Values>({ resolver: zodResolver(forgotPasswordSchema) });
   async function onSubmit(values: Values) {
-    try { await api('/auth/forgot-password', { method: 'POST', body: values }); setSent(true); } catch (e) { handleApiError(e); }
+    try { const t = await bot.getToken(); await api('/auth/forgot-password', { method: 'POST', body: values, ...(t ? { headers: { 'x-turnstile-token': t } } : {}) }); setSent(true); } catch (e) { bot.reset(); handleApiError(e); }
   }
   return (
     <AuthLayout title="Reset your password" subtitle="We will email you a link to choose a new one." footer={<Link href="/login" className="text-primary hover:underline">Back to sign in</Link>}>
@@ -28,6 +30,7 @@ export default function ForgotPasswordPage() {
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <Field label="Email" htmlFor="email" error={errors.email?.message}><Input id="email" type="email" autoComplete="email" autoFocus {...register('email')} /></Field>
+          {bot.widget}
           <Button type="submit" variant="primary" size="lg" className="w-full" loading={isSubmitting}>Send reset link</Button>
         </form>
       )}

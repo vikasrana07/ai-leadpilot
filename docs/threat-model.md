@@ -97,3 +97,19 @@ See `docs/security-review.md` for the current prioritised list (KMS provider, bo
 - No MFA. [V1.1+]
 - CSP is the Helmet default on the API only; the Next.js app has no custom CSP yet (Phase 7 hardening).
 - Mobile/responsive layouts were **not** verified in a real narrow viewport.
+
+
+## Phase 8 (F3): public API, webhooks, reports, support access
+| Threat | Mitigation | Evidence |
+|---|---|---|
+| Leaked/over-broad API key | hashed storage, shown once, scopes mapped to a fixed permission set (never team/billing/settings), expiry, revocation, per-key rate limit, plan gating, last-used and counters | `public-api.test.ts` (scope matrix, forged/revoked/expired, rate limit) |
+| Session token used as an API key or the reverse | different guards and token formats; `/v1` rejects JWTs, tenant routes reject keys | tests |
+| Cross-tenant API access | tenant derived from the key; RLS applies to every query | cross-tenant tests |
+| Duplicate side effects on client retries | `Idempotency-Key` with request-hash check | idempotency tests |
+| SSRF through webhook URLs (cloud metadata, internal services, rebinding, redirects) | https only, resolve once and connect to the pinned public address, blocklist incl. IPv6 embeddings, no redirects, timeouts, size caps, same check at save and at send | `safe-http.test.ts` (68 cases), `webhooks-outbound.test.ts` |
+| Forged or replayed webhooks at the receiver | HMAC-SHA256 over `timestamp.body` with per-endpoint secret, timestamp for replay windows, rotatable secrets (encrypted at rest) | signature tests |
+| Personal data leaving via webhooks | payloads carry ids only | payload tests |
+| Failing receiver causing unbounded load | backoff, attempt cap, endpoint auto-disable with owner notice, lease-based claiming | retry/disable tests |
+| Reports leaking other people's/tenants' data | tenant-scoped SQL, agent scope = own records, manager-only reports, export audited and plan-gated, CSV formula neutralised | `reports.test.ts` |
+| Support access abused (reads secrets, writes, outlives its purpose, goes unnoticed) | read-only at the auth guard on every route, blocklist for secrets/people/money/exports, 30-minute cap checked per request, password re-entry, reason required, own token audience, banner + owner notice + dual audit trail, owner kill switch | `support-access.test.ts` (12) |
+**Accepted/known:** a support session can read personal data by design (controls are reason, notice, audit); support tokens replace the workspace cookie in that browser; webhook ordering is not guaranteed.

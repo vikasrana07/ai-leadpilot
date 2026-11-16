@@ -8,6 +8,12 @@ import { AiTrigger } from './ai/ai-trigger.js';
 import { RedisThrottlerStorage } from './common/redis-throttler.js';
 import { BillingModule, EntitlementsModule } from './billing/billing.module.js';
 import { PlanGuard } from './billing/plan.guard.js';
+import { SupportModule } from './support/support.module.js';
+import { ReportsModule } from './reports/reports.module.js';
+import { WebhooksModule } from './webhooks/webhooks.module.js';
+import { V1Module } from './v1/v1.module.js';
+import { LifecycleModule } from './lifecycle/lifecycle.module.js';
+import { MfaModule } from './mfa/mfa.module.js';
 import { PrivacyModule } from './privacy/privacy.module.js';
 import { PlatformModule } from './platform/platform.module.js';
 import { AuditModule } from './audit/audit.module.js';
@@ -36,16 +42,17 @@ import { TeamModule } from './team/team.module.js';
 import { TenantsModule } from './tenants/tenants.module.js';
 import { Inject } from '@nestjs/common';
 import { SecretBox } from './crypto/secret-box.js';
+import { BotGuard, TurnstileService } from './security/turnstile.js';
 import { Global } from '@nestjs/common';
 import { LiveWhatsAppClient, MockWhatsAppClient, WHATSAPP_CLIENT } from './whatsapp/whatsapp.client.js';
 
 @Global()
 @Module({
   providers: [
-    SecretBox, AiTrigger, LiveWhatsAppClient, MockWhatsAppClient,
+    SecretBox, TurnstileService, BotGuard, AiTrigger, LiveWhatsAppClient, MockWhatsAppClient,
     { provide: WHATSAPP_CLIENT, inject: [ENV, LiveWhatsAppClient, MockWhatsAppClient], useFactory: (env: Env, live: LiveWhatsAppClient, mock: MockWhatsAppClient) => (env.WHATSAPP_MODE === 'live' ? live : mock) },
   ],
-  exports: [SecretBox, AiTrigger, WHATSAPP_CLIENT, MockWhatsAppClient],
+  exports: [SecretBox, TurnstileService, BotGuard, AiTrigger, WHATSAPP_CLIENT, MockWhatsAppClient],
 })
 class IntegrationsCoreModule {}
 
@@ -57,7 +64,7 @@ class IntegrationsCoreModule {}
       // Redis-backed so limits hold across API instances (tests keep the in-memory store: counters would otherwise leak between runs).
       useFactory: (env: Env) => ({ throttlers: [{ name: 'default', ttl: 60_000, limit: env.THROTTLE_GLOBAL_LIMIT }], ...(env.NODE_ENV === 'test' ? {} : { storage: new RedisThrottlerStorage(env.REDIS_URL, env.QUEUE_PREFIX) }) }),
     }),
-    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, AiModule, OpsModule, BillingModule, PlatformModule, PrivacyModule, UsageModule, TeamModule, RolesModule, HealthModule,
+    DbModule, MailModule, AuditModule, AuthModule, MfaModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, AiModule, OpsModule, BillingModule, PlatformModule, V1Module, WebhooksModule, ReportsModule, SupportModule, PrivacyModule, LifecycleModule, UsageModule, TeamModule, RolesModule, HealthModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

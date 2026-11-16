@@ -15,8 +15,8 @@ export function configureApp(app: NestExpressApplication, env: ReturnType<typeof
     const path = (req.url ?? '').split('?')[0] ?? '';
     const isWidget = path.startsWith('/widget/') || path === '/widget.js';
     cb(null, isWidget
-      ? { origin: true, credentials: false, methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['content-type', 'authorization'], maxAge: 600 }
-      : { origin: [env.WEB_ORIGIN], credentials: true, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], allowedHeaders: ['content-type', 'authorization', 'x-request-id', 'x-token-delivery'] });
+      ? { origin: true, credentials: false, methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['content-type', 'authorization', 'x-turnstile-token'], maxAge: 600 }
+      : { origin: [env.WEB_ORIGIN], credentials: true, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], allowedHeaders: ['content-type', 'authorization', 'x-request-id', 'x-token-delivery', 'x-turnstile-token'] });
   });
   app.enableShutdownHooks();
 }

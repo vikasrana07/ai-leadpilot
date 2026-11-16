@@ -38,13 +38,18 @@ async function parse<T>(res: Response): Promise<T> {
 }
 
 /** Cookie-authenticated JSON request. On 401 it tries one silent refresh, then retries once. */
-export async function api<T>(path: string, init: { method?: string; body?: unknown } = {}, retry = true): Promise<T> {
+export async function api<T>(path: string, init: { method?: string; body?: unknown; headers?: Record<string, string> } = {}, retry = true): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     method: init.method ?? 'GET',
     credentials: 'include',
-    headers: init.body !== undefined ? { 'content-type': 'application/json' } : undefined,
+    headers: init.body !== undefined || init.headers ? { ...(init.body !== undefined ? { 'content-type': 'application/json' } : {}), ...init.headers } : undefined,
     body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
   });
+  // A workspace that requires two-step verification holds un-enrolled members at the Security page.
+  if (res.status === 403 && typeof window !== 'undefined' && !window.location.pathname.startsWith('/security')) {
+    const peek = await res.clone().json().catch(() => null) as { error?: { code?: string } } | null;
+    if (peek?.error?.code === 'mfa_enrollment_required') window.location.assign('/security?required=1');
+  }
   if (res.status === 401 && retry && !path.startsWith('/auth/login') && !path.startsWith('/auth/refresh')) {
     if (await refreshSession()) return api<T>(path, init, false);
     // Another tab may have refreshed at the same moment (the cookie is shared): give it a beat, then retry once.
@@ -54,9 +59,13 @@ export async function api<T>(path: string, init: { method?: string; body?: unkno
   return parse<T>(res);
 }
 
+/** Returned instead of a session when the account has two-step verification on. */
+export interface MfaChallenge { mfaRequired: true; challengeToken: string }
+
 export const authApi = {
   me: () => api<AuthContextResponse>('/auth/me'),
-  login: (body: { email: string; password: string }) => api<AuthContextResponse>('/auth/login', { method: 'POST', body }),
+  login: (body: { email: string; password: string }, botToken?: string) => api<AuthContextResponse | MfaChallenge>('/auth/login', { method: 'POST', body, ...(botToken ? { headers: { 'x-turnstile-token': botToken } } : {}) }),
+  mfaVerify: (body: { challengeToken: string; code?: string; recoveryCode?: string }) => api<AuthContextResponse>('/auth/mfa/verify', { method: 'POST', body }),
   logout: () => api<void>('/auth/logout', { method: 'POST' }),
   switchWorkspace: (tenantId: string) => api<AuthContextResponse>('/auth/switch-workspace', { method: 'POST', body: { tenantId } }),
 };

@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DbService } from '../db/db.module.js';
 import { AutomationEngine, type DomainEvent } from './automation-engine.js';
 import { EventNotifier } from './event-notifier.js';
+import { WebhookDispatcher } from './webhook-dispatcher.js';
 import { NotificationsService } from './notifications.service.js';
 
 interface OutboxRow { id: string; tenant_id: string; type: string; payload: Record<string, unknown>; attempts: number }
@@ -22,6 +23,7 @@ export class OutboxRelay {
     @Inject(EventNotifier) private readonly notifier: EventNotifier,
     @Inject(AutomationEngine) private readonly engine: AutomationEngine,
     @Inject(NotificationsService) private readonly notifications: NotificationsService,
+    @Inject(WebhookDispatcher) private readonly webhooks: WebhookDispatcher,
   ) {}
 
   async drainOnce(limit = 50): Promise<number> {
@@ -34,6 +36,7 @@ export class OutboxRelay {
           if (mark.count === 0) return { created: [], runs: [] as string[] };
           const created = await this.notifier.handle(tx, ev);
           const runs = await this.engine.matchEvent(tx, ev);
+          await this.webhooks.enqueue(tx, ev); // outbound webhooks: one delivery row per subscribed endpoint, same transaction
           return { created, runs };
         });
         this.notifications.publish(ev.tenantId, out.created);
