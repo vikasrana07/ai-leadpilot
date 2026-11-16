@@ -33,19 +33,19 @@ export default function DashboardDesign() {
   return (
     <PreviewFrame active="/design/dashboard">
       <div className="h-full overflow-y-auto">
-        <div className="mx-auto grid max-w-[1320px] gap-6 px-4 py-6 sm:px-8 xl:grid-cols-[1fr_340px]">
-          <div className="min-w-0 space-y-6">
+        <div className="mx-auto grid max-w-[1320px] gap-4 px-4 py-5 sm:px-6 xl:grid-cols-[1fr_320px]">
+          <div className="min-w-0 space-y-4">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div><h1 className="text-title">Good morning, Priya</h1><p className="text-helper mt-1 !text-[13px]">Skyline Realty · 3 hot leads need you right now</p></div>
               <div className="flex gap-2"><Button><CalendarDays className="h-4 w-4" aria-hidden />Last 30 days<ChevronDown className="h-3.5 w-3.5" aria-hidden /></Button><Button variant="primary"><Plus className="h-4 w-4" aria-hidden />Add lead</Button></div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">{KPIS.map((k) => <KpiCard key={k.label} {...k} goodWhen="up" />)}</div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{KPIS.map((k) => <KpiCard key={k.label} {...k} goodWhen="up" />)}</div>
 
             <Card>
               <CardHeader><CardTitle><Flame className="mr-1.5 inline h-4 w-4 text-danger" aria-hidden />Hot leads needing attention</CardTitle><Button variant="link">View all</Button></CardHeader>
               <ul className="divide-y divide-border">
                 {HOT.map((h) => (
-                  <li key={h.name} className="flex items-center gap-3 px-5 py-3">
+                  <li key={h.name} className="flex items-center gap-3 px-4 py-2.5">
                     <Avatar name={h.name} size={34} />
                     <div className="min-w-0 flex-1"><p className="text-[13px] font-medium">{h.name}</p><p className="text-helper truncate">{h.note}</p></div>
                     <Badge tone="danger" className="num">{h.score}</Badge><span className="text-helper num w-8 text-right">{h.wait}</span>
@@ -58,13 +58,13 @@ export default function DashboardDesign() {
             <Card>
               <CardHeader><CardTitle>Agent performance</CardTitle></CardHeader>
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-[13px]"><thead className="bg-muted/50 text-label text-muted-foreground"><tr><th className="px-5 py-2.5 font-medium">Agent</th><th className="px-5 py-2.5 text-right font-medium">Leads</th><th className="px-5 py-2.5 text-right font-medium">Visits</th><th className="px-5 py-2.5 text-right font-medium">Avg. response</th></tr></thead>
-                  <tbody className="divide-y divide-border">{AGENTS.map(([n, l, v, r]) => <tr key={n} className="hover:bg-muted/40"><td className="px-5 py-2.5"><span className="flex items-center gap-2.5"><Avatar name={n} size={24} />{n}</span></td><td className="num px-5 py-2.5 text-right">{l}</td><td className="num px-5 py-2.5 text-right">{v}</td><td className="num px-5 py-2.5 text-right">{r}</td></tr>)}</tbody></table>
+                <table className="w-full text-left text-[13px]"><thead className="bg-muted/50 text-label text-muted-foreground"><tr><th className="px-4 py-2 font-medium">Agent</th><th className="px-4 py-2 text-right font-medium">Leads</th><th className="px-4 py-2 text-right font-medium">Visits</th><th className="px-4 py-2 text-right font-medium">Avg. response</th></tr></thead>
+                  <tbody className="divide-y divide-border">{AGENTS.map(([n, l, v, r]) => <tr key={n} className="hover:bg-muted/40"><td className="px-4 py-2"><span className="flex items-center gap-2.5"><Avatar name={n} size={24} />{n}</span></td><td className="num px-4 py-2 text-right">{l}</td><td className="num px-4 py-2 text-right">{v}</td><td className="num px-4 py-2 text-right">{r}</td></tr>)}</tbody></table>
               </div>
             </Card>
           </div>
 
-          <aside className="space-y-6">
+          <aside className="space-y-4">
             <Card>
               <CardHeader><CardTitle>Today</CardTitle><span className="text-helper">Monday</span></CardHeader>
               <ul className="space-y-2 p-3">{TODAY.map((a) => <li key={a.t} className={cn('rounded-md border-l-[3px] bg-muted/50 px-3 py-2.5', a.tone)}><p className="text-[13px] font-medium">{a.t}</p><p className="text-helper num">{a.who} · {a.time}</p></li>)}</ul>

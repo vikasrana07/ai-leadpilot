@@ -33,11 +33,11 @@
   --danger-soft: #fde8e8;
   --ring: #3f55e8;
   --header: #eef2fb;
-  --sidebar: #17205a;
-  --sidebar-foreground: #c8d0f0;
-  --sidebar-muted: #8c97cf;
-  --sidebar-accent: #232f7a;
-  --sidebar-border: #26327a;
+  --sidebar: #0e1433;
+  --sidebar-foreground: #c3cae6;
+  --sidebar-muted: #7f8ab8;
+  --sidebar-accent: #19214f;
+  --sidebar-border: #1b2352;
   --chart-1: #3f55e8;
   --chart-2: #0e9f8e;
   --chart-3: #d98a1f;
@@ -141,7 +141,7 @@
     background: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;

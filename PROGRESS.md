@@ -41,7 +41,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 1 (gate checks passing; await
 - ☐ V Permission overrides per member · ☐ L Fully custom roles
 - ◐ Responsive: mobile drawer + responsive grids implemented; **not verified in a narrow viewport**
 - ☑ Design-review screens (sample data, labelled, not connected): /design/dashboard, /design/inbox, /design/lead, /design/pipeline
-- ☑ Design pass 2 (2026-11-16, from user reference images): navy sidebar + tinted header tokens, KpiCard (count-up, delta, sparkline), inbox queue rail with counts and a "Join conversation" takeover. Awaiting user feedback on this pass
+- ☑ Design pass 2 (2026-11-16, from user reference images): navy sidebar + tinted header tokens, KpiCard (count-up, delta, sparkline), inbox queue rail with counts and a "Join conversation" takeover. Pass 3 (user chose): deeper near-black navy #0e1433, denser cards (26px KPI numbers, tighter padding, 13px base type). Awaiting user feedback
 
 ### CRM (Phase 2)
 - ☐ M Lead CRUD, soft delete, search/filter/sort/cursor pagination

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 export function PageHeader({ title, description, actions, breadcrumbs }: { title: string; description?: string; actions?: ReactNode; breadcrumbs?: { label: string; href?: string }[] }) {
   return (
-    <div className="mb-6">
+    <div className="mb-4">
       {breadcrumbs ? (
         <nav aria-label="Breadcrumb" className="text-helper mb-2 flex items-center gap-1">
           {breadcrumbs.map((b, i) => (
