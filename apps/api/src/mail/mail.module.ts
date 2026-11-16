@@ -1,0 +1,42 @@
+import { Global, Inject, Injectable, Logger, Module } from '@nestjs/common';
+import { createTransport, type Transporter } from 'nodemailer';
+import { ENV } from '../common/tokens.js';
+import type { Env } from '../config/env.js';
+
+@Injectable()
+export class MailService {
+  private readonly log = new Logger('Mail');
+  private readonly transport: Transporter;
+  constructor(@Inject(ENV) private readonly env: Env) {
+    this.transport = createTransport({ host: env.SMTP_HOST, port: env.SMTP_PORT, secure: false, ignoreTLS: env.NODE_ENV !== 'production' });
+  }
+
+  /** Mail failures never break the calling flow; they are logged (no recipient content, no tokens). */
+  private async send(to: string, subject: string, text: string): Promise<void> {
+    try {
+      await this.transport.sendMail({ from: this.env.MAIL_FROM, to, subject, text });
+    } catch (err) {
+      this.log.error(`Failed to send "${subject}": ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  sendVerification(to: string, token: string): Promise<void> {
+    const link = `${this.env.WEB_ORIGIN}/verify-email?token=${encodeURIComponent(token)}`;
+    return this.send(to, 'Verify your LeadPilot email', `Welcome to LeadPilot.\n\nConfirm your email: ${link}\n\nThis link expires in 24 hours.`);
+  }
+  sendPasswordReset(to: string, token: string): Promise<void> {
+    const link = `${this.env.WEB_ORIGIN}/reset-password?token=${encodeURIComponent(token)}`;
+    return this.send(to, 'Reset your LeadPilot password', `Reset your password: ${link}\n\nThis link expires in 1 hour. If you did not request it, ignore this email.`);
+  }
+  sendInvitation(to: string, token: string, workspace: string, inviter: string): Promise<void> {
+    const link = `${this.env.WEB_ORIGIN}/accept-invite?token=${encodeURIComponent(token)}`;
+    return this.send(to, `${inviter} invited you to ${workspace} on LeadPilot`, `Join ${workspace}: ${link}\n\nThis invitation expires in 7 days.`);
+  }
+  sendAccountExists(to: string): Promise<void> {
+    return this.send(to, 'You already have a LeadPilot account', `Someone tried to register with this email. You already have an account: ${this.env.WEB_ORIGIN}/login\n\nIf that was not you, you can ignore this message.`);
+  }
+}
+
+@Global()
+@Module({ providers: [MailService], exports: [MailService] })
+export class MailModule {}

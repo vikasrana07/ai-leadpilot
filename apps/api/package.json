@@ -1,0 +1,48 @@
+{
+  "name": "@leadpilot/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=../../.env src/main.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node --env-file=../../.env dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@leadpilot/database": "workspace:*",
+    "@leadpilot/shared-types": "workspace:*",
+    "@leadpilot/validation": "workspace:*",
+    "@nestjs/common": "12.5.0",
+    "@nestjs/core": "12.5.0",
+    "@nestjs/platform-express": "12.5.0",
+    "@nestjs/swagger": "^12.1.2",
+    "@nestjs/throttler": "^6.7.1",
+    "argon2": "^0.45.2",
+    "cookie-parser": "^1.4.7",
+    "helmet": "^8.3.0",
+    "jose": "^6.2.17",
+    "nodemailer": "^10.5.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "uuid": "^14.0.3",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "12.5.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "@types/nodemailer": "^8.0.2",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "@types/uuid": "^11.0.0",
+    "dotenv": "^18.0.10",
+    "pg": "^8.23.1",
+    "supertest": "^7.3.2",
+    "tsx": "^4.23.15",
+    "vitest": "5.1.0"
+  }
+}
