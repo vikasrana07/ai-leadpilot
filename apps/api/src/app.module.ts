@@ -2,8 +2,10 @@ import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import cookieParser from 'cookie-parser';
+import { AnalyticsModule } from './analytics/analytics.module.js';
 import { AuditModule } from './audit/audit.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { CaptureModule } from './capture/capture.module.js';
 import { ConfigModule } from './common/config.module.js';
 import { AllExceptionsFilter } from './common/http-exception.filter.js';
 import { AuthGuard, PermissionsGuard, TenantGuard } from './common/guards.js';
@@ -15,6 +17,7 @@ import { HealthModule } from './health/health.module.js';
 import { LeadsModule } from './leads/leads.module.js';
 import { MailModule } from './mail/mail.module.js';
 import { PipelineModule } from './pipeline/pipeline.module.js';
+import { PropertiesModule } from './properties/properties.module.js';
 import { RolesModule } from './roles/roles.module.js';
 import { TeamModule } from './team/team.module.js';
 import { TenantsModule } from './tenants/tenants.module.js';
@@ -28,7 +31,7 @@ import { Inject } from '@nestjs/common';
       // NOTE: in-memory store. Phase 5 swaps in the Redis store so limits hold across API instances.
       useFactory: (env: Env) => [{ name: 'default', ttl: 60_000, limit: env.THROTTLE_GLOBAL_LIMIT }],
     }),
-    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, TeamModule, RolesModule, HealthModule,
+    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, TeamModule, RolesModule, HealthModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

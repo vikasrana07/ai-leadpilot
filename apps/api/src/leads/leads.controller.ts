@@ -42,7 +42,7 @@ export class LeadsController {
     const csv = await this.imports.exportCsv(actorFrom(ctx), q);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="leads-${new Date().toISOString().slice(0, 10)}.csv"`);
-    res.send(`﻿${csv}`);
+    res.send(`\uFEFF${csv}`);
   }
 
   @Get(':id') get(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.leads.get(actorFrom(ctx), id); }

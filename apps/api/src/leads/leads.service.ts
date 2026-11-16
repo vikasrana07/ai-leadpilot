@@ -9,7 +9,7 @@ import { normalizeEmail, normalizePhone } from '../common/phone.js';
 import { DbService } from '../db/db.module.js';
 import { LEAD_INCLUDE, toLeadDto, type LeadDto, type LeadRow } from './lead-mapper.js';
 import { RoundRobin } from './round-robin.js';
-import { checkTransition, type StageLite } from './stage-rules.js';
+import { checkTransition } from './stage-rules.js';
 
 export interface DuplicateInfo { id: string; name: string; phone: string | null; email: string | null; stage: string }
 
