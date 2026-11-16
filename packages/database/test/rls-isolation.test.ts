@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { syncSystemRoles } from '../src/sync-system-roles.js';
 import { applyIndustryPack, createPrismaClient, withTenant, type PrismaClient } from '../src/index.js';
 
 const appUrl = process.env.DATABASE_URL;
@@ -244,5 +245,27 @@ describe('CRM tables isolation', () => {
       expect(stages).toHaveLength(8);
       expect(stages.find((st) => st.key === 'new')?.name).toBe('Fresh');
     });
+  });
+});
+
+describe('system role sync', () => {
+  it('restores missing permissions on existing system roles and removes stale ones, without touching other tenants\' custom data', async () => {
+    const t = randomUUID(); const u = randomUUID(); const r = randomUUID();
+    await withTenant(prisma, { tenantId: t, userId: u }, async (tx) => {
+      await tx.tenant.create({ data: { id: t, name: 'Sync Tenant', email: 'sync@t.test', industry: 'real_estate' } });
+      await tx.role.create({ data: { id: r, tenantId: t, key: 'agent', name: 'Sales Agent' } });
+      await tx.rolePermission.createMany({ data: [{ tenantId: t, roleId: r, permissionKey: 'lead:read:own' }, { tenantId: t, roleId: r, permissionKey: 'billing:manage' }] }); // one valid, one stale
+    });
+    try {
+      const res = await syncSystemRoles(ownerUrl as string);
+      expect(res.added).toBeGreaterThan(0);
+      const perms = (await owner.query('SELECT permission_key FROM role_permissions WHERE role_id=$1', [r])).rows.map((x) => x.permission_key as string);
+      expect(perms).toContain('property:read');
+      expect(perms).toContain('lead:write:own');
+      expect(perms).not.toContain('billing:manage');
+      expect((await syncSystemRoles(ownerUrl as string)).added).toBe(0); // idempotent
+    } finally {
+      await owner.query('DELETE FROM tenants WHERE id=$1', [t]);
+    }
   });
 });

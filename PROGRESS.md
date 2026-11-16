@@ -1,14 +1,14 @@
 # LeadPilot AI — Progress
 
 Legend: ☐ pending · ◐ in progress · ☑ done (verified) · Tags: **M** = MVP, **V** = V1.1, **L** = Later
-Last updated: 2026-11-16 · Current phase: **Phase 1 (gate checks passing; awaiting user review)**
+Last updated: 2026-11-16 · Current phase: **Phase 2 (CRM): built and verified; awaiting user review**
 
 ## Phase status
 | Phase | Status |
 |---|---|
 | 0 Plan | ☑ approved |
-| 1 Foundation | ◐ built and verified (see below); awaiting your review of hero designs |
-| 2 CRM | ☐ |
+| 1 Foundation | ☑ |
+| 2 CRM | ◐ built and verified (see below); awaiting your review |
 | 3 Communication | ☐ |
 | 4 AI | ☐ |
 | 5 Automation & appointments | ☐ |
@@ -39,24 +39,26 @@ Last updated: 2026-11-16 · Current phase: **Phase 1 (gate checks passing; await
 - ◐ M App shell: sidebar (collapse), header (workspace switcher, command palette, theme, profile), breadcrumbs component. **Not built yet:** quick-create button (nothing to create until phase 2), notifications bell (phase 5), global search beyond navigation commands
 - ◐ M i18n infrastructure: **not done** (strings are inline English). Carry to phase 2
 - ☐ V Permission overrides per member · ☐ L Fully custom roles
-- ◐ Responsive: mobile drawer + responsive grids implemented; **not verified in a narrow viewport**
+- ☑ Responsive: verified in an emulated 390px viewport (phase 2): drawer nav, stacked filters, lead cards instead of a table, single-column dashboard. Kanban scrolls horizontally on phones by design
 - ☑ Design-review screens (sample data, labelled, not connected): /design/dashboard, /design/inbox, /design/lead, /design/pipeline
 - ☑ Design pass 2 (2026-11-16, from user reference images): navy sidebar + tinted header tokens, KpiCard (count-up, delta, sparkline), inbox queue rail with counts and a "Join conversation" takeover. Pass 3 (user chose): deeper near-black navy #0e1433, denser cards (26px KPI numbers, tighter padding, 13px base type). Awaiting user feedback
 
 ### CRM (Phase 2)
-- ☐ M Lead CRUD, soft delete, search/filter/sort/cursor pagination
-- ☐ M CSV import (validation report) / export
-- ☐ M Bulk assign / bulk status
-- ☐ M Duplicate detection, lead merge + audit
-- ☐ M Activity timeline, notes, attachments, tags, custom fields
-- ☐ M Lead detail page (all states)
-- ☐ M Lead capture API (API key + public form)
-- ☐ M Pipeline Kanban (+ keyboard alternative), stage config, history, lost reasons
-- ☐ M Property inventory + CSV import
-- ☐ M Industry Pack loader (real estate pack)
-- ☐ M Dashboard (KPIs, charts, widgets, date filters) from real data
-- ☐ M Team management, workload, round-robin option
+- ☑ M Lead CRUD, soft delete, search (trigram-indexed), filters, sort. **Deviation:** page/offset pagination with totals instead of cursor (simpler UI, fine at the budgeted scale; revisit if lists exceed ~100k)
+- ☑ M CSV import (two-step: dry-run report then confirm; Indian amounts like "85 L", "1.2 Cr") / export (formula-injection safe)
+- ☑ M Bulk assign / stage / tag / delete with per-lead failure report
+- ☑ M Duplicate detection (any phone format, email), override, lead merge + audit (history of merged leads stays on the survivor)
+- ◐ M Activity timeline, notes, tags, custom fields ☑ · **attachments deferred to phase 4** (needs the file-storage + virus-scan pipeline built for the knowledge base)
+- ☑ M Lead detail page (loading / error / empty / success states)
+- ☑ M Lead capture API (API key, hashed at rest, shown once, revocable) + Integrations page. Repeat enquiries append to the existing lead. Server-to-server only; browser capture arrives with the widget public key (phase 3)
+- ☑ M Pipeline Kanban (drag-drop + keyboard-accessible move menu, optimistic update with rollback), stage config, transition history, lost reasons, server-enforced transition rules
+- ☑ M Property inventory (CRUD, filters, CSV import); `PropertiesService.where()` is the structured-data source for the AI `search_properties` tool in phase 4
+- ☑ M Industry Pack loader (real estate + general pack), idempotent, never overwrites tenant edits; backfill + system-role sync run on migrate
+- ☑ M Dashboard from real data: KPIs with deltas, acquisition trend, pipeline, sources, hot leads, follow-ups, agent table, date ranges incl. custom, tenant-timezone aware. Appointment/AI/automation tiles intentionally absent until those modules exist (API returns null, never invented)
+- ☑ M Team workload + round-robin assignment (safe under concurrent creates)
+- ◐ M i18n: message-catalogue scaffold + ₹ lakh/crore formatting only. Most strings are still inline English
 - ☐ V Portal email parsing · ☐ L Meta Lead Ads · ☐ L Google Sheets
+- ☐ Lead scoring itself is phase 4 (score/temperature can be set manually; seeded demo scores are demo data)
 
 ### Communication (Phase 3)
 - ☐ M Conversations/messages, inbox 3-panel UI, SSE
@@ -105,15 +107,22 @@ Last updated: 2026-11-16 · Current phase: **Phase 1 (gate checks passing; await
 - Real browser run (Chrome): register → onboarding step saved → dark theme persisted across navigation → team + audit pages show real data ✔
 - **Not verified:** CI workflow (never run on GitHub), mobile viewport, Playwright E2E (phase 7), real email delivery (Mailpit only)
 
+## Phase 2 verification (2026-11-16)
+- `pnpm lint` ✔ · `pnpm typecheck` ✔ · `pnpm test` ✔ (**19 DB/RLS + 78 API tests**) · built API boots under plain Node ✔
+- New tests cover: CRM tables in the RLS guard + append-only history, agent row-scoping (404 not 403 for others' leads), cross-tenant read/update/merge/stage/assign attempts, stage rules, bulk, merge, CSV import/export (incl. formula injection), round-robin under concurrency, API-key capture (revoked/forged/session-token-as-key), property inventory, analytics **checked against a hand-computed fixture**, timezone and DST date ranges, system-role sync
+- Real browser (Chrome): login → dashboard on real data → leads list → lead detail → rejected "New → Won" move shows the server's message → valid move + note appear on the timeline → Kanban renders
+- **Bug found and fixed while verifying:** permissions added in code never reached existing tenants. `pnpm db:migrate` now syncs system roles (additive/removing, idempotent, tested)
+- **Not verified:** Playwright E2E (phase 7); drag-and-drop with a real mouse (menu path verified, HTML5 DnD not exercised); CSV import through the file picker in the browser (API-level tested); CI workflow on GitHub; real email
+
 ## Decisions needed from the user
-1. **Approve Phase 0 plan** and the proposed ADRs.
-2. **`git init`** in this directory (and a remote?) at start of Phase 1: OK?
-3. **TypeScript 6.0.3 and Prisma 7.10.1** instead of the npm `latest` tags (TS 7.0.2, Prisma 8 RC). OK? (ADR-0008)
+1. ☑ Phase 0 plan approved.
+2. ☑ `git init` done; **no remote, work stays local** (decided 2026-11-16).
+3. ☑ TypeScript 6.0.3 and Prisma 7.10.1 (ADR-0008) agreed.
 4. ☑ **WhatsApp billing: tenants pay Meta directly on their own WABA** (decided 2026-11-16). LeadPilot plans price the software only; no WhatsApp resale or margin.
 5. **LLM default model** and who holds the API key in dev. The brief only says OpenAI. I need a dev key later; I will not use it until you provide it.
 6. **Meta test assets:** do you have a Meta developer account / WhatsApp test number for sandbox verification in Phase 3?
 7. **Email provider** for transactional mail (SES, Resend, other). Mailpit is used locally.
-8. **Lead = person record in MVP** (no separate contacts table). OK? (ADR-0010)
+8. ☑ Lead = person record in MVP (ADR-0010) agreed.
 
 ## Assumptions made (unless you object)
 - pnpm + Turborepo; SSE for real-time; AWS ECS/Fargate as the reference deployment.

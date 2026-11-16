@@ -17,7 +17,7 @@
   },
   "scripts": {
     "generate": "prisma generate",
-    "migrate": "prisma migrate deploy && tsx --env-file=../../.env src/sync-permissions.ts && tsx --env-file=../../.env src/backfill-packs.ts",
+    "migrate": "prisma migrate deploy && tsx --env-file=../../.env src/sync-permissions.ts && tsx --env-file=../../.env src/sync-system-roles.ts && tsx --env-file=../../.env src/backfill-packs.ts",
     "migrate:dev": "prisma migrate dev",
     "seed": "tsx --env-file=../../.env src/seed.ts",
     "build": "prisma generate && tsc -p tsconfig.json",

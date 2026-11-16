@@ -366,6 +366,18 @@ export class LeadsService {
     });
   }
 
+  /** Lookup data for forms and filters: sources, tags and the tenant's custom field definitions. */
+  meta(a: Actor) {
+    return this.db.tenantTx({ tenantId: a.tenantId }, async (tx) => {
+      const [sources, tags, customFields] = await Promise.all([
+        tx.leadSource.findMany({ where: { tenantId: a.tenantId }, orderBy: { name: 'asc' }, select: { id: true, key: true, name: true } }),
+        tx.tag.findMany({ where: { tenantId: a.tenantId }, orderBy: { name: 'asc' }, select: { id: true, name: true, color: true } }),
+        tx.customFieldDefinition.findMany({ where: { tenantId: a.tenantId, entity: 'lead' }, orderBy: { position: 'asc' }, select: { key: true, label: true, type: true, options: true, required: true } }),
+      ]);
+      return { sources, tags, customFields };
+    });
+  }
+
   listTags(a: Actor) {
     return this.db.tenantTx({ tenantId: a.tenantId }, (tx) => tx.tag.findMany({ where: { tenantId: a.tenantId }, orderBy: { name: 'asc' } }));
   }

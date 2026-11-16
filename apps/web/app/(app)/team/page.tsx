@@ -22,6 +22,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { handleApiError } from '@/lib/forms';
 
+interface Workload { members: { membershipId: string; name: string; email: string; role: string; openLeads: number; overdueFollowUps: number }[]; unassignedOpenLeads: number }
 interface Member { id: string; status: 'ACTIVE' | 'INVITED' | 'DEACTIVATED'; roleKey: string; roleName: string; joinedAt: string; user: { id: string; name: string; email: string } }
 interface Invitation { id: string; email: string; expiresAt: string; role: { key: string; name: string } }
 
@@ -64,6 +65,7 @@ export default function TeamPage() {
   const canInvite = can('team:invite');
   const canManage = can('team:manage');
   const members = useQuery({ queryKey: ['team', 'members'], queryFn: () => api<Member[]>('/team/members') });
+  const workload = useQuery({ queryKey: ['team', 'workload'], queryFn: () => api<Workload>('/team/workload'), enabled: can('analytics:read:team') });
   const invitations = useQuery({ queryKey: ['team', 'invitations'], queryFn: () => api<Invitation[]>('/team/invitations'), enabled: canInvite });
 
   const act = useMutation({
@@ -106,6 +108,14 @@ export default function TeamPage() {
           </ul>
         )}
       </Card>
+
+      {workload.data ? (
+        <Card className="mt-6">
+          <CardHeader><CardTitle>Workload</CardTitle><span className="text-helper num">{workload.data.unassignedOpenLeads} unassigned open leads</span></CardHeader>
+          <div className="overflow-x-auto"><table className="w-full text-left text-[13px]"><thead className="bg-muted/50 text-label text-muted-foreground"><tr><th className="px-4 py-2 font-medium">Member</th><th className="px-4 py-2 text-right font-medium">Open leads</th><th className="px-4 py-2 text-right font-medium">Overdue follow-ups</th></tr></thead>
+            <tbody className="divide-y divide-border">{workload.data.members.map((m) => <tr key={m.membershipId}><td className="px-4 py-2"><span className="flex items-center gap-2.5"><Avatar name={m.name} size={24} /><span>{m.name}<span className="text-helper ml-1.5">{m.role}</span></span></span></td><td className="num px-4 py-2 text-right">{m.openLeads}</td><td className={`num px-4 py-2 text-right ${m.overdueFollowUps ? 'font-medium text-danger' : ''}`}>{m.overdueFollowUps}</td></tr>)}</tbody></table></div>
+        </Card>
+      ) : null}
 
       {canInvite && invitations.data && invitations.data.length > 0 ? (
         <Card className="mt-6">

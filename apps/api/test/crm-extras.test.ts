@@ -32,7 +32,6 @@ describe('date ranges (tenant timezone)', () => {
 let ctx: TestCtx; let owner: Account; let other: Account; let agent: Account;
 let stages: Record<string, string> = {};
 const mk = (t: Account, body: Record<string, unknown>) => ctx.http().post('/leads').set(auth(t.accessToken)).send(body);
-const stage = (t: Account, id: string, to: string, extra: object = {}) => ctx.http().post(`/leads/${id}/stage`).set(auth(t.accessToken)).send({ stageId: stages[to], ...extra });
 
 beforeAll(async () => {
   ctx = await createTestApp();

@@ -24,6 +24,8 @@ export class LeadsController {
   @Post() @HttpCode(201)
   create(@CurrentTenant() ctx: TenantRequestContext, @Body(new ZodPipe(createLeadSchema)) body: CreateLeadInput) { return this.leads.create(actorFrom(ctx), body); }
 
+  @Get('meta') meta(@CurrentTenant() ctx: TenantRequestContext) { return this.leads.meta(actorFrom(ctx)); }
+
   @Get('tags') tags(@CurrentTenant() ctx: TenantRequestContext) { return this.leads.listTags(actorFrom(ctx)); }
 
   @Post('check-duplicates') @HttpCode(200)
