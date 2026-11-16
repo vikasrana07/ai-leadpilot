@@ -28,6 +28,7 @@ export function useRealtime(enabled: boolean): void {
     const connect = () => {
       es = new EventSource(`${API_URL}/realtime/stream`, { withCredentials: true });
       es.onopen = () => { retry = 0; };
+      es.addEventListener('notification.created', () => { void qc.invalidateQueries({ queryKey: ['notifications'] }); void qc.invalidateQueries({ queryKey: ['tasks'] }); void qc.invalidateQueries({ queryKey: ['appointments'] }); });
       for (const type of ['message.created', 'message.status', 'conversation.updated']) {
         es.addEventListener(type, (e) => { try { refresh((JSON.parse((e as MessageEvent<string>).data) as { conversationId?: string }).conversationId); } catch { refresh(); } });
       }

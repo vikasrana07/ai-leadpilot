@@ -16,6 +16,19 @@ export function extractAmounts(text: string): number[] {
 const numbersIn = (text: string): number[] => [...text.matchAll(/\d[\d,]*(?:\.\d+)?/g)].map((m) => Number(m[0].replace(/,/g, ''))).filter((n) => Number.isFinite(n) && n >= 1000);
 const near = (a: number, b: number) => Math.abs(a - b) <= Math.max(1, b * 0.01);
 
+/** Clock times in text, normalised to 24h HH:MM ("4 pm" -> 16:00). */
+export function timesIn(text: string): Set<string> {
+  const out = new Set<string>();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  for (const m of text.matchAll(/(?<![\d:.])(\d{1,2})(?::([0-5]\d))?\s*([ap])\.?m\b\.?/gi)) {
+    let h = Number(m[1]); if (h < 1 || h > 12) continue;
+    const pm = (m[3] as string).toLowerCase() === 'p'; if (h === 12) h = 0; if (pm) h += 12;
+    out.add(`${pad(h)}:${m[2] ?? '00'}`);
+  }
+  for (const m of text.matchAll(/(?<![\d:.\w])([01]?\d|2[0-3]):([0-5]\d)(?![\d:])/g)) out.add(`${pad(Number(m[1]))}:${m[2]}`);
+  return out;
+}
+
 export interface GuardInput { reply: string; facts: string; canary: string; maxChars: number }
 export interface GuardResult { ok: boolean; violations: string[]; reply: string }
 
@@ -40,5 +53,7 @@ export function checkReply({ reply, facts, canary, maxChars }: GuardInput): Guar
   for (const url of text.match(/https?:\/\/[^\s)>"']+/gi) ?? []) if (!factsLower.includes(url.toLowerCase().replace(/[.,;]+$/, ''))) { violations.push('unsupported_url'); break; }
   const factDigits = facts.replace(/\D/g, '');
   for (const ph of text.match(/(?:\+?\d[\d\s-]{8,}\d)/g) ?? []) { const d = ph.replace(/\D/g, ''); if (d.length >= 10 && !factDigits.includes(d.slice(-10))) { violations.push('unsupported_phone'); break; } }
+  const knownTimes = timesIn(facts);
+  for (const t of timesIn(text)) if (!knownTimes.has(t)) { violations.push(`unsupported_time:${t}`); break; }
   return { ok: violations.length === 0, violations, reply: text };
 }

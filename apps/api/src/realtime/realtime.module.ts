@@ -7,8 +7,10 @@ import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
 
 export interface RealtimeEvent {
-  type: 'message.created' | 'message.status' | 'conversation.updated';
+  type: 'message.created' | 'message.status' | 'conversation.updated' | 'notification.created';
   conversationId: string;
+  /** notification.created: delivered only to this membership. */
+  membershipId?: string;
   /** Used to scope delivery: agents without `conversation:read:all` only receive events for their own conversations. */
   assignedMembershipId: string | null;
   data?: Record<string, string | number | boolean | null>;
@@ -75,6 +77,10 @@ class RealtimeController {
     const seeAll = ctx.permissions.has('conversation:read:all');
     const canSee = seeAll || ctx.permissions.has('conversation:read:own');
     const unsub = this.rt.subscribe(ctx.tenantId, (e) => {
+      if (e.type === 'notification.created') {
+        if (e.membershipId === ctx.membershipId) res.write(`event: notification.created\ndata: ${JSON.stringify(e.data ?? {})}\n\n`);
+        return;
+      }
       if (!canSee || (!seeAll && e.assignedMembershipId !== ctx.membershipId)) return;
       res.write(`event: ${e.type}\ndata: ${JSON.stringify({ conversationId: e.conversationId, ...e.data })}\n\n`);
     });

@@ -145,6 +145,8 @@ export class MockLlm implements LlmProvider {
         const t0 = customerText(lastUser(req.messages)); const bh = t0.toLowerCase().match(/(\d)\s*-?\s*bhk/); const b0 = parseBudget(t0); const l0 = t0.match(/\b(?:in|near|around|at)\s+([A-Z][A-Za-z]+(?:\s[A-Z][A-Za-z]+)?)/);
         return done(null, [{ id: `call_search_${this.calls}`, name: 'search_properties', arguments: JSON.stringify({ location: l0?.[1] ?? null, bedrooms: bh ? Number(bh[1]) : null, minPrice: null, maxPrice: b0.max ?? null, propertyType: null }) }]);
       }
+      const wantsVisit = /\b(visit|book|appointment|schedule|see the (flat|house|property)|come over)\b/.test(customerText(lastUser(req.messages)).toLowerCase());
+      if (last.name === 'update_lead' && wantsVisit && has('check_availability') && !earlierTool('check_availability')) return done(null, [tc('check_availability', { date: this.dateFor(req.messages, customerText(lastUser(req.messages))), durationMinutes: null })]);
       return done(this.answerFromTools(req.messages));
     }
 
@@ -152,6 +154,15 @@ export class MockLlm implements LlmProvider {
     const lower = text.toLowerCase();
     const earlier = (n: string) => req.messages.some((m) => m.role === 'assistant' && m.toolCalls?.some((t) => t.name === n));
 
+    // Scheduling: choosing one of the times offered earlier books it; asking for a visit looks up real availability first.
+    const pick = text.match(/\b(\d{1,2})(?::([0-5]\d))?\s*(am|pm)\b/i);
+    if (pick && has('create_appointment') && !earlier('create_appointment')) {
+      let h = Number(pick[1]); const pm = (pick[3] as string).toLowerCase() === 'pm'; if (h === 12) h = 0; if (pm) h += 12;
+      const want = `${String(h).padStart(2, '0')}:${pick[2] ?? '00'}`;
+      const offered = [...req.messages.filter((m) => m.role === 'assistant').map((m) => ('content' in m ? m.content ?? '' : '')).join('\n').matchAll(/(\d{4}-\d{2}-\d{2}) (\d{1,2}:\d{2}) (AM|PM)/g)];
+      const hit = offered.map((o) => { let hh = Number((o[2] as string).split(':')[0]); const mm = (o[2] as string).split(':')[1]; if (hh === 12) hh = 0; if ((o[3] as string) === 'PM') hh += 12; return { date: o[1] as string, time: `${String(hh).padStart(2, '0')}:${mm}` }; }).find((o) => o.time === want);
+      if (hit) return done(null, [tc('create_appointment', { date: hit.date, time: hit.time, notes: null })]);
+    }
     if (/\b(human|agent|person|representative|manager|call me|talk to (someone|somebody)|insaan)\b/.test(lower) && has('handover_to_human') && !earlier('handover_to_human')) return done(null, [tc('handover_to_human', { reason: 'Customer asked to speak to a person' })]);
     if (/\b(discount|negotiat|best price|lower the price|refund|legal|complain)/.test(lower) && has('handover_to_human') && !earlier('handover_to_human')) return done(null, [tc('handover_to_human', { reason: 'Pricing, negotiation or complaint needs a person' })]);
 
@@ -163,12 +174,24 @@ export class MockLlm implements LlmProvider {
     else if (/\b(1|2|3|one|two|three)\s*(-|to)?\s*(3|three)?\s*months?\b/.test(lower)) facts.buyingTimeline = 'ONE_TO_THREE_MONTHS';
     if (/\b(visit|see the (flat|house|property)|site visit|come over)\b/.test(lower)) facts.siteVisitRequested = true;
     if (Object.values(facts).some((v) => v !== null) && has('update_lead') && !earlier('update_lead')) return done(null, [tc('update_lead', facts)]);
+    if (/\b(visit|book|appointment|schedule|come over)\b/.test(lower) && has('check_availability') && !earlier('check_availability')) return done(null, [tc('check_availability', { date: this.dateFor(req.messages, text), durationMinutes: null })]);
 
     if (/(bhk|\bavailable\b|\bflats?\b|\bapartments?\b|\bprice\b|\bcost\b|\boptions\b|\bpropert(y|ies)\b|\bunits?\b)/.test(lower) && has('search_properties') && !earlier('search_properties')) {
       return done(null, [tc('search_properties', { location: (facts.location as string | null) ?? null, bedrooms: bhk ? Number(bhk[1]) : null, minPrice: null, maxPrice: (facts.budgetMax as number | null) ?? null, propertyType: null })]);
     }
     if (/\b(hi|hello|hey|namaste|hii)\b/.test(lower) && text.length < 40) return done('Hello! Thanks for reaching out. Are you looking to buy, and which area do you have in mind?');
     return done(this.askNext(req.messages, text));
+  }
+
+  /** Mock date parsing: an explicit YYYY-MM-DD, "day after tomorrow", "today", otherwise tomorrow (relative to the prompt's current date). */
+  private dateFor(messages: ChatMessage[], text: string): string {
+    const sys = messages.find((m) => m.role === 'system');
+    const today = (sys && 'content' in sys ? (sys.content ?? '') : '').match(/Current time: (\d{4}-\d{2}-\d{2})/)?.[1] ?? new Date().toISOString().slice(0, 10);
+    const iso = text.match(/\b(\d{4}-\d{2}-\d{2})\b/)?.[1];
+    if (iso) return iso;
+    const add = (n: number) => { const d = new Date(`${today}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+    const l = text.toLowerCase();
+    return /day after tomorrow/.test(l) ? add(2) : /\btoday\b/.test(l) ? add(0) : add(1);
   }
 
   private askNext(messages: ChatMessage[], text: string): string {
@@ -185,8 +208,18 @@ export class MockLlm implements LlmProvider {
   private answerFromTools(messages: ChatMessage[]): string {
     const results = messages.filter((m): m is Extract<ChatMessage, { role: 'tool' }> => m.role === 'tool');
     const lastResult = results.at(-1);
-    let data: { properties?: { title: string; price: number; priceDisplay: string; location: string; status: string }[]; handedOver?: boolean; message?: string; error?: string } = {};
+    const h12 = (t: string) => { const [h, m] = t.split(':').map(Number) as [number, number]; return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
+    let data: { slots?: { date: string; time: string }[]; booked?: boolean; when?: string; existing?: string; alternatives?: string[]; properties?: { title: string; price: number; priceDisplay: string; location: string; status: string }[]; handedOver?: boolean; message?: string; error?: string } = {};
     try { data = JSON.parse(lastResult?.content ?? '{}') as typeof data; } catch { /* keep empty */ }
+    if (lastResult?.name === 'check_availability') {
+      if (!data.slots?.length) return data.message ?? 'I could not find a free time right now; a team member will contact you to arrange the visit.';
+      return `These times are free for a site visit: ${data.slots.slice(0, 3).map((s) => `${s.date} ${h12(s.time)}`).join(', ')}. Which one suits you?`;
+    }
+    if (lastResult?.name === 'create_appointment') {
+      if (data.booked) return `Done! I have requested your site visit for ${data.when}. The team will confirm it shortly.`;
+      if (data.error === 'already_booked') return `You already have a visit planned for ${data.existing}. A team member can change it if you need.`;
+      return `Sorry, that time is no longer free.${data.alternatives?.length ? ` Other options: ${data.alternatives.join('; ')}.` : ''} Which would you prefer?`;
+    }
     if (lastResult?.name === 'handover_to_human') return data.message ?? 'I have asked a team member to take over. They will reply shortly.';
     if (lastResult?.name === 'search_properties') {
       if (!data.properties?.length) return "I couldn't find a matching available property right now. Could you share your budget and preferred area so a team member can suggest options?";

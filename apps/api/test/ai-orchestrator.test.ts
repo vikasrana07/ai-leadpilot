@@ -243,11 +243,12 @@ describe('tool contract: every call is validated, tenant-bound, idempotent and a
     tctx = { tenantId: owner.tenantId, conversationId: convoId, leadId, runId: randomUUID(), allowed: new Set(ASSISTANT.allowedTools), assistant: { workingHours: null, name: 'Asha', businessIdentity: 'Skyline Realty', businessDescription: 'x', languages: ['en'] }, tenant: { name: 'Skyline', email: 'a@b.test', phone: null, website: null, address: null, timezone: 'Asia/Kolkata', currency: 'INR' } };
   });
   const nulls = { budgetMin: null, budgetMax: null, location: null, propertyType: null, requirements: null, buyingTimeline: null, siteVisitRequested: null, name: null };
-  it('rejects unknown tools, tools not enabled for the tenant, and unavailable (phase 5) scheduling tools', async () => {
+  it('rejects unknown tools, tools not enabled for the tenant, and scheduling tools with bad arguments', async () => {
     expect(await tools.execute(tctx, 'drop_database', '{}')).toEqual({ ok: false, result: { error: 'unknown_tool' } });
     expect((await tools.execute({ ...tctx, allowed: new Set(['get_business_info']) }, 'update_lead', JSON.stringify(nulls))).result).toEqual({ error: 'tool_not_enabled' });
-    expect((await tools.execute({ ...tctx, allowed: new Set(['check_availability', 'create_appointment']) }, 'check_availability', '{}')).result).toMatchObject({ error: 'scheduling_unavailable' });
-    expect((await tools.execute({ ...tctx, allowed: new Set(['create_appointment']) }, 'create_appointment', '{}')).ok).toBe(false);
+    // scheduling tools exist now but still validate strictly: no arguments (or extra ones such as a tenant id) are rejected
+    expect((await tools.execute({ ...tctx, allowed: new Set(['check_availability']) }, 'check_availability', '{}')).result).toMatchObject({ error: 'invalid_arguments' });
+    expect((await tools.execute({ ...tctx, allowed: new Set(['create_appointment']) }, 'create_appointment', '{"date":"2027-01-01","time":"10:00","notes":null,"tenantId":"x"}')).result).toMatchObject({ error: 'invalid_arguments' });
   });
   it('rejects malformed JSON, wrong types and ANY extra field, so the model can never supply a tenant or lead id', async () => {
     expect((await tools.execute(tctx, 'update_lead', '{not json')).result).toEqual({ error: 'invalid_json' });

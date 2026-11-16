@@ -5,6 +5,7 @@ import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../../audit/audit.service.js';
 import type { Actor } from '../../common/actor.js';
 import { DbService } from '../../db/db.module.js';
+import { OutboxService } from '../../ops/outbox.service.js';
 import { DEFAULT_SCORING_RULES, scoreLead, temperatureFor, type ScoringRules } from './scoring.js';
 
 export const scoringRulesSchema = z.object({
@@ -21,7 +22,7 @@ export const overrideSchema = z.object({ score: z.number().int().min(0).max(100)
 
 @Injectable()
 export class ScoringService {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(OutboxService) private readonly outbox: OutboxService) {}
 
   /** The active rules for a tenant (latest version), or the documented defaults as version 0. */
   async rulesFor(tx: TxClient, tenantId: string): Promise<{ version: number; rules: ScoringRules }> {
@@ -74,6 +75,7 @@ export class ScoringService {
     if (changed) {
       await tx.lead.update({ where: { id: leadId }, data: { score: r.score, scoreUpdatedAt: new Date(), temperature: r.temperature } });
       await tx.leadActivity.create({ data: { id: uuidv7(), tenantId, leadId, type: 'scored', actorUserId, data: { from: lead.score, to: r.score, temperature: r.temperature } } });
+      if (lead.temperature !== r.temperature) await this.outbox.emit(tx, tenantId, 'lead.temperature_changed', { leadId, from: lead.temperature, to: r.temperature });
     }
     return { score: r.score, temperature: r.temperature, changed };
   }

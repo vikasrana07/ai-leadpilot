@@ -19,6 +19,7 @@ import { ScoringModule } from './scoring/scoring.module.js';
 import { overrideSchema, scoringRulesSchema, ScoringService } from './scoring/scoring.service.js';
 import { DEFAULT_SCORING_RULES, type ScoringRules } from './scoring/scoring.js';
 import { DbService } from '../db/db.module.js';
+import { OpsModule } from '../ops/ops.module.js';
 import { ToolRunner } from './tools.js';
 import type { z } from 'zod';
 
@@ -50,7 +51,7 @@ class AiController {
 }
 
 @Module({
-  imports: [ConversationsModule, PropertiesModule, ScoringModule],
+  imports: [OpsModule, ConversationsModule, PropertiesModule, ScoringModule],
   controllers: [AiController, KnowledgeController],
   providers: [
     AssistantsService, KnowledgeService, ToolRunner, AiOrchestrator, S3Storage, ClamAvScanner, MockScanner, OpenAiLlm, MockLlm, MockEmbeddings,

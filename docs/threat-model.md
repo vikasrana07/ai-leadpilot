@@ -40,16 +40,28 @@ Scope: identity, tenancy, RBAC, audit. Extended in each phase (webhooks Phase 3,
 | Malicious uploads | extension + declared type + magic bytes, 10 MB cap, ClamAV scan (fail closed), tenant-prefixed keys, parsing in an isolated worker, download as attachment | upload tests incl. real ClamAV + EICAR |
 | Silent score manipulation | overrides need permission + reason, are timestamped, audited and visible in history | scoring API tests |
 
+## Phase 5 additions
+| Threat | Mitigation | Evidence |
+|---|---|---|
+| Double booking / race to the same slot | Postgres exclusion constraints (agent and customer), not application checks | 12-way concurrent test |
+| Background jobs crossing tenants | four narrow `SECURITY DEFINER` functions; every other job step runs in a tenant transaction under RLS; new tables covered by the RLS guard test | DB isolation tests |
+| Automation storms / loops that spam customers | origin + depth tracking (max 3), self-trigger ignored, per-lead cooldown, unique run per (automation, event), idempotency keys on sends | loop test, idempotency test |
+| Messaging someone who did not consent or opted out | automation sends use the same consent / 24h window / template registry checks as a human; refusals are recorded skips | WhatsApp action tests |
+| Duplicate side effects on retry or double delivery | compare-and-set run claim, per-step persistence, event_marks, outbox lease | retry and scanner tests |
+| AI invents or books an unavailable time | tool re-validates the exact slot server-side; lead and tenant from server context; output guard blocks times no tool returned | scheduling tests |
+| Notification leakage between users/tenants | notifications are queried by the caller's membership only; SSE delivery filtered by membership | notification tests |
+| Brute force across multiple API replicas | rate-limit counters in Redis (atomic Lua) | verified live |
+
 ## Known gaps / accepted for now
 - **No real LLM has ever been connected.** The live OpenAI client is untested; offline results validate the pipeline only. Hindi/Hinglish quality, tone, real extraction accuracy and real injection resistance are **unmeasured** until the live eval (`EVAL_LIVE=1`) is run with a key.
 - Injection-pattern list for documents is heuristic.
-- AI turns run in-process after a short debounce; BullMQ/worker (phase 5) will add durable queues and retries across restarts. A crash mid-turn leaves a stale RUNNING run that expires after 3 minutes.
+- AI turns still run in-process after a short debounce; the minute scanner re-triggers a customer message left unanswered for 90 seconds to 6 hours (once). A crash mid-turn leaves a stale RUNNING run that expires after 3 minutes.
 - Knowledge ingestion is also in-process (a restart during processing leaves a document in PROCESSING; use Reprocess).
 - Voice notes are not transcribed (V1.1). The assistant sees "[customer sent an audio]".
 - **The live WhatsApp client has never run against Meta.** Everything is tested with the mock provider. Payload shapes follow Meta's documented format, but real-world verification needs real credentials.
 - Webhook raw payloads are stored (for dedupe and debugging) without a retention job yet (phase 7).
 - Widget polling is not authenticated beyond the session token and origin allow-list; scripted abuse is bounded only by rate limits until bot protection (phase 7).
-- Rate limiting is **in-memory per instance**; the Redis store arrives in Phase 5. Do not run multiple API replicas before then.
+- Rate limiting is Redis-backed (phase 5); it degrades to per-instance memory if Redis is unreachable.
 - Email-verification is not enforced for login (only for inviting teammates).
 - No MFA. [V1.1+]
 - Platform-admin surface (separate auth, ADR-0003) not built until Phase 6.

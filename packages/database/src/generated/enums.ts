@@ -183,3 +183,35 @@ export const ScoreSource = {
 } as const
 
 export type ScoreSource = (typeof ScoreSource)[keyof typeof ScoreSource]
+
+
+export const AppointmentStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  NO_SHOW: 'NO_SHOW',
+  RESCHEDULED: 'RESCHEDULED'
+} as const
+
+export type AppointmentStatus = (typeof AppointmentStatus)[keyof typeof AppointmentStatus]
+
+
+export const RunStatus = {
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED',
+  DRY_RUN: 'DRY_RUN'
+} as const
+
+export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus]
+
+
+export const TaskStatus = {
+  OPEN: 'OPEN',
+  DONE: 'DONE'
+} as const
+
+export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus]

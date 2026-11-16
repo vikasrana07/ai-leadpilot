@@ -12,6 +12,7 @@ import { useRealtime } from '@/hooks/use-realtime';
 import { useAuth } from '@/lib/auth';
 import { CommandPalette } from './command-palette';
 import { SidebarContent } from './sidebar';
+import { NotificationBell } from './notification-bell';
 import { ThemeSwitcher } from './theme-switcher';
 import { WorkspaceSwitcher } from './workspace-switcher';
 import { VerifyEmailBanner } from './verify-banner';
@@ -19,8 +20,8 @@ import { VerifyEmailBanner } from './verify-banner';
 const STORAGE_KEY = 'lp-sidebar-collapsed';
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { ctx, logout, can } = useAuth();
-  useRealtime(can('conversation:read:all') || can('conversation:read:own'));
+  const { ctx, logout } = useAuth();
+  useRealtime(true);
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -59,6 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
           <div className="ml-auto flex items-center gap-1">
             <Button variant="ghost" size="icon" className="md:hidden" aria-label="Search" onClick={() => setPaletteOpen(true)}><Search className="h-4 w-4" /></Button>
+            <NotificationBell />
             <ThemeSwitcher />
             <Dropdown trigger={<button aria-label="Account menu" className="ml-1 rounded-full"><Avatar name={ctx.user.name} size={30} /></button>}>
               <div className="px-2.5 py-2"><p className="text-[13px] font-medium">{ctx.user.name}</p><p className="text-helper">{ctx.user.email}</p></div>

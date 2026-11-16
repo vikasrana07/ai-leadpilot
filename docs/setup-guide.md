@@ -60,3 +60,12 @@ The API refuses to start on missing/invalid variables (zod validation in `apps/a
 - Demo: with the API running and an assistant enabled in **AI Assistant**, `node apps/api/scripts/demo-whatsapp.mjs` then `node apps/api/scripts/demo-ai.mjs` simulate customers chatting with it.
 - Evaluation: `pnpm --filter @leadpilot/api exec vitest run test/eval.test.ts` runs the 26 offline golden conversations. `EVAL_LIVE=1 AI_PROVIDER=openai OPENAI_API_KEY=… pnpm --filter @leadpilot/api exec vitest run test/eval.test.ts` runs all 39 against a real model (cost: a few cents).
 - Migrations that use pgvector need a role allowed to `CREATE EXTENSION vector`; `prisma migrate dev` therefore uses the Postgres superuser for its shadow database (`DATABASE_SHADOW_URL`).
+
+## Background worker (phase 5)
+Reminders, automations, notifications, SLA alerts and task due-dates are processed by a separate process. Without it they are recorded but never run.
+
+```
+pnpm --filter @leadpilot/api build
+pnpm --filter @leadpilot/worker start      # same .env as the API
+```
+For single-process development set `WORKERS_ENABLED=true` instead. Run as many workers as you like. Reminders and automated WhatsApp messages need approved templates registered under Integrations (`welcome_lead`, `appointment_confirmation`, `appointment_reminder`, `no_show_followup`); until a template exists the message step is skipped and the run history says so.

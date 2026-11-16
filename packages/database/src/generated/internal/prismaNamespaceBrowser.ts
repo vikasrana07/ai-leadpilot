@@ -90,7 +90,18 @@ export const ModelName = {
   KnowledgeDocument: 'KnowledgeDocument',
   KnowledgeChunk: 'KnowledgeChunk',
   ScoringRuleSet: 'ScoringRuleSet',
-  LeadScore: 'LeadScore'
+  LeadScore: 'LeadScore',
+  AvailabilityRule: 'AvailabilityRule',
+  AvailabilityException: 'AvailabilityException',
+  Appointment: 'Appointment',
+  AppointmentEvent: 'AppointmentEvent',
+  Automation: 'Automation',
+  AutomationRun: 'AutomationRun',
+  Task: 'Task',
+  Notification: 'Notification',
+  NotificationPreference: 'NotificationPreference',
+  SlaBreach: 'SlaBreach',
+  EventMark: 'EventMark'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -735,6 +746,171 @@ export const LeadScoreScalarFieldEnum = {
 } as const
 
 export type LeadScoreScalarFieldEnum = (typeof LeadScoreScalarFieldEnum)[keyof typeof LeadScoreScalarFieldEnum]
+
+
+export const AvailabilityRuleScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  membershipId: 'membershipId',
+  dayOfWeek: 'dayOfWeek',
+  startMinute: 'startMinute',
+  endMinute: 'endMinute'
+} as const
+
+export type AvailabilityRuleScalarFieldEnum = (typeof AvailabilityRuleScalarFieldEnum)[keyof typeof AvailabilityRuleScalarFieldEnum]
+
+
+export const AvailabilityExceptionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  membershipId: 'membershipId',
+  date: 'date',
+  startMinute: 'startMinute',
+  endMinute: 'endMinute',
+  reason: 'reason'
+} as const
+
+export type AvailabilityExceptionScalarFieldEnum = (typeof AvailabilityExceptionScalarFieldEnum)[keyof typeof AvailabilityExceptionScalarFieldEnum]
+
+
+export const AppointmentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  membershipId: 'membershipId',
+  propertyId: 'propertyId',
+  title: 'title',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  status: 'status',
+  notes: 'notes',
+  location: 'location',
+  source: 'source',
+  cancelledReason: 'cancelledReason',
+  rescheduledFromId: 'rescheduledFromId',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AppointmentScalarFieldEnum = (typeof AppointmentScalarFieldEnum)[keyof typeof AppointmentScalarFieldEnum]
+
+
+export const AppointmentEventScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  appointmentId: 'appointmentId',
+  type: 'type',
+  actorUserId: 'actorUserId',
+  data: 'data',
+  createdAt: 'createdAt'
+} as const
+
+export type AppointmentEventScalarFieldEnum = (typeof AppointmentEventScalarFieldEnum)[keyof typeof AppointmentEventScalarFieldEnum]
+
+
+export const AutomationScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  templateKey: 'templateKey',
+  name: 'name',
+  description: 'description',
+  enabled: 'enabled',
+  trigger: 'trigger',
+  conditions: 'conditions',
+  actions: 'actions',
+  cooldownMinutes: 'cooldownMinutes',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AutomationScalarFieldEnum = (typeof AutomationScalarFieldEnum)[keyof typeof AutomationScalarFieldEnum]
+
+
+export const AutomationRunScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  automationId: 'automationId',
+  eventId: 'eventId',
+  eventType: 'eventType',
+  leadId: 'leadId',
+  status: 'status',
+  attempts: 'attempts',
+  error: 'error',
+  steps: 'steps',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt'
+} as const
+
+export type AutomationRunScalarFieldEnum = (typeof AutomationRunScalarFieldEnum)[keyof typeof AutomationRunScalarFieldEnum]
+
+
+export const TaskScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  assigneeMembershipId: 'assigneeMembershipId',
+  title: 'title',
+  notes: 'notes',
+  dueAt: 'dueAt',
+  status: 'status',
+  source: 'source',
+  remindedAt: 'remindedAt',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt'
+} as const
+
+export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum]
+
+
+export const NotificationScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  membershipId: 'membershipId',
+  type: 'type',
+  title: 'title',
+  body: 'body',
+  link: 'link',
+  data: 'data',
+  readAt: 'readAt',
+  createdAt: 'createdAt'
+} as const
+
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+export const NotificationPreferenceScalarFieldEnum = {
+  tenantId: 'tenantId',
+  membershipId: 'membershipId',
+  type: 'type',
+  inApp: 'inApp'
+} as const
+
+export type NotificationPreferenceScalarFieldEnum = (typeof NotificationPreferenceScalarFieldEnum)[keyof typeof NotificationPreferenceScalarFieldEnum]
+
+
+export const SlaBreachScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  conversationId: 'conversationId',
+  inboundMessageId: 'inboundMessageId',
+  breachedAt: 'breachedAt',
+  resolvedAt: 'resolvedAt',
+  minutesToRespond: 'minutesToRespond'
+} as const
+
+export type SlaBreachScalarFieldEnum = (typeof SlaBreachScalarFieldEnum)[keyof typeof SlaBreachScalarFieldEnum]
+
+
+export const EventMarkScalarFieldEnum = {
+  tenantId: 'tenantId',
+  key: 'key',
+  createdAt: 'createdAt'
+} as const
+
+export type EventMarkScalarFieldEnum = (typeof EventMarkScalarFieldEnum)[keyof typeof EventMarkScalarFieldEnum]
 
 
 export const SortOrder = {

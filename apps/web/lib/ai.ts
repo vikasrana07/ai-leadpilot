@@ -28,6 +28,6 @@ export const TOOL_INFO: { name: string; label: string; help: string; soon?: bool
   { name: 'create_followup', label: 'Schedule a follow-up', help: 'Set a follow-up reminder for your team.' },
   { name: 'handover_to_human', label: 'Hand over to a person', help: 'Pass the chat to your team when needed.' },
   { name: 'assign_agent', label: 'Assign to an agent', help: 'Give the lead to the least busy agent.', sensitive: true },
-  { name: 'check_availability', label: 'Check availability', help: 'Check site-visit slots.', soon: true },
-  { name: 'create_appointment', label: 'Book appointments', help: 'Book site visits.', soon: true },
+  { name: 'check_availability', label: 'Check availability', help: 'Look up real free site-visit times from your team’s working hours and calendars.' },
+  { name: 'create_appointment', label: 'Book site visits', help: 'Request a visit at a time the customer chose. Your team confirms it; double booking is impossible.' },
 ];

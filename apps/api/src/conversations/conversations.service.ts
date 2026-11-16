@@ -217,7 +217,13 @@ export class ConversationsService {
     return this.sendAs(actor, id, { text }, 'AI');
   }
 
-  private async sendAs(a: Actor, id: string, input: SendInput, who: 'AGENT' | 'AI') {
+  /** Automations send as the system: same channel rules (consent, 24h window, template registry) as a human. */
+  sendSystem(tenantId: string, id: string, input: SendInput) {
+    const actor: Actor = { tenantId, userId: null, membershipId: null, permissions: new Set(['conversation:read:all', 'conversation:reply']), requestId: undefined, ip: undefined };
+    return this.sendAs(actor, id, input, 'SYSTEM');
+  }
+
+  private async sendAs(a: Actor, id: string, input: SendInput, who: 'AGENT' | 'AI' | 'SYSTEM') {
     const prep = await this.tx(a, async (tx) => {
       const c = await this.mustFind(tx, a, id);
       if (input.idempotencyKey) {

@@ -44,11 +44,12 @@ describe('assistant settings', () => {
     expect(g.status).toBe(200); expect(g.body).toMatchObject({ enabled: false, provider: 'mock', killSwitch: false });
     expect(g.body.allowedTools).not.toContain('assign_agent'); expect(JSON.stringify(g.body)).not.toMatch(/api.?key|secret/i);
   });
-  it('validates input, refuses tools that do not exist yet, and records an audit entry', async () => {
+  it('validates input, refuses unknown tools, and records an audit entry', async () => {
     const put = (b: object, t = owner) => ctx.http().put('/ai/assistant').set(auth(t.accessToken)).send(b);
     expect((await put(base, agent)).status).toBe(403); expect((await put(base, manager)).status).toBe(403);
     expect((await put({ ...base, name: '' })).status).toBe(400);
-    expect((await put({ ...base, allowedTools: ['create_appointment'] })).status).toBe(400);
+    expect((await put({ ...base, allowedTools: ['create_appointment', 'check_availability'] })).status).toBe(200); // scheduling tools are available since phase 5
+    expect((await put({ ...base, allowedTools: ['transfer_money'] })).status).toBe(400);
     expect((await put({ ...base, allowedTools: ['drop_database'] })).status).toBe(400);
     expect((await put({ ...base, temperature: 5 })).status).toBe(400);
     expect((await put({ ...base, workingHours: { ...base.workingHours, days: { ...base.workingHours.days, mon: { start: '25:00', end: '19:00' } } } })).status).toBe(400);

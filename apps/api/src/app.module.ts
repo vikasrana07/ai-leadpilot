@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { AnalyticsModule } from './analytics/analytics.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { AiTrigger } from './ai/ai-trigger.js';
+import { RedisThrottlerStorage } from './common/redis-throttler.js';
 import { AuditModule } from './audit/audit.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CaptureModule } from './capture/capture.module.js';
@@ -20,6 +21,8 @@ import { DbModule } from './db/db.module.js';
 import { HealthModule } from './health/health.module.js';
 import { LeadsModule } from './leads/leads.module.js';
 import { MailModule } from './mail/mail.module.js';
+import { UsageModule } from './ops/usage.module.js';
+import { OpsModule, OutboxModule } from './ops/ops.module.js';
 import { PipelineModule } from './pipeline/pipeline.module.js';
 import { PropertiesModule } from './properties/properties.module.js';
 import { RealtimeModule } from './realtime/realtime.module.js';
@@ -44,13 +47,13 @@ class IntegrationsCoreModule {}
 
 @Module({
   imports: [
-    ConfigModule, IntegrationsCoreModule, RealtimeModule,
+    ConfigModule, IntegrationsCoreModule, RealtimeModule, OutboxModule,
     ThrottlerModule.forRootAsync({
       inject: [ENV],
-      // NOTE: in-memory store. Phase 5 swaps in the Redis store so limits hold across API instances.
-      useFactory: (env: Env) => [{ name: 'default', ttl: 60_000, limit: env.THROTTLE_GLOBAL_LIMIT }],
+      // Redis-backed so limits hold across API instances (tests keep the in-memory store: counters would otherwise leak between runs).
+      useFactory: (env: Env) => ({ throttlers: [{ name: 'default', ttl: 60_000, limit: env.THROTTLE_GLOBAL_LIMIT }], ...(env.NODE_ENV === 'test' ? {} : { storage: new RedisThrottlerStorage(env.REDIS_URL, env.QUEUE_PREFIX) }) }),
     }),
-    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, AiModule, TeamModule, RolesModule, HealthModule,
+    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, AiModule, OpsModule, UsageModule, TeamModule, RolesModule, HealthModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

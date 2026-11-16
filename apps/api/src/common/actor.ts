@@ -13,6 +13,8 @@ export interface Actor {
   ip: string | undefined;
   /** Set for machine actors, recorded in audit metadata. */
   apiKeyId?: string;
+  /** Set when the actor is an automation: events it causes carry depth+1 so automations cannot trigger each other forever. */
+  origin?: { automationId: string; depth: number };
 }
 
 export function actorFrom(ctx: TenantRequestContext): Actor {

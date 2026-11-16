@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { INDUSTRIES, updateTenantSchema, type UpdateTenantInput } from '@leadpilot/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Monitor, Moon, Smartphone, Sun } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/page/page-header';
@@ -121,11 +121,31 @@ function Sessions() {
   );
 }
 
+function ResponseTime() {
+  const { can } = useAuth(); const qc = useQueryClient(); const canEdit = can('settings:manage');
+  const q = useQuery({ queryKey: ['sla'], enabled: canEdit || can('analytics:read:team'), queryFn: () => api<{ settings: { enabled: boolean; firstResponseMinutes: number }; last30Days: { breaches: number; open: number; avgMinutesToRespond: number | null } }>('/sla') });
+  const [minutes, setMinutes] = useState<string | null>(null); const [enabled, setEnabled] = useState<boolean | null>(null);
+  const save = useMutation({ mutationFn: () => api('/sla', { method: 'PUT', body: { enabled: enabled ?? q.data?.settings.enabled ?? true, firstResponseMinutes: Number(minutes ?? q.data?.settings.firstResponseMinutes ?? 15) } }), onSuccess: async () => { toast.success('Response-time target saved'); setMinutes(null); setEnabled(null); await qc.invalidateQueries({ queryKey: ['sla'] }); }, onError: (e) => handleApiError(e) });
+  if (!q.data) return null;
+  const on = enabled ?? q.data.settings.enabled;
+  return (
+    <Card>
+      <CardHeader><CardTitle>Response-time target</CardTitle>{!canEdit ? <Badge>Read only</Badge> : null}</CardHeader>
+      <CardBody>
+        <p className="text-helper mb-3">When a customer writes to a conversation your team handles and nobody replies in time, you and your managers get an alert. Chats the AI assistant is answering are not counted.</p>
+        <label className="mb-3 flex items-center gap-2 text-[13px]"><input type="checkbox" disabled={!canEdit} checked={on} onChange={(e) => setEnabled(e.target.checked)} />Track first-response time</label>
+        <div className="flex flex-wrap items-end gap-3"><div className="w-40"><label htmlFor="sla-min" className="text-label mb-1.5 block">Reply within (minutes)</label><Input id="sla-min" inputMode="numeric" disabled={!canEdit || !on} value={minutes ?? String(q.data.settings.firstResponseMinutes)} onChange={(e) => setMinutes(e.target.value)} /></div>{canEdit ? <Button variant="primary" loading={save.isPending} onClick={() => save.mutate()}>Save</Button> : null}</div>
+        <p className="text-helper mt-3">Last 30 days: {q.data.last30Days.breaches} missed target{q.data.last30Days.breaches === 1 ? '' : 's'}, {q.data.last30Days.open} still waiting{q.data.last30Days.avgMinutesToRespond !== null ? `, average late reply after ${q.data.last30Days.avgMinutesToRespond} min` : ''}.</p>
+      </CardBody>
+    </Card>
+  );
+}
+
 export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" description="Your workspace profile, appearance and security." />
-      <div className="space-y-6"><BusinessProfile /><Assignment /><Appearance /><Sessions /></div>
+      <div className="space-y-6"><BusinessProfile /><Assignment /><ResponseTime /><Appearance /><Sessions /></div>
     </>
   );
 }

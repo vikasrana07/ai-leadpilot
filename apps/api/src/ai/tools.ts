@@ -7,6 +7,9 @@ import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
 import { toMinor } from '../common/money.js';
 import { DbService } from '../db/db.module.js';
+import { AppointmentsService } from '../ops/appointments.service.js';
+import { OutboxService } from '../ops/outbox.service.js';
+import { localParts } from '../common/tz.js';
 import { PropertiesService } from '../properties/properties.module.js';
 import { RealtimeService } from '../realtime/realtime.module.js';
 import type { ToolDefinition } from './llm.js';
@@ -41,8 +44,10 @@ const inputs = {
   assign_agent: z.object({ reason: str(200) }).strict(),
   create_followup: z.object({ inHours: z.number().int().min(1).max(720), note: str(300) }).strict(),
   handover_to_human: z.object({ reason: str(300) }).strict(),
+  check_availability: z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), durationMinutes: z.number().int().min(15).max(240).nullable() }).strict(),
+  create_appointment: z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), notes: str(300).nullable() }).strict(),
 } as const;
-export type ToolName = keyof typeof inputs | 'check_availability' | 'create_appointment';
+export type ToolName = keyof typeof inputs;
 
 export const TOOL_DEFINITIONS: Record<keyof typeof inputs, ToolDefinition> = {
   get_business_info: { name: 'get_business_info', description: 'Get the business name, description, contact details and team working hours. Use before answering questions about the business.', parameters: schema({}) },
@@ -52,12 +57,14 @@ export const TOOL_DEFINITIONS: Record<keyof typeof inputs, ToolDefinition> = {
   calculate_lead_score: { name: 'calculate_lead_score', description: 'Recalculate the lead score from saved information and see which signals are still unknown.', parameters: schema({}) },
   assign_agent: { name: 'assign_agent', description: 'Assign this customer to the least busy sales agent so a person follows up.', parameters: schema({ reason: { type: 'string' } }) },
   create_followup: { name: 'create_followup', description: 'Schedule a follow-up reminder for the team after a number of hours.', parameters: schema({ inHours: { type: 'integer' }, note: { type: 'string' } }) },
+  check_availability: { name: 'check_availability', description: 'Find free site-visit times on or after a date. Pass the date the customer asked for as YYYY-MM-DD in the business timezone (use today\'s or tomorrow\'s date from the context for "today"/"tomorrow"). Returns the real free slots; never offer a time this tool did not return.', parameters: schema({ date: { type: 'string' }, durationMinutes: nullable('integer') }) },
+  create_appointment: { name: 'create_appointment', description: 'Book a site visit. Only call after the customer has clearly chosen ONE time that check_availability returned. Pass that exact date (YYYY-MM-DD) and time (24-hour HH:MM). The booking is a request the team confirms.', parameters: schema({ date: { type: 'string' }, time: { type: 'string' }, notes: nullable('string') }) },
   handover_to_human: { name: 'handover_to_human', description: 'Hand the conversation to a person. Use when the customer asks for one, wants to negotiate or complain, or you cannot answer from facts.', parameters: schema({ reason: { type: 'string' } }) },
 };
 
 /** Tools the model may be shown, i.e. enabled for this tenant AND implemented. */
 export function modelTools(allowed: ReadonlySet<string>): ToolDefinition[] {
-  return (Object.keys(TOOL_DEFINITIONS) as (keyof typeof TOOL_DEFINITIONS)[]).filter((n) => allowed.has(n) && !(UNAVAILABLE_AI_TOOLS as readonly string[]).includes(n)).map((n) => TOOL_DEFINITIONS[n]);
+  return (Object.keys(TOOL_DEFINITIONS) as (keyof typeof TOOL_DEFINITIONS)[]).filter((n) => allowed.has(n) && !UNAVAILABLE_AI_TOOLS.includes(n)).map((n) => TOOL_DEFINITIONS[n]);
 }
 
 const money = (rupee: number): string => (rupee >= 1e7 ? `₹${Math.round((rupee / 1e7) * 100) / 100} Cr` : rupee >= 1e5 ? `₹${Math.round((rupee / 1e5) * 100) / 100} L` : `₹${rupee.toLocaleString('en-IN')}`);
@@ -70,6 +77,8 @@ export class ToolRunner {
     @Inject(ScoringService) private readonly scoring: ScoringService,
     @Inject(PropertiesService) private readonly properties: PropertiesService,
     @Inject(RealtimeService) private readonly rt: RealtimeService,
+    @Inject(OutboxService) private readonly outbox: OutboxService,
+    @Inject(AppointmentsService) private readonly appointments: AppointmentsService,
   ) {}
 
   /**
@@ -79,10 +88,10 @@ export class ToolRunner {
    * result, never thrown, so one bad call cannot crash the turn.
    */
   async execute(ctx: ToolContext, name: string, rawArgs: string): Promise<ToolOutcome> {
-    const known = Object.keys(inputs).includes(name) || (UNAVAILABLE_AI_TOOLS as readonly string[]).includes(name);
+    const known = Object.keys(inputs).includes(name);
     if (!known) return { ok: false, result: { error: 'unknown_tool' } };
     if (!ctx.allowed.has(name)) return { ok: false, result: { error: 'tool_not_enabled' } };
-    if ((UNAVAILABLE_AI_TOOLS as readonly string[]).includes(name)) return { ok: false, result: { error: 'scheduling_unavailable', message: 'Scheduling is not available. Tell the customer a team member will confirm a time.' } };
+    if (UNAVAILABLE_AI_TOOLS.includes(name as never)) return { ok: false, result: { error: 'tool_unavailable' } };
     let json: unknown;
     try { json = JSON.parse(rawArgs || '{}'); } catch { return { ok: false, result: { error: 'invalid_json' } }; }
     const parsed = inputs[name as keyof typeof inputs].safeParse(json);
@@ -102,6 +111,12 @@ export class ToolRunner {
     });
     return outcome;
   }
+
+  private label(at: Date, tz: string): string {
+    return `${new Intl.DateTimeFormat('en-IN', { timeZone: tz, weekday: 'short', day: 'numeric', month: 'short' }).format(at)}, ${new Intl.DateTimeFormat('en-IN', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true }).format(at).toUpperCase()}`;
+  }
+
+  private hhmm(at: Date, tz: string): string { const m = localParts(tz, at).minute; return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; }
 
   private tx<T>(ctx: ToolContext, fn: (tx: TxClient) => Promise<T>): Promise<T> { return this.db.tenantTx({ tenantId: ctx.tenantId }, fn); }
 
@@ -174,6 +189,43 @@ export class ToolRunner {
         });
         return { ok: true, result: { followUpAt: at.toISOString() } };
       }
+      case 'check_availability': {
+        const f = a as z.infer<typeof inputs.check_availability>;
+        return this.tx(ctx, async (tx) => {
+          const tz = ctx.tenant.timezone;
+          const today = localParts(tz, new Date()).date;
+          const from = f.date < today ? today : f.date;
+          const eligible = await this.appointments.eligibleAgentIds(tx, ctx.tenantId);
+          if (eligible.length === 0) return { ok: false, result: { error: 'no_agents', message: 'No one can take appointments right now. Tell the customer a team member will confirm a time.' } };
+          const res = await this.appointments.slotsFor(tx, ctx.tenantId, tz, eligible, from, 7, f.durationMinutes ?? 60);
+          const slots = res.days.flatMap((d) => d.slots.slice(0, 4).map((s) => ({ date: d.date, time: this.hhmm(new Date(s.startsAt), tz), label: this.label(new Date(s.startsAt), tz) }))).slice(0, 8);
+          if (slots.length === 0) return { ok: true, result: { timezone: tz, requestedDate: f.date, slots: [], message: 'No free times in the next 7 days. Tell the customer a team member will contact them to arrange a visit.' } };
+          return { ok: true, result: { timezone: tz, requestedDate: f.date, searchedFrom: from, slots, message: 'Offer two or three of these times. Do not mention any other time.' } };
+        });
+      }
+      case 'create_appointment': {
+        const f = a as z.infer<typeof inputs.create_appointment>;
+        const tz = ctx.tenant.timezone;
+        const found = await this.tx(ctx, async (tx) => {
+          const existing = await tx.appointment.findFirst({ where: { leadId: ctx.leadId, status: { in: ['PENDING', 'CONFIRMED'] }, startsAt: { gt: new Date() } }, orderBy: { startsAt: 'asc' } });
+          if (existing) return { existing: this.label(existing.startsAt, tz) };
+          const eligible = await this.appointments.eligibleAgentIds(tx, ctx.tenantId);
+          const res = await this.appointments.slotsFor(tx, ctx.tenantId, tz, eligible, f.date, 1, 60);
+          const slot = res.days[0]?.slots.find((s) => this.hhmm(new Date(s.startsAt), tz) === f.time);
+          return { slot: slot ?? null, alternatives: (res.days[0]?.slots ?? []).slice(0, 3).map((s) => this.label(new Date(s.startsAt), tz)) };
+        });
+        if ('existing' in found) return { ok: false, result: { error: 'already_booked', existing: found.existing, message: 'This customer already has an upcoming visit. Tell them so and that the team can change it; do not book another.' } };
+        if (!found.slot) return { ok: false, result: { error: 'slot_unavailable', alternatives: found.alternatives, message: 'That time is not free. Offer one of the alternatives (if any) or check_availability again.' } };
+        const actor = { tenantId: ctx.tenantId, userId: null, membershipId: null, permissions: new Set(['appointment:write', 'appointment:read:all', 'lead:write:all']), requestId: undefined, ip: undefined };
+        try {
+          const ap = await this.appointments.create(actor, { leadId: ctx.leadId, startsAt: found.slot.startsAt, durationMinutes: 60, notes: f.notes, outsideHours: false }, { source: 'ai', status: 'PENDING' });
+          await this.tx(ctx, (tx) => tx.lead.update({ where: { id: ctx.leadId }, data: { siteVisitRequested: true } }));
+          return { ok: true, result: { booked: true, status: 'pending_team_confirmation', when: this.label(new Date(ap.startsAt), tz), message: 'Tell the customer the visit is requested for that time and the team will confirm it shortly.' } };
+        } catch (e) {
+          const code = (e as { getResponse?: () => { code?: string } }).getResponse?.()?.code;
+          return { ok: false, result: { error: code ?? 'booking_failed', alternatives: found.alternatives, message: 'The booking did not go through. Offer another time or say the team will arrange it.' } };
+        }
+      }
       case 'handover_to_human': {
         const f = a as z.infer<typeof inputs.handover_to_human>;
         const open = isOpenNow(ctx.assistant.workingHours, ctx.tenant.timezone);
@@ -183,6 +235,7 @@ export class ToolRunner {
           await tx.message.create({ data: { id: uuidv7(), tenantId: ctx.tenantId, conversationId: ctx.conversationId, channelId: c.channelId, direction: 'OUTBOUND', senderType: 'SYSTEM', type: 'TEXT', body: `The assistant handed this conversation to the team: ${f.reason}`, status: 'DELIVERED' } });
           await tx.leadActivity.create({ data: { id: uuidv7(), tenantId: ctx.tenantId, leadId: ctx.leadId, type: 'ai_handover', actorUserId: null, data: { reason: f.reason } } });
           await this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: null, action: 'ai.handover', resourceType: 'conversation', resourceId: ctx.conversationId, metadata: { reason: f.reason.slice(0, 200) } });
+          await this.outbox.emit(tx, ctx.tenantId, 'conversation.handover', { conversationId: ctx.conversationId, leadId: ctx.leadId, reason: f.reason.slice(0, 200) });
           return c.assignedMembershipId;
         });
         this.rt.publish(ctx.tenantId, { type: 'conversation.updated', conversationId: ctx.conversationId, assignedMembershipId: assigned });

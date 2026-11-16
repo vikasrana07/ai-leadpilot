@@ -1,0 +1,11 @@
+{
+  "name": "@leadpilot/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Background process. The code lives in apps/api (src/worker.ts + src/ops) so business logic exists once; this package only runs it.",
+  "scripts": {
+    "build": "pnpm --filter @leadpilot/api build",
+    "start": "pnpm --filter @leadpilot/api worker"
+  }
+}

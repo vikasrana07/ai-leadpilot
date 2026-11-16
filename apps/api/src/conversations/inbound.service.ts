@@ -1,3 +1,4 @@
+import { OutboxService } from '../ops/outbox.service.js';
 import { Inject, Injectable } from '@nestjs/common';
 import type { MessageStatus, Prisma, TxClient } from '@leadpilot/database';
 import { v7 as uuidv7 } from 'uuid';
@@ -36,7 +37,7 @@ function previewOf(m: { type: string; body: string | null }): string {
 
 @Injectable()
 export class InboundService {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(LeadsService) private readonly leads: LeadsService, @Inject(RealtimeService) private readonly rt: RealtimeService, @Inject(AiTrigger) private readonly aiTrigger: AiTrigger) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(LeadsService) private readonly leads: LeadsService, @Inject(RealtimeService) private readonly rt: RealtimeService, @Inject(AiTrigger) private readonly aiTrigger: AiTrigger, @Inject(OutboxService) private readonly outbox: OutboxService) {}
 
   /** Machine actor for creating leads from inbound traffic: may create leads in its own tenant, nothing else. */
   private systemActor(tenantId: string): Actor {
@@ -96,6 +97,7 @@ export class InboundService {
       }
       if (!isNewConversation && existingConvo?.status === 'CLOSED') await tx.leadActivity.create({ data: { id: uuidv7(), tenantId: input.tenantId, leadId, type: 'conversation_reopened', data: {} } });
       const assigned = existingConvo?.assignedMembershipId ?? lead.assignedMembershipId;
+      await this.outbox.emit(tx, input.tenantId, 'message.inbound', { conversationId, messageId: msg.id, leadId });
       return { duplicate: false as const, conversationId, leadId, assigned, messageId: msg.id, preview };
     });
 

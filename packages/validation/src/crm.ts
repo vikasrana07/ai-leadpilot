@@ -195,8 +195,8 @@ export const widgetMessageSchema = z.object({ text: z.string().trim().min(1).max
 
 // --- AI (phase 4)
 export const AI_TOOLS = ['get_business_info', 'search_properties', 'get_lead_details', 'update_lead', 'calculate_lead_score', 'check_availability', 'create_appointment', 'assign_agent', 'create_followup', 'handover_to_human'] as const;
-/** Tools that exist but cannot be switched on until their module ships (appointments: phase 5). */
-export const UNAVAILABLE_AI_TOOLS = ['check_availability', 'create_appointment'] as const;
+/** Tools that exist but cannot be switched on yet. Empty since phase 5 shipped appointments. */
+export const UNAVAILABLE_AI_TOOLS: readonly (typeof AI_TOOLS)[number][] = [];
 export const AI_LANGUAGES = ['en', 'hi', 'hinglish'] as const;
 export const AI_TONES = ['friendly', 'professional', 'concise', 'warm'] as const;
 
@@ -212,7 +212,7 @@ export const assistantSchema = z.object({
   systemInstructions: z.string().trim().max(4000),
   workingHours: z.object({ enabled: z.boolean(), days: z.object({ mon: dayHours, tue: dayHours, wed: dayHours, thu: dayHours, fri: dayHours, sat: dayHours, sun: dayHours }) }),
   handoverRules: z.object({ keywords: z.array(z.string().trim().min(2).max(40)).max(30), onNegotiation: z.boolean(), onComplaint: z.boolean() }),
-  allowedTools: z.array(z.enum(AI_TOOLS)).max(10).refine((t) => !t.some((x) => (UNAVAILABLE_AI_TOOLS as readonly string[]).includes(x)), { message: 'Scheduling tools become available when appointments ship (phase 5)' }),
+  allowedTools: z.array(z.enum(AI_TOOLS)).max(10).refine((t) => !t.some((x) => UNAVAILABLE_AI_TOOLS.includes(x)), { message: 'That tool is not available yet' }),
   model: z.string().trim().max(60).nullable(),
   temperature: z.number().min(0).max(1),
   maxReplyChars: z.number().int().min(100).max(1500),

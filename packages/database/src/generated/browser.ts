@@ -217,3 +217,58 @@ export type ScoringRuleSet = Prisma.ScoringRuleSetModel
  * 
  */
 export type LeadScore = Prisma.LeadScoreModel
+/**
+ * Model AvailabilityRule
+ * Weekly working windows. membership_id NULL = the workspace default; a person's own rules replace the default for that person.
+ */
+export type AvailabilityRule = Prisma.AvailabilityRuleModel
+/**
+ * Model AvailabilityException
+ * A day (or part of a day) when someone is unavailable. date is a calendar day in the workspace timezone.
+ */
+export type AvailabilityException = Prisma.AvailabilityExceptionModel
+/**
+ * Model Appointment
+ * Double booking is prevented by exclusion constraints in SQL (see the *_appointments migration), not just by application checks.
+ */
+export type Appointment = Prisma.AppointmentModel
+/**
+ * Model AppointmentEvent
+ * 
+ */
+export type AppointmentEvent = Prisma.AppointmentEventModel
+/**
+ * Model Automation
+ * 
+ */
+export type Automation = Prisma.AutomationModel
+/**
+ * Model AutomationRun
+ * 
+ */
+export type AutomationRun = Prisma.AutomationRunModel
+/**
+ * Model Task
+ * 
+ */
+export type Task = Prisma.TaskModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel
+/**
+ * Model NotificationPreference
+ * 
+ */
+export type NotificationPreference = Prisma.NotificationPreferenceModel
+/**
+ * Model SlaBreach
+ * 
+ */
+export type SlaBreach = Prisma.SlaBreachModel
+/**
+ * Model EventMark
+ * "Already emitted" markers so scanners (reminders, inactivity, SLA) fire each thing exactly once.
+ */
+export type EventMark = Prisma.EventMarkModel

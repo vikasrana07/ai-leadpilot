@@ -1,7 +1,7 @@
 # LeadPilot AI — Progress
 
 Legend: ☐ pending · ◐ in progress · ☑ done (verified) · Tags: **M** = MVP, **V** = V1.1, **L** = Later
-Last updated: 2026-11-16 · Current phase: **Phase 4 (AI): built and verified with an OFFLINE mock model; no real LLM or Meta connection has been tested; awaiting user review**
+Last updated: 2026-11-16 · Current phase: **Phase 5 (automation & appointments): built and verified locally; real Meta, real LLM and real email are still unverified; awaiting user review**
 
 ## Phase status
 | Phase | Status |
@@ -11,7 +11,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 4 (AI): built and verified wi
 | 2 CRM | ☑ |
 | 3 Communication | ☑ (live Meta client still unverified) |
 | 4 AI | ◐ built; verified with an offline mock model only (see below) |
-| 5 Automation & appointments | ☐ |
+| 5 Automation & appointments | ☑ built; verified with mock WhatsApp/LLM (see below) |
 | 6 SaaS | ☐ |
 | 7 Hardening & launch | ☐ |
 
@@ -36,7 +36,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 4 (AI): built and verified wi
 - ☑ M Audit log (append-only at DB grant level) + viewer
 - ☑ M RLS on all tenant tables + isolation test suite
 - ☑ M Design tokens, light/dark/system theme, no-flash inline script (visually confirmed dark persistence; flash itself not measured)
-- ◐ M App shell: sidebar (collapse), header (workspace switcher, command palette, theme, profile), breadcrumbs component. **Not built yet:** quick-create button (nothing to create until phase 2), notifications bell (phase 5), global search beyond navigation commands
+- ◐ M App shell: sidebar (collapse), header (workspace switcher, command palette, theme, profile), breadcrumbs component. **Not built yet:** quick-create button (nothing to create until phase 2), global search beyond navigation commands
 - ◐ M i18n infrastructure: **not done** (strings are inline English). Carry to phase 2
 - ☐ V Permission overrides per member · ☐ L Fully custom roles
 - ☑ Responsive: verified in an emulated 390px viewport (phase 2): drawer nav, stacked filters, lead cards instead of a table, single-column dashboard. Kanban scrolls horizontally on phones by design
@@ -75,7 +75,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 4 (AI): built and verified wi
 ### AI (Phase 4)
 - ☑ M Provider abstraction (`LlmProvider`/`EmbeddingProvider`), prompt versioning (`v1.0` on every run), per-run logging (tokens, latency, tools, guard decisions)
 - ◐ M Orchestrator: debounce, one turn at a time, answered-through tracking, tool loop (≤5), guards with one retry, safe fallback handover. **Verified with the offline mock only**; the live OpenAI client is written but **has never run** (no key)
-- ☑ M Ten tools: eight live (`get_business_info`, `search_properties`, `get_lead_details`, `update_lead`, `calculate_lead_score`, `assign_agent`, `create_followup`, `handover_to_human`); `check_availability` and `create_appointment` exist but are refused until appointments ship (phase 5). All validated, tenant-bound, idempotent, audited
+- ☑ M Ten tools: eight live (`get_business_info`, `search_properties`, `get_lead_details`, `update_lead`, `calculate_lead_score`, `assign_agent`, `create_followup`, `handover_to_human`); `check_availability` and `create_appointment` are live since phase 5. All validated, tenant-bound, idempotent, audited
 - ☑ M Knowledge base: upload (PDF/DOCX/TXT/CSV, 10 MB, magic-byte check), **real ClamAV** scan (fail closed), **real S3 storage** (MinIO), isolated parsing, chunking, embeddings in **pgvector** (HNSW), status, preview, reprocess, delete, search, tenant-isolated retrieval. Mock embeddings offline; real embedding quality unverified
 - ☑ M Lead scoring: configurable, versioned, explainable; unknown ≠ negative; manager override with reason, history, audit; re-score on rule change
 - ☑ M Handover: keyword (no model call), model tool, guard failure, model outage, token cap; takeover/hand-back; working-hours-aware message; AI disclosure; welcome message
@@ -87,13 +87,15 @@ Last updated: 2026-11-16 · Current phase: **Phase 4 (AI): built and verified wi
 - ☐ V Voice-note transcription · ☐ V Additional Indian languages
 
 ### Automation, appointments, notifications (Phase 5)
-- ☐ M Appointments (CRUD, availability, calendar+list, no double booking)
-- ☐ M Reminders/confirmations
-- ☐ M Outbox + BullMQ workers, DLQ
-- ☐ M 8 automation templates, history, retries, dry-run
-- ☐ M In-app notifications + preferences
-- ☐ M SLA tracking + alerts
-- ☐ M Basic usage tracking
+- ☑ M Appointments: CRUD, status machine, reschedule (linked history), availability + days off, week calendar + upcoming list, **no double booking enforced by Postgres exclusion constraints** (ADR-0026), DST-safe (ADR-0027)
+- ☑ M Reminders/confirmations: confirmation on booking, 24h/2h customer reminders and a 1h agent reminder, each exactly once (ADR-0030). Customer messages are WhatsApp **templates** the tenant must register; until real Meta is connected they only run against the mock provider
+- ☑ M Outbox relay + BullMQ workers (retries with backoff, failed jobs retained as the dead-letter set, orphan sweeper, minute scheduler), `apps/worker` entry (ADR-0028)
+- ☑ M 8 automation templates, run history with step detail, retries (automatic + manual), dry-run, loop protection, cooldown (ADR-0029). **Custom automations: API only**; the UI offers templates, on/off, test, history, delete (no visual builder, [L])
+- ☑ M In-app notifications (bell, live over SSE) + per-type preferences; tasks (manual + from automations) with due reminders
+- ☑ M SLA tracking + alerts (ADR-0032), settings card
+- ☑ M Basic usage tracking (`GET /usage`, Usage page): metering only, no enforcement or billing (phase 6)
+- ☑ M AI scheduling tools enabled with a time-grounding output guard (ADR-0031)
+- ☑ M Redis-backed rate-limit store (counters shared across API instances; falls back to per-instance memory if Redis is down)
 - ☐ V Email / WhatsApp-to-staff / web push notifications · ☐ V Google Calendar · ☐ L Visual workflow editor
 
 ### SaaS (Phase 6)
@@ -131,6 +133,13 @@ Last updated: 2026-11-16 · Current phase: **Phase 4 (AI): built and verified wi
 - Browser (Chrome): configured and enabled the assistant → uploaded a document through the UI (scan, store, index → Ready) → semantic search → a WhatsApp customer chatted: lead qualified automatically (budget, area, type, timeline), answered the loan question from the document, handed over on request → activity log with tools/tokens/latency → lead score ring with per-signal explanation and history
 - **Bugs found by this phase's testing and fixed:** (1) PDF parsing broke JWT verification process-wide, so parsing now runs in an isolated worker; (2) WhatsApp's 1-second timestamps mis-ordered replies; (3) a customer message sent while the assistant was composing was never answered; (4) a database error after a successful send marked the message failed and showed internal error text to users; (5) documents could smuggle instructions to customers; (6) amount extraction double-counted "₹1.2 Cr"
 - **Not verified, important:** any real LLM (OpenAI client, strict-schema tool calling, real extraction accuracy, Hindi/Hinglish, tone, real injection resistance, token costs); real embedding quality; the 13 live-only eval cases; Playwright E2E; CI on GitHub (workflow now also starts MinIO and ClamAV)
+
+## Phase 5 verification (2026-11-16)
+- `pnpm lint` ✔ · `pnpm typecheck` ✔ · `pnpm build` ✔ · `pnpm test` ✔ (**19 DB + 256 API tests**): includes a 12-way concurrent double-booking race (exactly one wins), DST/timezone arithmetic (New York spring/fall, Kolkata), loop-protection bounds, idempotent re-execution, retry-then-fail-then-manual-retry, scanner exactly-once, SLA breach/resolve, notification scoping and preferences, tenant isolation, concurrent outbox claiming with lease expiry, and **real BullMQ workers over real Redis** (end-to-end run, 3 attempts with backoff then FAILED, scheduler registered once)
+- Real browser (Chrome): week calendar with real bookings, booking dialog with live slot search, notification bell filled by the real worker, automations page (templates installed, enabled, missing-template warning), usage page. Redis rate limiting verified live (10 allowed then 429, counters in Redis)
+- **Bugs found by this phase's testing and fixed:** an automation run with a non-UUID event id threw forever and stalled the whole outbox drain (now tolerated); people were notified about their own bookings; the loop-protection bound I first asserted was too tight (two mutually triggering automations produce at most 14 run rows, by design)
+- **Not verified:** real WhatsApp template delivery (and that tenants' templates are approved by Meta); real LLM scheduling behaviour (the mock follows a scripted flow; a real model may phrase offers differently, and the time guard may reject valid replies: watch `unsupported_time` in AI runs once a key is available); mobile layout of the new pages; multi-worker behaviour beyond the concurrency tests; Playwright E2E; CI on GitHub; the web UI has no tests of its own; clicked through in the browser: calendar, booking dialog, bell, automations, dry-run dialog, tasks, usage, SLA card. Not exercised in the browser: reschedule/cancel dialogs, working-hours editor, notification preferences dialog, run-history retry button
+- **Known limits:** reminders and automations are only as reliable as the worker process running; with `WORKERS_ENABLED` off nothing is processed (documented). Delivery failures from the provider are recorded on the message and the step is not auto-resent (a retry could duplicate a customer message); resend is manual from the inbox. No calendar sync (V1.1).
 
 ## Decisions needed from the user
 1. ☑ Phase 0 plan approved.

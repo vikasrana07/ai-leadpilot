@@ -33,6 +33,11 @@ const schema = z.object({
   SMTP_PORT: z.coerce.number().int().default(1026),
   MAIL_FROM: z.string().default('LeadPilot <no-reply@leadpilot.local>'),
   ENABLE_SWAGGER: bool,
+  /** Run the outbox relay, BullMQ workers and scanners in this process. The API process normally leaves this off and `apps/worker` turns it on. */
+  WORKERS_ENABLED: bool,
+  QUEUE_PREFIX: z.string().min(1).max(40).default('leadpilot'),
+  AUTOMATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(5),
+  AUTOMATION_RETRY_BASE_MS: z.coerce.number().int().min(10).default(2000),
   THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(10),
   THROTTLE_GLOBAL_LIMIT: z.coerce.number().int().positive().default(300),
 });

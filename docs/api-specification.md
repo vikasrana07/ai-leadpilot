@@ -74,3 +74,12 @@ Scope: `conversation:read:all` sees every conversation, `conversation:read:own` 
 `POST /knowledge/documents` (multipart `file`, optional `title`, `category`; PDF/DOCX/TXT/CSV ≤ 10 MB; 422 `unsupported_file` / `malware_detected`, 503 `scanner_unavailable`) · `GET /knowledge/documents[/:id]` (status PENDING→PROCESSING→READY|FAILED, preview) · `PATCH|DELETE /knowledge/documents/:id` · `POST …/:id/reprocess` · `GET …/:id/download` (attachment) · `POST /knowledge/search` `{q, limit}`
 
 Conversation `mode: AI` is set automatically for new conversations while the assistant is on; `takeover` / `handback` switch it. `handback` returns 409 `ai_not_configured` when the assistant is off.
+
+## Appointments (Phase 5: `appointment:read:own|all`, `appointment:write`)
+`GET /appointments?from&to&status&membershipId&leadId` (agents see only their own; response includes `timezone`) · `GET /appointments/slots?from=YYYY-MM-DD&days&durationMinutes&membershipId` · `POST /appointments` `{leadId, membershipId?, startsAt, durationMinutes, location?, notes?, outsideHours?}` (409 `slot_taken` / `lead_busy`, 422 `outside_hours` / `in_the_past`) · `GET|PATCH /appointments/:id` · `POST /appointments/:id/{confirm|complete|no-show|cancel|reschedule}` (409 `invalid_transition`) · `GET|PUT /appointments/availability?membershipId=<id|default>` · `POST|DELETE /appointments/availability/exceptions[/:id]`
+
+## Automations (`automation:manage`)
+`GET /automations` · `GET /automations/templates` · `POST /automations` · `POST /automations/from-template` `{templateKey}` · `GET|PUT|DELETE /automations/:id` · `POST /automations/:id/enable` `{enabled}` · `POST /automations/:id/dry-run` `{leadId, appointmentId?}` · `GET /automations/runs?automationId&status&cursor` · `POST /automations/runs/:id/retry`
+
+## Notifications, tasks, SLA, usage
+`GET /notifications?unread&before` · `GET /notifications/unread-count` · `POST /notifications/:id/read` · `POST /notifications/read-all` · `GET|PUT /notifications/preferences` · SSE event `notification.created` on `/realtime/stream` · `GET|POST /tasks`, `PATCH|DELETE /tasks/:id` · `GET|PUT /sla` (write needs `settings:manage`) · `GET /usage` (`usage:read`)

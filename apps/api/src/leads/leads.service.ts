@@ -9,6 +9,7 @@ import { toMinor } from '../common/money.js';
 import { normalizeEmail, normalizePhone } from '../common/phone.js';
 import { DbService } from '../db/db.module.js';
 import { LEAD_INCLUDE, toLeadDto, type LeadDto, type LeadRow } from './lead-mapper.js';
+import { OutboxService, originOf } from '../ops/outbox.service.js';
 import { RoundRobin } from './round-robin.js';
 import { checkTransition } from './stage-rules.js';
 
@@ -16,7 +17,7 @@ export interface DuplicateInfo { id: string; name: string; phone: string | null;
 
 @Injectable()
 export class LeadsService {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(ScoringService) private readonly scoring: ScoringService) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(ScoringService) private readonly scoring: ScoringService, @Inject(OutboxService) private readonly outbox: OutboxService) {}
 
   // ------------------------------------------------------------------ access control
   /** Row-level scoping for reads: `lead:read:all` sees everything, `lead:read:own` only assigned leads. */
@@ -193,6 +194,8 @@ export class LeadsService {
     await this.activity(tx, a, id, 'created', { source: opts.defaultSource });
     if (assignee) await this.activity(tx, a, id, 'assigned', { to: assignee });
     await this.auditLead(tx, a, 'lead.created', id, { assigned: assignee !== null });
+    await this.outbox.emit(tx, a.tenantId, 'lead.created', { leadId: id, ...originOf(a) });
+    if (assignee) await this.outbox.emit(tx, a.tenantId, 'lead.assigned', { leadId: id, membershipId: assignee, byUserId: a.userId, ...originOf(a) });
     await this.scoring.rescore(tx, a.tenantId, id, a.userId);
     const lead = await tx.lead.findUniqueOrThrow({ where: { id }, include: LEAD_INCLUDE });
     return { lead, duplicates };
@@ -239,6 +242,7 @@ export class LeadsService {
         data.assignedMembershipId = await this.validateAssignee(tx, a, input.assignedMembershipId);
         await this.activity(tx, a, id, 'assigned', { from: cur.assignedMembershipId, to: data.assignedMembershipId as string | null });
         await this.auditLead(tx, a, 'lead.assigned', id, { from: cur.assignedMembershipId, to: data.assignedMembershipId as string | null });
+        if (data.assignedMembershipId) await this.outbox.emit(tx, a.tenantId, 'lead.assigned', { leadId: id, membershipId: data.assignedMembershipId as string, byUserId: a.userId, ...originOf(a) });
       }
       if (changed.length || data.assignedMembershipId !== undefined) {
         const phoneNorm = (data.phoneNorm as string | null | undefined) ?? cur.phoneNorm;
@@ -283,6 +287,7 @@ export class LeadsService {
     await tx.stageTransition.create({ data: { id: uuidv7(), tenantId: a.tenantId, leadId: lead.id, fromStageId: from.id, toStageId: to.id, lostReasonId: reason?.id ?? null, actorUserId: a.userId } });
     await this.activity(tx, a, lead.id, 'stage_changed', { from: from.name, to: to.name, ...(reason ? { lostReasonId: reason.id } : {}) });
     await this.auditLead(tx, a, 'lead.stage_changed', lead.id, { from: from.name, to: to.name });
+    await this.outbox.emit(tx, a.tenantId, 'lead.stage_changed', { leadId: lead.id, fromStage: from.key, toStage: to.key, toKind: to.kind, ...originOf(a) });
   }
 
   async changeStage(a: Actor, id: string, input: StageChangeInput): Promise<LeadDto> {
@@ -315,6 +320,7 @@ export class LeadsService {
             if (input.action === 'assign') {
               await tx.lead.update({ where: { id }, data: { assignedMembershipId: assignee } });
               await this.activity(tx, a, id, 'assigned', { from: lead.assignedMembershipId, to: assignee });
+              if (assignee) await this.outbox.emit(tx, a.tenantId, 'lead.assigned', { leadId: id, membershipId: assignee, byUserId: a.userId, ...originOf(a) });
               await this.auditLead(tx, a, 'lead.assigned', id, { bulk: true, to: assignee });
             } else if (input.action === 'stage') {
               // savepoint so one invalid transition does not abort the whole batch
