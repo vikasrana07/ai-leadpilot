@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { SYSTEM_ROLES, type SystemRoleKey } from '@leadpilot/shared-types';
 import type { TxClient } from './index.js';
+import { applyIndustryPack } from './industry-pack.js';
 
 /**
  * Creates a tenant with its three system roles and their permissions. Must run inside a transaction where
@@ -23,5 +24,6 @@ export async function bootstrapTenant(
     await tx.role.create({ data: { id: roleId, tenantId, key, name: def.name, isSystem: true } });
     await tx.rolePermission.createMany({ data: def.permissions.map((permissionKey) => ({ tenantId, roleId, permissionKey })) });
   }
+  await applyIndustryPack(tx, tenantId, input.industry, newId);
   return { ownerRoleId: roleIds.owner, roleIds };
 }

@@ -48,6 +48,9 @@ model Tenant {
 
   memberships Membership[]
   roles       Role[]
+  stages      PipelineStage[]
+  leads       Lead[]
+  properties  Property[]
 
   @@map("tenants")
 }
@@ -232,4 +235,264 @@ model OutboxEvent {
   @@index([status, availableAt])
   @@index([tenantId])
   @@map("outbox_events")
+}
+
+
+// ======================================================================= Phase 2: CRM
+
+enum StageKind {
+  OPEN
+  WON
+  LOST
+}
+
+enum Temperature {
+  HOT
+  WARM
+  COLD
+  UNKNOWN
+}
+
+enum BuyingTimeline {
+  UNKNOWN
+  IMMEDIATE
+  WITHIN_30_DAYS
+  ONE_TO_THREE_MONTHS
+  THREE_TO_SIX_MONTHS
+  SIX_PLUS_MONTHS
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  HELD
+  SOLD
+}
+
+// One pipeline per tenant in the MVP. Stages come from the Industry Pack and are tenant-editable.
+model PipelineStage {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  key         String
+  name        String
+  position    Int
+  kind        StageKind @default(OPEN)
+  /** A lead counts as "qualified" once it is at (or past) a stage with this flag. */
+  qualifies   Boolean   @default(false)
+  /** A lead may be moved to a WON stage only from stages with this flag (prevents skipping the sales process). */
+  canCloseWon Boolean   @default(false) @map("can_close_won")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leads  Lead[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId, position])
+  @@map("pipeline_stages")
+}
+
+model LostReason {
+  id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String  @map("tenant_id") @db.Uuid
+  name     String
+  position Int
+  active   Boolean @default(true)
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("lost_reasons")
+}
+
+model LeadSource {
+  id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String  @map("tenant_id") @db.Uuid
+  key      String
+  name     String
+  isSystem Boolean @default(false) @map("is_system")
+
+  leads Lead[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@map("lead_sources")
+}
+
+model CustomFieldDefinition {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String  @map("tenant_id") @db.Uuid
+  entity    String  @default("lead")
+  key       String
+  label     String
+  type      String // text | number | select | date | boolean
+  options   Json    @default("[]")
+  required  Boolean @default(false)
+  position  Int     @default(0)
+
+  @@unique([tenantId, entity, key])
+  @@index([tenantId])
+  @@map("custom_field_definitions")
+}
+
+model Lead {
+  id                   String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId             String         @map("tenant_id") @db.Uuid
+  name                 String
+  phone                String?
+  /** Normalised E.164-ish digits used for duplicate detection. */
+  phoneNorm            String?        @map("phone_norm")
+  email                String?
+  emailNorm            String?        @map("email_norm")
+  sourceId             String?        @map("source_id") @db.Uuid
+  stageId              String         @map("stage_id") @db.Uuid
+  temperature          Temperature    @default(UNKNOWN)
+  /** Money is stored in minor units (paise). The API exposes major units. */
+  budgetMinMinor       BigInt?        @map("budget_min_minor")
+  budgetMaxMinor       BigInt?        @map("budget_max_minor")
+  location             String?
+  propertyType         String?        @map("property_type")
+  requirements         String?
+  buyingTimeline       BuyingTimeline @default(UNKNOWN) @map("buying_timeline")
+  assignedMembershipId String?        @map("assigned_membership_id") @db.Uuid
+  score                Int?
+  scoreUpdatedAt       DateTime?      @map("score_updated_at") @db.Timestamptz(3)
+  lastContactedAt      DateTime?      @map("last_contacted_at") @db.Timestamptz(3)
+  nextFollowUpAt       DateTime?      @map("next_follow_up_at") @db.Timestamptz(3)
+  customFields         Json           @default("{}") @map("custom_fields")
+  lostReasonId         String?        @map("lost_reason_id") @db.Uuid
+  lostNote             String?        @map("lost_note")
+  mergedIntoId         String?        @map("merged_into_id") @db.Uuid
+  createdByUserId      String?        @map("created_by_user_id") @db.Uuid
+  deletedAt            DateTime?      @map("deleted_at") @db.Timestamptz(3)
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  tenant      Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stage       PipelineStage   @relation(fields: [stageId], references: [id])
+  source      LeadSource?     @relation(fields: [sourceId], references: [id])
+  tags        LeadTag[]
+  notes       LeadNote[]
+  activities  LeadActivity[]
+  transitions StageTransition[]
+
+  @@index([tenantId, deletedAt, createdAt(sort: Desc)])
+  @@index([tenantId, stageId])
+  @@index([tenantId, assignedMembershipId])
+  @@index([tenantId, phoneNorm])
+  @@index([tenantId, emailNorm])
+  @@index([tenantId, nextFollowUpAt])
+  @@map("leads")
+}
+
+model Tag {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+  name     String
+  color    String @default("neutral")
+
+  leads LeadTag[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("tags")
+}
+
+model LeadTag {
+  tenantId String @map("tenant_id") @db.Uuid
+  leadId   String @map("lead_id") @db.Uuid
+  tagId    String @map("tag_id") @db.Uuid
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([leadId, tagId])
+  @@index([tenantId])
+  @@map("lead_tags")
+}
+
+model LeadNote {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  leadId       String   @map("lead_id") @db.Uuid
+  authorUserId String   @map("author_user_id") @db.Uuid
+  body         String
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, leadId, createdAt])
+  @@map("lead_notes")
+}
+
+/// Typed timeline entries. Append-only by convention (no UPDATE/DELETE grant).
+model LeadActivity {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  leadId      String   @map("lead_id") @db.Uuid
+  type        String
+  actorUserId String?  @map("actor_user_id") @db.Uuid
+  data        Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, leadId, createdAt(sort: Desc)])
+  @@map("lead_activities")
+}
+
+model StageTransition {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  leadId       String   @map("lead_id") @db.Uuid
+  fromStageId  String?  @map("from_stage_id") @db.Uuid
+  toStageId    String   @map("to_stage_id") @db.Uuid
+  lostReasonId String?  @map("lost_reason_id") @db.Uuid
+  actorUserId  String?  @map("actor_user_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, leadId, createdAt])
+  @@index([tenantId, toStageId, createdAt])
+  @@map("stage_transitions")
+}
+
+model Property {
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String         @map("tenant_id") @db.Uuid
+  project     String
+  unitLabel   String?        @map("unit_label")
+  title       String
+  propertyType String        @map("property_type")
+  bedrooms    Int?
+  areaSqft    Int?           @map("area_sqft")
+  priceMinor  BigInt         @map("price_minor")
+  location    String
+  status      PropertyStatus @default(AVAILABLE)
+  attributes  Json           @default("{}")
+  deletedAt   DateTime?      @map("deleted_at") @db.Timestamptz(3)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@index([tenantId, location])
+  @@index([tenantId, priceMinor])
+  @@map("properties")
+}
+
+/// API keys for lead capture and (later) the public API. Only a SHA-256 hash is stored.
+model ApiKey {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  name        String
+  keyPrefix   String    @map("key_prefix")
+  keyHash     String    @unique @map("key_hash")
+  scopes      String[]
+  createdBy   String    @map("created_by") @db.Uuid
+  lastUsedAt  DateTime? @map("last_used_at") @db.Timestamptz(3)
+  revokedAt   DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([tenantId])
+  @@map("api_keys")
 }

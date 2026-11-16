@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createPrismaClient, withTenant, type PrismaClient } from '../src/index.js';
+import { applyIndustryPack, createPrismaClient, withTenant, type PrismaClient } from '../src/index.js';
 
 const appUrl = process.env.DATABASE_URL;
 const ownerUrl = process.env.DATABASE_OWNER_URL;
@@ -16,11 +16,18 @@ const userA = randomUUID();
 const userB = randomUUID();
 const roleA = randomUUID();
 const roleB = randomUUID();
+const leadA = randomUUID();
+const leadB = randomUUID();
 
 async function seedTenant(tenantId: string, userId: string, roleId: string, label: string): Promise<void> {
   await withTenant(prisma, { tenantId, userId }, async (tx) => {
     await tx.tenant.create({ data: { id: tenantId, name: `Tenant ${label}`, email: `${label}@t.test`, industry: 'real_estate' } });
     await tx.role.create({ data: { id: roleId, tenantId, key: 'owner', name: 'Owner' } });
+    await applyIndustryPack(tx, tenantId, 'real_estate');
+    const stage = await tx.pipelineStage.findFirstOrThrow({ where: { tenantId, key: 'new' } });
+    await tx.lead.create({ data: { id: tenantId === A ? leadA : leadB, tenantId, name: `Lead ${label}`, stageId: stage.id, phoneNorm: '919800000000' } });
+    await tx.leadActivity.create({ data: { tenantId, leadId: tenantId === A ? leadA : leadB, type: 'created' } });
+    await tx.apiKey.create({ data: { tenantId, name: 'k', keyPrefix: 'lp_test', keyHash: `keyhash-${tenantId}`, scopes: ['leads:create'], createdBy: userId } });
   });
   await withTenant(prisma, { tenantId: null, userId }, async (tx) => {
     await tx.user.create({ data: { id: userId, email: `${label}-${userId}@t.test`, passwordHash: 'x', name: label } });
@@ -42,6 +49,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await owner.query('DELETE FROM leads WHERE tenant_id = ANY($1)', [[A, B]]);
   await owner.query('DELETE FROM invitations WHERE tenant_id = ANY($1)', [[A, B]]);
   await owner.query('DELETE FROM tenants WHERE id = ANY($1)', [[A, B]]);
   await owner.query('DELETE FROM users WHERE id = ANY($1)', [[userA, userB]]);
@@ -187,5 +195,54 @@ describe('invitation lookup helper', () => {
 describe('withTenant input hardening', () => {
   it('rejects non-UUID tenant ids', async () => {
     await expect(withTenant(prisma, { tenantId: "x'; DROP TABLE tenants;--" }, async () => 1)).rejects.toThrow('Invalid tenant id');
+  });
+});
+
+describe('CRM tables isolation', () => {
+  it('leads, stages, sources, activities and api keys are tenant-scoped', async () => {
+    await withTenant(prisma, { tenantId: A, userId: userA }, async (tx) => {
+      expect((await tx.lead.findMany()).map((l) => l.id)).toEqual([leadA]);
+      expect((await tx.pipelineStage.findMany()).every((st) => st.tenantId === A)).toBe(true);
+      expect((await tx.leadSource.findMany()).every((x) => x.tenantId === A)).toBe(true);
+      expect((await tx.leadActivity.findMany()).every((x) => x.tenantId === A)).toBe(true);
+      expect((await tx.apiKey.findMany()).every((x) => x.tenantId === A)).toBe(true);
+      expect(await tx.lead.findUnique({ where: { id: leadB } })).toBeNull();
+    });
+  });
+
+  it('cannot create a lead in another tenant, nor point a lead at another tenant\'s stage', async () => {
+    const stageB = await owner.query("SELECT id FROM pipeline_stages WHERE tenant_id=$1 AND key='new'", [B]);
+    await expect(
+      withTenant(prisma, { tenantId: A, userId: userA }, (tx) => tx.lead.create({ data: { tenantId: B, name: 'x', stageId: stageB.rows[0].id } })),
+    ).rejects.toThrow();
+    // FK allows referencing the row id, but RLS on pipeline_stages makes the stage invisible to A: reads cannot reveal it
+    await withTenant(prisma, { tenantId: A, userId: userA }, async (tx) => {
+      expect(await tx.pipelineStage.findUnique({ where: { id: stageB.rows[0].id } })).toBeNull();
+    });
+  });
+
+  it('lead history is append-only for the app role', async () => {
+    await expect(withTenant(prisma, { tenantId: A }, (tx) => tx.leadActivity.deleteMany({}))).rejects.toThrow(/permission denied/i);
+    await expect(withTenant(prisma, { tenantId: A }, (tx) => tx.leadActivity.updateMany({ data: { type: 'x' } }))).rejects.toThrow(/permission denied/i);
+    await expect(withTenant(prisma, { tenantId: A }, (tx) => tx.stageTransition.deleteMany({}))).rejects.toThrow(/permission denied/i);
+  });
+
+  it('api key lookup works without tenant context and returns nothing for unknown hashes', async () => {
+    await withTenant(prisma, { tenantId: null }, async (tx) => {
+      const hit = await tx.$queryRaw<{ tenant_id: string }[]>`SELECT * FROM find_api_key_by_hash(${`keyhash-${A}`})`;
+      expect(hit[0]?.tenant_id).toBe(A);
+      expect(await tx.$queryRaw`SELECT * FROM find_api_key_by_hash(${'nope'})`).toHaveLength(0);
+      expect(await tx.lead.count()).toBe(0);
+    });
+  });
+
+  it('applying the industry pack twice does not duplicate or overwrite', async () => {
+    await withTenant(prisma, { tenantId: A, userId: userA }, async (tx) => {
+      await tx.pipelineStage.updateMany({ where: { key: 'new' }, data: { name: 'Fresh' } });
+      await applyIndustryPack(tx, A, 'real_estate');
+      const stages = await tx.pipelineStage.findMany({ where: { tenantId: A } });
+      expect(stages).toHaveLength(8);
+      expect(stages.find((st) => st.key === 'new')?.name).toBe('Fresh');
+    });
   });
 });

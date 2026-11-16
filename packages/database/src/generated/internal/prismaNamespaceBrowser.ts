@@ -62,7 +62,19 @@ export const ModelName = {
   EmailVerificationToken: 'EmailVerificationToken',
   PasswordResetToken: 'PasswordResetToken',
   AuditLog: 'AuditLog',
-  OutboxEvent: 'OutboxEvent'
+  OutboxEvent: 'OutboxEvent',
+  PipelineStage: 'PipelineStage',
+  LostReason: 'LostReason',
+  LeadSource: 'LeadSource',
+  CustomFieldDefinition: 'CustomFieldDefinition',
+  Lead: 'Lead',
+  Tag: 'Tag',
+  LeadTag: 'LeadTag',
+  LeadNote: 'LeadNote',
+  LeadActivity: 'LeadActivity',
+  StageTransition: 'StageTransition',
+  Property: 'Property',
+  ApiKey: 'ApiKey'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -249,6 +261,188 @@ export const OutboxEventScalarFieldEnum = {
 } as const
 
 export type OutboxEventScalarFieldEnum = (typeof OutboxEventScalarFieldEnum)[keyof typeof OutboxEventScalarFieldEnum]
+
+
+export const PipelineStageScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  key: 'key',
+  name: 'name',
+  position: 'position',
+  kind: 'kind',
+  qualifies: 'qualifies',
+  canCloseWon: 'canCloseWon',
+  createdAt: 'createdAt'
+} as const
+
+export type PipelineStageScalarFieldEnum = (typeof PipelineStageScalarFieldEnum)[keyof typeof PipelineStageScalarFieldEnum]
+
+
+export const LostReasonScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  position: 'position',
+  active: 'active'
+} as const
+
+export type LostReasonScalarFieldEnum = (typeof LostReasonScalarFieldEnum)[keyof typeof LostReasonScalarFieldEnum]
+
+
+export const LeadSourceScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  key: 'key',
+  name: 'name',
+  isSystem: 'isSystem'
+} as const
+
+export type LeadSourceScalarFieldEnum = (typeof LeadSourceScalarFieldEnum)[keyof typeof LeadSourceScalarFieldEnum]
+
+
+export const CustomFieldDefinitionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  entity: 'entity',
+  key: 'key',
+  label: 'label',
+  type: 'type',
+  options: 'options',
+  required: 'required',
+  position: 'position'
+} as const
+
+export type CustomFieldDefinitionScalarFieldEnum = (typeof CustomFieldDefinitionScalarFieldEnum)[keyof typeof CustomFieldDefinitionScalarFieldEnum]
+
+
+export const LeadScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  phone: 'phone',
+  phoneNorm: 'phoneNorm',
+  email: 'email',
+  emailNorm: 'emailNorm',
+  sourceId: 'sourceId',
+  stageId: 'stageId',
+  temperature: 'temperature',
+  budgetMinMinor: 'budgetMinMinor',
+  budgetMaxMinor: 'budgetMaxMinor',
+  location: 'location',
+  propertyType: 'propertyType',
+  requirements: 'requirements',
+  buyingTimeline: 'buyingTimeline',
+  assignedMembershipId: 'assignedMembershipId',
+  score: 'score',
+  scoreUpdatedAt: 'scoreUpdatedAt',
+  lastContactedAt: 'lastContactedAt',
+  nextFollowUpAt: 'nextFollowUpAt',
+  customFields: 'customFields',
+  lostReasonId: 'lostReasonId',
+  lostNote: 'lostNote',
+  mergedIntoId: 'mergedIntoId',
+  createdByUserId: 'createdByUserId',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LeadScalarFieldEnum = (typeof LeadScalarFieldEnum)[keyof typeof LeadScalarFieldEnum]
+
+
+export const TagScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  color: 'color'
+} as const
+
+export type TagScalarFieldEnum = (typeof TagScalarFieldEnum)[keyof typeof TagScalarFieldEnum]
+
+
+export const LeadTagScalarFieldEnum = {
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  tagId: 'tagId'
+} as const
+
+export type LeadTagScalarFieldEnum = (typeof LeadTagScalarFieldEnum)[keyof typeof LeadTagScalarFieldEnum]
+
+
+export const LeadNoteScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  authorUserId: 'authorUserId',
+  body: 'body',
+  createdAt: 'createdAt'
+} as const
+
+export type LeadNoteScalarFieldEnum = (typeof LeadNoteScalarFieldEnum)[keyof typeof LeadNoteScalarFieldEnum]
+
+
+export const LeadActivityScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  type: 'type',
+  actorUserId: 'actorUserId',
+  data: 'data',
+  createdAt: 'createdAt'
+} as const
+
+export type LeadActivityScalarFieldEnum = (typeof LeadActivityScalarFieldEnum)[keyof typeof LeadActivityScalarFieldEnum]
+
+
+export const StageTransitionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  fromStageId: 'fromStageId',
+  toStageId: 'toStageId',
+  lostReasonId: 'lostReasonId',
+  actorUserId: 'actorUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type StageTransitionScalarFieldEnum = (typeof StageTransitionScalarFieldEnum)[keyof typeof StageTransitionScalarFieldEnum]
+
+
+export const PropertyScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  project: 'project',
+  unitLabel: 'unitLabel',
+  title: 'title',
+  propertyType: 'propertyType',
+  bedrooms: 'bedrooms',
+  areaSqft: 'areaSqft',
+  priceMinor: 'priceMinor',
+  location: 'location',
+  status: 'status',
+  attributes: 'attributes',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PropertyScalarFieldEnum = (typeof PropertyScalarFieldEnum)[keyof typeof PropertyScalarFieldEnum]
+
+
+export const ApiKeyScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  keyPrefix: 'keyPrefix',
+  keyHash: 'keyHash',
+  scopes: 'scopes',
+  createdBy: 'createdBy',
+  lastUsedAt: 'lastUsedAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
 
 
 export const SortOrder = {

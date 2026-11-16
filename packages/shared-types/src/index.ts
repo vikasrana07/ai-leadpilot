@@ -1,4 +1,5 @@
 export * from './permissions.js';
+export * from './industry-packs.js';
 
 export interface WorkspaceSummary {
   tenantId: string;

@@ -13,8 +13,10 @@ export const PERMISSIONS = {
   'lead:import': 'Import leads from CSV',
   'lead:export': 'Export leads to CSV',
   'lead:score:override': 'Override lead scores',
-  // Pipeline
+  // Pipeline & inventory
   'pipeline:manage': 'Configure pipeline stages',
+  'property:read': 'View property inventory',
+  'property:manage': 'Manage property inventory',
   // Conversations
   'conversation:read:own': 'View my conversations',
   'conversation:read:all': 'View all conversations',
@@ -53,14 +55,14 @@ export type SystemRoleKey = 'owner' | 'manager' | 'agent';
 
 const AGENT: PermissionKey[] = [
   'lead:read:own', 'lead:write:own', 'conversation:read:own', 'conversation:reply',
-  'appointment:read:own', 'appointment:write', 'analytics:read:own', 'team:read',
+  'appointment:read:own', 'appointment:write', 'analytics:read:own', 'team:read', 'property:read',
 ];
 
 const MANAGER: PermissionKey[] = [
   ...AGENT,
   'lead:read:all', 'lead:write:all', 'lead:assign', 'lead:import', 'lead:export', 'lead:score:override',
   'pipeline:manage', 'conversation:read:all', 'conversation:assign', 'appointment:read:all',
-  'analytics:read:team', 'analytics:read:all', 'usage:read', 'automation:manage',
+  'analytics:read:team', 'analytics:read:all', 'usage:read', 'automation:manage', 'property:manage',
 ];
 
 export const SYSTEM_ROLES: Record<SystemRoleKey, { name: string; permissions: readonly PermissionKey[] }> = {

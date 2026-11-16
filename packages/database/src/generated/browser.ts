@@ -77,3 +77,63 @@ export type AuditLog = Prisma.AuditLogModel
  * 
  */
 export type OutboxEvent = Prisma.OutboxEventModel
+/**
+ * Model PipelineStage
+ * 
+ */
+export type PipelineStage = Prisma.PipelineStageModel
+/**
+ * Model LostReason
+ * 
+ */
+export type LostReason = Prisma.LostReasonModel
+/**
+ * Model LeadSource
+ * 
+ */
+export type LeadSource = Prisma.LeadSourceModel
+/**
+ * Model CustomFieldDefinition
+ * 
+ */
+export type CustomFieldDefinition = Prisma.CustomFieldDefinitionModel
+/**
+ * Model Lead
+ * 
+ */
+export type Lead = Prisma.LeadModel
+/**
+ * Model Tag
+ * 
+ */
+export type Tag = Prisma.TagModel
+/**
+ * Model LeadTag
+ * 
+ */
+export type LeadTag = Prisma.LeadTagModel
+/**
+ * Model LeadNote
+ * 
+ */
+export type LeadNote = Prisma.LeadNoteModel
+/**
+ * Model LeadActivity
+ * Typed timeline entries. Append-only by convention (no UPDATE/DELETE grant).
+ */
+export type LeadActivity = Prisma.LeadActivityModel
+/**
+ * Model StageTransition
+ * 
+ */
+export type StageTransition = Prisma.StageTransitionModel
+/**
+ * Model Property
+ * 
+ */
+export type Property = Prisma.PropertyModel
+/**
+ * Model ApiKey
+ * API keys for lead capture and (later) the public API. Only a SHA-256 hash is stored.
+ */
+export type ApiKey = Prisma.ApiKeyModel

@@ -33,3 +33,43 @@ export const UserStatus = {
 } as const
 
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
+
+
+export const StageKind = {
+  OPEN: 'OPEN',
+  WON: 'WON',
+  LOST: 'LOST'
+} as const
+
+export type StageKind = (typeof StageKind)[keyof typeof StageKind]
+
+
+export const Temperature = {
+  HOT: 'HOT',
+  WARM: 'WARM',
+  COLD: 'COLD',
+  UNKNOWN: 'UNKNOWN'
+} as const
+
+export type Temperature = (typeof Temperature)[keyof typeof Temperature]
+
+
+export const BuyingTimeline = {
+  UNKNOWN: 'UNKNOWN',
+  IMMEDIATE: 'IMMEDIATE',
+  WITHIN_30_DAYS: 'WITHIN_30_DAYS',
+  ONE_TO_THREE_MONTHS: 'ONE_TO_THREE_MONTHS',
+  THREE_TO_SIX_MONTHS: 'THREE_TO_SIX_MONTHS',
+  SIX_PLUS_MONTHS: 'SIX_PLUS_MONTHS'
+} as const
+
+export type BuyingTimeline = (typeof BuyingTimeline)[keyof typeof BuyingTimeline]
+
+
+export const PropertyStatus = {
+  AVAILABLE: 'AVAILABLE',
+  HELD: 'HELD',
+  SOLD: 'SOLD'
+} as const
+
+export type PropertyStatus = (typeof PropertyStatus)[keyof typeof PropertyStatus]

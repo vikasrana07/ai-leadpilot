@@ -1,3 +1,9 @@
+-- Extensions are created here (idempotent) so fresh and shadow databases work without manual setup.
+CREATE EXTENSION IF NOT EXISTS citext;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- CreateEnum
 CREATE TYPE "TenantStatus" AS ENUM ('ACTIVE', 'SUSPENDED', 'DELETED');
 

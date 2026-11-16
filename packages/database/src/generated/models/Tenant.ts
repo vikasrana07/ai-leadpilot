@@ -272,6 +272,9 @@ export type TenantWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   memberships?: Prisma.MembershipListRelationFilter
   roles?: Prisma.RoleListRelationFilter
+  stages?: Prisma.PipelineStageListRelationFilter
+  leads?: Prisma.LeadListRelationFilter
+  properties?: Prisma.PropertyListRelationFilter
 }
 
 export type TenantOrderByWithRelationInput = {
@@ -294,6 +297,9 @@ export type TenantOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   memberships?: Prisma.MembershipOrderByRelationAggregateInput
   roles?: Prisma.RoleOrderByRelationAggregateInput
+  stages?: Prisma.PipelineStageOrderByRelationAggregateInput
+  leads?: Prisma.LeadOrderByRelationAggregateInput
+  properties?: Prisma.PropertyOrderByRelationAggregateInput
 }
 
 export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -319,6 +325,9 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   memberships?: Prisma.MembershipListRelationFilter
   roles?: Prisma.RoleListRelationFilter
+  stages?: Prisma.PipelineStageListRelationFilter
+  leads?: Prisma.LeadListRelationFilter
+  properties?: Prisma.PropertyListRelationFilter
 }, "id">
 
 export type TenantOrderByWithAggregationInput = {
@@ -387,6 +396,9 @@ export type TenantCreateInput = {
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  stages?: Prisma.PipelineStageCreateNestedManyWithoutTenantInput
+  leads?: Prisma.LeadCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateInput = {
@@ -409,6 +421,9 @@ export type TenantUncheckedCreateInput = {
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  stages?: Prisma.PipelineStageUncheckedCreateNestedManyWithoutTenantInput
+  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUpdateInput = {
@@ -431,6 +446,9 @@ export type TenantUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  stages?: Prisma.PipelineStageUpdateManyWithoutTenantNestedInput
+  leads?: Prisma.LeadUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateInput = {
@@ -453,6 +471,9 @@ export type TenantUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  stages?: Prisma.PipelineStageUncheckedUpdateManyWithoutTenantNestedInput
+  leads?: Prisma.LeadUncheckedUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyInput = {
@@ -620,6 +641,48 @@ export type TenantUpdateOneRequiredWithoutMembershipsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutMembershipsInput, Prisma.TenantUpdateWithoutMembershipsInput>, Prisma.TenantUncheckedUpdateWithoutMembershipsInput>
 }
 
+export type TenantCreateNestedOneWithoutStagesInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutStagesInput, Prisma.TenantUncheckedCreateWithoutStagesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutStagesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutStagesNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutStagesInput, Prisma.TenantUncheckedCreateWithoutStagesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutStagesInput
+  upsert?: Prisma.TenantUpsertWithoutStagesInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutStagesInput, Prisma.TenantUpdateWithoutStagesInput>, Prisma.TenantUncheckedUpdateWithoutStagesInput>
+}
+
+export type TenantCreateNestedOneWithoutLeadsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutLeadsInput, Prisma.TenantUncheckedCreateWithoutLeadsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutLeadsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutLeadsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutLeadsInput, Prisma.TenantUncheckedCreateWithoutLeadsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutLeadsInput
+  upsert?: Prisma.TenantUpsertWithoutLeadsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutLeadsInput, Prisma.TenantUpdateWithoutLeadsInput>, Prisma.TenantUncheckedUpdateWithoutLeadsInput>
+}
+
+export type TenantCreateNestedOneWithoutPropertiesInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutPropertiesInput, Prisma.TenantUncheckedCreateWithoutPropertiesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutPropertiesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutPropertiesNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutPropertiesInput, Prisma.TenantUncheckedCreateWithoutPropertiesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutPropertiesInput
+  upsert?: Prisma.TenantUpsertWithoutPropertiesInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutPropertiesInput, Prisma.TenantUpdateWithoutPropertiesInput>, Prisma.TenantUncheckedUpdateWithoutPropertiesInput>
+}
+
 export type TenantCreateWithoutRolesInput = {
   id?: string
   name: string
@@ -639,6 +702,9 @@ export type TenantCreateWithoutRolesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  stages?: Prisma.PipelineStageCreateNestedManyWithoutTenantInput
+  leads?: Prisma.LeadCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutRolesInput = {
@@ -660,6 +726,9 @@ export type TenantUncheckedCreateWithoutRolesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  stages?: Prisma.PipelineStageUncheckedCreateNestedManyWithoutTenantInput
+  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutRolesInput = {
@@ -697,6 +766,9 @@ export type TenantUpdateWithoutRolesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  stages?: Prisma.PipelineStageUpdateManyWithoutTenantNestedInput
+  leads?: Prisma.LeadUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutRolesInput = {
@@ -718,6 +790,9 @@ export type TenantUncheckedUpdateWithoutRolesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  stages?: Prisma.PipelineStageUncheckedUpdateManyWithoutTenantNestedInput
+  leads?: Prisma.LeadUncheckedUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutMembershipsInput = {
@@ -739,6 +814,9 @@ export type TenantCreateWithoutMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  stages?: Prisma.PipelineStageCreateNestedManyWithoutTenantInput
+  leads?: Prisma.LeadCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutMembershipsInput = {
@@ -760,6 +838,9 @@ export type TenantUncheckedCreateWithoutMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  stages?: Prisma.PipelineStageUncheckedCreateNestedManyWithoutTenantInput
+  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutMembershipsInput = {
@@ -797,6 +878,9 @@ export type TenantUpdateWithoutMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  stages?: Prisma.PipelineStageUpdateManyWithoutTenantNestedInput
+  leads?: Prisma.LeadUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutMembershipsInput = {
@@ -818,6 +902,345 @@ export type TenantUncheckedUpdateWithoutMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  stages?: Prisma.PipelineStageUncheckedUpdateManyWithoutTenantNestedInput
+  leads?: Prisma.LeadUncheckedUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutStagesInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  logoUrl?: string | null
+  industry: string
+  industryPackId?: string
+  website?: string | null
+  address?: string | null
+  timezone?: string
+  currency?: string
+  planKey?: string
+  status?: $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  leads?: Prisma.LeadCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutStagesInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  logoUrl?: string | null
+  industry: string
+  industryPackId?: string
+  website?: string | null
+  address?: string | null
+  timezone?: string
+  currency?: string
+  planKey?: string
+  status?: $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutStagesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutStagesInput, Prisma.TenantUncheckedCreateWithoutStagesInput>
+}
+
+export type TenantUpsertWithoutStagesInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutStagesInput, Prisma.TenantUncheckedUpdateWithoutStagesInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutStagesInput, Prisma.TenantUncheckedCreateWithoutStagesInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutStagesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutStagesInput, Prisma.TenantUncheckedUpdateWithoutStagesInput>
+}
+
+export type TenantUpdateWithoutStagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  industryPackId?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  planKey?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  leads?: Prisma.LeadUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutStagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  industryPackId?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  planKey?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  leads?: Prisma.LeadUncheckedUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutLeadsInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  logoUrl?: string | null
+  industry: string
+  industryPackId?: string
+  website?: string | null
+  address?: string | null
+  timezone?: string
+  currency?: string
+  planKey?: string
+  status?: $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  stages?: Prisma.PipelineStageCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutLeadsInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  logoUrl?: string | null
+  industry: string
+  industryPackId?: string
+  website?: string | null
+  address?: string | null
+  timezone?: string
+  currency?: string
+  planKey?: string
+  status?: $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  stages?: Prisma.PipelineStageUncheckedCreateNestedManyWithoutTenantInput
+  properties?: Prisma.PropertyUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutLeadsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutLeadsInput, Prisma.TenantUncheckedCreateWithoutLeadsInput>
+}
+
+export type TenantUpsertWithoutLeadsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutLeadsInput, Prisma.TenantUncheckedUpdateWithoutLeadsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutLeadsInput, Prisma.TenantUncheckedCreateWithoutLeadsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutLeadsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutLeadsInput, Prisma.TenantUncheckedUpdateWithoutLeadsInput>
+}
+
+export type TenantUpdateWithoutLeadsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  industryPackId?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  planKey?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  stages?: Prisma.PipelineStageUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutLeadsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  industryPackId?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  planKey?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  stages?: Prisma.PipelineStageUncheckedUpdateManyWithoutTenantNestedInput
+  properties?: Prisma.PropertyUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutPropertiesInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  logoUrl?: string | null
+  industry: string
+  industryPackId?: string
+  website?: string | null
+  address?: string | null
+  timezone?: string
+  currency?: string
+  planKey?: string
+  status?: $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  stages?: Prisma.PipelineStageCreateNestedManyWithoutTenantInput
+  leads?: Prisma.LeadCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutPropertiesInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  logoUrl?: string | null
+  industry: string
+  industryPackId?: string
+  website?: string | null
+  address?: string | null
+  timezone?: string
+  currency?: string
+  planKey?: string
+  status?: $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  stages?: Prisma.PipelineStageUncheckedCreateNestedManyWithoutTenantInput
+  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutPropertiesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutPropertiesInput, Prisma.TenantUncheckedCreateWithoutPropertiesInput>
+}
+
+export type TenantUpsertWithoutPropertiesInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutPropertiesInput, Prisma.TenantUncheckedUpdateWithoutPropertiesInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutPropertiesInput, Prisma.TenantUncheckedCreateWithoutPropertiesInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutPropertiesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutPropertiesInput, Prisma.TenantUncheckedUpdateWithoutPropertiesInput>
+}
+
+export type TenantUpdateWithoutPropertiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  industryPackId?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  planKey?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  stages?: Prisma.PipelineStageUpdateManyWithoutTenantNestedInput
+  leads?: Prisma.LeadUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutPropertiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  industryPackId?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  planKey?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  onboardingState?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  stages?: Prisma.PipelineStageUncheckedUpdateManyWithoutTenantNestedInput
+  leads?: Prisma.LeadUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 
@@ -828,11 +1251,17 @@ export type TenantUncheckedUpdateWithoutMembershipsInput = {
 export type TenantCountOutputType = {
   memberships: number
   roles: number
+  stages: number
+  leads: number
+  properties: number
 }
 
 export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   memberships?: boolean | TenantCountOutputTypeCountMembershipsArgs
   roles?: boolean | TenantCountOutputTypeCountRolesArgs
+  stages?: boolean | TenantCountOutputTypeCountStagesArgs
+  leads?: boolean | TenantCountOutputTypeCountLeadsArgs
+  properties?: boolean | TenantCountOutputTypeCountPropertiesArgs
 }
 
 /**
@@ -859,6 +1288,27 @@ export type TenantCountOutputTypeCountRolesArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.RoleWhereInput
 }
 
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountStagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PipelineStageWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountLeadsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LeadWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountPropertiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PropertyWhereInput
+}
+
 
 export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -880,6 +1330,9 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   updatedAt?: boolean
   memberships?: boolean | Prisma.Tenant$membershipsArgs<ExtArgs>
   roles?: boolean | Prisma.Tenant$rolesArgs<ExtArgs>
+  stages?: boolean | Prisma.Tenant$stagesArgs<ExtArgs>
+  leads?: boolean | Prisma.Tenant$leadsArgs<ExtArgs>
+  properties?: boolean | Prisma.Tenant$propertiesArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
@@ -947,6 +1400,9 @@ export type TenantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   memberships?: boolean | Prisma.Tenant$membershipsArgs<ExtArgs>
   roles?: boolean | Prisma.Tenant$rolesArgs<ExtArgs>
+  stages?: boolean | Prisma.Tenant$stagesArgs<ExtArgs>
+  leads?: boolean | Prisma.Tenant$leadsArgs<ExtArgs>
+  properties?: boolean | Prisma.Tenant$propertiesArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TenantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -957,6 +1413,9 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {
     memberships: Prisma.$MembershipPayload<ExtArgs>[]
     roles: Prisma.$RolePayload<ExtArgs>[]
+    stages: Prisma.$PipelineStagePayload<ExtArgs>[]
+    leads: Prisma.$LeadPayload<ExtArgs>[]
+    properties: Prisma.$PropertyPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1372,6 +1831,9 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
   readonly [Symbol.toStringTag]: "PrismaPromise"
   memberships<T extends Prisma.Tenant$membershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   roles<T extends Prisma.Tenant$rolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$rolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  stages<T extends Prisma.Tenant$stagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$stagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PipelineStagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  leads<T extends Prisma.Tenant$leadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$leadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  properties<T extends Prisma.Tenant$propertiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1856,6 +2318,78 @@ export type Tenant$rolesArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.RoleScalarFieldEnum | Prisma.RoleScalarFieldEnum[]
+}
+
+/**
+ * Tenant.stages
+ */
+export type Tenant$stagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PipelineStage
+   */
+  select?: Prisma.PipelineStageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PipelineStage
+   */
+  omit?: Prisma.PipelineStageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PipelineStageInclude<ExtArgs> | null
+  where?: Prisma.PipelineStageWhereInput
+  orderBy?: Prisma.PipelineStageOrderByWithRelationInput | Prisma.PipelineStageOrderByWithRelationInput[]
+  cursor?: Prisma.PipelineStageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PipelineStageScalarFieldEnum | Prisma.PipelineStageScalarFieldEnum[]
+}
+
+/**
+ * Tenant.leads
+ */
+export type Tenant$leadsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Lead
+   */
+  select?: Prisma.LeadSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Lead
+   */
+  omit?: Prisma.LeadOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LeadInclude<ExtArgs> | null
+  where?: Prisma.LeadWhereInput
+  orderBy?: Prisma.LeadOrderByWithRelationInput | Prisma.LeadOrderByWithRelationInput[]
+  cursor?: Prisma.LeadWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LeadScalarFieldEnum | Prisma.LeadScalarFieldEnum[]
+}
+
+/**
+ * Tenant.properties
+ */
+export type Tenant$propertiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Property
+   */
+  select?: Prisma.PropertySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Property
+   */
+  omit?: Prisma.PropertyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PropertyInclude<ExtArgs> | null
+  where?: Prisma.PropertyWhereInput
+  orderBy?: Prisma.PropertyOrderByWithRelationInput | Prisma.PropertyOrderByWithRelationInput[]
+  cursor?: Prisma.PropertyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PropertyScalarFieldEnum | Prisma.PropertyScalarFieldEnum[]
 }
 
 /**
