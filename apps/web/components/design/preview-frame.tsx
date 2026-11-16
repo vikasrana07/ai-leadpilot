@@ -4,7 +4,7 @@ import { Logo } from '@/components/logo';
 import { ThemeSwitcher } from '@/components/shell/theme-switcher';
 import { cn } from '@/lib/cn';
 
-const TABS = [{ href: '/design/inbox', label: 'Inbox' }, { href: '/design/lead', label: 'Lead detail' }, { href: '/design/pipeline', label: 'Pipeline' }];
+const TABS = [{ href: '/design/dashboard', label: 'Dashboard' }, { href: '/design/inbox', label: 'Inbox' }, { href: '/design/lead', label: 'Lead detail' }, { href: '/design/pipeline', label: 'Pipeline' }];
 
 /** Wraps design-review screens. They use hard-coded SAMPLE data and are NOT connected to the backend. */
 export function PreviewFrame({ active, children }: { active: string; children: ReactNode }) {

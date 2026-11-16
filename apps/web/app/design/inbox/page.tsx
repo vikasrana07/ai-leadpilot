@@ -30,7 +30,27 @@ export default function InboxDesign() {
   const convo = CONVOS.find((c) => c.id === active) ?? CONVOS[0]!;
   return (
     <PreviewFrame active="/design/inbox">
-      <div className="grid h-full grid-cols-1 md:grid-cols-[320px_1fr] xl:grid-cols-[320px_1fr_320px]">
+      <div className="grid h-full grid-cols-1 md:grid-cols-[320px_1fr] xl:grid-cols-[208px_320px_1fr_300px]">
+        {/* Queues */}
+        <nav aria-label="Queues" className="hidden min-h-0 flex-col gap-5 overflow-y-auto border-r border-border bg-header p-4 xl:flex">
+          <h1 className="text-title">Inbox</h1>
+          <div>
+            <p className="text-label mb-2 text-muted-foreground">Live conversations</p>
+            <ul className="space-y-0.5">
+              {[['Unassigned', 5, true], ['Mine', 3, false], ['AI handling', 12, false], ['Needs a human', 2, false]].map(([l, n, a]) => (
+                <li key={String(l)}><span className={cn('flex items-center justify-between rounded-md px-2.5 py-2 text-[13px]', a ? 'bg-surface font-medium shadow-sm' : 'text-muted-foreground')}>{l}<span className={cn('num rounded-full px-1.5 text-[11px] font-semibold', l === 'Needs a human' ? 'bg-danger text-white' : a ? 'bg-primary text-primary-foreground' : 'bg-muted')}>{n}</span></span></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-label mb-2 text-muted-foreground">Channels</p>
+            <ul className="space-y-0.5 text-[13px] text-muted-foreground">{[['WhatsApp', MessageCircle], ['Website chat', Globe]].map(([l, Icon]) => { const I = Icon as typeof Globe; return <li key={String(l)} className="flex items-center gap-2 px-2.5 py-2"><I className="h-4 w-4" aria-hidden />{String(l)}</li>; })}</ul>
+          </div>
+          <div>
+            <p className="text-label mb-2 text-muted-foreground">Closed</p>
+            <p className="px-2.5 text-[13px] text-muted-foreground">Resolved · Archived</p>
+          </div>
+        </nav>
         {/* Conversation list */}
         <aside className="flex min-h-0 flex-col border-r border-border bg-surface">
           <div className="space-y-3 border-b border-border p-3">
@@ -58,14 +78,7 @@ export default function InboxDesign() {
           <div className="flex items-center gap-3 border-b border-border bg-surface px-4 py-3">
             <Avatar name={convo.name} size={32} />
             <div className="flex-1"><p className="text-[13px] font-medium">{convo.name}</p><p className="text-helper">{convo.channel === 'whatsapp' ? 'WhatsApp · +91 98•••• 1204' : 'Website chat'} · session window open</p></div>
-            <div role="radiogroup" aria-label="Who is replying" className="relative flex rounded-md border border-border bg-muted p-0.5 text-[12px] font-medium">
-              {(['ai', 'human'] as const).map((m) => (
-                <button key={m} role="radio" aria-checked={mode === m} onClick={() => setMode(m)} className={cn('relative z-10 flex items-center gap-1.5 rounded px-3 py-1.5 transition-colors', mode === m ? 'text-foreground' : 'text-muted-foreground')}>
-                  {mode === m ? <motion.span layoutId="mode-pill" className="absolute inset-0 -z-10 rounded bg-surface shadow-sm" transition={{ type: 'spring', stiffness: 500, damping: 38 }} /> : null}
-                  {m === 'ai' ? <Bot className="h-3.5 w-3.5" aria-hidden /> : <UserRound className="h-3.5 w-3.5" aria-hidden />}{m === 'ai' ? 'AI replies' : 'I will reply'}
-                </button>
-              ))}
-            </div>
+            <Badge tone={mode === 'ai' ? 'primary' : 'success'}>{mode === 'ai' ? <><Bot className="h-3 w-3" aria-hidden />AI handling</> : <><UserRound className="h-3 w-3" aria-hidden />You are handling</>}</Badge>
           </div>
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
             {MESSAGES.map((m, i) => (
@@ -78,13 +91,22 @@ export default function InboxDesign() {
             ))}
             <AnimatePresence>{mode === 'ai' ? <motion.div key="typing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex justify-end"><div className="flex items-center gap-1 rounded-xl rounded-br-sm bg-primary-soft px-3.5 py-3" aria-label="Assistant is typing">{[0, 1, 2].map((d) => <motion.span key={d} className="h-1.5 w-1.5 rounded-full bg-primary" animate={{ y: [0, -3, 0] }} transition={{ duration: 0.9, repeat: Infinity, delay: d * 0.15 }} />)}</div></motion.div> : null}</AnimatePresence>
           </div>
-          <div className="border-t border-border bg-surface p-3">
-            {mode === 'ai' ? <p className="mb-2 flex items-center gap-1.5 text-[12px] text-muted-foreground"><Bot className="h-3.5 w-3.5 text-primary" aria-hidden />The assistant is handling this chat. Switch to “I will reply” to take over.</p> : null}
-            <div className={cn('flex items-end gap-2 rounded-lg border border-border bg-background p-2', mode === 'ai' && 'opacity-60')}>
-              <Button variant="ghost" size="icon" aria-label="Attach file" disabled={mode === 'ai'}><Paperclip className="h-4 w-4" /></Button>
-              <div className="min-h-9 flex-1 px-1 py-2 text-[13px] text-muted-foreground">{mode === 'ai' ? 'Take over to type a message' : 'Write a reply…'}</div>
-              <Button variant="primary" size="icon" aria-label="Send" disabled={mode === 'ai'}><Send className="h-4 w-4" /></Button>
-            </div>
+          <div className="border-t border-border bg-surface p-4">
+            {mode === 'ai' ? (
+              <div className="flex flex-col items-center gap-2 py-2 text-center">
+                <Button variant="primary" size="lg" onClick={() => setMode('human')}><UserRound className="h-4 w-4" aria-hidden />Join conversation</Button>
+                <p className="text-helper">The assistant keeps replying until you join. You can hand the chat back at any time.</p>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-end gap-2 rounded-lg border border-border bg-background p-2">
+                  <Button variant="ghost" size="icon" aria-label="Attach file"><Paperclip className="h-4 w-4" /></Button>
+                  <div className="min-h-9 flex-1 px-1 py-2 text-[13px] text-muted-foreground">Write a reply…</div>
+                  <Button variant="primary" size="icon" aria-label="Send"><Send className="h-4 w-4" /></Button>
+                </div>
+                <button onClick={() => setMode('ai')} className="mt-2 flex items-center gap-1.5 text-[12px] text-primary hover:underline"><Bot className="h-3.5 w-3.5" aria-hidden />Hand back to AI assistant</button>
+              </div>
+            )}
           </div>
         </section>
 

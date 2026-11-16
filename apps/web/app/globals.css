@@ -32,11 +32,12 @@
   --danger: #c62828;
   --danger-soft: #fde8e8;
   --ring: #3f55e8;
-  --sidebar: #0f1623;
-  --sidebar-foreground: #c9d0de;
-  --sidebar-muted: #8591a8;
-  --sidebar-accent: #1b2434;
-  --sidebar-border: #1f2838;
+  --header: #eef2fb;
+  --sidebar: #17205a;
+  --sidebar-foreground: #c8d0f0;
+  --sidebar-muted: #8c97cf;
+  --sidebar-accent: #232f7a;
+  --sidebar-border: #26327a;
   --chart-1: #3f55e8;
   --chart-2: #0e9f8e;
   --chart-3: #d98a1f;
@@ -74,6 +75,7 @@
   --danger: #f87171;
   --danger-soft: #331517;
   --ring: #8290ff;
+  --header: #10141c;
   --sidebar: #070a10;
   --sidebar-foreground: #c0c8d8;
   --sidebar-muted: #7a859b;
@@ -115,6 +117,7 @@
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-ring: var(--ring);
+  --color-header: var(--header);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-muted: var(--sidebar-muted);

@@ -40,7 +40,8 @@ Last updated: 2026-11-16 · Current phase: **Phase 1 (gate checks passing; await
 - ◐ M i18n infrastructure: **not done** (strings are inline English). Carry to phase 2
 - ☐ V Permission overrides per member · ☐ L Fully custom roles
 - ◐ Responsive: mobile drawer + responsive grids implemented; **not verified in a narrow viewport**
-- ☑ Design-review screens (sample data, labelled, not connected): /design/inbox, /design/lead, /design/pipeline
+- ☑ Design-review screens (sample data, labelled, not connected): /design/dashboard, /design/inbox, /design/lead, /design/pipeline
+- ☑ Design pass 2 (2026-11-16, from user reference images): navy sidebar + tinted header tokens, KpiCard (count-up, delta, sparkline), inbox queue rail with counts and a "Join conversation" takeover. Awaiting user feedback on this pass
 
 ### CRM (Phase 2)
 - ☐ M Lead CRUD, soft delete, search/filter/sort/cursor pagination

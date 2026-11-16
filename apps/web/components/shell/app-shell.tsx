@@ -48,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </AnimatePresence>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface px-3 sm:px-5">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-header px-3 sm:px-5">
           <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu" onClick={() => setMobileOpen(true)}><Menu className="h-5 w-5" /></Button>
           <WorkspaceSwitcher />
           <button onClick={() => setPaletteOpen(true)} className="ml-2 hidden h-9 w-full max-w-sm items-center gap-2 rounded-md border border-border bg-background px-3 text-[13px] text-muted-foreground hover:border-border-strong md:flex" aria-label="Open command palette">
