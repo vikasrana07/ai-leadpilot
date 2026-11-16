@@ -11,6 +11,7 @@ const POINTS = [
 export function AuthLayout({ title, subtitle, children, footer }: { title: string; subtitle?: string; children: ReactNode; footer?: ReactNode }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(420px,520px)]">
+      <a href="#main" className="sr-only z-[60] rounded-md bg-primary px-3 py-2 text-[13px] font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:left-3 focus:top-3">Skip to main content</a>
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-sidebar p-12 text-sidebar-foreground lg:flex">
         <Logo tone="light" />
         <div className="max-w-md">
@@ -26,7 +27,7 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: strin
         </div>
         <p className="text-helper !text-sidebar-muted">© LeadPilot</p>
       </aside>
-      <main className="flex items-center justify-center px-6 py-12">
+      <main id="main" tabIndex={-1} className="flex items-center justify-center px-6 py-12 focus:outline-none">
         <div className="w-full max-w-sm">
           <div className="mb-8 lg:hidden"><Logo /></div>
           <h1 className="text-title">{title}</h1>

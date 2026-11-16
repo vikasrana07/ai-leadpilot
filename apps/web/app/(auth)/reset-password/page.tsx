@@ -29,7 +29,7 @@ function Form() {
       router.replace('/login');
     } catch (e) { handleApiError(e); }
   }
-  if (!token) return <p className="text-[13px] text-danger">This link is missing its token. <Link href="/forgot-password" className="text-primary hover:underline">Request a new one</Link>.</p>;
+  if (!token) return <p className="text-[13px] text-danger">This link is missing its token. <Link href="/forgot-password" className="text-primary underline underline-offset-2 hover:no-underline">Request a new one</Link>.</p>;
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       <Field label="New password" htmlFor="password" error={errors.password?.message}><Input id="password" type="password" autoComplete="new-password" autoFocus {...register('password')} /></Field>

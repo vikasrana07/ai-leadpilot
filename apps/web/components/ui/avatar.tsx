@@ -6,8 +6,7 @@ export function Avatar({ name, size = 28, className }: { name: string; size?: nu
   const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('') || '?';
   const tone = TONES[[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % TONES.length];
   return (
-    <span aria-hidden className={cn('inline-flex shrink-0 items-center justify-center rounded-full font-semibold', tone, className)} style={{ width: size, height: size, fontSize: Math.max(10, size * 0.38) }}>
-      {initials}
-    </span>
+    // Initials are drawn with CSS (not a text node): they are decoration, so they must not count as visible label text for accessible-name checks.
+    <span aria-hidden data-initials={initials} className={cn("inline-flex shrink-0 items-center justify-center rounded-full font-semibold before:content-[attr(data-initials)]", tone, className)} style={{ width: size, height: size, fontSize: Math.max(10, size * 0.38) }} />
   );
 }

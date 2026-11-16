@@ -72,7 +72,7 @@ export function LeadFormDialog({ open, onOpenChange, onCreated }: { open: boolea
           {dupes.length ? (
             <div role="alert" className="rounded-lg border border-warning/40 bg-warning-soft p-3 text-[13px] sm:col-span-2">
               <p className="font-medium text-warning">This looks like an existing lead</p>
-              <ul className="mt-1.5 space-y-1">{dupes.map((d) => <li key={d.id}><Link className="text-primary hover:underline" href={`/leads/${d.id}`} onClick={() => onOpenChange(false)}>{d.name}</Link> <span className="text-muted-foreground">· {d.phone ?? d.email} · {d.stage}</span></li>)}</ul>
+              <ul className="mt-1.5 space-y-1">{dupes.map((d) => <li key={d.id}><Link className="text-primary underline underline-offset-2 hover:no-underline" href={`/leads/${d.id}`} onClick={() => onOpenChange(false)}>{d.name}</Link> <span className="text-muted-foreground">· {d.phone ?? d.email} · {d.stage}</span></li>)}</ul>
             </div>
           ) : null}
           <div className={cn('flex justify-end gap-2 pt-1 sm:col-span-2')}>

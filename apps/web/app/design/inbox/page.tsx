@@ -104,7 +104,7 @@ export default function InboxDesign() {
                   <div className="min-h-9 flex-1 px-1 py-2 text-[13px] text-muted-foreground">Write a reply…</div>
                   <Button variant="primary" size="icon" aria-label="Send"><Send className="h-4 w-4" /></Button>
                 </div>
-                <button onClick={() => setMode('ai')} className="mt-2 flex items-center gap-1.5 text-[12px] text-primary hover:underline"><Bot className="h-3.5 w-3.5" aria-hidden />Hand back to AI assistant</button>
+                <button onClick={() => setMode('ai')} className="mt-2 flex items-center gap-1.5 text-[12px] text-primary underline underline-offset-2 hover:no-underline"><Bot className="h-3.5 w-3.5" aria-hidden />Hand back to AI assistant</button>
               </div>
             )}
           </div>

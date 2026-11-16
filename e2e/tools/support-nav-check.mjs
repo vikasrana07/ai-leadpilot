@@ -1,0 +1,21 @@
+// Verifies that during a LeadPilot support (read-only) session the blocked areas are hidden from navigation instead of showing errors.
+import { chromium } from '@playwright/test';
+const WEB = process.env.AUDIT_WEB, API = process.env.AUDIT_API;
+const b = await chromium.launch({ channel: 'chrome' }); const ctx = await b.newContext({ viewport: { width: 1280, height: 800 } });
+const login = await ctx.request.post(`${API}/platform/auth/login`, { headers: { origin: WEB }, data: { email: process.env.AUDIT_ADMIN_EMAIL, password: process.env.AUDIT_ADMIN_PASSWORD } });
+if (login.status() !== 200) throw new Error('platform login ' + login.status());
+const start = await ctx.request.post(`${API}/platform/tenants/${process.env.AUDIT_TENANT_ID}/support-session`, { headers: { origin: WEB }, data: { reason: 'responsive audit', password: process.env.AUDIT_ADMIN_PASSWORD, minutes: 10 } });
+console.log('support session start:', start.status());
+const page = await ctx.newPage(); await page.goto(WEB + '/dashboard', { waitUntil: 'networkidle' });
+await page.getByRole('alert').filter({ hasText: 'support session' }).waitFor();
+const links = await page.getByRole('navigation', { name: 'Main' }).getByRole('link').allInnerTexts();
+console.log('nav during support:', links.map((l) => l.replace(/\s+/g, ' ').trim()).join(' | '));
+for (const hidden of ['Team', 'Roles & Permissions', 'Integrations', 'API keys', 'Webhooks', 'Subscription & Billing', 'Security', 'Settings']) console.log(links.some((l) => l.includes(hidden)) ? `FAIL still visible: ${hidden}` : `ok hidden: ${hidden}`);
+await page.getByRole('button', { name: 'Account menu' }).click();
+console.log('account menu has Settings:', await page.getByRole('menuitem', { name: 'Settings' }).count());
+await page.keyboard.press('Escape');
+await page.keyboard.press('ControlOrMeta+k'); await page.keyboard.type('settings');
+console.log('palette offers Settings:', await page.getByRole('option', { name: 'Settings' }).count());
+await page.screenshot({ path: '/tmp/polish/support-session.png' });
+await ctx.request.post(`${API}/support-session/end`, { headers: { origin: WEB } }).catch(() => undefined);
+await b.close();

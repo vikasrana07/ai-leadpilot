@@ -29,13 +29,13 @@ test('create a lead in the UI, find it in the list, move its stage with the mous
   await expect(page.getByText('Stage updated')).toBeVisible();
   await expect(page.getByText(`Moved from ${current} to ${targets[0]}`)).toBeVisible();
 
-  // keyboard-only path: focus the select and press the first letter of a stage (type-ahead). One keystroke = one change event, on every OS.
-  // (Typing a whole word fires one change per letter, each a separate server move: reported as a product finding.)
+  // keyboard-only path: focus the select and TYPE the whole stage name (type-ahead fires one native change per letter; the UI must commit once).
   const initials = options.map((o) => o[0]?.toLowerCase());
   const next = options.find((o, i) => o !== current && o !== targets[0] && initials.filter((c) => c === initials[i]).length === 1) as string;
   expect(next, 'an open stage with a unique first letter').toBeTruthy();
   await stage.focus();
-  await page.keyboard.press(next[0] as string);
+  await page.keyboard.type(next, { delay: 40 });
   await expect(stage.locator('option:checked')).toHaveText(next);
   await expect(page.getByText(`Moved from ${targets[0]} to ${next}`)).toHaveCount(1);
+  await expect(page.getByText(/^Moved from /)).toHaveCount(2); // exactly two moves in total: no intermediate stages were saved
 });

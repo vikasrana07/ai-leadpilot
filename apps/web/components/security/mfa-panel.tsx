@@ -96,7 +96,7 @@ export function MfaPanel({ call, queryKey }: { call: Call; queryKey: string[] })
           }}>
             <p className="text-[13px] text-muted-foreground">{action === 'disable' ? 'Confirm with a current code to turn two-step verification off.' : 'Confirm with a current code. Your old recovery codes will stop working.'}</p>
             <Field label={useRecovery ? 'Recovery code' : 'Authentication code'} htmlFor="mfa-proof" error={error ?? undefined}><Input id="mfa-proof" autoFocus autoComplete="one-time-code" value={proof} onChange={(e) => setProof(e.target.value)} maxLength={useRecovery ? 16 : 7} inputMode={useRecovery ? 'text' : 'numeric'} /></Field>
-            <button type="button" className="text-[13px] text-primary hover:underline" onClick={() => { setUseRecovery(!useRecovery); setProof(''); }}>{useRecovery ? 'Use authenticator code' : 'Use a recovery code'}</button>
+            <button type="button" className="text-[13px] text-primary underline underline-offset-2 hover:no-underline" onClick={() => { setUseRecovery(!useRecovery); setProof(''); }}>{useRecovery ? 'Use authenticator code' : 'Use a recovery code'}</button>
             <div className="flex gap-2"><Button type="submit" variant={action === 'disable' ? 'danger' : 'primary'} loading={busy} disabled={proof.trim().length < (useRecovery ? 8 : 6)}>{action === 'disable' ? 'Turn off' : 'Generate codes'}</Button><Button type="button" variant="ghost" onClick={() => { setAction(null); setError(null); }}>Cancel</Button></div>
           </form>
         ) : null}

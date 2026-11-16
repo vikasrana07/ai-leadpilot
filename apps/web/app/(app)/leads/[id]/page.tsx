@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { GitMerge, Mail, MapPin, Pencil, Phone, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { ActivityTimeline, type ActivityItem } from '@/components/crm/activity-timeline';
 import { StageBadge, TemperatureBadge } from '@/components/crm/lead-badges';
@@ -90,6 +90,11 @@ export default function LeadDetailPage() {
   const [tab, setTab] = useState<'activity' | 'notes'>('activity');
   const [editOpen, setEditOpen] = useState(false); const [mergeOpen, setMergeOpen] = useState(false); const [deleteOpen, setDeleteOpen] = useState(false);
   const [lostFor, setLostFor] = useState<string | null>(null); const [lostReason, setLostReason] = useState(''); const [lostNote, setLostNote] = useState('');
+  // A native <select> fires `change` per keystroke when typed on the keyboard ("Contacted" = 9 changes). The choice is therefore held
+  // locally and committed once: after a short pause, on blur, or immediately for a mouse pick that closes the list.
+  const [pendingStage, setPendingStage] = useState<string | null>(null);
+  const stageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const committed = useRef<string | null>(null); // the stage already sent to the server (blur after the timer must not send it twice)
   const [noteText, setNoteText] = useState(''); const [tagText, setTagText] = useState('');
 
   const lead = useQuery({ queryKey: ['leads', 'detail', id], queryFn: () => api<LeadDetailDto>(`/leads/${id}`), retry: (n, e) => !(e instanceof ApiError && e.status === 404) && n < 2 });
@@ -99,6 +104,10 @@ export default function LeadDetailPage() {
   useEffect(() => { if (lead.data) document.title = `${lead.data.name} · LeadPilot`; }, [lead.data]);
 
   const move = useMutation({ mutationFn: (b: { stageId: string; lostReasonId?: string; lostNote?: string }) => api(`/leads/${id}/stage`, { method: 'POST', body: b }), onSuccess: async () => { toast.success('Stage updated'); setLostFor(null); setLostReason(''); setLostNote(''); await refresh(); }, onError: (e) => handleApiError(e) });
+  useEffect(() => () => { if (stageTimer.current) clearTimeout(stageTimer.current); }, []);
+  const currentStageId = lead.data?.stage.id;
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setPendingStage(null); committed.current = null; }, [currentStageId]);
   const assign = useMutation({ mutationFn: (m: string) => api(`/leads/${id}`, { method: 'PATCH', body: { assignedMembershipId: m || null } }), onSuccess: async () => { toast.success('Assignment updated'); await refresh(); }, onError: (e) => handleApiError(e) });
   const addNote = useMutation({ mutationFn: (body: string) => api(`/leads/${id}/notes`, { method: 'POST', body: { body } }), onSuccess: async () => { setNoteText(''); await refresh(); }, onError: (e) => handleApiError(e) });
   const setTags = useMutation({ mutationFn: (names: string[]) => api(`/leads/${id}/tags`, { method: 'PUT', body: { names } }), onSuccess: async () => { setTagText(''); await refresh(); }, onError: (e) => handleApiError(e) });
@@ -108,6 +117,14 @@ export default function LeadDetailPage() {
   const l = lead.data;
   const openStages = stages.data?.stages ?? [];
   const tagNames = l.tags.map((t) => t.name);
+  const commitStage = (stageId: string) => {
+    if (stageTimer.current) { clearTimeout(stageTimer.current); stageTimer.current = null; }
+    const st = openStages.find((x) => x.id === stageId);
+    if (!st || st.id === l.stage.id) { setPendingStage(null); return; }
+    if (move.isPending || committed.current === st.id) return;
+    committed.current = st.id;
+    if (st.kind === 'LOST') { committed.current = null; setPendingStage(null); setLostFor(st.id); } else move.mutate({ stageId: st.id }, { onError: () => { setPendingStage(null); committed.current = null; } });
+  };
 
   return (
     <>
@@ -160,7 +177,7 @@ export default function LeadDetailPage() {
             <CardHeader><CardTitle>Pipeline</CardTitle></CardHeader>
             <CardBody className="space-y-3">
               <Field label="Stage" htmlFor="stage-sel">
-                <Select id="stage-sel" value={l.stage.id} disabled={!l.canWrite || move.isPending} onChange={(e) => { const s = openStages.find((x) => x.id === e.target.value); if (!s) return; if (s.kind === 'LOST') setLostFor(s.id); else move.mutate({ stageId: s.id }); }}>
+                <Select id="stage-sel" value={pendingStage ?? l.stage.id} disabled={!l.canWrite || move.isPending} onChange={(e) => { setPendingStage(e.target.value); if (stageTimer.current) clearTimeout(stageTimer.current); stageTimer.current = setTimeout(() => commitStage(e.target.value), 700); }} onBlur={() => { if (pendingStage) commitStage(pendingStage); }} onKeyDown={(e) => { if (e.key === 'Enter' && pendingStage) { e.preventDefault(); commitStage(pendingStage); } }}>
                   {openStages.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </Select>
               </Field>

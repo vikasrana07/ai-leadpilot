@@ -23,7 +23,7 @@ export default function PlatformLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-2.5">
           <span className="text-[14px] font-semibold">LeadPilot Platform</span>
           <nav aria-label="Platform" className="flex flex-1 flex-wrap gap-1">
-            {NAV.map((n) => { const active = n.href === '/platform' ? pathname === n.href : pathname.startsWith(n.href); return <Link key={n.href} href={n.href} aria-current={active ? 'page' : undefined} className={cn('rounded-md px-2.5 py-1 text-[13px] hover:bg-white/10', active && 'bg-white/15 font-medium')}>{n.label}</Link>; })}
+            {NAV.map((n) => { const active = n.href === '/platform' ? pathname === n.href : pathname.startsWith(n.href); return <Link key={n.href} href={n.href} aria-current={active ? 'page' : undefined} className={cn('rounded-md px-2.5 py-2 text-[13px] sm:py-1 hover:bg-white/10', active && 'bg-white/15 font-medium')}>{n.label}</Link>; })}
           </nav>
           <span className="text-[12px] opacity-80">{me.data?.admin.email}</span>
           <Button size="sm" variant="ghost" className="text-sidebar-foreground hover:bg-white/10" onClick={async () => { await platformApi('/auth/logout', { method: 'POST' }).catch(() => undefined); qc.clear(); router.replace('/platform/login'); }}>Sign out</Button>

@@ -49,7 +49,7 @@ export default function ApiKeysPage() {
       <PageHeader title="API keys" description="Let your own systems read and write your LeadPilot data." actions={<Button variant="primary" onClick={() => setOpen(true)}>Create API key</Button>} />
       <div className="grid gap-6">
         <Card>
-          <CardHeader><CardTitle><KeyRound className="mr-1.5 inline h-4 w-4" aria-hidden />Your keys</CardTitle><a className="text-[13px] text-primary hover:underline" href={`${API_URL}/v1/openapi.json`} target="_blank" rel="noreferrer">OpenAPI description</a></CardHeader>
+          <CardHeader><CardTitle><KeyRound className="mr-1.5 inline h-4 w-4" aria-hidden />Your keys</CardTitle><a className="text-[13px] text-primary underline underline-offset-2 hover:no-underline" href={`${API_URL}/v1/openapi.json`} target="_blank" rel="noreferrer">OpenAPI description</a></CardHeader>
           <CardBody className="p-0">
             {keys.isPending ? <Skeleton className="m-4 h-16" /> : keys.data && keys.data.length > 0 ? (
               <ul className="divide-y divide-border">{keys.data.map((k) => (
@@ -68,7 +68,7 @@ export default function ApiKeysPage() {
           <CardHeader><CardTitle>Quick start</CardTitle></CardHeader>
           <CardBody className="space-y-2">
             <pre className="overflow-x-auto rounded-lg border border-border bg-muted p-3 font-mono text-[12px] leading-5">{curl}</pre>
-            <p className="text-helper">Keys act on your workspace only, with exactly the scopes you grant. Each key is limited to 120 requests a minute. Send an <code className="font-mono">Idempotency-Key</code> header on POSTs so retries never create duplicates. The public API is included in Growth and Premium. <Link href="/webhooks" className="text-primary hover:underline">Set up webhooks</Link> to be told about events as they happen.</p>
+            <p className="text-helper">Keys act on your workspace only, with exactly the scopes you grant. Each key is limited to 120 requests a minute. Send an <code className="font-mono">Idempotency-Key</code> header on POSTs so retries never create duplicates. The public API is included in Growth and Premium. <Link href="/webhooks" className="text-primary underline underline-offset-2">Set up webhooks</Link> to be told about events as they happen.</p>
           </CardBody>
         </Card>
       </div>

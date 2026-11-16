@@ -17,7 +17,7 @@ export function PageHeader({ title, description, actions, breadcrumbs }: { title
       ) : null}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div><h1 className="text-title">{title}</h1>{description ? <p className="text-helper mt-1 !text-[13px]">{description}</p> : null}</div>
-        {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+        {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
       </div>
     </div>
   );

@@ -29,7 +29,7 @@ function UsageMeter({ u }: { u: AiUsage }) {
     <Card className="mb-4">
       <CardBody className="space-y-2">
         <div className="flex items-center justify-between text-[13px]"><span className="flex items-center gap-1.5 font-medium"><Gauge className="h-4 w-4 text-muted-foreground" aria-hidden />AI usage this month</span><span className="num text-muted-foreground">{u.used.toLocaleString('en-IN')} of {u.cap.toLocaleString('en-IN')} tokens · {u.runs} replies</span></div>
-        <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={u.pct} aria-valuemin={0} aria-valuemax={100}><div className={cn('h-full rounded-full transition-[width] duration-500', u.exceeded ? 'bg-danger' : u.warning ? 'bg-warning' : 'bg-primary')} style={{ width: `${Math.max(2, u.pct)}%` }} /></div>
+        <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Monthly AI token usage" aria-valuenow={u.pct} aria-valuemin={0} aria-valuemax={100}><div className={cn('h-full rounded-full transition-[width] duration-500', u.exceeded ? 'bg-danger' : u.warning ? 'bg-warning' : 'bg-primary')} style={{ width: `${Math.max(2, u.pct)}%` }} /></div>
         {u.exceeded ? <p className="text-[12px] text-danger">The monthly limit is reached. New chats are handed to your team until {new Date(u.resetsAt).toLocaleDateString()}.</p> : u.warning ? <p className="text-[12px] text-warning">You have used over 80% of this month&apos;s limit.</p> : null}
         {u.killSwitch ? <p className="text-[12px] text-danger">The AI is switched off platform-wide right now.</p> : null}
       </CardBody>
@@ -192,7 +192,7 @@ function ActivityTab() {
               <td className="px-4 py-2"><div className="flex flex-wrap gap-1">{r.tools.length ? r.tools.map((t, i) => <Badge key={i} tone={t.ok ? 'neutral' : 'danger'} className="font-mono">{t.name}</Badge>) : <span className="text-muted-foreground">—</span>}</div></td>
               <td className="num px-4 py-2 text-right">{(r.inputTokens + r.outputTokens).toLocaleString('en-IN')}</td>
               <td className="num px-4 py-2 text-right text-muted-foreground">{r.latencyMs !== null ? `${(r.latencyMs / 1000).toFixed(1)}s` : '—'}</td>
-              <td className="px-4 py-2 text-right"><Link className="text-primary hover:underline" href={`/inbox?c=${r.conversationId}`}>Open</Link></td>
+              <td className="px-4 py-2 text-right"><Link className="text-primary underline underline-offset-2 hover:no-underline" href={`/inbox?c=${r.conversationId}`}>Open</Link></td>
             </tr>
           ))}</tbody>
         </table></div>

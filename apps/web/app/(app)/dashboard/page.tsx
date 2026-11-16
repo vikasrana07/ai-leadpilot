@@ -74,7 +74,7 @@ export default function DashboardPage() {
       <SetupCard />
 
       <div className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Date range">
-        {RANGES.map(([k, label]) => <button key={k} aria-pressed={range === k} onClick={() => setRange(k)} className={cn('rounded-full px-3 py-1 text-[12px] font-medium transition-colors', range === k ? 'bg-primary text-primary-foreground' : 'border border-border bg-surface text-muted-foreground hover:bg-muted')}>{label}</button>)}
+        {RANGES.map(([k, label]) => <button key={k} aria-pressed={range === k} onClick={() => setRange(k)} className={cn('min-h-9 rounded-full px-3 py-1 text-[12px] font-medium transition-colors lg:min-h-0', range === k ? 'bg-primary text-primary-foreground' : 'border border-border bg-surface text-muted-foreground hover:bg-muted')}>{label}</button>)}
         {range === 'custom' ? <><Input aria-label="From date" type="date" className="h-8 w-auto" value={custom.from} onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))} /><Input aria-label="To date" type="date" className="h-8 w-auto" value={custom.to} onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))} /></> : null}
       </div>
 

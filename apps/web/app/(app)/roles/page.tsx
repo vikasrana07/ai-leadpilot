@@ -23,7 +23,7 @@ export default function RolesPage() {
             return (
               <Card key={r.id}>
                 <CardHeader><CardTitle>{r.name}</CardTitle>{r.isSystem ? <Badge>System</Badge> : null}</CardHeader>
-                <CardBody className="max-h-[28rem] space-y-4 overflow-y-auto">
+                <CardBody className="max-h-[28rem] space-y-4 overflow-y-auto" tabIndex={0} role="region" aria-label="Permissions">
                   <p className="text-helper num">{r.permissions.length} permissions</p>
                   {[...groups.entries()].map(([g, perms]) => (
                     <div key={g}>

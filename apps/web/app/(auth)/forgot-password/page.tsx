@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
     try { const t = await bot.getToken(); await api('/auth/forgot-password', { method: 'POST', body: values, ...(t ? { headers: { 'x-turnstile-token': t } } : {}) }); setSent(true); } catch (e) { bot.reset(); handleApiError(e); }
   }
   return (
-    <AuthLayout title="Reset your password" subtitle="We will email you a link to choose a new one." footer={<Link href="/login" className="text-primary hover:underline">Back to sign in</Link>}>
+    <AuthLayout title="Reset your password" subtitle="We will email you a link to choose a new one." footer={<Link href="/login" className="text-primary underline underline-offset-2 hover:no-underline">Back to sign in</Link>}>
       {sent ? (
         <p role="status" className="rounded-lg border border-border bg-surface p-4 text-[13px] text-muted-foreground">If an account exists for that email, a reset link is on its way. It expires in one hour.</p>
       ) : (

@@ -40,13 +40,13 @@ export default function RegisterPage() {
   if (pending) {
     return (
       <AuthLayout title="Check your email" subtitle="We sent you a message to continue.">
-        <div className="flex items-start gap-3 rounded-lg border border-border bg-surface p-4"><MailCheck className="mt-0.5 h-5 w-5 text-primary" aria-hidden /><p className="text-[13px] text-muted-foreground">If this email can be used for a new workspace you will be signed in. Otherwise, check your inbox, or <Link href="/login" className="text-primary hover:underline">sign in</Link>.</p></div>
+        <div className="flex items-start gap-3 rounded-lg border border-border bg-surface p-4"><MailCheck className="mt-0.5 h-5 w-5 text-primary" aria-hidden /><p className="text-[13px] text-muted-foreground">If this email can be used for a new workspace you will be signed in. Otherwise, check your inbox, or <Link href="/login" className="text-primary underline underline-offset-2 hover:no-underline">sign in</Link>.</p></div>
       </AuthLayout>
     );
   }
 
   return (
-    <AuthLayout title="Create your workspace" subtitle="Start capturing and converting leads in minutes." footer={<>Already have an account? <Link href="/login" className="text-primary hover:underline">Sign in</Link></>}>
+    <AuthLayout title="Create your workspace" subtitle="Start capturing and converting leads in minutes." footer={<>Already have an account? <Link href="/login" className="text-primary underline underline-offset-2 hover:no-underline">Sign in</Link></>}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <Field label="Your name" htmlFor="name" error={errors.name?.message}><Input id="name" autoComplete="name" autoFocus aria-invalid={!!errors.name} {...register('name')} /></Field>
         <Field label="Work email" htmlFor="email" error={errors.email?.message}><Input id="email" type="email" autoComplete="email" aria-invalid={!!errors.email} {...register('email')} /></Field>

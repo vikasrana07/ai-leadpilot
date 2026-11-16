@@ -4,15 +4,24 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Command } from 'cmdk';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
 import { ALL_NAV, isLive } from '@/lib/nav';
+import { BLOCKED_DURING_SUPPORT, useSupportSession } from '@/lib/support';
 import { useTheme } from '@/lib/theme';
 
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const router = useRouter();
   const { can, logout } = useAuth();
   const { setPreference } = useTheme();
+  // Modal behaviour: remember what had focus, keep Tab inside, give the dialog a name, and hand focus back on close.
+  const opener = useRef<HTMLElement | null>(null);
+  const wasOpen = useRef(false);
+  useLayoutEffect(() => {
+    if (open && !wasOpen.current) opener.current = document.activeElement as HTMLElement | null;
+    if (!open && wasOpen.current) { const el = opener.current; opener.current = null; if (el && document.contains(el)) el.focus(); }
+    wasOpen.current = open;
+  }, [open]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -24,15 +33,16 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   }, [open, onOpenChange]);
 
   const run = (fn: () => void) => { onOpenChange(false); fn(); };
-  const nav = ALL_NAV.filter((n) => isLive(n) && (!n.permission || can(n.permission)));
+  const support = useSupportSession().data?.active === true;
+  const nav = ALL_NAV.filter((n) => isLive(n) && (!n.permission || can(n.permission)) && !(support && BLOCKED_DURING_SUPPORT.has(n.href)));
 
   return (
     <AnimatePresence>
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh]" role="presentation">
+        <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh]" role="dialog" aria-modal="true" aria-label="Command palette" onKeyDown={(e) => { if (e.key === 'Tab') e.preventDefault(); }}>
           <motion.div className="absolute inset-0 bg-black/50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.1 }} onClick={() => onOpenChange(false)} />
           <motion.div className="relative w-full max-w-lg overflow-hidden rounded-xl border border-border bg-card shadow-lg" initial={{ opacity: 0, y: -8, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.14, ease: [0.2, 0, 0, 1] }}>
-            <Command label="Command palette" loop>
+            <Command label="Search pages and actions" loop>
               <div className="flex items-center gap-2 border-b border-border px-4">
                 <Search className="h-4 w-4 text-muted-foreground" aria-hidden />
                 <Command.Input autoFocus placeholder="Search pages and actions…" className="h-12 flex-1 bg-transparent text-[14px] outline-none placeholder:text-muted-foreground" />

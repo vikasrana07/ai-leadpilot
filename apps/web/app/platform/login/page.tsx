@@ -34,7 +34,7 @@ export default function PlatformLogin() {
             <>
               <Field label={recovery ? 'Recovery code' : 'Authentication code'} htmlFor="pm" error={error ?? undefined}><Input id="pm" autoFocus autoComplete="one-time-code" inputMode={recovery ? 'text' : 'numeric'} maxLength={recovery ? 16 : 7} value={value} onChange={(e) => setValue(e.target.value)} /></Field>
               <Button type="submit" variant="primary" className="w-full" loading={busy} disabled={value.trim().length < (recovery ? 8 : 6)}>Verify</Button>
-              <div className="flex justify-between text-[13px]"><button type="button" className="text-primary hover:underline" onClick={() => { setRecovery(!recovery); setValue(''); setError(null); }}>{recovery ? 'Use authenticator code' : 'Use a recovery code'}</button><button type="button" className="text-muted-foreground hover:underline" onClick={() => { setChallenge(null); setValue(''); setError(null); }}>Back</button></div>
+              <div className="flex justify-between text-[13px]"><button type="button" className="text-primary underline underline-offset-2 hover:no-underline" onClick={() => { setRecovery(!recovery); setValue(''); setError(null); }}>{recovery ? 'Use authenticator code' : 'Use a recovery code'}</button><button type="button" className="text-muted-foreground hover:underline" onClick={() => { setChallenge(null); setValue(''); setError(null); }}>Back</button></div>
             </>
           ) : (
             <>

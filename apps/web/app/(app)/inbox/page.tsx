@@ -76,7 +76,7 @@ function InboxView() {
         <div className="space-y-2 border-b border-border p-3">
           <h1 className="text-title xl:hidden">Inbox</h1>
           <div className="relative"><Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden /><input aria-label="Search conversations" placeholder="Search by name, phone or email" value={search} onChange={(e) => setSearch(e.target.value)} className="h-9 w-full rounded-md border border-border bg-background pl-8 pr-3 text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-ring/25" /></div>
-          <div className="flex gap-1.5 overflow-x-auto xl:hidden">{QUEUES.filter((x) => canAll || x.key !== 'unassigned').map((x) => <button key={x.key} aria-pressed={queue === x.key} onClick={() => setQueue(x.key)} className={cn('shrink-0 rounded-full px-2.5 py-1 text-[12px]', queue === x.key ? 'bg-primary-soft font-medium text-accent-foreground' : 'text-muted-foreground')}>{x.label}</button>)}</div>
+          <div className="flex gap-1.5 overflow-x-auto xl:hidden">{QUEUES.filter((x) => canAll || x.key !== 'unassigned').map((x) => <button key={x.key} aria-pressed={queue === x.key} onClick={() => setQueue(x.key)} className={cn('min-h-9 shrink-0 rounded-full px-3 py-1 text-[12px]', queue === x.key ? 'bg-primary-soft font-medium text-accent-foreground' : 'text-muted-foreground')}>{x.label}</button>)}</div>
         </div>
         <ul className="min-h-0 flex-1 overflow-y-auto">
           {list.isPending ? [0, 1, 2, 3].map((i) => <li key={i} className="p-3"><Skeleton className="h-12" /></li>) : items.length === 0 ? (

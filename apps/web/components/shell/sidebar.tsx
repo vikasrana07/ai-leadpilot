@@ -9,6 +9,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { useAuth } from '@/lib/auth';
 import { useUnreadCount } from '@/lib/inbox';
 import { cn } from '@/lib/cn';
+import { BLOCKED_DURING_SUPPORT, useSupportSession } from '@/lib/support';
 import { ADMIN_NAV, isLive, WORKSPACE_NAV, type NavItem } from '@/lib/nav';
 
 function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: boolean; onNavigate?: () => void }) {
@@ -22,7 +23,7 @@ function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: bo
       href={item.href}
       onClick={onNavigate}
       aria-current={active ? 'page' : undefined}
-      className={cn('relative flex h-9 items-center gap-3 rounded-md px-2.5 text-[13px] font-medium transition-colors', active ? 'text-white' : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-white', collapsed && 'justify-center px-0')}
+      className={cn('relative flex h-10 items-center lg:h-9 gap-3 rounded-md px-2.5 text-[13px] font-medium transition-colors', active ? 'text-white' : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-white', collapsed && 'justify-center px-0')}
     >
       {active ? <motion.span layoutId="nav-active" className="absolute inset-0 rounded-md bg-sidebar-accent ring-1 ring-sidebar-border" transition={{ type: 'spring', stiffness: 500, damping: 40 }} /> : null}
       {active ? <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-primary" aria-hidden /> : null}
@@ -41,7 +42,8 @@ function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: bo
 
 export function SidebarContent({ collapsed, onToggle, onNavigate }: { collapsed: boolean; onToggle?: () => void; onNavigate?: () => void }) {
   const { can } = useAuth();
-  const admin = ADMIN_NAV.filter((i) => !i.permission || can(i.permission));
+  const support = useSupportSession().data?.active === true;
+  const admin = ADMIN_NAV.filter((i) => (!i.permission || can(i.permission)) && !(support && BLOCKED_DURING_SUPPORT.has(i.href)));
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className={cn('flex h-14 shrink-0 items-center border-b border-sidebar-border px-4', collapsed && 'justify-center px-0')}><Logo tone="light" collapsed={collapsed} /></div>

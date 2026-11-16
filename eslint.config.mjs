@@ -20,6 +20,6 @@ export default tseslint.config(
     files: ['apps/api/**/*.ts'],
     rules: { '@typescript-eslint/consistent-type-imports': 'off' },
   },
-  { files: ['scripts/**/*.mjs'], languageOptions: { globals: { fetch: 'readonly', process: 'readonly', console: 'readonly', performance: 'readonly', Buffer: 'readonly', URL: 'readonly', AbortSignal: 'readonly' } } },
+  { files: ['scripts/**/*.mjs', 'e2e/tools/**/*.mjs'], languageOptions: { globals: { fetch: 'readonly', process: 'readonly', console: 'readonly', performance: 'readonly', Buffer: 'readonly', URL: 'readonly', AbortSignal: 'readonly', innerWidth: 'readonly', innerHeight: 'readonly', document: 'readonly', getComputedStyle: 'readonly', setTimeout: 'readonly' } } },
   { files: ['apps/web/**/*.{ts,tsx}'], plugins: { 'react-hooks': reactHooks }, rules: { ...reactHooks.configs.recommended.rules } },
 );

@@ -11,7 +11,7 @@ export function WorkspaceSwitcher() {
   const name = activeWorkspace?.name ?? 'Workspace';
   return (
     <Dropdown align="start" className="min-w-64" trigger={
-      <button className="flex max-w-56 items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-muted" aria-label="Switch workspace">
+      <button className="flex min-h-10 max-w-[7rem] items-center sm:max-w-56 gap-2 rounded-md px-2 py-1.5 text-left hover:bg-muted" aria-label={`${name}, switch workspace`}>
         <Avatar name={name} size={24} />
         <span className="truncate text-[13px] font-medium">{name}</span>
         <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />

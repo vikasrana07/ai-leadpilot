@@ -47,7 +47,7 @@ function LoginForm() {
         <Input id="password" type="password" autoComplete="current-password" aria-invalid={!!errors.password} {...register('password')} />
       </Field>
       {bot.widget}
-      <div className="flex justify-end"><Link href="/forgot-password" className="text-[13px] text-primary hover:underline">Forgot password?</Link></div>
+      <div className="flex justify-end"><Link href="/forgot-password" className="text-[13px] text-primary underline underline-offset-2 hover:no-underline">Forgot password?</Link></div>
       <Button type="submit" variant="primary" size="lg" className="w-full" loading={isSubmitting}>Sign in</Button>
     </form>
   );
@@ -71,7 +71,7 @@ function MfaStep({ challenge, onDone, onBack }: { challenge: MfaChallenge; onDon
       </Field>
       <Button type="submit" variant="primary" size="lg" className="w-full" loading={busy} disabled={value.trim().length < (useRecovery ? 8 : 6)}>Verify</Button>
       <div className="flex justify-between text-[13px]">
-        <button type="button" className="text-primary hover:underline" onClick={() => { setUseRecovery(!useRecovery); setValue(''); setError(null); }}>{useRecovery ? 'Use authenticator code' : 'Use a recovery code'}</button>
+        <button type="button" className="text-primary underline underline-offset-2 hover:no-underline" onClick={() => { setUseRecovery(!useRecovery); setValue(''); setError(null); }}>{useRecovery ? 'Use authenticator code' : 'Use a recovery code'}</button>
         <button type="button" className="text-muted-foreground hover:underline" onClick={onBack}>Back</button>
       </div>
     </form>
@@ -80,7 +80,7 @@ function MfaStep({ challenge, onDone, onBack }: { challenge: MfaChallenge; onDon
 
 export default function LoginPage() {
   return (
-    <AuthLayout title="Welcome back" subtitle="Sign in to your workspace." footer={<>New to LeadPilot? <Link href="/register" className="text-primary hover:underline">Create an account</Link></>}>
+    <AuthLayout title="Welcome back" subtitle="Sign in to your workspace." footer={<>New to LeadPilot? <Link href="/register" className="text-primary underline underline-offset-2 hover:no-underline">Create an account</Link></>}>
       <Suspense><LoginForm /></Suspense>
     </AuthLayout>
   );

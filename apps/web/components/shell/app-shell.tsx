@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Dropdown, DropdownItem, DropdownLabel, DropdownSeparator } from '@/components/ui/dropdown';
 import { useRealtime } from '@/hooks/use-realtime';
 import { useAuth } from '@/lib/auth';
+import { useSupportSession } from '@/lib/support';
 import { CommandPalette } from './command-palette';
 import { SidebarContent } from './sidebar';
 import { NotificationBell } from './notification-bell';
@@ -29,6 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const support = useSupportSession().data?.active === true;
 
   // Restore the persisted sidebar state after hydration (reading storage during render would cause a hydration mismatch).
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -37,6 +39,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex h-dvh overflow-hidden">
+      <a href="#main" className="sr-only z-[60] rounded-md bg-primary px-3 py-2 text-[13px] font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:left-3 focus:top-3">Skip to main content</a>
       <motion.aside className="hidden shrink-0 lg:block" initial={false} animate={{ width: collapsed ? 64 : 248 }} transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}>
         <SidebarContent collapsed={collapsed} onToggle={toggle} />
       </motion.aside>
@@ -57,7 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-header px-3 sm:px-5">
           <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu" onClick={() => setMobileOpen(true)}><Menu className="h-5 w-5" /></Button>
           <WorkspaceSwitcher />
-          <button onClick={() => setPaletteOpen(true)} className="ml-2 hidden h-9 w-full max-w-sm items-center gap-2 rounded-md border border-border bg-background px-3 text-[13px] text-muted-foreground hover:border-border-strong md:flex" aria-label="Open command palette">
+          <button onClick={() => setPaletteOpen(true)} className="ml-2 hidden h-9 w-full max-w-sm items-center gap-2 rounded-md border border-border bg-background px-3 text-[13px] text-muted-foreground hover:border-border-strong md:flex" aria-label="Search or jump to… ⌘K">
             <Search className="h-4 w-4" aria-hidden /><span className="flex-1 text-left">Search or jump to…</span>
             <kbd className="rounded border border-border bg-surface px-1.5 py-0.5 text-[10px]">⌘K</kbd>
           </button>
@@ -65,11 +68,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Button variant="ghost" size="icon" className="md:hidden" aria-label="Search" onClick={() => setPaletteOpen(true)}><Search className="h-4 w-4" /></Button>
             <NotificationBell />
             <ThemeSwitcher />
-            <Dropdown trigger={<button aria-label="Account menu" className="ml-1 rounded-full"><Avatar name={ctx.user.name} size={30} /></button>}>
+            <Dropdown trigger={<button aria-label="Account menu" className="ml-1 flex h-10 w-10 items-center justify-center rounded-full lg:h-auto lg:w-auto"><Avatar name={ctx.user.name} size={30} /></button>}>
               <div className="px-2.5 py-2"><p className="text-[13px] font-medium">{ctx.user.name}</p><p className="text-helper">{ctx.user.email}</p></div>
               <DropdownSeparator />
               <DropdownLabel>Account</DropdownLabel>
-              <DropdownItem asChild><Link href="/settings"><UserRound className="h-4 w-4 text-muted-foreground" aria-hidden />Settings</Link></DropdownItem>
+              {support ? null : <DropdownItem asChild><Link href="/settings"><UserRound className="h-4 w-4 text-muted-foreground" aria-hidden />Settings</Link></DropdownItem>}
               <DropdownItem onSelect={() => void logout()}><LogOut className="h-4 w-4 text-muted-foreground" aria-hidden />Sign out</DropdownItem>
             </Dropdown>
           </div>
@@ -78,7 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <VerifyEmailBanner />
         <DeletionBanner />
         <BillingBanner />
-        <main id="main" className="min-h-0 flex-1 overflow-y-auto">
+        <main id="main" tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto focus:outline-none">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={pathname} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.16, ease: [0.2, 0, 0, 1] }} className="mx-auto w-full max-w-[1280px] px-4 py-5 sm:px-6 sm:py-6">
               {children}

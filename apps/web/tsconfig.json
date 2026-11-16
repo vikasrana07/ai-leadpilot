@@ -40,7 +40,9 @@
     "node_modules/.cache/next-f2/types/**/*.ts",
     "node_modules/.cache/next-f2/dev/types/**/*.ts",
     "node_modules/.cache/next-f3/types/**/*.ts",
-    "node_modules/.cache/next-f3/dev/types/**/*.ts"
+    "node_modules/.cache/next-f3/dev/types/**/*.ts",
+    ".next-polish/types/**/*.ts",
+    ".next-polish/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

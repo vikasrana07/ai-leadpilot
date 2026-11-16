@@ -25,11 +25,14 @@
   --secondary-foreground: #1c2536;
   --accent: #e9ecff;
   --accent-foreground: #2c3db8;
-  --success: #15803d;
+  --success: #146c36;
   --success-soft: #e3f6ea;
-  --warning: #b45309;
+  --warning: #9a4506;
   --warning-soft: #fdf1d9;
   --danger: #c62828;
+  --danger-foreground: #ffffff;
+  /* Form-control borders must reach 3:1 against the surface (WCAG 1.4.11); decorative borders stay light. */
+  --input: #7d879c;
   --danger-soft: #fde8e8;
   --ring: #3f55e8;
   --header: #eef2fb;
@@ -73,6 +76,8 @@
   --warning: #f2b84b;
   --warning-soft: #2e2410;
   --danger: #f87171;
+  --danger-foreground: #0a0d13;
+  --input: #66728a;
   --danger-soft: #331517;
   --ring: #8290ff;
   --header: #10141c;
@@ -115,6 +120,8 @@
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-input: var(--input);
   --color-danger-soft: var(--danger-soft);
   --color-ring: var(--ring);
   --color-header: var(--header);
@@ -149,6 +156,10 @@
   :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 4px; }
   ::selection { background: var(--primary-soft); }
 }
+
+/* Native checkboxes/radios: larger hit area on small screens (WCAG 2.5.8 target size), accent colour from the theme. */
+input[type='checkbox'], input[type='radio'] { accent-color: var(--primary); }
+@media (max-width: 1023px) { input[type='checkbox'], input[type='radio'] { width: 1.5rem; height: 1.5rem; } }
 
 /* Type scale. Numeric text uses tabular figures so columns of numbers align. */
 .text-display { font-size: 28px; line-height: 34px; font-weight: 600; letter-spacing: -0.02em; }

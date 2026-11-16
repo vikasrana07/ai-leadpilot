@@ -1,7 +1,7 @@
 # LeadPilot AI — Progress
 
 Legend: ☐ pending · ◐ in progress · ☑ done (verified) · Tags: **M** = MVP, **V** = V1.1, **L** = Later
-Last updated: 2026-11-16 · Current phase: **Phase 7 (hardening & launch): built and verified locally; NOT launch-ready (see security-review.md and launch-checklist.md); Razorpay, Meta, real LLM, real email and AWS are unverified; awaiting user review**
+Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally; NOT launch-ready; every real provider (Razorpay, Meta, OpenAI, SMTP, AWS KMS, Turnstile) and AWS deployment are unverified; awaiting user review**
 
 ## Phase status
 | Phase | Status |
@@ -13,6 +13,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 7 (hardening & launch): built
 | 4 AI | ◐ built; verified with an offline mock model only (see below) |
 | 5 Automation & appointments | ☑ built; verified with mock WhatsApp/LLM (see below) |
 | 6 SaaS | ◐ plans, billing (mock-verified), GST invoices, gating, platform console built; Razorpay never called for real; 5 V1.1 items deferred (see below) |
+| 8 Launch blockers, V1.1, polish | ◐ built and tested locally (see Phase 8 verification); real KMS/Turnstile/Razorpay/Meta/OpenAI/SMTP unverified; Embedded Signup and Google Calendar NOT built |
 | 7 Hardening & launch | ◐ E2E, security review, load test, restore drill, runbooks, Dockerfiles done; KMS key provider, bot protection, MFA, retention job, external security review, lawyer review of legal drafts, AWS deployment still open |
 
 ## Phase 0 deliverables
@@ -101,10 +102,10 @@ Last updated: 2026-11-16 · Current phase: **Phase 7 (hardening & launch): built
 ### SaaS (Phase 6)
 - ☑ V Plans/entitlements (DB-driven, editable by platform admins), Razorpay subscriptions (mock-verified; **live client never run**), GST invoices (accountant review pending), dunning/grace, trial, plan gating in the backend
 - ☑ V Quotas + 80%/100% alerts (owners notified once), plan-limit bars on the Usage page · ☐ V richer usage history/dashboards
-- ☑ V Platform console (tenants, MRR, usage, plans, suspend/reactivate, complimentary/trial plans, audit) · ☐ V impersonation (deliberately deferred, ADR-0039) · ☐ V platform health page
-- ☐ V Public API + outbound webhooks (deferred, ADR-0040)
-- ☐ V Reports & CSV export (full set; leads CSV export exists and is plan-gated)
-- ☐ V Compliance workflows (consent, export, erasure, retention) (deferred, ADR-0040)
+- ☑ V Platform console (tenants, MRR, usage, plans, suspend/reactivate, complimentary/trial plans, audit) · ☑ V read-only support access (opt-out per workspace; default on: decision pending) · ☐ V platform health page
+- ☑ V Public API (`/v1`, scoped keys, `api_access` plan feature) + outbound webhooks (signed, SSRF-safe, retried)
+- ☑ V Reports (7) & CSV export (plan-gated)
+- ☑ V Compliance workflows: lead export/erasure, retention purge, workspace export, workspace deletion (legal review of retained invoices needed)
 - ☐ V WhatsApp Embedded Signup · ☐ V Google Calendar sync (both deferred: need real provider apps/credentials, ADR-0040)
 
 ### Quality & launch (Phase 7)
@@ -174,3 +175,11 @@ Last updated: 2026-11-16 · Current phase: **Phase 7 (hardening & launch): built
 - Bugs found and fixed: lost WhatsApp message after a crash mid-webhook; SSRF/redirect hole in media download; no CSP on the web app; SMTP without auth/TLS; open-redirect variant; invalid `.env.example`; concurrent queries on one connection (14 sites); unauthenticated `/auth/refresh` logged a serialisation error; a flaky automation test (order-dependent)
 - **Not verified / not done:** AWS deployment and managed-database PITR restore; CI on GitHub (incl. the new e2e job); real Razorpay, Meta, LLM (so AI reply p95 is unmeasured) and email; mobile/Firefox/WebKit; an independent security review; lawyer review of `docs/legal/`
 - **Known minor issues:** a `pg` "already executing a query" deprecation warning still appears occasionally (one remaining concurrent-query site, not located); the lead-detail stage `<select>` fires one change per typed letter when typed on the keyboard (arrow keys work)
+
+## Phase 8 verification (2026-11-17)
+- `pnpm lint` ✔ · `pnpm build` ✔ · `pnpm test` ✔ (**19 DB + 487 API tests**) · `scripts/e2e.sh` ✔ (**26 Playwright tests** incl. MFA, axe a11y on 22+ screens in light/dark, mobile 390x844)
+- Built: KMS key provider (fake-KMS tested), Turnstile bot protection (mock + stubbed fetch), TOTP MFA (users + platform), retention purge, workspace export/deletion, lead privacy UI, public API + webhooks, reports, support access, mobile/a11y pass (`docs/accessibility-and-responsive.md`), real-provider smoke scripts (`scripts/live/`, never run)
+- **Not built:** WhatsApp Embedded Signup, Google Calendar sync (need real provider apps), visual automation builder, tenant MFA admin-reset UI
+- **Not verified:** real AWS KMS, Cloudflare Turnstile, Razorpay, Meta, OpenAI (AI latency unmeasured), SMTP, AWS deployment, PITR restore, CI on GitHub, screen readers / real phones / Safari / Firefox
+- **Open decisions:** support access default on vs opt-in; lawyer review of invoice retention after deletion and of `docs/legal/`; backup retention statement; `@axe-core/playwright` dev dependency; darker form-control borders (WCAG 1.4.11)
+- **Known:** `webhooks-outbound.test.ts` flaked once in 4 runs earlier (cause not found); the `pg` concurrent-query deprecation warning can still appear

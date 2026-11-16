@@ -87,7 +87,7 @@ export default function PipelinePage() {
                   <motion.li layout key={l.id} transition={{ type: 'spring', stiffness: 500, damping: 40 }} draggable onDragStart={() => setDrag(l)} onDragEnd={() => { setDrag(null); setOver(null); }} className={cn('cursor-grab rounded-lg border border-border bg-card p-3 shadow-sm active:cursor-grabbing', drag?.id === l.id && 'opacity-50')}>
                     <div className="flex items-start justify-between gap-2">
                       <Link href={`/leads/${l.id}`} className="text-[13px] font-medium hover:text-primary">{l.name}</Link>
-                      <Dropdown trigger={<button aria-label={`Move ${l.name}`} className="rounded p-1 text-muted-foreground hover:bg-muted"><ArrowRightLeft className="h-3.5 w-3.5" /></button>}>
+                      <Dropdown trigger={<button aria-label={`Move ${l.name}`} className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground hover:bg-muted lg:h-6 lg:w-6"><ArrowRightLeft className="h-3.5 w-3.5" /></button>}>
                         {stages.data?.stages.filter((s) => s.id !== l.stage.id).map((s) => <DropdownItem key={s.id} onSelect={() => request(l, s.id)}>Move to {s.name}</DropdownItem>)}
                       </Dropdown>
                     </div>
@@ -98,7 +98,7 @@ export default function PipelinePage() {
                     </div>
                   </motion.li>
                 ))}
-                {col.total > col.leads.length ? <li className="text-helper py-1 text-center">Showing {col.leads.length} of {col.total}. <Link className="text-primary hover:underline" href={`/leads?stageId=${col.stage.id}`}>See all</Link></li> : null}
+                {col.total > col.leads.length ? <li className="text-helper py-1 text-center">Showing {col.leads.length} of {col.total}. <Link className="text-primary underline underline-offset-2 hover:no-underline" href={`/leads?stageId=${col.stage.id}`}>See all</Link></li> : null}
                 {col.leads.length === 0 ? <li className="rounded-lg border border-dashed border-border-strong py-6 text-center text-helper">Drop a lead here</li> : null}
               </ul>
             </section>

@@ -15,12 +15,12 @@ export function ScoreRing({ score, temperature, factors, size = 72 }: { score: n
   const shown = score ?? 0;
   return (
     <div className="relative inline-block">
-      <button onClick={() => setOpen((o) => !o)} onBlur={() => setOpen(false)} aria-expanded={open} aria-label={score === null ? 'Not scored yet. Show how scoring works' : `Lead score ${score}, ${t.name}. Show breakdown`} className="relative block rounded-full">
+      <button onClick={() => setOpen((o) => !o)} onBlur={() => setOpen(false)} aria-expanded={open} aria-label={`${score ?? '—'} ${t.name}. ${score === null ? 'Not scored yet.' : 'Lead score.'} Show how this score was built`} className="relative block rounded-full">
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
           <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="6" stroke="var(--muted)" />
           <motion.circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="6" strokeLinecap="round" stroke={t.stroke} strokeDasharray={c} initial={{ strokeDashoffset: c }} animate={{ strokeDashoffset: c * (1 - shown / 100) }} transition={{ duration: 0.9, ease: [0.2, 0, 0, 1] }} />
         </svg>
-        <span className="absolute inset-0 flex flex-col items-center justify-center"><span className="num text-[20px] font-semibold leading-none">{score ?? '—'}</span><span className={cn('text-[10px] font-medium uppercase tracking-wide', t.cls)}>{t.name}</span></span>
+        <span className="absolute inset-0 flex flex-col items-center justify-center"><span className="num text-[20px] font-semibold leading-none">{score ?? '—'}</span>{' '}<span className={cn('text-[10px] font-medium uppercase tracking-wide', t.cls)}>{t.name}</span></span>
       </button>
       {open ? (
         <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.12 }} className="absolute left-0 top-full z-20 mt-2 w-72 rounded-lg border border-border bg-card p-3 shadow-lg">
