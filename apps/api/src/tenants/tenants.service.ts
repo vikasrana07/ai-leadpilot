@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { TxClient } from '@leadpilot/database';
-import { SYSTEM_ROLES, type SystemRoleKey } from '@leadpilot/shared-types';
+import { bootstrapTenant, type TxClient } from '@leadpilot/database';
 import type { OnboardingProgress, UpdateTenantInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
@@ -20,17 +19,7 @@ export class TenantsService {
     tenantId: string,
     input: { name: string; email: string; industry: string },
   ): Promise<{ ownerRoleId: string }> {
-    await tx.tenant.create({
-      data: { id: tenantId, name: input.name, email: input.email, industry: input.industry, onboardingState: { step: 'business', completed: [], skipped: [] } },
-    });
-    let ownerRoleId = '';
-    for (const key of Object.keys(SYSTEM_ROLES) as SystemRoleKey[]) {
-      const def = SYSTEM_ROLES[key];
-      const roleId = uuidv7();
-      if (key === 'owner') ownerRoleId = roleId;
-      await tx.role.create({ data: { id: roleId, tenantId, key, name: def.name, isSystem: true } });
-      await tx.rolePermission.createMany({ data: def.permissions.map((permissionKey) => ({ tenantId, roleId, permissionKey })) });
-    }
+    const { ownerRoleId } = await bootstrapTenant(tx, tenantId, { ...input, newId: uuidv7 });
     return { ownerRoleId };
   }
 

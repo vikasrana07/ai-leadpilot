@@ -1,7 +1,8 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, Prisma } from './generated/client.js';
+import { PrismaClient, type Prisma } from './generated/client.js';
 
 export * from './generated/client.js';
+export { bootstrapTenant } from './bootstrap-tenant.js';
 
 export function createPrismaClient(connectionString: string): PrismaClient {
   const adapter = new PrismaPg({ connectionString });

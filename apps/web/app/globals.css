@@ -1,0 +1,168 @@
+@import 'tailwindcss';
+
+/*
+ * LeadPilot design tokens. Components use ONLY these semantic tokens (bg-background, text-foreground, border-border…),
+ * never raw colours, so light/dark/system themes and charts stay consistent.
+ * Neutrals are a cool graphite scale; one indigo-blue accent; semantic green/amber/red.
+ * Spacing follows the 4px base grid (Tailwind's default scale).
+ */
+:root {
+  color-scheme: light;
+  --background: #f6f7f9;
+  --foreground: #0f1623;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #0f1623;
+  --border: #e3e6ec;
+  --border-strong: #cfd4de;
+  --muted: #eef0f4;
+  --muted-foreground: #5b6578;
+  --primary: #3f55e8;
+  --primary-hover: #3347d1;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e9ecff;
+  --secondary: #eef0f4;
+  --secondary-foreground: #1c2536;
+  --accent: #e9ecff;
+  --accent-foreground: #2c3db8;
+  --success: #15803d;
+  --success-soft: #e3f6ea;
+  --warning: #b45309;
+  --warning-soft: #fdf1d9;
+  --danger: #c62828;
+  --danger-soft: #fde8e8;
+  --ring: #3f55e8;
+  --sidebar: #0f1623;
+  --sidebar-foreground: #c9d0de;
+  --sidebar-muted: #8591a8;
+  --sidebar-accent: #1b2434;
+  --sidebar-border: #1f2838;
+  --chart-1: #3f55e8;
+  --chart-2: #0e9f8e;
+  --chart-3: #d98a1f;
+  --chart-4: #8b5cf6;
+  --chart-5: #e0566b;
+  --chart-grid: #e3e6ec;
+  --shadow-sm: 0 1px 2px rgb(15 22 35 / 0.06);
+  --shadow-md: 0 4px 12px rgb(15 22 35 / 0.08), 0 1px 3px rgb(15 22 35 / 0.06);
+  --shadow-lg: 0 16px 40px rgb(15 22 35 / 0.14), 0 2px 8px rgb(15 22 35 / 0.08);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0a0d13;
+  --foreground: #e8ebf2;
+  --surface: #10141c;
+  --card: #131824;
+  --card-foreground: #e8ebf2;
+  --border: #222a39;
+  --border-strong: #2f394d;
+  --muted: #181e2b;
+  --muted-foreground: #9099ad;
+  --primary: #6b7cff;
+  --primary-hover: #8290ff;
+  --primary-foreground: #0a0d13;
+  --primary-soft: #1d2447;
+  --secondary: #1a2130;
+  --secondary-foreground: #dfe3ec;
+  --accent: #1d2447;
+  --accent-foreground: #a9b3ff;
+  --success: #4ade80;
+  --success-soft: #11291c;
+  --warning: #f2b84b;
+  --warning-soft: #2e2410;
+  --danger: #f87171;
+  --danger-soft: #331517;
+  --ring: #8290ff;
+  --sidebar: #070a10;
+  --sidebar-foreground: #c0c8d8;
+  --sidebar-muted: #7a859b;
+  --sidebar-accent: #131a28;
+  --sidebar-border: #171e2b;
+  --chart-1: #8290ff;
+  --chart-2: #2dd4bf;
+  --chart-3: #f2b84b;
+  --chart-4: #a78bfa;
+  --chart-5: #fb7185;
+  --chart-grid: #222a39;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.45);
+  --shadow-lg: 0 16px 40px rgb(0 0 0 / 0.6);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+}
+
+@layer base {
+  * { border-color: var(--border); }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 4px; }
+  ::selection { background: var(--primary-soft); }
+}
+
+/* Type scale. Numeric text uses tabular figures so columns of numbers align. */
+.text-display { font-size: 28px; line-height: 34px; font-weight: 600; letter-spacing: -0.02em; }
+.text-title   { font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.015em; }
+.text-heading { font-size: 15px; line-height: 22px; font-weight: 600; letter-spacing: -0.005em; }
+.text-label   { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.01em; }
+.text-helper  { font-size: 12px; line-height: 16px; color: var(--muted-foreground); }
+.num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skeleton {
+  background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
+}

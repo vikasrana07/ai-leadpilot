@@ -22,7 +22,7 @@ export class FakeMail {
 
 export const RUN = randomUUID().slice(0, 8);
 export const PASSWORD = 'Str0ngPassw0rd!';
-export const WEB_ORIGIN = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
+export const WEB_ORIGIN = process.env.WEB_ORIGIN ?? 'http://localhost:3100';
 
 export interface TestCtx { app: INestApplication; mail: FakeMail; http: () => ReturnType<typeof request>; close: () => Promise<void> }
 

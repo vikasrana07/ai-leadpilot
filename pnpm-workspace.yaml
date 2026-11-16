@@ -1,16 +1,12 @@
 packages:
   - apps/*
   - packages/*
+# pnpm 11: explicit allow-list for dependencies that may run install scripts.
 allowBuilds:
-  '@prisma/engines': set this to true or false
-  '@scarf/scarf': set this to true or false
-  argon2: set this to true or false
-  esbuild: set this to true or false
-  prisma: set this to true or false
-onlyBuiltDependencies:
-  - prisma
-  - "@prisma/engines"
-  - esbuild
-  - sharp
-  - unrs-resolver
-  - argon2
+  '@prisma/engines': true
+  prisma: true
+  argon2: true
+  esbuild: true
+  '@scarf/scarf': false
+  sharp: true
+  unrs-resolver: true

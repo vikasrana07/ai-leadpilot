@@ -56,3 +56,15 @@ Format: Context · Decision · Consequences. Status of all: **Proposed** until t
 **Context.** Conversations and consents attach to a person; leads may be created before a conversation.
 **Decision (provisional).** MVP uses `leads` as the person record (one lead ↔ one phone identity per tenant); a separate `contacts` table is deferred. Revisit in Phase 3 if multi-lead-per-contact becomes necessary.
 **Consequences.** Simpler schema. Migration cost later if we split.
+
+---
+
+## ADR-0011: API runs from a `tsc` build under plain Node (not tsx); explicit `@Inject()` everywhere
+**Context.** Phase 1 finding (2026-11-16): the API passed all Vitest tests but failed to boot under `tsx` (`ThrottlerGuard` could not resolve `Reflector`). `tsx` transpiles `require()`d ESM packages into a second copy of `@nestjs/core` (Nest 12 is ESM, `@nestjs/throttler` 6.7 is CJS), so class identity differs. esbuild-based tools also do not emit `design:paramtypes` metadata.
+**Decision.** Production and dev run `node dist/main.js` from a `tsc` build (`pnpm dev` = `tsc --watch` + `node --watch`). All constructor dependencies use explicit `@Inject(Token)`, so nothing depends on emitted metadata. CI runs `pnpm --filter @leadpilot/api smoke`, which boots the built server under plain Node.
+**Consequences.** Slightly slower dev reload than tsx. Eliminates a class of "works in tests, breaks in prod" failures. Revisit if `@nestjs/throttler` ships ESM or when moving to SWC.
+
+## ADR-0012: `packages/ui` deferred; UI components live in `apps/web` for now
+**Context.** The brief lists `packages/ui`. Only one frontend exists, and shadcn components are copied source that is customised per app.
+**Decision.** Design tokens and shadcn-style components live in `apps/web` (`components/ui`, `app/globals.css`). Extract to `packages/ui` if a second frontend (e.g. platform admin as a separate app, embeddable widget) needs them.
+**Consequences.** Less build plumbing now. Extraction is mechanical later.
