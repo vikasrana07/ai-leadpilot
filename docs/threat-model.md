@@ -16,7 +16,22 @@ Scope: identity, tenancy, RBAC, audit. Extended in each phase (webhooks Phase 3,
 | Audit tampering | app role has INSERT+SELECT only on `audit_logs` | DB test |
 | Information leakage in errors | structured errors with request id; internals logged server-side only | error-hygiene test |
 
+## Phase 3 additions
+| Threat | Mitigation | Evidence |
+|---|---|---|
+| Forged / replayed WhatsApp webhooks | per-channel HMAC over raw body (constant-time), unguessable URL key, payload must match the channel's number, de-dup by body hash and by provider message id | `communication.test.ts` (forged, missing, wrong-secret, other-tenant-secret, altered-bytes, duplicate, re-wrapped replay) |
+| Provider token theft from the database | envelope encryption (AES-256-GCM, per-record key wrapped by master key, tenant+provider authenticated); secrets never returned by APIs or written to audit logs | secret-box tests, DB ciphertext check |
+| Messaging someone who opted out / outside the window | enforced server-side before sending (24 h window, STOP keywords, template registry, consent required for templates) | outbound rules tests |
+| Other websites abusing a widget key | allow-listed origins per widget; sessions bound to the key | widget tests |
+| Visitor reading another person's chat | one thread per contact but history limited to messages after the session started | widget tests |
+| Agents reading others' conversations | `conversation:read:own` scoping returns 404; SSE events filtered by assignment | inbox + SSE tests |
+| Stored XSS via customer text / filenames | UI renders text as text; widget uses `textContent`; media forced to download unless a safe image type, `nosniff`, sandbox CSP | media test, widget script check |
+| SSRF through media URLs | host allow-list (Meta domains) before fetching | code review (live client only) |
+
 ## Known gaps / accepted for now
+- **The live WhatsApp client has never run against Meta.** Everything is tested with the mock provider. Payload shapes follow Meta's documented format, but real-world verification needs real credentials.
+- Webhook raw payloads are stored (for dedupe and debugging) without a retention job yet (phase 7).
+- Widget polling is not authenticated beyond the session token and origin allow-list; scripted abuse is bounded only by rate limits until bot protection (phase 7).
 - Rate limiting is **in-memory per instance**; the Redis store arrives in Phase 5. Do not run multiple API replicas before then.
 - Email-verification is not enforced for login (only for inviting teammates).
 - No MFA. [V1.1+]

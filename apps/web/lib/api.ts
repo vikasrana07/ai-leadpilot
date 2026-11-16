@@ -46,6 +46,9 @@ export async function api<T>(path: string, init: { method?: string; body?: unkno
   });
   if (res.status === 401 && retry && !path.startsWith('/auth/login') && !path.startsWith('/auth/refresh')) {
     if (await refreshSession()) return api<T>(path, init, false);
+    // Another tab may have refreshed at the same moment (the cookie is shared): give it a beat, then retry once.
+    await new Promise((r) => setTimeout(r, 600));
+    return api<T>(path, init, false);
   }
   return parse<T>(res);
 }

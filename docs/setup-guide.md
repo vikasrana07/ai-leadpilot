@@ -44,3 +44,11 @@ Tests need the infra running (they use the real Postgres through the **non-owner
 | `THROTTLE_AUTH_LIMIT`, `THROTTLE_GLOBAL_LIMIT`, `ENABLE_SWAGGER` | optional tuning |
 
 The API refuses to start on missing/invalid variables (zod validation in `apps/api/src/config/env.ts`). `.env` is git-ignored.
+
+## WhatsApp and the website widget (phase 3)
+
+- `WHATSAPP_MODE=mock` (default in dev/tests) uses an in-memory provider: connecting a channel accepts any well-formed credentials and "sends" are recorded, not delivered. `live` talks to Meta's Graph API and is **required in production** (the API refuses to start with `mock` there).
+- Try the full flow without Meta: with the API running, `node apps/api/scripts/demo-whatsapp.mjs` connects a mock number to the demo workspace and delivers correctly signed webhooks; open http://localhost:3100/inbox.
+- Real WhatsApp needs a public HTTPS URL for the webhook (`PUBLIC_API_URL`, e.g. via a tunnel). In **Integrations → WhatsApp** enter the phone number ID, WABA ID, a permanent system-user token and the Meta app secret; the page then shows the callback URL and verify token to paste into Meta (WhatsApp → Configuration, subscribe to `messages`).
+- Website widget: **Integrations → Website chat widget**, list the sites allowed to show it, then paste the generated `<script>` tag. For a local test, allow `http://localhost:3100` and inject the script into any page served from that origin.
+- Redis must be running (`pnpm infra:up`): it carries real-time events from the API to browsers (SSE).

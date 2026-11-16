@@ -14,6 +14,7 @@ import { TokenService } from './token.service.js';
 const REFRESH_TTL_MS = 30 * 24 * 3600 * 1000;
 const VERIFY_TTL_MS = 24 * 3600 * 1000;
 const RESET_TTL_MS = 3600 * 1000;
+const REFRESH_GRACE_MS = 10_000;
 const MAX_FAILED_LOGINS = 5;
 const LOCK_MS = 15 * 60 * 1000;
 
@@ -139,8 +140,14 @@ export class AuthService {
   async refresh(refreshToken: string, meta: ClientMeta): Promise<IssuedSession> {
     const session = await this.db.prisma.session.findUnique({ where: { refreshTokenHash: hashToken(refreshToken) } });
     if (!session || session.revokedAt || session.expiresAt < new Date()) throw new UnauthorizedException({ code: 'invalid_refresh', message: 'Session expired' });
+    // Several tabs can refresh at the same instant with the same cookie. A token rotated moments ago is a race, not theft:
+    // reject it harmlessly (the sibling tab already holds the new cookie). Reuse LONGER ago is treated as theft.
+    if (session.rotatedAt !== null && Date.now() - session.rotatedAt.getTime() < REFRESH_GRACE_MS) {
+      throw new UnauthorizedException({ code: 'refresh_race', message: 'Session was just refreshed' });
+    }
     const claimed = await this.db.prisma.session.updateMany({ where: { id: session.id, rotatedAt: null }, data: { rotatedAt: new Date() } });
     if (session.rotatedAt !== null || claimed.count !== 1) {
+      if (claimed.count !== 1 && session.rotatedAt === null) throw new UnauthorizedException({ code: 'refresh_race', message: 'Session was just refreshed' }); // lost the race by milliseconds
       await this.db.prisma.session.updateMany({ where: { familyId: session.familyId, revokedAt: null }, data: { revokedAt: new Date() } });
       await this.audit.recordStandalone({
         tenantId: null, actorUserId: session.userId, action: 'auth.refresh_reuse_detected',

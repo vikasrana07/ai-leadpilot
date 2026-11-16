@@ -7,11 +7,14 @@ import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/logo';
 import { Tooltip } from '@/components/ui/tooltip';
 import { useAuth } from '@/lib/auth';
+import { useUnreadCount } from '@/lib/inbox';
 import { cn } from '@/lib/cn';
 import { ADMIN_NAV, isLive, WORKSPACE_NAV, type NavItem } from '@/lib/nav';
 
 function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
+  const unread = useUnreadCount(item.href === '/inbox');
+  const badge = item.href === '/inbox' && (unread.data ?? 0) > 0 ? unread.data : null;
   const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
   const soon = !isLive(item);
   const link = (
@@ -28,6 +31,7 @@ function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: bo
         <>
           <span className="relative flex-1 truncate">{item.label}</span>
           {soon ? <span className="relative rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] font-medium text-sidebar-muted">Soon</span> : null}
+          {badge ? <span aria-label={`${badge} unread`} className="num relative rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">{badge > 99 ? '99+' : badge}</span> : null}
         </>
       )}
     </Link>

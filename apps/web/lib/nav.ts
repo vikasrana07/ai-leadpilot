@@ -10,12 +10,12 @@ export interface NavItem {
   description?: string;
 }
 
-export const CURRENT_PHASE = 2;
+export const CURRENT_PHASE = 3;
 
 export const WORKSPACE_NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, phase: 1 },
   { href: '/leads', label: 'Leads', icon: Users, phase: 2, description: 'Capture, search, score and assign every lead.' },
-  { href: '/inbox', label: 'Inbox', icon: Inbox, phase: 3, description: 'WhatsApp and website chat in one place.' },
+  { href: '/inbox', label: 'Inbox', icon: Inbox, phase: 3, permission: 'conversation:read:own', description: 'WhatsApp and website chat in one place.' },
   { href: '/pipeline', label: 'Sales Pipeline', icon: KanbanSquare, phase: 2, description: 'Move leads from first contact to closed.' },
   { href: '/properties', label: 'Properties', icon: Building2, phase: 2, permission: 'property:read' },
   { href: '/appointments', label: 'Appointments', icon: CalendarDays, phase: 5, description: 'Site visits and meetings without double booking.' },

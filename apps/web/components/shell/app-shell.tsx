@@ -8,6 +8,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dropdown, DropdownItem, DropdownLabel, DropdownSeparator } from '@/components/ui/dropdown';
+import { useRealtime } from '@/hooks/use-realtime';
 import { useAuth } from '@/lib/auth';
 import { CommandPalette } from './command-palette';
 import { SidebarContent } from './sidebar';
@@ -18,7 +19,8 @@ import { VerifyEmailBanner } from './verify-banner';
 const STORAGE_KEY = 'lp-sidebar-collapsed';
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { ctx, logout } = useAuth();
+  const { ctx, logout, can } = useAuth();
+  useRealtime(can('conversation:read:all') || can('conversation:read:own'));
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);

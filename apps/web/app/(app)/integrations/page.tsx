@@ -1,9 +1,11 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Copy, KeyRound, MessageCircle, Globe, CalendarDays, Plus, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, Copy, KeyRound, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { WhatsappCard } from '@/components/integrations/whatsapp-card';
+import { WidgetCard } from '@/components/integrations/widget-card';
 import { PageHeader } from '@/components/page/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,9 +32,8 @@ export default function IntegrationsPage() {
   return (
     <>
       <PageHeader title="Integrations" description="Connect the places your leads come from." />
-      <div className="mb-6 grid gap-3 sm:grid-cols-3">
-        {[[MessageCircle, 'WhatsApp', 'Reply to enquiries on WhatsApp.'], [Globe, 'Website chat', 'Embed the assistant on your site.'], [CalendarDays, 'Google Calendar', 'Sync site visits to calendars.']].map(([Icon, title, text]) => { const I = Icon as typeof Globe; return <Card key={String(title)}><CardBody className="flex items-start gap-3"><I className="mt-0.5 h-5 w-5 text-muted-foreground" aria-hidden /><div className="flex-1"><p className="text-[13px] font-medium">{String(title)}</p><p className="text-helper">{String(text)}</p></div><Badge>Soon</Badge></CardBody></Card>; })}
-      </div>
+      {can('integration:manage') ? <div className="mb-6 space-y-6"><WhatsappCard /><WidgetCard /></div> : null}
+      <Card className="mb-6"><CardBody className="flex items-start gap-3"><CalendarDays className="mt-0.5 h-5 w-5 text-muted-foreground" aria-hidden /><div className="flex-1"><p className="text-[13px] font-medium">Google Calendar</p><p className="text-helper">Sync site visits to your calendar.</p></div><Badge>Soon</Badge></CardBody></Card>
 
       <Card>
         <CardHeader><div><CardTitle><KeyRound className="mr-1.5 inline h-4 w-4" aria-hidden />Lead capture API</CardTitle><p className="text-helper mt-0.5">Send leads from your website form, ad platform or any backend. Keep keys secret: call this from a server, never from browser code.</p></div></CardHeader>

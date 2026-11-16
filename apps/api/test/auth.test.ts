@@ -1,9 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auth, cleanup, createTestApp, PASSWORD, registerAccount, RUN, WEB_ORIGIN, type TestCtx } from './helpers.js';
 
+import pg from 'pg';
 let ctx: TestCtx;
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_OWNER_URL });
 beforeAll(async () => { ctx = await createTestApp(); });
-afterAll(async () => { await ctx.close(); await cleanup(); });
+afterAll(async () => { await pool.end(); await ctx.close(); await cleanup(); });
 
 describe('registration', () => {
   it('creates an isolated workspace with the owner role and all permissions', async () => {
@@ -64,19 +66,22 @@ describe('login & lockout', () => {
 });
 
 describe('sessions & refresh rotation', () => {
-  it('rotates refresh tokens; replaying a used token revokes the whole family', async () => {
+  it('rotates refresh tokens; a near-simultaneous reuse is a harmless race, a later reuse revokes the family', async () => {
     const a = await registerAccount(ctx, 'rot');
     const r1 = await ctx.http().post('/auth/refresh').set('x-token-delivery', 'body').send({ refreshToken: a.refreshToken });
     expect(r1.status).toBe(200);
     expect(r1.body.refreshToken).not.toBe(a.refreshToken);
-    // replay the ORIGINAL (already rotated) token -> theft signal
+    // another tab refreshing with the SAME cookie a moment later: rejected, but the family survives
+    const race = await ctx.http().post('/auth/refresh').send({ refreshToken: a.refreshToken });
+    expect(race.status).toBe(401); expect(race.body.error.code).toBe('refresh_race');
+    const r2 = await ctx.http().post('/auth/refresh').set('x-token-delivery', 'body').send({ refreshToken: r1.body.refreshToken });
+    expect(r2.status).toBe(200);
+    // replaying the original token well after the grace window is a theft signal: the whole family dies
+    await pool.query(`UPDATE sessions SET rotated_at = now() - interval '1 minute' WHERE refresh_token_hash = encode(sha256($1::bytea), 'hex')`, [a.refreshToken]);
     const replay = await ctx.http().post('/auth/refresh').send({ refreshToken: a.refreshToken });
-    expect(replay.status).toBe(401);
-    // the legitimately rotated token is now dead too
-    const r2 = await ctx.http().post('/auth/refresh').send({ refreshToken: r1.body.refreshToken });
-    expect(r2.status).toBe(401);
-    // and so is the access token minted from the family
-    expect((await ctx.http().get('/auth/me').set(auth(r1.body.accessToken))).status).toBe(401);
+    expect(replay.status).toBe(401); expect(replay.body.error.code).toBe('invalid_refresh');
+    expect((await ctx.http().post('/auth/refresh').send({ refreshToken: r2.body.refreshToken })).status).toBe(401);
+    expect((await ctx.http().get('/auth/me').set(auth(r2.body.accessToken))).status).toBe(401);
   });
 
   it('logout invalidates the access token immediately', async () => {

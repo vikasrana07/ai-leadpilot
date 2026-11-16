@@ -1,4 +1,4 @@
-# API specification (through Phase 2)
+# API specification (through Phase 3)
 
 Base URL `http://localhost:4000`. JSON everywhere. Errors: `{ "error": { "code", "message", "details?", "requestId" } }`.
 Auth: httpOnly cookies (browser) or `Authorization: Bearer <access token>` (API clients; send `x-token-delivery: body` on login to receive tokens in the body). Tenant context always comes from the validated membership, never from request input. The OpenAPI/Swagger UI is **not yet generated** (planned for Phase 7); this file is the interim reference and is maintained by hand.
@@ -45,3 +45,21 @@ Permission column: the permission key required. "own/all" = row scope, enforced 
 
 ## Analytics (Phase 2)
 `GET /analytics/overview?range=today|yesterday|7d|30d|month|custom&from&to` (`analytics:read:all` or `:own`). Metric definitions are in `apps/api/src/analytics/analytics.module.ts`.
+
+## Conversations (Phase 3)
+Scope: `conversation:read:all` sees every conversation, `conversation:read:own` only those assigned to the caller (404 otherwise). `conversation:reply` is needed for every action except reading; `conversation:assign` for assignment.
+| Endpoint | Notes |
+|---|---|
+| `GET /conversations` | `status, mode, assigned (me/unassigned/id), channelType, unread, q, page, pageSize` → `{items,total,unreadTotal}` |
+| `GET /conversations/:id` · `GET …/messages?before=` · `GET|POST …/notes` · `PUT …/tags` | |
+| `POST …/messages` | `{text}` or `{template:{name,language,params}}`, optional `idempotencyKey`. 422 `outside_window`, `opted_out`, `consent_required`, `unknown_template`, `template_params`, `channel_unavailable`; 409 `join_required` |
+| `POST …/messages/:mid/retry` | failed outbound messages only |
+| `POST …/read`, `assign`, `close`, `reopen`, `takeover`, `handback` | handback returns 409 `ai_not_configured` until phase 4 |
+| `GET …/messages/:mid/media` | proxied from the provider; images inline, other types download |
+| `GET /realtime/stream` | server-sent events: `message.created`, `message.status`, `conversation.updated` (ids only; refetch the data) |
+
+## Channels and widget admin (Phase 3, `integration:manage`)
+`GET /channels` · `POST /channels/whatsapp` (verifies with WhatsApp first) · `POST /channels/:id/test` · `PUT /channels/:id/credentials` · `DELETE /channels/:id` (disable) · `GET|POST|DELETE /whatsapp/templates` (read needs `conversation:reply`) · `GET|PUT /widget-config` · `POST /widget-config/rotate-key`
+
+## Public endpoints (no cookies)
+`GET|POST /webhooks/whatsapp/:key` (HMAC-authenticated, see ADR-0013) · `GET /widget.js` · `GET /widget/config?key` · `POST /widget/sessions` · `GET|POST /widget/messages` (bearer session token). All widget calls require an allow-listed `Origin`.

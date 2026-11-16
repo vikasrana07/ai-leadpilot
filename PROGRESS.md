@@ -1,15 +1,15 @@
 # LeadPilot AI — Progress
 
 Legend: ☐ pending · ◐ in progress · ☑ done (verified) · Tags: **M** = MVP, **V** = V1.1, **L** = Later
-Last updated: 2026-11-16 · Current phase: **Phase 2 (CRM): built and verified; awaiting user review**
+Last updated: 2026-11-16 · Current phase: **Phase 3 (Communication): built and verified against a MOCK WhatsApp provider; awaiting user review**
 
 ## Phase status
 | Phase | Status |
 |---|---|
 | 0 Plan | ☑ approved |
 | 1 Foundation | ☑ |
-| 2 CRM | ◐ built and verified (see below); awaiting your review |
-| 3 Communication | ☐ |
+| 2 CRM | ☑ |
+| 3 Communication | ◐ built; verified with mock provider only (see below) |
 | 4 AI | ☐ |
 | 5 Automation & appointments | ☐ |
 | 6 SaaS | ☐ |
@@ -61,12 +61,16 @@ Last updated: 2026-11-16 · Current phase: **Phase 2 (CRM): built and verified; 
 - ☐ Lead scoring itself is phase 4 (score/temperature can be set manually; seeded demo scores are demo data)
 
 ### Communication (Phase 3)
-- ☐ M Conversations/messages, inbox 3-panel UI, SSE
-- ☐ M WhatsApp Cloud API (manual token): webhooks, inbound/outbound, statuses, media, templates (send)
-- ☐ M 24-hour window + opt-in enforcement
-- ☐ M Webhook signature verification, dedupe, idempotency
-- ☐ M Website widget (public key, origins, theme, handover, rate limit)
-- ☐ V Embedded Signup · ☐ V Template manager · ☐ V Canned replies · ☐ L Broadcasts · ☐ L Messenger/Instagram/Email
+- ☑ M Conversations/messages, 3-panel inbox (single-pane on mobile), unread counts, queues, filters, search, assign, close/reopen, takeover, internal notes, tags, delivery ticks, media rendering, failed-send retry
+- ☑ M Real-time via SSE over Redis pub/sub, scoped per agent; live unread badge in the sidebar
+- ◐ M WhatsApp Cloud API (manual token): connect/test/rotate/disable, webhook handshake + HMAC verification, inbound text/media/unsupported types, status receipts (monotonic), outbound text and templates, encrypted credentials. **The live Meta client is written but has never been run against Meta**; everything is verified with the mock provider
+- ☑ M 24-hour window, opt-out (STOP) and consent enforced server-side; template registry (names of already-approved templates)
+- ☑ M Webhook security: unguessable URL key, per-channel app-secret HMAC over raw body, payload/number match, dedupe by body hash and by message id
+- ☑ M Website widget: public key + allowed origins, Shadow-DOM loader, lead capture, session tokens, polling, key rotation revokes sessions, admin UI with install snippet
+- ◐ M Retries/rate limits: bounded inline retry + manual retry now; scheduled background retries in phase 5 (ADR-0016)
+- ☑ Refresh-token race fixed (ADR-0015)
+- ☐ V Embedded Signup · ☐ V Template manager/sync with Meta · ☐ V Canned replies · ☐ L Broadcasts · ☐ L Messenger/Instagram/Email
+- ☐ Media is proxied, not stored (ADR-0017); attachments to leads and durable storage are phase 4
 
 ### AI (Phase 4)
 - ☐ M Provider abstraction, orchestrator, prompt versioning
@@ -114,13 +118,19 @@ Last updated: 2026-11-16 · Current phase: **Phase 2 (CRM): built and verified; 
 - **Bug found and fixed while verifying:** permissions added in code never reached existing tenants. `pnpm db:migrate` now syncs system roles (additive/removing, idempotent, tested)
 - **Not verified:** Playwright E2E (phase 7); drag-and-drop with a real mouse (menu path verified, HTML5 DnD not exercised); CSV import through the file picker in the browser (API-level tested); CI workflow on GitHub; real email
 
+## Phase 3 verification (2026-11-16)
+- `pnpm lint` ✔ · `pnpm typecheck` ✔ · `pnpm test` ✔ (**19 DB + 113 API tests**) · built API boots under plain Node ✔
+- New tests: envelope encryption (round-trip, tamper, wrong tenant), connect validation, secrets never returned/logged, webhook handshake, **forged/missing/wrong-secret/altered-body/other-tenant signatures**, exact and re-wrapped replays, wrong-number payloads, media safety headers, 24h window, templates, opt-out, idempotent sends, transient/permanent provider failures + retry, agent scoping and cross-tenant 404s, widget CORS/origin/session/key-rotation rules, SSE delivery and its scoping
+- Real browser (Chrome): signed webhooks delivered to the real server → inbox shows them with unread badges → opened a thread (marked read) → sent a reply → new inbound messages appeared **live** without refresh → Integrations page with setup guide → website widget loaded from `/widget.js`, visitor chatted, team reply appeared in the widget → mobile emulation (single-pane inbox)
+- **Not verified:** anything against real Meta (live client, payload quirks, media download, template sends, rate-limit codes); real email; widget on a genuinely different origin (verified on localhost:3100 as the allowed origin; non-allowed origins are covered by API tests); Playwright E2E (phase 7); CI on GitHub
+
 ## Decisions needed from the user
 1. ☑ Phase 0 plan approved.
 2. ☑ `git init` done; **no remote, work stays local** (decided 2026-11-16).
 3. ☑ TypeScript 6.0.3 and Prisma 7.10.1 (ADR-0008) agreed.
 4. ☑ **WhatsApp billing: tenants pay Meta directly on their own WABA** (decided 2026-11-16). LeadPilot plans price the software only; no WhatsApp resale or margin.
 5. **LLM default model** and who holds the API key in dev. The brief only says OpenAI. I need a dev key later; I will not use it until you provide it.
-6. **Meta test assets:** do you have a Meta developer account / WhatsApp test number for sandbox verification in Phase 3?
+6. **Meta test assets:** still needed to verify the live WhatsApp client. Do you have a Meta developer account / WhatsApp test number? (Phase 3 was verified with the mock provider.)
 7. **Email provider** for transactional mail (SES, Resend, other). Mailpit is used locally.
 8. ☑ Lead = person record in MVP (ADR-0010) agreed.
 
