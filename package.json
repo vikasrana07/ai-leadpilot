@@ -14,6 +14,7 @@
     "db:generate": "pnpm --filter @leadpilot/database generate",
     "db:migrate": "pnpm --filter @leadpilot/database migrate",
     "db:seed": "pnpm --filter @leadpilot/database seed",
+    "db:studio": "pnpm --filter @leadpilot/database run studio",
     "infra:up": "docker compose -f infrastructure/docker/docker-compose.yml --env-file .env up -d",
     "infra:down": "docker compose -f infrastructure/docker/docker-compose.yml --env-file .env down",
     "format:check": "echo \"no formatter configured\""

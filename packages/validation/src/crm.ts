@@ -140,3 +140,56 @@ export const analyticsQuerySchema = z.object({
   to: z.string().datetime().optional(),
 });
 export type AnalyticsQuery = z.infer<typeof analyticsQuerySchema>;
+
+// --- communication (phase 3)
+export const channelWhatsappSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  phoneNumberId: z.string().trim().regex(/^\d{6,25}$/, 'The phone number ID is the long number from Meta, digits only'),
+  wabaId: z.string().trim().regex(/^\d{6,25}$/, 'The WhatsApp Business Account ID is digits only'),
+  accessToken: z.string().trim().min(20).max(1000),
+  appSecret: z.string().trim().min(8).max(200),
+});
+
+export const templateSchema = z.object({
+  name: z.string().trim().regex(/^[a-z0-9_]{1,512}$/, 'Template names use lowercase letters, numbers and underscores'),
+  language: z.string().trim().regex(/^[a-z]{2}(_[A-Z]{2})?$/, 'Use a code like en or en_US').default('en'),
+  category: z.enum(['UTILITY', 'MARKETING', 'AUTHENTICATION']).default('UTILITY'),
+  bodyPreview: z.string().trim().min(1).max(1024),
+});
+
+export const widgetConfigSchema = z.object({
+  allowedOrigins: z.array(z.string().url().max(200)).min(1, 'Add at least one website address').max(10),
+  enabled: z.boolean().default(true),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a hex colour like #3f55e8').default('#3f55e8'),
+  position: z.enum(['right', 'left']).default('right'),
+  title: z.string().trim().min(1).max(60).default('Chat with us'),
+  greeting: z.string().trim().min(1).max(300).default('Hi! How can we help you today?'),
+});
+
+export const conversationListSchema = z.object({
+  status: z.enum(['OPEN', 'CLOSED']).optional(),
+  mode: z.enum(['AI', 'HUMAN']).optional(),
+  assigned: z.union([z.literal('me'), z.literal('unassigned'), z.string().uuid()]).optional(),
+  channelType: z.enum(['WHATSAPP', 'WEB_WIDGET']).optional(),
+  unread: z.enum(['true', 'false']).optional(),
+  q: z.string().trim().max(100).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(30),
+});
+
+export const sendMessageSchema = z.object({
+  text: z.string().trim().min(1).max(4096).optional(),
+  template: z.object({ name: z.string().max(512), language: z.string().max(10), params: z.array(z.string().max(1024)).max(20).default([]) }).optional(),
+  idempotencyKey: z.string().trim().min(8).max(100).optional(),
+}).refine((v) => Boolean(v.text) !== Boolean(v.template), { message: 'Send either text or a template', path: ['text'] });
+
+export const conversationAssignSchema = z.object({ assignedMembershipId: z.string().uuid().nullable() });
+export const conversationTagsSchema = z.object({ tags: z.array(z.string().trim().min(1).max(30)).max(10) });
+
+export const widgetSessionSchema = z.object({
+  key: z.string().min(8).max(100),
+  name: z.string().trim().min(1).max(120),
+  phone: z.string().trim().max(32).optional(),
+  email: z.string().trim().toLowerCase().email().max(254).optional(),
+}).refine((v) => Boolean(v.phone) || Boolean(v.email), { message: 'Share a phone number or an email so we can follow up', path: ['phone'] });
+export const widgetMessageSchema = z.object({ text: z.string().trim().min(1).max(2000) });

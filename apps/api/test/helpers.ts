@@ -4,7 +4,10 @@ import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import pg from 'pg';
 import request from 'supertest';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from '../src/app.module.js';
+import { configureApp } from '../src/bootstrap.js';
+import { loadEnv } from '../src/config/env.js';
 import { MailService } from '../src/mail/mail.module.js';
 
 export interface SentMail { to: string; kind: 'verify' | 'reset' | 'invite' | 'exists'; token?: string }
@@ -29,7 +32,8 @@ export interface TestCtx { app: INestApplication; mail: FakeMail; http: () => Re
 export async function createTestApp(): Promise<TestCtx> {
   const mail = new FakeMail();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(MailService).useValue(mail).compile();
-  const app = moduleRef.createNestApplication();
+  const app = moduleRef.createNestApplication<NestExpressApplication>({ rawBody: true });
+  configureApp(app, loadEnv());
   await app.init();
   const server = app.getHttpServer() as Parameters<typeof request>[0];
   return { app, mail, http: () => request(server), close: () => app.close() };
@@ -65,6 +69,7 @@ export async function cleanup(): Promise<void> {
     const like = `it-${RUN}-%`;
     const t = await pool.query(`SELECT DISTINCT m.tenant_id FROM memberships m JOIN users u ON u.id = m.user_id WHERE u.email LIKE $1`, [like]);
     const ids = t.rows.map((r) => r.tenant_id as string);
+    for (const t of ['messages', 'conversation_notes', 'conversations', 'webhook_events', 'consents', 'widget_configs', 'channels', 'integration_credentials', 'whatsapp_templates']) await pool.query(`DELETE FROM ${t} WHERE tenant_id = ANY($1)`, [ids]);
     await pool.query('DELETE FROM leads WHERE tenant_id = ANY($1)', [ids]);
     await pool.query('DELETE FROM invitations WHERE tenant_id = ANY($1)', [ids]);
     await pool.query('DELETE FROM audit_logs WHERE tenant_id = ANY($1) OR actor_user_id IN (SELECT id FROM users WHERE email LIKE $2)', [ids, like]);

@@ -5,12 +5,25 @@ import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { loadEnv } from './config/env.js';
 
-export async function createApp(): Promise<NestExpressApplication> {
-  const env = loadEnv();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: false });
+/** HTTP-level configuration shared by the real server and the integration tests, so tests exercise the same CORS/headers. */
+export function configureApp(app: NestExpressApplication, env: ReturnType<typeof loadEnv>): void {
   app.set('trust proxy', 1);
   app.use(helmet());
-  app.enableCors({ origin: [env.WEB_ORIGIN], credentials: true, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], allowedHeaders: ['content-type', 'authorization', 'x-request-id', 'x-token-delivery'] });
+  // Public widget endpoints are called from customers' websites with a bearer session token (no cookies), so any origin
+  // may reach them at the CORS layer; the widget service enforces the owner's allow-list per widget key.
+  app.enableCors((req: { url?: string }, cb: (err: Error | null, opts: object) => void) => {
+    const path = (req.url ?? '').split('?')[0] ?? '';
+    const isWidget = path.startsWith('/widget/') || path === '/widget.js';
+    cb(null, isWidget
+      ? { origin: true, credentials: false, methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['content-type', 'authorization'], maxAge: 600 }
+      : { origin: [env.WEB_ORIGIN], credentials: true, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], allowedHeaders: ['content-type', 'authorization', 'x-request-id', 'x-token-delivery'] });
+  });
   app.enableShutdownHooks();
+}
+
+export async function createApp(): Promise<NestExpressApplication> {
+  const env = loadEnv();
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: false, rawBody: true });
+  configureApp(app, env);
   return app;
 }

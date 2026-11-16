@@ -1,0 +1,191 @@
+import { BadRequestException, Body, ConflictException, Controller, Delete, Get, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { randomBytes } from 'node:crypto';
+import { channelWhatsappSchema, templateSchema, widgetConfigSchema } from '@leadpilot/validation';
+import type { z } from 'zod';
+import { v7 as uuidv7 } from 'uuid';
+import { AuditService } from '../audit/audit.service.js';
+import { CurrentTenant, RequirePermissions } from '../common/decorators.js';
+import type { TenantRequestContext } from '../common/request-context.js';
+import { ENV } from '../common/tokens.js';
+import type { Env } from '../config/env.js';
+import { ZodPipe } from '../common/zod.pipe.js';
+import { SecretBox } from '../crypto/secret-box.js';
+import { DbService } from '../db/db.module.js';
+import { WHATSAPP_CLIENT, WhatsAppApiError, type WaCredentials, type WhatsAppClient } from '../whatsapp/whatsapp.client.js';
+
+type WhatsappInput = z.infer<typeof channelWhatsappSchema>;
+
+@Injectable()
+export class ChannelsService {
+  constructor(
+    @Inject(DbService) private readonly db: DbService,
+    @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(SecretBox) private readonly box: SecretBox,
+    @Inject(WHATSAPP_CLIENT) private readonly wa: WhatsAppClient,
+    @Inject(ENV) private readonly env: Env,
+  ) {}
+
+  private apiBase(): string { return this.env.PUBLIC_API_URL ?? `http://localhost:${this.env.API_PORT}`; }
+  private aad(tenantId: string, provider: string): string { return `${tenantId}:${provider}`; }
+
+  private rec(ctx: TenantRequestContext, tx: Parameters<AuditService['record']>[0], action: string, id: string, metadata: Record<string, string | boolean> = {}) {
+    return this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action, resourceType: 'channel', resourceId: id, metadata, requestId: ctx.requestId, ip: ctx.ip });
+  }
+
+  /** Public, secret-free view. Secrets are never returned after they are saved. */
+  private view(c: { id: string; type: string; name: string; status: string; externalId: string | null; webhookKey: string | null; config: unknown; credentialId: string | null; createdAt: Date }, cred?: { lastVerifiedAt: Date | null } | null) {
+    const cfg = (c.config ?? {}) as Record<string, string>;
+    return {
+      id: c.id, type: c.type, name: c.name, status: c.status, phoneNumberId: c.externalId, displayPhone: cfg.displayPhone ?? null, wabaId: cfg.wabaId ?? null,
+      webhookUrl: c.webhookKey ? `${this.apiBase()}/webhooks/whatsapp/${c.webhookKey}` : null, verifyToken: cfg.verifyToken ?? null,
+      credentialsSaved: c.credentialId !== null, lastVerifiedAt: cred?.lastVerifiedAt?.toISOString() ?? null, createdAt: c.createdAt.toISOString(),
+    };
+  }
+
+  list(ctx: TenantRequestContext) {
+    return this.db.tenantTx(ctx, async (tx) => {
+      const channels = await tx.channel.findMany({ where: { tenantId: ctx.tenantId, type: 'WHATSAPP' }, orderBy: { createdAt: 'asc' } });
+      const creds = await tx.integrationCredential.findMany({ where: { id: { in: channels.map((c) => c.credentialId).filter((x): x is string => x !== null) } }, select: { id: true, lastVerifiedAt: true } });
+      return channels.map((c) => this.view(c, creds.find((x) => x.id === c.credentialId)));
+    });
+  }
+
+  /** Validates the credentials against the provider BEFORE anything is stored. */
+  async connectWhatsapp(ctx: TenantRequestContext, input: WhatsappInput) {
+    const creds: WaCredentials = { accessToken: input.accessToken, appSecret: input.appSecret };
+    let info;
+    try { info = await this.wa.getPhoneNumber(input.phoneNumberId, creds); }
+    catch (e) { throw new BadRequestException({ code: 'whatsapp_verification_failed', message: e instanceof WhatsAppApiError ? `WhatsApp rejected these details: ${e.message}` : 'Could not reach WhatsApp to verify these details' }); }
+    return this.db.tenantTx(ctx, async (tx) => {
+      if (await tx.channel.findFirst({ where: { tenantId: ctx.tenantId, type: 'WHATSAPP', externalId: input.phoneNumberId }, select: { id: true } })) throw new ConflictException({ code: 'already_connected', message: 'This WhatsApp number is already connected' });
+      const sealed = this.box.seal({ accessToken: input.accessToken, appSecret: input.appSecret }, this.aad(ctx.tenantId, 'whatsapp'));
+      const credId = uuidv7();
+      await tx.integrationCredential.create({ data: { id: credId, tenantId: ctx.tenantId, provider: 'whatsapp', ...sealed, lastVerifiedAt: new Date() } });
+      const channel = await tx.channel.create({ data: {
+        id: uuidv7(), tenantId: ctx.tenantId, type: 'WHATSAPP', name: input.name, externalId: input.phoneNumberId, webhookKey: randomBytes(24).toString('base64url'), credentialId: credId,
+        config: { displayPhone: info.displayPhoneNumber, wabaId: input.wabaId, verifyToken: randomBytes(18).toString('hex'), verifiedName: info.verifiedName ?? '' },
+      } });
+      await this.rec(ctx, tx, 'integration.whatsapp_connected', channel.id, { phoneNumberId: input.phoneNumberId });
+      return this.view(channel, { lastVerifiedAt: new Date() });
+    });
+  }
+
+  async test(ctx: TenantRequestContext, id: string) {
+    const { channel, creds } = await this.credentialsFor(ctx.tenantId, id, ctx.userId);
+    try {
+      const info = await this.wa.getPhoneNumber(channel.externalId ?? '', creds);
+      await this.db.tenantTx(ctx, async (tx) => {
+        await tx.integrationCredential.updateMany({ where: { id: channel.credentialId as string }, data: { lastVerifiedAt: new Date(), status: 'active' } });
+        await tx.channel.update({ where: { id }, data: { status: 'ACTIVE' } });
+      });
+      return { ok: true, displayPhone: info.displayPhoneNumber, qualityRating: info.qualityRating };
+    } catch (e) {
+      await this.db.tenantTx(ctx, (tx) => tx.channel.update({ where: { id }, data: { status: 'ERROR' } }));
+      return { ok: false, error: e instanceof WhatsAppApiError ? e.message : 'Could not reach WhatsApp' };
+    }
+  }
+
+  /** Rotates the access token / app secret. The webhook URL stays the same. */
+  async updateCredentials(ctx: TenantRequestContext, id: string, input: { accessToken: string; appSecret: string }) {
+    const { channel } = await this.credentialsFor(ctx.tenantId, id, ctx.userId);
+    try { await this.wa.getPhoneNumber(channel.externalId ?? '', input); } catch (e) { throw new BadRequestException({ code: 'whatsapp_verification_failed', message: e instanceof WhatsAppApiError ? `WhatsApp rejected these details: ${e.message}` : 'Could not verify' }); }
+    await this.db.tenantTx(ctx, async (tx) => {
+      const sealed = this.box.seal(input, this.aad(ctx.tenantId, 'whatsapp'));
+      await tx.integrationCredential.update({ where: { id: channel.credentialId as string }, data: { ...sealed, lastVerifiedAt: new Date(), status: 'active' } });
+      await tx.channel.update({ where: { id }, data: { status: 'ACTIVE' } });
+      await this.rec(ctx, tx, 'integration.whatsapp_credentials_rotated', id);
+    });
+  }
+
+  async disable(ctx: TenantRequestContext, id: string) {
+    await this.db.tenantTx(ctx, async (tx) => {
+      const r = await tx.channel.updateMany({ where: { id, tenantId: ctx.tenantId, type: 'WHATSAPP' }, data: { status: 'DISABLED' } });
+      if (r.count !== 1) throw new NotFoundException({ code: 'not_found', message: 'Channel not found' });
+      await this.rec(ctx, tx, 'integration.whatsapp_disabled', id);
+    });
+  }
+
+  /** Decrypts credentials for server-side use. Callers must never log or return the result. */
+  async credentialsFor(tenantId: string, channelId: string, userId?: string | null): Promise<{ channel: { id: string; externalId: string | null; credentialId: string | null; status: string; config: unknown }; creds: WaCredentials }> {
+    return this.db.tenantTx({ tenantId, ...(userId ? { userId } : {}) }, async (tx) => {
+      const channel = await tx.channel.findFirst({ where: { id: channelId, tenantId, type: 'WHATSAPP' } });
+      if (!channel?.credentialId) throw new NotFoundException({ code: 'not_found', message: 'Channel not found' });
+      const c = await tx.integrationCredential.findUniqueOrThrow({ where: { id: channel.credentialId } });
+      const secret = this.box.open({ ciphertext: c.ciphertext, wrappedKey: c.wrappedKey, keyId: c.keyId }, this.aad(tenantId, 'whatsapp'));
+      return { channel, creds: { accessToken: secret.accessToken as string, appSecret: secret.appSecret as string } };
+    });
+  }
+
+  // ---- WhatsApp templates (names of templates already approved in Meta; a sync/manager UI is V1.1)
+  listTemplates(ctx: TenantRequestContext) { return this.db.tenantTx(ctx, (tx) => tx.whatsappTemplate.findMany({ where: { tenantId: ctx.tenantId }, orderBy: { name: 'asc' } })); }
+  addTemplate(ctx: TenantRequestContext, i: z.infer<typeof templateSchema>) {
+    return this.db.tenantTx(ctx, async (tx) => {
+      try { return await tx.whatsappTemplate.create({ data: { id: uuidv7(), tenantId: ctx.tenantId, name: i.name, language: i.language, category: i.category, bodyPreview: i.bodyPreview, variableCount: (i.bodyPreview.match(/\{\{\d+\}\}/g) ?? []).length } }); }
+      catch { throw new ConflictException({ code: 'duplicate_template', message: 'That template already exists' }); }
+    });
+  }
+  removeTemplate(ctx: TenantRequestContext, id: string) {
+    return this.db.tenantTx(ctx, async (tx) => { const r = await tx.whatsappTemplate.deleteMany({ where: { id, tenantId: ctx.tenantId } }); if (r.count !== 1) throw new NotFoundException({ code: 'not_found', message: 'Template not found' }); });
+  }
+
+  // ---- website widget
+  async widgetConfig(ctx: TenantRequestContext) {
+    return this.db.tenantTx(ctx, async (tx) => {
+      const w = await tx.widgetConfig.findUnique({ where: { tenantId: ctx.tenantId } });
+      return w ? this.widgetView(w) : null;
+    });
+  }
+
+  private widgetView(w: { publicKey: string; allowedOrigins: string[]; enabled: boolean; theme: unknown; title: string; greeting: string }) {
+    return { publicKey: w.publicKey, allowedOrigins: w.allowedOrigins, enabled: w.enabled, theme: w.theme as { color?: string; position?: string }, title: w.title, greeting: w.greeting, scriptUrl: `${this.apiBase()}/widget.js` };
+  }
+
+  saveWidget(ctx: TenantRequestContext, input: z.infer<typeof widgetConfigSchema>) {
+    return this.db.tenantTx(ctx, async (tx) => {
+      const existing = await tx.widgetConfig.findUnique({ where: { tenantId: ctx.tenantId } });
+      const origins = [...new Set(input.allowedOrigins.map((o) => new URL(o).origin))];
+      const data = { allowedOrigins: origins, enabled: input.enabled, theme: { color: input.color, position: input.position }, title: input.title, greeting: input.greeting };
+      if (existing) { const w = await tx.widgetConfig.update({ where: { tenantId: ctx.tenantId }, data }); await this.rec(ctx, tx, 'integration.widget_updated', w.channelId); return this.widgetView(w); }
+      const channelId = uuidv7();
+      await tx.channel.create({ data: { id: channelId, tenantId: ctx.tenantId, type: 'WEB_WIDGET', name: 'Website chat' } });
+      const w = await tx.widgetConfig.create({ data: { id: uuidv7(), tenantId: ctx.tenantId, channelId, publicKey: `pk_${randomBytes(18).toString('base64url')}`, ...data } });
+      await this.rec(ctx, tx, 'integration.widget_created', channelId);
+      return this.widgetView(w);
+    });
+  }
+
+  async rotateWidgetKey(ctx: TenantRequestContext) {
+    return this.db.tenantTx(ctx, async (tx) => {
+      const w = await tx.widgetConfig.findUnique({ where: { tenantId: ctx.tenantId } });
+      if (!w) throw new NotFoundException({ code: 'not_found', message: 'Widget is not set up yet' });
+      const u = await tx.widgetConfig.update({ where: { tenantId: ctx.tenantId }, data: { publicKey: `pk_${randomBytes(18).toString('base64url')}` } });
+      await this.rec(ctx, tx, 'integration.widget_key_rotated', w.channelId);
+      return this.widgetView(u);
+    });
+  }
+}
+
+@Controller()
+class ChannelsController {
+  constructor(@Inject(ChannelsService) private readonly svc: ChannelsService) {}
+  @Get('channels') @RequirePermissions('integration:manage') list(@CurrentTenant() c: TenantRequestContext) { return this.svc.list(c); }
+  @Post('channels/whatsapp') @HttpCode(201) @RequirePermissions('integration:manage')
+  connect(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(channelWhatsappSchema)) b: WhatsappInput) { return this.svc.connectWhatsapp(c, b); }
+  @Post('channels/:id/test') @HttpCode(200) @RequirePermissions('integration:manage')
+  test(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.test(c, id); }
+  @Put('channels/:id/credentials') @HttpCode(204) @RequirePermissions('integration:manage')
+  creds(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(channelWhatsappSchema.pick({ accessToken: true, appSecret: true }))) b: { accessToken: string; appSecret: string }) { return this.svc.updateCredentials(c, id, b); }
+  @Delete('channels/:id') @HttpCode(204) @RequirePermissions('integration:manage')
+  disable(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.disable(c, id); }
+
+  @Get('whatsapp/templates') @RequirePermissions('conversation:reply') templates(@CurrentTenant() c: TenantRequestContext) { return this.svc.listTemplates(c); }
+  @Post('whatsapp/templates') @HttpCode(201) @RequirePermissions('integration:manage') addTemplate(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(templateSchema)) b: z.infer<typeof templateSchema>) { return this.svc.addTemplate(c, b); }
+  @Delete('whatsapp/templates/:id') @HttpCode(204) @RequirePermissions('integration:manage') rmTemplate(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.removeTemplate(c, id); }
+
+  @Get('widget-config') @RequirePermissions('integration:manage') widget(@CurrentTenant() c: TenantRequestContext) { return this.svc.widgetConfig(c); }
+  @Put('widget-config') @RequirePermissions('integration:manage') saveWidget(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(widgetConfigSchema)) b: z.infer<typeof widgetConfigSchema>) { return this.svc.saveWidget(c, b); }
+  @Post('widget-config/rotate-key') @HttpCode(200) @RequirePermissions('integration:manage') rotate(@CurrentTenant() c: TenantRequestContext) { return this.svc.rotateWidgetKey(c); }
+}
+
+@Module({ controllers: [ChannelsController], providers: [ChannelsService], exports: [ChannelsService] })
+export class ChannelsModule {}

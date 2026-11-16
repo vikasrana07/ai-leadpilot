@@ -137,3 +137,48 @@ export type Property = Prisma.PropertyModel
  * API keys for lead capture and (later) the public API. Only a SHA-256 hash is stored.
  */
 export type ApiKey = Prisma.ApiKeyModel
+/**
+ * Model IntegrationCredential
+ * Encrypted provider secrets (envelope encryption). The plaintext never leaves the process and is never returned by the API.
+ */
+export type IntegrationCredential = Prisma.IntegrationCredentialModel
+/**
+ * Model Channel
+ * 
+ */
+export type Channel = Prisma.ChannelModel
+/**
+ * Model WidgetConfig
+ * 
+ */
+export type WidgetConfig = Prisma.WidgetConfigModel
+/**
+ * Model Conversation
+ * 
+ */
+export type Conversation = Prisma.ConversationModel
+/**
+ * Model Message
+ * 
+ */
+export type Message = Prisma.MessageModel
+/**
+ * Model ConversationNote
+ * 
+ */
+export type ConversationNote = Prisma.ConversationNoteModel
+/**
+ * Model Consent
+ * Append-only consent history. The latest row per (lead, channel) is the effective state.
+ */
+export type Consent = Prisma.ConsentModel
+/**
+ * Model WhatsappTemplate
+ * 
+ */
+export type WhatsappTemplate = Prisma.WhatsappTemplateModel
+/**
+ * Model WebhookEvent
+ * Raw inbound provider deliveries. `payloadHash` is unique per channel: an identical redelivery is acknowledged and ignored.
+ */
+export type WebhookEvent = Prisma.WebhookEventModel

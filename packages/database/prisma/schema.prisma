@@ -496,3 +496,238 @@ model ApiKey {
   @@index([tenantId])
   @@map("api_keys")
 }
+
+
+// ======================================================================= Phase 3: Communication
+
+enum ChannelType {
+  WHATSAPP
+  WEB_WIDGET
+}
+
+enum ChannelStatus {
+  ACTIVE
+  DISABLED
+  ERROR
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum ConversationMode {
+  AI
+  HUMAN
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum SenderType {
+  CUSTOMER
+  AGENT
+  AI
+  SYSTEM
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  DOCUMENT
+  AUDIO
+  VIDEO
+  TEMPLATE
+}
+
+enum MessageStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum ConsentStatus {
+  OPTED_IN
+  OPTED_OUT
+}
+
+/// Encrypted provider secrets (envelope encryption). The plaintext never leaves the process and is never returned by the API.
+model IntegrationCredential {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String    @map("tenant_id") @db.Uuid
+  provider   String
+  /// base64(iv | tag | ciphertext) of the JSON secret blob, encrypted with a per-record data key
+  ciphertext String
+  /// the data key, itself encrypted with the master key (KMS in production)
+  wrappedKey String    @map("wrapped_key")
+  keyId      String    @map("key_id")
+  status     String    @default("active")
+  lastVerifiedAt DateTime? @map("last_verified_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([tenantId])
+  @@map("integration_credentials")
+}
+
+model Channel {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String        @map("tenant_id") @db.Uuid
+  type         ChannelType
+  name         String
+  status       ChannelStatus @default(ACTIVE)
+  /// WhatsApp: phone_number_id
+  externalId   String?       @map("external_id")
+  /// Unguessable id in the webhook URL: routes the webhook to this channel without trusting the request body
+  webhookKey   String?       @unique @map("webhook_key")
+  /// Non-secret settings (display phone, WABA id, verify token)
+  config       Json          @default("{}")
+  credentialId String?       @map("credential_id") @db.Uuid
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  conversations Conversation[]
+
+  @@unique([tenantId, type, externalId])
+  @@index([tenantId])
+  @@map("channels")
+}
+
+model WidgetConfig {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String   @unique @map("tenant_id") @db.Uuid
+  channelId      String   @map("channel_id") @db.Uuid
+  publicKey      String   @unique @map("public_key")
+  allowedOrigins String[] @map("allowed_origins")
+  enabled        Boolean  @default(true)
+  theme          Json     @default("{}")
+  title          String   @default("Chat with us")
+  greeting       String   @default("Hi! How can we help you today?")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("widget_configs")
+}
+
+model Conversation {
+  id                   String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId             String             @map("tenant_id") @db.Uuid
+  channelId            String             @map("channel_id") @db.Uuid
+  leadId               String             @map("lead_id") @db.Uuid
+  /// WhatsApp: customer wa_id. Widget: visitor session id.
+  externalThreadId     String             @map("external_thread_id")
+  status               ConversationStatus @default(OPEN)
+  mode                 ConversationMode   @default(HUMAN)
+  assignedMembershipId String?            @map("assigned_membership_id") @db.Uuid
+  /// Drives the WhatsApp 24-hour customer-service window
+  lastInboundAt        DateTime?          @map("last_inbound_at") @db.Timestamptz(3)
+  lastMessageAt        DateTime           @default(now()) @map("last_message_at") @db.Timestamptz(3)
+  lastMessagePreview   String?            @map("last_message_preview")
+  unreadCount          Int                @default(0) @map("unread_count")
+  tags                 String[]           @default([])
+  closedAt             DateTime?          @map("closed_at") @db.Timestamptz(3)
+  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  channel  Channel        @relation(fields: [channelId], references: [id])
+  messages Message[]
+  notes    ConversationNote[]
+
+  @@unique([channelId, externalThreadId])
+  @@index([tenantId, status, lastMessageAt(sort: Desc)])
+  @@index([tenantId, assignedMembershipId])
+  @@index([tenantId, leadId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String           @map("tenant_id") @db.Uuid
+  conversationId String           @map("conversation_id") @db.Uuid
+  channelId      String           @map("channel_id") @db.Uuid
+  direction      MessageDirection
+  senderType     SenderType
+  senderUserId   String?          @map("sender_user_id") @db.Uuid
+  type           MessageType      @default(TEXT)
+  body           String?
+  /// {id, mime, filename, caption, sha256} for media messages (the file itself stays at the provider until fetched)
+  media          Json?
+  template       Json?
+  status         MessageStatus    @default(SENT)
+  error          Json?
+  /// Provider message id (wamid...). Unique per channel: this is the webhook de-duplication key.
+  externalId     String?          @map("external_id")
+  /// Client-supplied key making "send" safe to retry
+  idempotencyKey String?          @map("idempotency_key")
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  statusUpdatedAt DateTime        @default(now()) @map("status_updated_at") @db.Timestamptz(3)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, externalId])
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, conversationId, createdAt(sort: Desc)])
+  @@map("messages")
+}
+
+model ConversationNote {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  authorUserId   String   @map("author_user_id") @db.Uuid
+  body           String
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, conversationId, createdAt])
+  @@map("conversation_notes")
+}
+
+/// Append-only consent history. The latest row per (lead, channel) is the effective state.
+model Consent {
+  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String        @map("tenant_id") @db.Uuid
+  leadId    String        @map("lead_id") @db.Uuid
+  channel   String
+  status    ConsentStatus
+  source    String
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([tenantId, leadId, channel, createdAt(sort: Desc)])
+  @@map("consents")
+}
+
+model WhatsappTemplate {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String   @map("tenant_id") @db.Uuid
+  name         String
+  language     String   @default("en")
+  category     String   @default("UTILITY")
+  bodyPreview  String   @map("body_preview")
+  variableCount Int     @default(0) @map("variable_count")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([tenantId, name, language])
+  @@map("whatsapp_templates")
+}
+
+/// Raw inbound provider deliveries. `payloadHash` is unique per channel: an identical redelivery is acknowledged and ignored.
+model WebhookEvent {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  channelId   String   @map("channel_id") @db.Uuid
+  provider    String
+  payloadHash String   @map("payload_hash")
+  payload     Json
+  status      String   @default("received")
+  error       String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([channelId, payloadHash])
+  @@index([tenantId, createdAt])
+  @@map("webhook_events")
+}

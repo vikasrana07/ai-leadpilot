@@ -74,7 +74,16 @@ export const ModelName = {
   LeadActivity: 'LeadActivity',
   StageTransition: 'StageTransition',
   Property: 'Property',
-  ApiKey: 'ApiKey'
+  ApiKey: 'ApiKey',
+  IntegrationCredential: 'IntegrationCredential',
+  Channel: 'Channel',
+  WidgetConfig: 'WidgetConfig',
+  Conversation: 'Conversation',
+  Message: 'Message',
+  ConversationNote: 'ConversationNote',
+  Consent: 'Consent',
+  WhatsappTemplate: 'WhatsappTemplate',
+  WebhookEvent: 'WebhookEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -445,6 +454,154 @@ export const ApiKeyScalarFieldEnum = {
 export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
 
 
+export const IntegrationCredentialScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  provider: 'provider',
+  ciphertext: 'ciphertext',
+  wrappedKey: 'wrappedKey',
+  keyId: 'keyId',
+  status: 'status',
+  lastVerifiedAt: 'lastVerifiedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IntegrationCredentialScalarFieldEnum = (typeof IntegrationCredentialScalarFieldEnum)[keyof typeof IntegrationCredentialScalarFieldEnum]
+
+
+export const ChannelScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  type: 'type',
+  name: 'name',
+  status: 'status',
+  externalId: 'externalId',
+  webhookKey: 'webhookKey',
+  config: 'config',
+  credentialId: 'credentialId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelScalarFieldEnum = (typeof ChannelScalarFieldEnum)[keyof typeof ChannelScalarFieldEnum]
+
+
+export const WidgetConfigScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  channelId: 'channelId',
+  publicKey: 'publicKey',
+  allowedOrigins: 'allowedOrigins',
+  enabled: 'enabled',
+  theme: 'theme',
+  title: 'title',
+  greeting: 'greeting',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WidgetConfigScalarFieldEnum = (typeof WidgetConfigScalarFieldEnum)[keyof typeof WidgetConfigScalarFieldEnum]
+
+
+export const ConversationScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  channelId: 'channelId',
+  leadId: 'leadId',
+  externalThreadId: 'externalThreadId',
+  status: 'status',
+  mode: 'mode',
+  assignedMembershipId: 'assignedMembershipId',
+  lastInboundAt: 'lastInboundAt',
+  lastMessageAt: 'lastMessageAt',
+  lastMessagePreview: 'lastMessagePreview',
+  unreadCount: 'unreadCount',
+  tags: 'tags',
+  closedAt: 'closedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
+
+
+export const MessageScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  conversationId: 'conversationId',
+  channelId: 'channelId',
+  direction: 'direction',
+  senderType: 'senderType',
+  senderUserId: 'senderUserId',
+  type: 'type',
+  body: 'body',
+  media: 'media',
+  template: 'template',
+  status: 'status',
+  error: 'error',
+  externalId: 'externalId',
+  idempotencyKey: 'idempotencyKey',
+  createdAt: 'createdAt',
+  statusUpdatedAt: 'statusUpdatedAt'
+} as const
+
+export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
+
+
+export const ConversationNoteScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  conversationId: 'conversationId',
+  authorUserId: 'authorUserId',
+  body: 'body',
+  createdAt: 'createdAt'
+} as const
+
+export type ConversationNoteScalarFieldEnum = (typeof ConversationNoteScalarFieldEnum)[keyof typeof ConversationNoteScalarFieldEnum]
+
+
+export const ConsentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  channel: 'channel',
+  status: 'status',
+  source: 'source',
+  createdAt: 'createdAt'
+} as const
+
+export type ConsentScalarFieldEnum = (typeof ConsentScalarFieldEnum)[keyof typeof ConsentScalarFieldEnum]
+
+
+export const WhatsappTemplateScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  language: 'language',
+  category: 'category',
+  bodyPreview: 'bodyPreview',
+  variableCount: 'variableCount',
+  createdAt: 'createdAt'
+} as const
+
+export type WhatsappTemplateScalarFieldEnum = (typeof WhatsappTemplateScalarFieldEnum)[keyof typeof WhatsappTemplateScalarFieldEnum]
+
+
+export const WebhookEventScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  channelId: 'channelId',
+  provider: 'provider',
+  payloadHash: 'payloadHash',
+  payload: 'payload',
+  status: 'status',
+  error: 'error',
+  createdAt: 'createdAt'
+} as const
+
+export type WebhookEventScalarFieldEnum = (typeof WebhookEventScalarFieldEnum)[keyof typeof WebhookEventScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -458,6 +615,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {

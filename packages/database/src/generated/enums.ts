@@ -73,3 +73,85 @@ export const PropertyStatus = {
 } as const
 
 export type PropertyStatus = (typeof PropertyStatus)[keyof typeof PropertyStatus]
+
+
+export const ChannelType = {
+  WHATSAPP: 'WHATSAPP',
+  WEB_WIDGET: 'WEB_WIDGET'
+} as const
+
+export type ChannelType = (typeof ChannelType)[keyof typeof ChannelType]
+
+
+export const ChannelStatus = {
+  ACTIVE: 'ACTIVE',
+  DISABLED: 'DISABLED',
+  ERROR: 'ERROR'
+} as const
+
+export type ChannelStatus = (typeof ChannelStatus)[keyof typeof ChannelStatus]
+
+
+export const ConversationStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED'
+} as const
+
+export type ConversationStatus = (typeof ConversationStatus)[keyof typeof ConversationStatus]
+
+
+export const ConversationMode = {
+  AI: 'AI',
+  HUMAN: 'HUMAN'
+} as const
+
+export type ConversationMode = (typeof ConversationMode)[keyof typeof ConversationMode]
+
+
+export const MessageDirection = {
+  INBOUND: 'INBOUND',
+  OUTBOUND: 'OUTBOUND'
+} as const
+
+export type MessageDirection = (typeof MessageDirection)[keyof typeof MessageDirection]
+
+
+export const SenderType = {
+  CUSTOMER: 'CUSTOMER',
+  AGENT: 'AGENT',
+  AI: 'AI',
+  SYSTEM: 'SYSTEM'
+} as const
+
+export type SenderType = (typeof SenderType)[keyof typeof SenderType]
+
+
+export const MessageType = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  DOCUMENT: 'DOCUMENT',
+  AUDIO: 'AUDIO',
+  VIDEO: 'VIDEO',
+  TEMPLATE: 'TEMPLATE'
+} as const
+
+export type MessageType = (typeof MessageType)[keyof typeof MessageType]
+
+
+export const MessageStatus = {
+  QUEUED: 'QUEUED',
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  READ: 'READ',
+  FAILED: 'FAILED'
+} as const
+
+export type MessageStatus = (typeof MessageStatus)[keyof typeof MessageStatus]
+
+
+export const ConsentStatus = {
+  OPTED_IN: 'OPTED_IN',
+  OPTED_OUT: 'OPTED_OUT'
+} as const
+
+export type ConsentStatus = (typeof ConsentStatus)[keyof typeof ConsentStatus]
