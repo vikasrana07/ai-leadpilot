@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma, type TxClient } from '@leadpilot/database';
 import type { z } from 'zod';
 import type { conversationListSchema, sendMessageSchema } from '@leadpilot/validation';
@@ -16,6 +16,7 @@ export const WINDOW_MS = 24 * 3600 * 1000;
 
 @Injectable()
 export class ConversationsService {
+  private readonly log = new Logger('Conversations');
   constructor(
     @Inject(DbService) private readonly db: DbService,
     @Inject(AuditService) private readonly audit: AuditService,
@@ -263,19 +264,34 @@ export class ConversationsService {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const r = template ? await this.wa.sendTemplate(channel.externalId ?? '', creds, to, template.name, template.language, template.params) : await this.wa.sendText(channel.externalId ?? '', creds, to, text ?? '');
-        await this.tx(a, async (tx) => {
-          await tx.message.update({ where: { id: messageId }, data: { status: 'SENT', externalId: r.messageId, statusUpdatedAt: new Date(), error: Prisma.JsonNull } });
-          const m = await tx.message.findUniqueOrThrow({ where: { id: messageId }, select: { conversation: { select: { leadId: true } } } });
-          await tx.lead.update({ where: { id: m.conversation.leadId }, data: { lastContactedAt: new Date() } });
-        });
+        // The provider has the message now. From here on a database hiccup must NEVER turn this into a "failed" message (a retry
+        // would send a duplicate to the customer), so the write is retried and degrades to "sent without provider id".
+        await this.recordSent(a, messageId, r.messageId);
         return;
       } catch (e) {
-        lastErr = e instanceof WhatsAppApiError ? e : new WhatsAppApiError(e instanceof Error ? e.message : 'Send failed', false);
+        // Unexpected (non-provider) errors are logged for operators; users only ever see a generic message, never internals.
+        if (!(e instanceof WhatsAppApiError)) this.log.error(`Unexpected error while sending message ${messageId}: ${e instanceof Error ? e.message : String(e)}`);
+        lastErr = e instanceof WhatsAppApiError ? e : new WhatsAppApiError('We could not send this message. Please try again.', false);
         if (!lastErr.retryable || attempt === 2) break;
         await new Promise((r) => setTimeout(r, lastErr?.retryAfterSec ? Math.min(lastErr.retryAfterSec, 2) * 1000 : 400 * (attempt + 1)));
       }
     }
     await this.fail(a, messageId, lastErr as WhatsAppApiError);
+  }
+
+  private async recordSent(a: Actor, messageId: string, providerId: string): Promise<void> {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await this.tx(a, async (tx) => {
+          // A provider id that already exists would violate the dedupe constraint: keep the message as sent without it.
+          const clash = providerId ? await tx.message.findFirst({ where: { externalId: providerId, id: { not: messageId } }, select: { id: true } }) : null;
+          await tx.message.update({ where: { id: messageId }, data: { status: 'SENT', externalId: clash ? null : providerId || null, statusUpdatedAt: new Date(), error: Prisma.JsonNull } });
+          const m = await tx.message.findUniqueOrThrow({ where: { id: messageId }, select: { conversation: { select: { leadId: true } } } });
+          await tx.lead.update({ where: { id: m.conversation.leadId }, data: { lastContactedAt: new Date() } });
+        });
+        return;
+      } catch (e) { this.log.error(`Could not record sent message ${messageId} (attempt ${attempt + 1}): ${e instanceof Error ? e.message : String(e)}`); await new Promise((r) => setTimeout(r, 150 * (attempt + 1))); }
+    }
   }
 
   private async fail(a: Actor, messageId: string, e: WhatsAppApiError): Promise<void> {

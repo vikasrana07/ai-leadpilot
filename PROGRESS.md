@@ -1,7 +1,7 @@
 # LeadPilot AI — Progress
 
 Legend: ☐ pending · ◐ in progress · ☑ done (verified) · Tags: **M** = MVP, **V** = V1.1, **L** = Later
-Last updated: 2026-11-16 · Current phase: **Phase 3 (Communication): built and verified against a MOCK WhatsApp provider; awaiting user review**
+Last updated: 2026-11-16 · Current phase: **Phase 4 (AI): built and verified with an OFFLINE mock model; no real LLM or Meta connection has been tested; awaiting user review**
 
 ## Phase status
 | Phase | Status |
@@ -9,8 +9,8 @@ Last updated: 2026-11-16 · Current phase: **Phase 3 (Communication): built and 
 | 0 Plan | ☑ approved |
 | 1 Foundation | ☑ |
 | 2 CRM | ☑ |
-| 3 Communication | ◐ built; verified with mock provider only (see below) |
-| 4 AI | ☐ |
+| 3 Communication | ☑ (live Meta client still unverified) |
+| 4 AI | ◐ built; verified with an offline mock model only (see below) |
 | 5 Automation & appointments | ☐ |
 | 6 SaaS | ☐ |
 | 7 Hardening & launch | ☐ |
@@ -73,15 +73,17 @@ Last updated: 2026-11-16 · Current phase: **Phase 3 (Communication): built and 
 - ☐ Media is proxied, not stored (ADR-0017); attachments to leads and durable storage are phase 4
 
 ### AI (Phase 4)
-- ☐ M Provider abstraction, orchestrator, prompt versioning
-- ☐ M Ten tools with validation + idempotency + audit
-- ☐ M Knowledge base pipeline (upload, scan, extract, chunk, embed, search)
-- ☐ M RAG with tenant isolation + citations
-- ☐ M Requirement extraction, rule-based scoring, manager override
-- ☐ M Handover / takeover
-- ☐ M Usage metering, hard caps, kill switch
-- ☐ M Eval harness (≥30 cases) + injection corpus
-- ☐ M English + Hindi/Hinglish
+- ☑ M Provider abstraction (`LlmProvider`/`EmbeddingProvider`), prompt versioning (`v1.0` on every run), per-run logging (tokens, latency, tools, guard decisions)
+- ◐ M Orchestrator: debounce, one turn at a time, answered-through tracking, tool loop (≤5), guards with one retry, safe fallback handover. **Verified with the offline mock only**; the live OpenAI client is written but **has never run** (no key)
+- ☑ M Ten tools: eight live (`get_business_info`, `search_properties`, `get_lead_details`, `update_lead`, `calculate_lead_score`, `assign_agent`, `create_followup`, `handover_to_human`); `check_availability` and `create_appointment` exist but are refused until appointments ship (phase 5). All validated, tenant-bound, idempotent, audited
+- ☑ M Knowledge base: upload (PDF/DOCX/TXT/CSV, 10 MB, magic-byte check), **real ClamAV** scan (fail closed), **real S3 storage** (MinIO), isolated parsing, chunking, embeddings in **pgvector** (HNSW), status, preview, reprocess, delete, search, tenant-isolated retrieval. Mock embeddings offline; real embedding quality unverified
+- ☑ M Lead scoring: configurable, versioned, explainable; unknown ≠ negative; manager override with reason, history, audit; re-score on rule change
+- ☑ M Handover: keyword (no model call), model tool, guard failure, model outage, token cap; takeover/hand-back; working-hours-aware message; AI disclosure; welcome message
+- ☑ M Usage metering with monthly token cap (hard stop), 80% warning, platform kill switch, usage meter and activity log in the UI
+- ◐ M Eval harness: **39 golden conversations** (EN/Hindi/Hinglish; extraction, search, knowledge, handover, safety, language, conversation). 26 run offline and pass; **13 need a real model and have never run**. Offline results validate the pipeline, not language-model quality
+- ☑ M Injection corpus and cross-tenant context test (see threat model)
+- ◐ M English + Hindi/Hinglish: configured and in the prompt; **replies in Hindi/Hinglish are untested** (needs a real model)
+- ☐ M Attachments on leads (still deferred; needs a UI for file attach; storage and scanning now exist)
 - ☐ V Voice-note transcription · ☐ V Additional Indian languages
 
 ### Automation, appointments, notifications (Phase 5)
@@ -124,12 +126,18 @@ Last updated: 2026-11-16 · Current phase: **Phase 3 (Communication): built and 
 - Real browser (Chrome): signed webhooks delivered to the real server → inbox shows them with unread badges → opened a thread (marked read) → sent a reply → new inbound messages appeared **live** without refresh → Integrations page with setup guide → website widget loaded from `/widget.js`, visitor chatted, team reply appeared in the widget → mobile emulation (single-pane inbox)
 - **Not verified:** anything against real Meta (live client, payload quirks, media download, template sends, rate-limit codes); real email; widget on a genuinely different origin (verified on localhost:3100 as the allowed origin; non-allowed origins are covered by API tests); Playwright E2E (phase 7); CI on GitHub
 
+## Phase 4 verification (2026-11-16)
+- `pnpm lint` ✔ · `pnpm typecheck` ✔ · `pnpm test` ✔ (**19 DB + 206 API tests**; includes real MinIO, pgvector, ClamAV) · smoke ✔
+- Browser (Chrome): configured and enabled the assistant → uploaded a document through the UI (scan, store, index → Ready) → semantic search → a WhatsApp customer chatted: lead qualified automatically (budget, area, type, timeline), answered the loan question from the document, handed over on request → activity log with tools/tokens/latency → lead score ring with per-signal explanation and history
+- **Bugs found by this phase's testing and fixed:** (1) PDF parsing broke JWT verification process-wide, so parsing now runs in an isolated worker; (2) WhatsApp's 1-second timestamps mis-ordered replies; (3) a customer message sent while the assistant was composing was never answered; (4) a database error after a successful send marked the message failed and showed internal error text to users; (5) documents could smuggle instructions to customers; (6) amount extraction double-counted "₹1.2 Cr"
+- **Not verified, important:** any real LLM (OpenAI client, strict-schema tool calling, real extraction accuracy, Hindi/Hinglish, tone, real injection resistance, token costs); real embedding quality; the 13 live-only eval cases; Playwright E2E; CI on GitHub (workflow now also starts MinIO and ClamAV)
+
 ## Decisions needed from the user
 1. ☑ Phase 0 plan approved.
 2. ☑ `git init` done; **no remote, work stays local** (decided 2026-11-16).
 3. ☑ TypeScript 6.0.3 and Prisma 7.10.1 (ADR-0008) agreed.
 4. ☑ **WhatsApp billing: tenants pay Meta directly on their own WABA** (decided 2026-11-16). LeadPilot plans price the software only; no WhatsApp resale or margin.
-5. **LLM default model** and who holds the API key in dev. The brief only says OpenAI. I need a dev key later; I will not use it until you provide it.
+5. **OpenAI API key** (and default model). Needed to verify the live AI client and run the 13 live-only eval cases. Until then the assistant runs on the offline mock. I will not use a key until you provide one.
 6. **Meta test assets:** still needed to verify the live WhatsApp client. Do you have a Meta developer account / WhatsApp test number? (Phase 3 was verified with the mock provider.)
 7. **Email provider** for transactional mail (SES, Resend, other). Mailpit is used locally.
 8. ☑ Lead = person record in MVP (ADR-0010) agreed.

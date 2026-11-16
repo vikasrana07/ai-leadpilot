@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
@@ -91,11 +92,11 @@ export class MockWhatsAppClient implements WhatsAppClient {
   private take(): void { const f = this.failNext; if (f) { this.failNext = null; throw f; } }
 
   async sendText(phoneNumberId: string, _c: WaCredentials, to: string, body: string): Promise<WaSendResult> {
-    this.take(); const messageId = `wamid.MOCK${++this.n}`;
+    this.take(); const messageId = `wamid.MOCK${++this.n}.${randomUUID().slice(0, 8)}`; // unique across restarts, like real provider ids
     this.sent.push({ phoneNumberId, to, kind: 'text', body, messageId }); return { messageId };
   }
   async sendTemplate(phoneNumberId: string, _c: WaCredentials, to: string, name: string, language: string, params: string[]): Promise<WaSendResult> {
-    this.take(); const messageId = `wamid.MOCK${++this.n}`;
+    this.take(); const messageId = `wamid.MOCK${++this.n}.${randomUUID().slice(0, 8)}`;
     this.sent.push({ phoneNumberId, to, kind: 'template', template: { name, language, params }, messageId }); return { messageId };
   }
   async getPhoneNumber(phoneNumberId: string): Promise<WaPhoneInfo> {

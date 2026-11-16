@@ -10,7 +10,7 @@ export interface NavItem {
   description?: string;
 }
 
-export const CURRENT_PHASE = 3;
+export const CURRENT_PHASE = 4;
 
 export const WORKSPACE_NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, phase: 1 },
@@ -19,8 +19,8 @@ export const WORKSPACE_NAV: NavItem[] = [
   { href: '/pipeline', label: 'Sales Pipeline', icon: KanbanSquare, phase: 2, description: 'Move leads from first contact to closed.' },
   { href: '/properties', label: 'Properties', icon: Building2, phase: 2, permission: 'property:read' },
   { href: '/appointments', label: 'Appointments', icon: CalendarDays, phase: 5, description: 'Site visits and meetings without double booking.' },
-  { href: '/ai-assistant', label: 'AI Assistant', icon: Sparkles, phase: 4, description: 'Configure how your assistant talks and qualifies.' },
-  { href: '/knowledge', label: 'Knowledge Base', icon: BookOpen, phase: 4, description: 'Documents your assistant answers from.' },
+  { href: '/ai-assistant', label: 'AI Assistant', icon: Sparkles, phase: 4, permission: 'ai:configure', description: 'Configure how your assistant talks and qualifies.' },
+  { href: '/knowledge', label: 'Knowledge Base', icon: BookOpen, phase: 4, permission: 'knowledge:manage', description: 'Documents your assistant answers from.' },
   { href: '/automations', label: 'Automations', icon: Workflow, phase: 5, description: 'Follow-ups and alerts that run on their own.' },
   { href: '/reports', label: 'Reports & Analytics', icon: BarChart3, phase: 6, description: 'Conversion, response time and team performance.' },
 ];

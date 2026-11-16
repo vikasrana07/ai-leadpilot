@@ -28,7 +28,24 @@ Scope: identity, tenancy, RBAC, audit. Extended in each phase (webhooks Phase 3,
 | Stored XSS via customer text / filenames | UI renders text as text; widget uses `textContent`; media forced to download unless a safe image type, `nosniff`, sandbox CSP | media test, widget script check |
 | SSRF through media URLs | host allow-list (Meta domains) before fetching | code review (live client only) |
 
+## Phase 4 additions
+| Threat | Mitigation | Evidence |
+|---|---|---|
+| Prompt injection via customer messages | delimiters + "data, not instructions" rule; strict tool schemas; tool allow-list; deterministic gates before the model | injection corpus test (every attack is obeyed by a scripted "compliant" model, yet no forbidden call succeeds and nothing reaches the customer) |
+| Injection via uploaded documents | instruction-like sentences stripped at ingestion; retrieved text delimited; owner informed | poisoned-document test |
+| Model invents prices / links / phone numbers | output guards with one retry, then handover | guard tests, "never invents facts" tests |
+| System-prompt exfiltration | canary in the confidential section; reply blocked if it appears | leak tests |
+| Model reaches another tenant's data | tenant/lead from server context only; strict args reject extra ids; RLS + explicit tenant filter on retrieval and tools; request payloads inspected in test | cross-tenant context test |
+| Runaway AI cost | monthly token cap (hard stop → handover), platform kill switch, per-tenant usage metering, 5-iteration tool loop limit | cap + kill-switch tests |
+| Malicious uploads | extension + declared type + magic bytes, 10 MB cap, ClamAV scan (fail closed), tenant-prefixed keys, parsing in an isolated worker, download as attachment | upload tests incl. real ClamAV + EICAR |
+| Silent score manipulation | overrides need permission + reason, are timestamped, audited and visible in history | scoring API tests |
+
 ## Known gaps / accepted for now
+- **No real LLM has ever been connected.** The live OpenAI client is untested; offline results validate the pipeline only. Hindi/Hinglish quality, tone, real extraction accuracy and real injection resistance are **unmeasured** until the live eval (`EVAL_LIVE=1`) is run with a key.
+- Injection-pattern list for documents is heuristic.
+- AI turns run in-process after a short debounce; BullMQ/worker (phase 5) will add durable queues and retries across restarts. A crash mid-turn leaves a stale RUNNING run that expires after 3 minutes.
+- Knowledge ingestion is also in-process (a restart during processing leaves a document in PROCESSING; use Reprocess).
+- Voice notes are not transcribed (V1.1). The assistant sees "[customer sent an audio]".
 - **The live WhatsApp client has never run against Meta.** Everything is tested with the mock provider. Payload shapes follow Meta's documented format, but real-world verification needs real credentials.
 - Webhook raw payloads are stored (for dedupe and debugging) without a retention job yet (phase 7).
 - Widget polling is not authenticated beyond the session token and origin allow-list; scripted abuse is bounded only by rate limits until bot protection (phase 7).

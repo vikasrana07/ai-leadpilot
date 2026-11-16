@@ -59,3 +59,10 @@ export const authApi = {
   logout: () => api<void>('/auth/logout', { method: 'POST' }),
   switchWorkspace: (tenantId: string) => api<AuthContextResponse>('/auth/switch-workspace', { method: 'POST', body: { tenantId } }),
 };
+
+/** Multipart upload (browser sets the boundary). Same silent-refresh behaviour as `api()`. */
+export async function apiUpload<T>(path: string, form: FormData, retry = true): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, { method: 'POST', credentials: 'include', body: form });
+  if (res.status === 401 && retry && (await refreshSession())) return apiUpload<T>(path, form, false);
+  return parse<T>(res);
+}

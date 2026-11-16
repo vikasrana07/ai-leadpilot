@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ActivityTimeline, type ActivityItem } from '@/components/crm/activity-timeline';
 import { StageBadge, TemperatureBadge } from '@/components/crm/lead-badges';
+import { ScoreCard } from '@/components/ai/score-card';
 import { MergeDialog } from '@/components/crm/merge-dialog';
 import { PageHeader } from '@/components/page/page-header';
 import { Avatar } from '@/components/ui/avatar';
@@ -36,7 +37,7 @@ interface Note { id: string; body: string; author: string; createdAt: string }
 function EditDialog({ lead, open, onOpenChange }: { lead: LeadDto; open: boolean; onOpenChange: (o: boolean) => void }) {
   const qc = useQueryClient();
   const meta = useLeadMeta();
-  const [f, setF] = useState({ name: lead.name, phone: lead.phone ?? '', email: lead.email ?? '', budgetMin: lead.budgetMin?.toString() ?? '', budgetMax: lead.budgetMax?.toString() ?? '', location: lead.location ?? '', propertyType: lead.propertyType ?? '', requirements: lead.requirements ?? '', buyingTimeline: lead.buyingTimeline, temperature: lead.temperature, nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.slice(0, 16) : '' });
+  const [f, setF] = useState({ name: lead.name, phone: lead.phone ?? '', email: lead.email ?? '', budgetMin: lead.budgetMin?.toString() ?? '', budgetMax: lead.budgetMax?.toString() ?? '', location: lead.location ?? '', propertyType: lead.propertyType ?? '', requirements: lead.requirements ?? '', buyingTimeline: lead.buyingTimeline, nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.slice(0, 16) : '' });
   const [cf, setCf] = useState<Record<string, string | number | boolean>>(lead.customFields);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -45,7 +46,7 @@ function EditDialog({ lead, open, onOpenChange }: { lead: LeadDto; open: boolean
   async function save() {
     setBusy(true); setErrors({});
     try {
-      await api(`/leads/${lead.id}`, { method: 'PATCH', body: { name: f.name, phone: f.phone || null, email: f.email || null, budgetMin: num(f.budgetMin), budgetMax: num(f.budgetMax), location: f.location || null, propertyType: f.propertyType || null, requirements: f.requirements || null, buyingTimeline: f.buyingTimeline, temperature: f.temperature, nextFollowUpAt: f.nextFollowUpAt ? new Date(f.nextFollowUpAt).toISOString() : null, customFields: cf } });
+      await api(`/leads/${lead.id}`, { method: 'PATCH', body: { name: f.name, phone: f.phone || null, email: f.email || null, budgetMin: num(f.budgetMin), budgetMax: num(f.budgetMax), location: f.location || null, propertyType: f.propertyType || null, requirements: f.requirements || null, buyingTimeline: f.buyingTimeline, nextFollowUpAt: f.nextFollowUpAt ? new Date(f.nextFollowUpAt).toISOString() : null, customFields: cf } });
       toast.success('Lead updated');
       await qc.invalidateQueries({ queryKey: ['leads'] }); await qc.invalidateQueries({ queryKey: ['pipeline'] });
       onOpenChange(false);
@@ -63,7 +64,6 @@ function EditDialog({ lead, open, onOpenChange }: { lead: LeadDto; open: boolean
           <Field label="Location" htmlFor="e-loc"><Input id="e-loc" value={f.location} onChange={set('location')} /></Field>
           <Field label="Property type" htmlFor="e-type"><Input id="e-type" value={f.propertyType} onChange={set('propertyType')} /></Field>
           <Field label="Buying timeline" htmlFor="e-tl"><Select id="e-tl" value={f.buyingTimeline} onChange={set('buyingTimeline')}>{TIMELINES.map((t) => <option key={t} value={t}>{TIMELINE_LABELS[t]}</option>)}</Select></Field>
-          <Field label="Temperature" htmlFor="e-temp" hint="Automatic scoring arrives with the AI assistant."><Select id="e-temp" value={f.temperature} onChange={set('temperature')}><option value="UNKNOWN">Unscored</option><option value="HOT">Hot</option><option value="WARM">Warm</option><option value="COLD">Cold</option></Select></Field>
           <Field label="Next follow-up" htmlFor="e-fu" className="sm:col-span-2"><Input id="e-fu" type="datetime-local" value={f.nextFollowUpAt} onChange={set('nextFollowUpAt')} /></Field>
           <Field label="Requirements" htmlFor="e-req" className="sm:col-span-2"><Textarea id="e-req" value={f.requirements} onChange={set('requirements')} /></Field>
           {meta.data?.customFields.map((d) => (
@@ -168,6 +168,7 @@ export default function LeadDetailPage() {
               </Field>
             </CardBody>
           </Card>
+          <ScoreCard leadId={l.id} />
           <Card>
             <CardHeader><CardTitle>Qualification</CardTitle></CardHeader>
             <CardBody>

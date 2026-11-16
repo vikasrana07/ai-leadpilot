@@ -245,6 +245,15 @@ describe('outbound messaging rules', () => {
     expect(retried.body.status).toBe('SENT');
     expect((await ctx.http().post(`/conversations/${convoId}/messages/${retried.body.id}/retry`).set(auth(owner.accessToken))).status).toBe(404); // only failed messages
   });
+  it('a provider id that collides with an existing one never turns a delivered message into a failed one, and never shows internals', async () => {
+    const dupId = `wamid.DUPLICATE.${RUN}`;
+    const orig = mock.sendText.bind(mock);
+    mock.sendText = async (...a: Parameters<typeof orig>) => { mock.sent.push({ phoneNumberId: a[0], to: a[2], kind: 'text', body: a[3], messageId: dupId }); return { messageId: dupId }; };
+    try {
+      const a = await send(owner, { text: 'first with a fixed provider id' }); const b = await send(owner, { text: 'second with the same provider id' });
+      expect(a.body.status).toBe('SENT'); expect(b.body.status).toBe('SENT'); expect(b.body.error).toBeNull();
+    } finally { mock.sendText = orig; }
+  });
   it('honours opt-out: STOP blocks sending until the customer writes again', async () => {
     await post(waText(phone, 'STOP'));
     const blocked = await send(owner, { text: 'are you there?' });

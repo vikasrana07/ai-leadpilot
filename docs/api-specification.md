@@ -1,4 +1,4 @@
-# API specification (through Phase 3)
+# API specification (through Phase 4)
 
 Base URL `http://localhost:4000`. JSON everywhere. Errors: `{ "error": { "code", "message", "details?", "requestId" } }`.
 Auth: httpOnly cookies (browser) or `Authorization: Bearer <access token>` (API clients; send `x-token-delivery: body` on login to receive tokens in the body). Tenant context always comes from the validated membership, never from request input. The OpenAPI/Swagger UI is **not yet generated** (planned for Phase 7); this file is the interim reference and is maintained by hand.
@@ -63,3 +63,14 @@ Scope: `conversation:read:all` sees every conversation, `conversation:read:own` 
 
 ## Public endpoints (no cookies)
 `GET|POST /webhooks/whatsapp/:key` (HMAC-authenticated, see ADR-0013) · `GET /widget.js` · `GET /widget/config?key` · `POST /widget/sessions` · `GET|POST /widget/messages` (bearer session token). All widget calls require an allow-listed `Origin`.
+
+## AI assistant (Phase 4, `ai:configure`)
+`GET|PUT /ai/assistant` (settings; `PUT` validates tools, hours, limits) · `GET /ai/usage` (tokens vs cap, `warning` at 80%, `exceeded`) · `GET /ai/runs` (last 50 replies: status, tools, tokens, latency, guard decisions; no customer text) · `GET /scoring/rules` (any member) · `PUT /scoring/rules` (versioned, re-scores all leads)
+
+## Lead scoring
+`GET /leads/:id/score` (breakdown by signal as met / not_met / unknown, history) · `POST /leads/:id/score/override` `{score, reason}` (`lead:score:override`) · `DELETE /leads/:id/score/override`
+
+## Knowledge base (Phase 4, `knowledge:manage`)
+`POST /knowledge/documents` (multipart `file`, optional `title`, `category`; PDF/DOCX/TXT/CSV ≤ 10 MB; 422 `unsupported_file` / `malware_detected`, 503 `scanner_unavailable`) · `GET /knowledge/documents[/:id]` (status PENDING→PROCESSING→READY|FAILED, preview) · `PATCH|DELETE /knowledge/documents/:id` · `POST …/:id/reprocess` · `GET …/:id/download` (attachment) · `POST /knowledge/search` `{q, limit}`
+
+Conversation `mode: AI` is set automatically for new conversations while the assistant is on; `takeover` / `handback` switch it. `handback` returns 409 `ai_not_configured` when the assistant is off.

@@ -7,7 +7,7 @@ pnpm install
 cp .env.example .env
 # put real random values in .env:
 #   JWT_ACCESS_SECRET=$(openssl rand -base64 48)   LOCAL_MASTER_KEY=$(openssl rand -base64 32)
-pnpm infra:up          # Postgres(pgvector) :5433, Redis :6380, Mailpit UI :8026 (non-default ports on purpose)
+pnpm infra:up          # Postgres(pgvector) :5433, Redis :6380, Mailpit UI :8026, MinIO :9100, ClamAV :3310 (non-default ports on purpose)
 pnpm db:generate && pnpm build
 pnpm db:migrate        # prisma migrate deploy (as owner role) + syncs the permission catalogue
 pnpm db:seed           # optional, DEV ONLY: two demo workspaces (password printed by the script)
@@ -52,3 +52,11 @@ The API refuses to start on missing/invalid variables (zod validation in `apps/a
 - Real WhatsApp needs a public HTTPS URL for the webhook (`PUBLIC_API_URL`, e.g. via a tunnel). In **Integrations → WhatsApp** enter the phone number ID, WABA ID, a permanent system-user token and the Meta app secret; the page then shows the callback URL and verify token to paste into Meta (WhatsApp → Configuration, subscribe to `messages`).
 - Website widget: **Integrations → Website chat widget**, list the sites allowed to show it, then paste the generated `<script>` tag. For a local test, allow `http://localhost:3100` and inject the script into any page served from that origin.
 - Redis must be running (`pnpm infra:up`): it carries real-time events from the API to browsers (SSE).
+
+## AI, files and virus scanning (phase 4)
+
+- `AI_PROVIDER=mock` (default) runs an **offline, rule-based stand-in**: it is not a language model but exercises every real component (tools, knowledge retrieval, guards, scoring, handover, usage caps). Set `AI_PROVIDER=openai` and `OPENAI_API_KEY` for a real model (**never verified: needs your key**). Production refuses to start with `mock`.
+- Knowledge files go to S3-compatible storage (MinIO locally: `S3_*` variables; the bucket is created on startup) and are scanned by ClamAV (`VIRUS_SCAN_MODE=clamav`). ClamAV needs a minute or two to load signatures after `infra:up`; uploads are refused (fail closed) while it is unavailable. `mock` scanning is for tests only and refused in production.
+- Demo: with the API running and an assistant enabled in **AI Assistant**, `node apps/api/scripts/demo-whatsapp.mjs` then `node apps/api/scripts/demo-ai.mjs` simulate customers chatting with it.
+- Evaluation: `pnpm --filter @leadpilot/api exec vitest run test/eval.test.ts` runs the 26 offline golden conversations. `EVAL_LIVE=1 AI_PROVIDER=openai OPENAI_API_KEY=… pnpm --filter @leadpilot/api exec vitest run test/eval.test.ts` runs all 39 against a real model (cost: a few cents).
+- Migrations that use pgvector need a role allowed to `CREATE EXTENSION vector`; `prisma migrate dev` therefore uses the Postgres superuser for its shadow database (`DATABASE_SHADOW_URL`).
