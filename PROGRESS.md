@@ -1,13 +1,13 @@
 # LeadPilot AI — Progress
 
 Legend: ☐ pending · ◐ in progress · ☑ done (verified) · Tags: **M** = MVP, **V** = V1.1, **L** = Later
-Last updated: 2026-11-16 · Current phase: **Phase 0 (awaiting approval)**
+Last updated: 2026-11-16 · Current phase: **Phase 1 (gate checks passing; awaiting user review)**
 
 ## Phase status
 | Phase | Status |
 |---|---|
-| 0 Plan | ◐ documents written, awaiting user approval |
-| 1 Foundation | ☐ |
+| 0 Plan | ☑ approved |
+| 1 Foundation | ◐ built and verified (see below); awaiting your review of hero designs |
 | 2 CRM | ☐ |
 | 3 Communication | ☐ |
 | 4 AI | ☐ |
@@ -27,18 +27,20 @@ Last updated: 2026-11-16 · Current phase: **Phase 0 (awaiting approval)**
 ## Feature checklist (all pending until their phase)
 
 ### Tenancy, auth, RBAC (Phase 1)
-- ☐ M Tenant model + settings
-- ☐ M Onboarding wizard (resumable, 9 steps)
-- ☐ M Register / login / logout / verify email / forgot+reset password
-- ☐ M Refresh rotation with reuse detection; session list/revoke
-- ☐ M Invitation-based signup
-- ☐ M Roles + granular permissions, guards
-- ☐ M Audit log (append-only)
-- ☐ M RLS on all tenant tables + isolation test suite
-- ☐ M Design tokens, light/dark/system theme, no-flash
-- ☐ M App shell (sidebar, header, command palette, breadcrumbs)
-- ☐ M i18n infrastructure
+- ☑ M Tenant model + settings (API + settings UI)
+- ☑ M Onboarding wizard, resumable. Steps 1-3 functional; steps 4-7 depend on phases 3-4 and are explicitly skippable (not faked)
+- ☑ M Register / login / logout / verify email / forgot+reset password
+- ☑ M Refresh rotation with reuse detection; session list/revoke
+- ☑ M Invitation-based signup
+- ☑ M Roles + granular permissions (32 keys), guards; roles UI is read-only
+- ☑ M Audit log (append-only at DB grant level) + viewer
+- ☑ M RLS on all tenant tables + isolation test suite
+- ☑ M Design tokens, light/dark/system theme, no-flash inline script (visually confirmed dark persistence; flash itself not measured)
+- ◐ M App shell: sidebar (collapse), header (workspace switcher, command palette, theme, profile), breadcrumbs component. **Not built yet:** quick-create button (nothing to create until phase 2), notifications bell (phase 5), global search beyond navigation commands
+- ◐ M i18n infrastructure: **not done** (strings are inline English). Carry to phase 2
 - ☐ V Permission overrides per member · ☐ L Fully custom roles
+- ◐ Responsive: mobile drawer + responsive grids implemented; **not verified in a narrow viewport**
+- ☑ Design-review screens (sample data, labelled, not connected): /design/inbox, /design/lead, /design/pipeline
 
 ### CRM (Phase 2)
 - ☐ M Lead CRUD, soft delete, search/filter/sort/cursor pagination
@@ -96,6 +98,11 @@ Last updated: 2026-11-16 · Current phase: **Phase 0 (awaiting approval)**
 ### Quality & launch (Phase 7)
 - ☐ Full E2E suite · ☐ Security review · ☐ Load test vs budgets · ☐ Backup/restore drill
 - ☐ Runbooks · ☐ Deployment guide · ☐ SLOs/alerts · ☐ Legal templates reviewed
+
+## Phase 1 verification (2026-11-16)
+- `pnpm lint` ✔ (ESLint incl. no-explicit-any, plus tsc) · `pnpm typecheck` ✔ · `pnpm test` ✔ (13 DB/RLS + 30 API tests) · built API boots under plain Node (`smoke`) ✔
+- Real browser run (Chrome): register → onboarding step saved → dark theme persisted across navigation → team + audit pages show real data ✔
+- **Not verified:** CI workflow (never run on GitHub), mobile viewport, Playwright E2E (phase 7), real email delivery (Mailpit only)
 
 ## Decisions needed from the user
 1. **Approve Phase 0 plan** and the proposed ADRs.
