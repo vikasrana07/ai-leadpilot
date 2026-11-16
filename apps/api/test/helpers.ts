@@ -10,13 +10,14 @@ import { configureApp } from '../src/bootstrap.js';
 import { loadEnv } from '../src/config/env.js';
 import { MailService } from '../src/mail/mail.module.js';
 
-export interface SentMail { to: string; kind: 'verify' | 'reset' | 'invite' | 'exists'; token?: string }
+export interface SentMail { to: string; kind: 'verify' | 'reset' | 'invite' | 'exists' | 'billing'; token?: string; subject?: string }
 
 export class FakeMail {
   sent: SentMail[] = [];
   sendVerification = async (to: string, token: string) => void this.sent.push({ to, kind: 'verify', token });
   sendPasswordReset = async (to: string, token: string) => void this.sent.push({ to, kind: 'reset', token });
   sendInvitation = async (to: string, token: string) => void this.sent.push({ to, kind: 'invite', token });
+  sendBilling = async (to: string, subject: string) => void this.sent.push({ to, kind: 'billing', subject });
   sendAccountExists = async (to: string) => void this.sent.push({ to, kind: 'exists' });
   last(kind: SentMail['kind'], to: string): SentMail | undefined {
     return [...this.sent].reverse().find((m) => m.kind === kind && m.to === to);
@@ -71,11 +72,15 @@ export async function cleanup(): Promise<void> {
     const like = `it-${RUN}-%`;
     const t = await pool.query(`SELECT DISTINCT m.tenant_id FROM memberships m JOIN users u ON u.id = m.user_id WHERE u.email LIKE $1`, [like]);
     const ids = t.rows.map((r) => r.tenant_id as string);
-    for (const t of ['appointment_events', 'appointments', 'automation_runs', 'automations', 'tasks', 'notifications', 'notification_preferences', 'sla_breaches', 'event_marks', 'availability_rules', 'availability_exceptions', 'outbox_events', 'ai_tool_executions', 'ai_runs', 'knowledge_chunks', 'knowledge_documents', 'lead_scores', 'scoring_rule_sets', 'ai_assistants', 'messages', 'conversation_notes', 'conversations', 'webhook_events', 'consents', 'widget_configs', 'channels', 'integration_credentials', 'whatsapp_templates']) await pool.query(`DELETE FROM ${t} WHERE tenant_id = ANY($1)`, [ids]);
+    for (const t of ['subscriptions', 'billing_profiles', 'invoices', 'payments', 'appointment_events', 'appointments', 'automation_runs', 'automations', 'tasks', 'notifications', 'notification_preferences', 'sla_breaches', 'event_marks', 'availability_rules', 'availability_exceptions', 'outbox_events', 'ai_tool_executions', 'ai_runs', 'knowledge_chunks', 'knowledge_documents', 'lead_scores', 'scoring_rule_sets', 'ai_assistants', 'messages', 'conversation_notes', 'conversations', 'webhook_events', 'consents', 'widget_configs', 'channels', 'integration_credentials', 'whatsapp_templates']) await pool.query(`DELETE FROM ${t} WHERE tenant_id = ANY($1)`, [ids]);
     await pool.query('DELETE FROM leads WHERE tenant_id = ANY($1)', [ids]);
     await pool.query('DELETE FROM invitations WHERE tenant_id = ANY($1)', [ids]);
     await pool.query('DELETE FROM audit_logs WHERE tenant_id = ANY($1) OR actor_user_id IN (SELECT id FROM users WHERE email LIKE $2)', [ids, like]);
     await pool.query('DELETE FROM tenants WHERE id = ANY($1)', [ids]);
+    await pool.query("DELETE FROM billing_events WHERE event_id LIKE $1", [`it-${RUN}-%`]);
+    await pool.query('DELETE FROM platform_audit_logs WHERE admin_id IN (SELECT id FROM platform_admins WHERE email LIKE $1) OR tenant_id = ANY($2)', [like, ids]);
+    await pool.query('DELETE FROM platform_admins WHERE email LIKE $1', [like]);
+    await pool.query("DELETE FROM plans WHERE key ~ '^it_'");
     await pool.query('DELETE FROM users WHERE email LIKE $1', [like]);
   } finally {
     await pool.end();

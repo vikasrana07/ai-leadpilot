@@ -5,12 +5,13 @@ import type { TenantRequestContext } from '../common/request-context.js';
 import { resolveRange } from '../analytics/date-range.js';
 import { AiModule } from '../ai/ai.module.js';
 import { AssistantsService } from '../ai/assistants.service.js';
+import { EntitlementsService } from '../billing/entitlements.service.js';
 import { DbService } from '../db/db.module.js';
 
 /** Plain counts for the billing period (calendar month in the workspace timezone). Metering only: nothing here blocks or bills. */
 @Controller('usage') @RequirePermissions('usage:read')
 class UsageController {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AssistantsService) private readonly assistants: AssistantsService) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AssistantsService) private readonly assistants: AssistantsService, @Inject(EntitlementsService) private readonly ent: EntitlementsService) {}
 
   @Get()
   async get(@CurrentTenant() c: TenantRequestContext) {
@@ -30,8 +31,11 @@ class UsageController {
       const runs = await tx.automationRun.groupBy({ by: ['status'], where: { createdAt: inRange }, _count: { _all: true } });
       const docs = await tx.knowledgeDocument.aggregate({ _count: { _all: true }, _sum: { sizeBytes: true } });
       const seats = await count(tx.membership.count({ where: { status: 'ACTIVE' } }));
+      const plan = await this.ent.compute(tx, a.tenantId);
+      const meter = await this.ent.usage(tx, a.tenantId);
       const n = (s: string) => runs.find((x) => x.status === s)?._count._all ?? 0;
       return {
+        plan: { key: plan.planKey, name: plan.planName, status: plan.status, restricted: plan.restricted, limits: plan.limits, features: plan.features, meters: meter },
         period: { from: r.from.toISOString(), to: r.to.toISOString(), timezone: tz },
         ai: { runs: ai.runs, inputTokens: ai.inputTokens, outputTokens: ai.outputTokens, tokensUsed: ai.used, cap: ai.cap, pct: ai.pct, warning: ai.warning, exceeded: ai.exceeded },
         messages: { inbound, aiReplies, agentReplies: agentMsgs, automatedTemplates: systemMsgs },

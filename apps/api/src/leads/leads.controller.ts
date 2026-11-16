@@ -1,3 +1,4 @@
+import { RequireFeature } from '../common/billing-meta.js';
 import { Body, Controller, Delete, Get, Header, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post, Put, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import {
@@ -39,7 +40,7 @@ export class LeadsController {
   @Post('import') @HttpCode(200)
   import(@CurrentTenant() ctx: TenantRequestContext, @Body(new ZodPipe(importSchema)) body: ImportInput) { return this.imports.importCsv(actorFrom(ctx), body); }
 
-  @Get('export') @Header('Cache-Control', 'no-store')
+  @Get('export') @RequireFeature('csv_export') @Header('Cache-Control', 'no-store')
   async export(@CurrentTenant() ctx: TenantRequestContext, @Query(new ZodPipe(leadListQuerySchema)) q: LeadListQuery, @Res() res: Response): Promise<void> {
     const csv = await this.imports.exportCsv(actorFrom(ctx), q);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');

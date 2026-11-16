@@ -1,3 +1,4 @@
+import { RequireFeature } from '../common/billing-meta.js';
 import { BadRequestException, Body, ConflictException, Controller, Delete, Get, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { channelWhatsappSchema, templateSchema, widgetConfigSchema } from '@leadpilot/validation';
@@ -183,8 +184,8 @@ class ChannelsController {
   @Delete('whatsapp/templates/:id') @HttpCode(204) @RequirePermissions('integration:manage') rmTemplate(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.removeTemplate(c, id); }
 
   @Get('widget-config') @RequirePermissions('integration:manage') widget(@CurrentTenant() c: TenantRequestContext) { return this.svc.widgetConfig(c); }
-  @Put('widget-config') @RequirePermissions('integration:manage') saveWidget(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(widgetConfigSchema)) b: z.infer<typeof widgetConfigSchema>) { return this.svc.saveWidget(c, b); }
-  @Post('widget-config/rotate-key') @HttpCode(200) @RequirePermissions('integration:manage') rotate(@CurrentTenant() c: TenantRequestContext) { return this.svc.rotateWidgetKey(c); }
+  @Put('widget-config') @RequireFeature('web_widget') @RequirePermissions('integration:manage') saveWidget(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(widgetConfigSchema)) b: z.infer<typeof widgetConfigSchema>) { return this.svc.saveWidget(c, b); }
+  @Post('widget-config/rotate-key') @HttpCode(200) @RequireFeature('web_widget') @RequirePermissions('integration:manage') rotate(@CurrentTenant() c: TenantRequestContext) { return this.svc.rotateWidgetKey(c); }
 }
 
 @Module({ controllers: [ChannelsController], providers: [ChannelsService], exports: [ChannelsService] })

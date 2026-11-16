@@ -1,7 +1,7 @@
 # LeadPilot AI — Progress
 
 Legend: ☐ pending · ◐ in progress · ☑ done (verified) · Tags: **M** = MVP, **V** = V1.1, **L** = Later
-Last updated: 2026-11-16 · Current phase: **Phase 5 (automation & appointments): built and verified locally; real Meta, real LLM and real email are still unverified; awaiting user review**
+Last updated: 2026-11-16 · Current phase: **Phase 6 (SaaS): built; verified with the mock payment provider only; Razorpay, Meta, real LLM and real email are still unverified; awaiting user review**
 
 ## Phase status
 | Phase | Status |
@@ -12,7 +12,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 5 (automation & appointments)
 | 3 Communication | ☑ (live Meta client still unverified) |
 | 4 AI | ◐ built; verified with an offline mock model only (see below) |
 | 5 Automation & appointments | ☑ built; verified with mock WhatsApp/LLM (see below) |
-| 6 SaaS | ☐ |
+| 6 SaaS | ◐ plans, billing (mock-verified), GST invoices, gating, platform console built; Razorpay never called for real; 5 V1.1 items deferred (see below) |
 | 7 Hardening & launch | ☐ |
 
 ## Phase 0 deliverables
@@ -99,12 +99,13 @@ Last updated: 2026-11-16 · Current phase: **Phase 5 (automation & appointments)
 - ☐ V Email / WhatsApp-to-staff / web push notifications · ☐ V Google Calendar · ☐ L Visual workflow editor
 
 ### SaaS (Phase 6)
-- ☐ V Plans/entitlements (DB-driven), Razorpay subscriptions, GST invoices, dunning/grace, trial
-- ☐ V Quotas + alerts, full usage dashboards
-- ☐ V Platform super admin (tenants, MRR, usage, health, plans, impersonation audit)
-- ☐ V Public API + outbound webhooks
-- ☐ V Reports & CSV export (full set)
-- ☐ V Compliance workflows (consent, export, erasure, retention)
+- ☑ V Plans/entitlements (DB-driven, editable by platform admins), Razorpay subscriptions (mock-verified; **live client never run**), GST invoices (accountant review pending), dunning/grace, trial, plan gating in the backend
+- ☑ V Quotas + 80%/100% alerts (owners notified once), plan-limit bars on the Usage page · ☐ V richer usage history/dashboards
+- ☑ V Platform console (tenants, MRR, usage, plans, suspend/reactivate, complimentary/trial plans, audit) · ☐ V impersonation (deliberately deferred, ADR-0039) · ☐ V platform health page
+- ☐ V Public API + outbound webhooks (deferred, ADR-0040)
+- ☐ V Reports & CSV export (full set; leads CSV export exists and is plan-gated)
+- ☐ V Compliance workflows (consent, export, erasure, retention) (deferred, ADR-0040)
+- ☐ V WhatsApp Embedded Signup · ☐ V Google Calendar sync (both deferred: need real provider apps/credentials, ADR-0040)
 
 ### Quality & launch (Phase 7)
 - ☐ Full E2E suite · ☐ Security review · ☐ Load test vs budgets · ☐ Backup/restore drill
@@ -156,3 +157,10 @@ Last updated: 2026-11-16 · Current phase: **Phase 5 (automation & appointments)
 - Manual WhatsApp token entry for MVP, Embedded Signup in V1.1.
 - Brief prices are ex-GST.
 - English + Hindi/Hinglish for the AI in MVP.
+
+## Phase 6 verification (2026-11-16)
+- `pnpm lint` ✔ · `pnpm typecheck` ✔ · `pnpm build` ✔ · `pnpm test` ✔ (**19 DB + 303 API tests**, incl. `billing` 28, `platform` 15, `billing-enforcement` 4)
+- Covered by tests: webhook signature (forged/tampered/missing), event de-dup and payment-level idempotency, out-of-order and stale events, GST split (CGST+SGST vs IGST), gap-free invoice numbers under concurrency, invoice immutability and tenant isolation, trial/grace/read-only/cancel lifecycle, feature/seat/automation/AI-cap/WhatsApp-cap gating, AI and automations on lapsed or ineligible plans, upgrade/downgrade including over-quota refusal, platform auth (separate audience, lockout, CSRF, instant revoke), reasoned+audited tenant actions, plan editing reaching live customers, platform audit RLS
+- Real browser (Chrome, mock provider, SIGNUP_PLAN=growth, real worker): signup starts a 14-day trial → Billing page (plans, GST-inclusive prices) → billing-details dialog → subscribe → simulated signed webhooks activate the plan and issue invoice `LP/2026-27/…` → printable GST invoice (CGST+SGST) → notifications → platform console login, MRR (₹9,999 = the one paying subscription), plans page
+- **Bug found while verifying and fixed:** the plans page showed "0 workspaces" for every plan (the `tenants` table is under RLS and invisible to console code; counts now come from the SECURITY DEFINER metrics function; test added)
+- **Not verified:** real Razorpay (every request/response shape, checkout modal, real webhook payloads, proration), real dunning email delivery, invoice SAC/format with an accountant, platform tenant-detail/suspend/assign-plan and plan-edit screens in the browser, the red/amber/blue billing banners and the invoice page print layout, mobile layout

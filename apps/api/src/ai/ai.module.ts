@@ -1,3 +1,4 @@
+import { RequireFeature } from '../common/billing-meta.js';
 import { Body, Controller, Delete, Get, HttpCode, Inject, Module, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
 import { assistantSchema, type AssistantInput } from '@leadpilot/validation';
 import { ENV } from '../common/tokens.js';
@@ -32,10 +33,10 @@ class AiController {
     @Inject(ENV) private readonly env: Env,
   ) {}
 
-  @Get('ai/assistant') @RequirePermissions('ai:configure') async assistant(@CurrentTenant() c: TenantRequestContext) {
+  @Get('ai/assistant') @RequireFeature('ai_assistant') @RequirePermissions('ai:configure') async assistant(@CurrentTenant() c: TenantRequestContext) {
     return { ...(await this.assistants.get(c)), provider: this.env.AI_PROVIDER, killSwitch: this.env.AI_KILL_SWITCH };
   }
-  @Put('ai/assistant') @RequirePermissions('ai:configure') save(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(assistantSchema)) b: AssistantInput) { return this.assistants.save(c, b); }
+  @Put('ai/assistant') @RequireFeature('ai_assistant') @RequirePermissions('ai:configure') save(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(assistantSchema)) b: AssistantInput) { return this.assistants.save(c, b); }
   @Get('ai/usage') @RequirePermissions('ai:configure') usage(@CurrentTenant() c: TenantRequestContext) { return this.assistants.usage(c.tenantId, c.userId); }
   @Get('ai/runs') @RequirePermissions('ai:configure') runs(@CurrentTenant() c: TenantRequestContext) { return this.assistants.runs(c); }
 

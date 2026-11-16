@@ -15,6 +15,7 @@ import { SidebarContent } from './sidebar';
 import { NotificationBell } from './notification-bell';
 import { ThemeSwitcher } from './theme-switcher';
 import { WorkspaceSwitcher } from './workspace-switcher';
+import { BillingBanner } from './billing-banner';
 import { VerifyEmailBanner } from './verify-banner';
 
 const STORAGE_KEY = 'lp-sidebar-collapsed';
@@ -72,6 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
         <VerifyEmailBanner />
+        <BillingBanner />
         <main id="main" className="min-h-0 flex-1 overflow-y-auto">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={pathname} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.16, ease: [0.2, 0, 0, 1] }} className="mx-auto w-full max-w-[1280px] px-4 py-5 sm:px-6 sm:py-6">

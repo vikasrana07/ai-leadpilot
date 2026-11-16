@@ -1,4 +1,4 @@
-# Threat model (Phase 1 baseline)
+# Threat model
 
 Scope: identity, tenancy, RBAC, audit. Extended in each phase (webhooks Phase 3, AI Phase 4, billing Phase 6).
 
@@ -52,7 +52,24 @@ Scope: identity, tenancy, RBAC, audit. Extended in each phase (webhooks Phase 3,
 | Notification leakage between users/tenants | notifications are queried by the caller's membership only; SSE delivery filtered by membership | notification tests |
 | Brute force across multiple API replicas | rate-limit counters in Redis (atomic Lua) | verified live |
 
+## Phase 6 additions
+| Threat | Mitigation | Evidence |
+|---|---|---|
+| Forged / replayed payment webhooks (free upgrade, fake invoices) | HMAC over the raw body (constant-time), unique `(provider, event_id)`, idempotent handlers, payments unique by provider id, tenant resolved from the subscription id not the payload | `billing.test.ts` (forged, tampered, missing signature, duplicate event, same payment under a new event id) |
+| Out-of-order events reviving a cancelled/expired plan | state-guarded handlers, row lock per workspace, stale-subscription events ignored | cancel + late-renewal test |
+| Using features/limits beyond the paid plan | enforced in the backend (guard, services, AI, automations, sends), never in the UI | gating tests (feature, seats, automations, AI cap, downgrade over-quota) |
+| Lapsed customer loses data or is locked out of paying | read-only mode (reads, export and billing stay open); nothing deleted | dunning tests |
+| Invoice tampering / gaps (GST) | invoices immutable to the app role; gap-free numbering inside the invoice transaction | concurrent-numbering test, DB permission test |
+| Cross-tenant billing data access | RLS on subscriptions, billing profiles, invoices, payments | RLS guard test, invoice isolation test |
+| Platform console takeover | separate secret + audience, strict cookie, lockout, identical errors, per-request admin check, CSRF origin check, admins creatable only by the schema owner | `platform.test.ts` |
+| Tenant code reading/writing platform audit data | RLS: visible only with no tenant in scope | RLS test |
+| Console actions without accountability | required reason, append-only platform log + mirrored tenant audit entry | platform tests |
+
 ## Known gaps / accepted for now
+- **Razorpay has never been called for real.** The live client follows the documented API; every billing test uses the mock provider (with real HMAC signatures). Verify with test-mode keys before relying on it.
+- Invoice SAC code / layout not reviewed by an accountant.
+- Platform-admin impersonation is not built (deliberately).
+- Platform console has no MFA.
 - **No real LLM has ever been connected.** The live OpenAI client is untested; offline results validate the pipeline only. Hindi/Hinglish quality, tone, real extraction accuracy and real injection resistance are **unmeasured** until the live eval (`EVAL_LIVE=1`) is run with a key.
 - Injection-pattern list for documents is heuristic.
 - AI turns still run in-process after a short debounce; the minute scanner re-triggers a customer message left unanswered for 90 seconds to 6 hours (once). A crash mid-turn leaves a stale RUNNING run that expires after 3 minutes.
@@ -64,6 +81,5 @@ Scope: identity, tenancy, RBAC, audit. Extended in each phase (webhooks Phase 3,
 - Rate limiting is Redis-backed (phase 5); it degrades to per-instance memory if Redis is unreachable.
 - Email-verification is not enforced for login (only for inviting teammates).
 - No MFA. [V1.1+]
-- Platform-admin surface (separate auth, ADR-0003) not built until Phase 6.
 - CSP is the Helmet default on the API only; the Next.js app has no custom CSP yet (Phase 7 hardening).
 - Mobile/responsive layouts were **not** verified in a real narrow viewport.

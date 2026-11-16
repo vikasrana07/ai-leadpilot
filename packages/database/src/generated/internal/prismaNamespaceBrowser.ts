@@ -101,7 +101,17 @@ export const ModelName = {
   Notification: 'Notification',
   NotificationPreference: 'NotificationPreference',
   SlaBreach: 'SlaBreach',
-  EventMark: 'EventMark'
+  EventMark: 'EventMark',
+  Plan: 'Plan',
+  PlanEntitlement: 'PlanEntitlement',
+  Subscription: 'Subscription',
+  BillingProfile: 'BillingProfile',
+  Invoice: 'Invoice',
+  Payment: 'Payment',
+  BillingEvent: 'BillingEvent',
+  InvoiceCounter: 'InvoiceCounter',
+  PlatformAdmin: 'PlatformAdmin',
+  PlatformAuditLog: 'PlatformAuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -911,6 +921,165 @@ export const EventMarkScalarFieldEnum = {
 } as const
 
 export type EventMarkScalarFieldEnum = (typeof EventMarkScalarFieldEnum)[keyof typeof EventMarkScalarFieldEnum]
+
+
+export const PlanScalarFieldEnum = {
+  key: 'key',
+  name: 'name',
+  description: 'description',
+  priceMinor: 'priceMinor',
+  currency: 'currency',
+  trialDays: 'trialDays',
+  isPublic: 'isPublic',
+  active: 'active',
+  sortOrder: 'sortOrder',
+  razorpayPlanId: 'razorpayPlanId',
+  razorpayPlanAmount: 'razorpayPlanAmount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlanScalarFieldEnum = (typeof PlanScalarFieldEnum)[keyof typeof PlanScalarFieldEnum]
+
+
+export const PlanEntitlementScalarFieldEnum = {
+  planKey: 'planKey',
+  key: 'key',
+  enabled: 'enabled',
+  limit: 'limit'
+} as const
+
+export type PlanEntitlementScalarFieldEnum = (typeof PlanEntitlementScalarFieldEnum)[keyof typeof PlanEntitlementScalarFieldEnum]
+
+
+export const SubscriptionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  planKey: 'planKey',
+  pendingPlanKey: 'pendingPlanKey',
+  status: 'status',
+  provider: 'provider',
+  providerSubscriptionId: 'providerSubscriptionId',
+  providerCustomerId: 'providerCustomerId',
+  trialEndsAt: 'trialEndsAt',
+  currentPeriodStart: 'currentPeriodStart',
+  currentPeriodEnd: 'currentPeriodEnd',
+  cancelAtPeriodEnd: 'cancelAtPeriodEnd',
+  graceEndsAt: 'graceEndsAt',
+  lastPaymentFailedAt: 'lastPaymentFailedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
+
+
+export const BillingProfileScalarFieldEnum = {
+  tenantId: 'tenantId',
+  legalName: 'legalName',
+  gstin: 'gstin',
+  stateCode: 'stateCode',
+  addressLine: 'addressLine',
+  city: 'city',
+  pincode: 'pincode',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BillingProfileScalarFieldEnum = (typeof BillingProfileScalarFieldEnum)[keyof typeof BillingProfileScalarFieldEnum]
+
+
+export const InvoiceScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  number: 'number',
+  planKey: 'planKey',
+  description: 'description',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  currency: 'currency',
+  taxableMinor: 'taxableMinor',
+  cgstMinor: 'cgstMinor',
+  sgstMinor: 'sgstMinor',
+  igstMinor: 'igstMinor',
+  totalMinor: 'totalMinor',
+  gstRatePercent: 'gstRatePercent',
+  sac: 'sac',
+  placeOfSupply: 'placeOfSupply',
+  buyer: 'buyer',
+  seller: 'seller',
+  providerPaymentId: 'providerPaymentId',
+  issuedAt: 'issuedAt'
+} as const
+
+export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const PaymentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  invoiceId: 'invoiceId',
+  providerPaymentId: 'providerPaymentId',
+  amountMinor: 'amountMinor',
+  status: 'status',
+  failureReason: 'failureReason',
+  createdAt: 'createdAt'
+} as const
+
+export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const BillingEventScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  eventId: 'eventId',
+  type: 'type',
+  payload: 'payload',
+  status: 'status',
+  error: 'error',
+  receivedAt: 'receivedAt',
+  processedAt: 'processedAt'
+} as const
+
+export type BillingEventScalarFieldEnum = (typeof BillingEventScalarFieldEnum)[keyof typeof BillingEventScalarFieldEnum]
+
+
+export const InvoiceCounterScalarFieldEnum = {
+  financialYear: 'financialYear',
+  last: 'last'
+} as const
+
+export type InvoiceCounterScalarFieldEnum = (typeof InvoiceCounterScalarFieldEnum)[keyof typeof InvoiceCounterScalarFieldEnum]
+
+
+export const PlatformAdminScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  name: 'name',
+  status: 'status',
+  failedLogins: 'failedLogins',
+  lockedUntil: 'lockedUntil',
+  lastLoginAt: 'lastLoginAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PlatformAdminScalarFieldEnum = (typeof PlatformAdminScalarFieldEnum)[keyof typeof PlatformAdminScalarFieldEnum]
+
+
+export const PlatformAuditLogScalarFieldEnum = {
+  id: 'id',
+  adminId: 'adminId',
+  action: 'action',
+  targetType: 'targetType',
+  targetId: 'targetId',
+  tenantId: 'tenantId',
+  reason: 'reason',
+  metadata: 'metadata',
+  ip: 'ip',
+  createdAt: 'createdAt'
+} as const
+
+export type PlatformAuditLogScalarFieldEnum = (typeof PlatformAuditLogScalarFieldEnum)[keyof typeof PlatformAuditLogScalarFieldEnum]
 
 
 export const SortOrder = {

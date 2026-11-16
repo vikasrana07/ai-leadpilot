@@ -32,6 +32,8 @@ export class MailService {
     const link = `${this.env.WEB_ORIGIN}/accept-invite?token=${encodeURIComponent(token)}`;
     return this.send(to, `${inviter} invited you to ${workspace} on LeadPilot`, `Join ${workspace}: ${link}\n\nThis invitation expires in 7 days.`);
   }
+  /** Plain billing/dunning notice. Callers pass the subject and body; no card or invoice-number data beyond what the caller chooses to include. */
+  sendBilling(to: string, subject: string, text: string): Promise<void> { return this.send(to, subject, `${text}\n\nManage billing: ${this.env.WEB_ORIGIN}/billing`); }
   sendAccountExists(to: string): Promise<void> {
     return this.send(to, 'You already have a LeadPilot account', `Someone tried to register with this email. You already have an account: ${this.env.WEB_ORIGIN}/login\n\nIf that was not you, you can ignore this message.`);
   }

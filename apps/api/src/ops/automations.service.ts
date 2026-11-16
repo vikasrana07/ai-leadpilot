@@ -1,3 +1,4 @@
+import { EntitlementsService } from '../billing/entitlements.service.js';
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma, TxClient } from '@leadpilot/database';
 import { actionSchema, automationInputSchema, type AutomationAction, type AutomationInput } from '@leadpilot/validation';
@@ -12,7 +13,7 @@ type Row = Prisma.AutomationGetPayload<object>;
 
 @Injectable()
 export class AutomationsService {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(AutomationEngine) private readonly engine: AutomationEngine) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(AutomationEngine) private readonly engine: AutomationEngine, @Inject(EntitlementsService) private readonly ent: EntitlementsService) {}
 
   private tx<T>(a: Actor, fn: (tx: TxClient) => Promise<T>): Promise<T> { return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, fn); }
 
@@ -95,6 +96,7 @@ export class AutomationsService {
       const cur = await tx.automation.findFirst({ where: { id, tenantId: a.tenantId } });
       if (!cur) throw new NotFoundException({ code: 'not_found', message: 'Automation not found' });
       // Re-validate on enable: stages/members referenced earlier may have been removed.
+      if (enabled && !cur.enabled) await this.ent.assertCanAdd(a.tenantId, 'active_automations', 'active automations');
       if (enabled) { actionSchema.array().parse(cur.actions); await this.validateActions(tx, a, cur.actions as unknown as AutomationAction[]); }
       await tx.automation.update({ where: { id }, data: { enabled } });
       await this.audit.record(tx, { tenantId: a.tenantId, actorUserId: a.userId, action: enabled ? 'automation.enabled' : 'automation.disabled', resourceType: 'automation', resourceId: id, metadata: {}, ...(a.requestId ? { requestId: a.requestId } : {}) });

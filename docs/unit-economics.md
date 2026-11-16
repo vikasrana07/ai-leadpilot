@@ -35,3 +35,14 @@ Illustrative sizing to be filled once prices are verified: a Starter tenant at 3
 1. ~~Do tenants pay Meta directly?~~ **Decided 2026-11-16: yes, tenants pay Meta on their own WABA.** WhatsApp fees are therefore not a LeadPilot cost; the WhatsApp row in the cost table drops out. The quota for WhatsApp becomes a fair-use/abuse limit and a usage display, not a cost control. Tenants must have a payment method on their WABA, which the setup guide and onboarding step 5 must explain.
 2. Is a free trial offered, and with what AI/WhatsApp allowance?
 3. Target gross margin per plan?
+
+## Phase 6: quotas actually seeded (2026-11-16) — still unverified against vendor prices
+| | Starter ₹4,999 | Growth ₹9,999 | Premium ₹14,999 |
+|---|---|---|---|
+| Seats | 3 | 10 | 30 |
+| AI tokens / month | 1,000,000 | 3,000,000 | 8,000,000 |
+| WhatsApp messages sent / month (fair use; tenants pay Meta) | 3,000 | 10,000 | 30,000 |
+| Active automations | 3 | 8 | unlimited |
+| Knowledge storage | 100 MB | 500 MB | 2,000 MB |
+| CSV export | no | yes | yes |
+These are **placeholders chosen for plausibility, not derived from verified costs**: replace them with numbers from real OpenAI pricing and observed tokens per conversation (the console edits them without a deploy). A 1M-token Starter allowance is roughly 300 conversations at the illustrative size above.

@@ -1,3 +1,4 @@
+import { EntitlementsService, paymentRequired } from '../billing/entitlements.service.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma, type TxClient } from '@leadpilot/database';
 import type { z } from 'zod';
@@ -23,6 +24,7 @@ export class ConversationsService {
     @Inject(ChannelsService) private readonly channels: ChannelsService,
     @Inject(RealtimeService) private readonly rt: RealtimeService,
     @Inject(WHATSAPP_CLIENT) private readonly wa: WhatsAppClient,
+    @Inject(EntitlementsService) private readonly ent: EntitlementsService,
   ) {}
 
   private tx<T>(a: Actor, fn: (tx: TxClient) => Promise<T>): Promise<T> { return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, fn); }
@@ -224,6 +226,8 @@ export class ConversationsService {
   }
 
   private async sendAs(a: Actor, id: string, input: SendInput, who: 'AGENT' | 'AI' | 'SYSTEM') {
+    // Humans are stopped by the HTTP guard when the workspace is read-only; the AI and automations send outside HTTP, so check here too.
+    if (who !== 'AGENT' && (await this.ent.get(a.tenantId)).restricted) throw paymentRequired('subscription_required', 'This workspace is read-only until a plan is active, so automatic messages are paused.');
     const prep = await this.tx(a, async (tx) => {
       const c = await this.mustFind(tx, a, id);
       if (input.idempotencyKey) {
@@ -236,6 +240,7 @@ export class ConversationsService {
       if (c.channel.type === 'WHATSAPP') {
         if (c.channel.status !== 'ACTIVE') throw new UnprocessableEntityException({ code: 'channel_unavailable', message: 'This WhatsApp number is not connected right now. Check Integrations.' });
         const consent = await tx.consent.findFirst({ where: { leadId: c.leadId, channel: 'whatsapp' }, orderBy: { createdAt: 'desc' } });
+        await this.ent.assertCanSendWhatsapp(tx, a.tenantId);
         if (consent?.status === 'OPTED_OUT') throw new UnprocessableEntityException({ code: 'opted_out', message: 'This customer opted out of WhatsApp messages. You cannot message them here.' });
         const open = this.windowInfo(c).windowOpen;
         if (input.text && !open) throw new UnprocessableEntityException({ code: 'outside_window', message: 'More than 24 hours have passed since the customer last wrote. Send an approved template instead.' });

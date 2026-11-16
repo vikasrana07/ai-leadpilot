@@ -1,3 +1,4 @@
+import { EntitlementsService } from '../billing/entitlements.service.js';
 import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import type { Prisma } from '@leadpilot/database';
 import type { AssistantInput } from '@leadpilot/validation';
@@ -15,7 +16,7 @@ const EMPTY_DAY = null;
 
 @Injectable()
 export class AssistantsService {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(ENV) private readonly env: Env) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(ENV) private readonly env: Env, @Inject(EntitlementsService) private readonly ent: EntitlementsService) {}
 
   private view(a: Prisma.AiAssistantGetPayload<object>) {
     return {
@@ -60,7 +61,10 @@ export class AssistantsService {
       const range = resolveRange({ range: 'month' }, t.timezone);
       const agg = await tx.aiRun.aggregate({ where: { tenantId, createdAt: { gte: range.from, lt: range.to } }, _sum: { inputTokens: true, outputTokens: true }, _count: { _all: true } });
       const used = (agg._sum.inputTokens ?? 0) + (agg._sum.outputTokens ?? 0);
-      const cap = a?.monthlyTokenCap ?? this.env.AI_DEFAULT_MONTHLY_TOKEN_CAP;
+      // The tighter of the owner's own cap and the plan's allowance: a hard stop either way.
+      const planCap = (await this.ent.compute(tx, tenantId)).limits.ai_tokens_monthly;
+      const own = a?.monthlyTokenCap ?? this.env.AI_DEFAULT_MONTHLY_TOKEN_CAP;
+      const cap = planCap === null ? own : Math.min(own, planCap);
       return { used, inputTokens: agg._sum.inputTokens ?? 0, outputTokens: agg._sum.outputTokens ?? 0, runs: agg._count._all, cap, pct: Math.min(100, Math.round((used / cap) * 1000) / 10), warning: used >= cap * 0.8, exceeded: used >= cap, resetsAt: range.to.toISOString(), killSwitch: this.env.AI_KILL_SWITCH };
     });
   }

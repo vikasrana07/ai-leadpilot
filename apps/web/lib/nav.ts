@@ -10,7 +10,7 @@ export interface NavItem {
   description?: string;
 }
 
-export const CURRENT_PHASE = 5;
+export const CURRENT_PHASE = 6;
 
 export const WORKSPACE_NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, phase: 1 },
@@ -23,7 +23,7 @@ export const WORKSPACE_NAV: NavItem[] = [
   { href: '/knowledge', label: 'Knowledge Base', icon: BookOpen, phase: 4, permission: 'knowledge:manage', description: 'Documents your assistant answers from.' },
   { href: '/tasks', label: 'Tasks', icon: ListChecks, phase: 5, description: 'Follow-ups from you, your team and automations.' },
   { href: '/automations', label: 'Automations', icon: Workflow, phase: 5, description: 'Follow-ups and alerts that run on their own.' },
-  { href: '/reports', label: 'Reports & Analytics', icon: BarChart3, phase: 6, description: 'Conversion, response time and team performance.' },
+  { href: '/reports', label: 'Reports & Analytics', icon: BarChart3, phase: 7, description: 'Conversion, response time and team performance.' },
 ];
 
 export const ADMIN_NAV: NavItem[] = [

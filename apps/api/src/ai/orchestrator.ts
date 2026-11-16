@@ -1,3 +1,4 @@
+import { EntitlementsService } from '../billing/entitlements.service.js';
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { Prisma } from '@leadpilot/database';
 import { v7 as uuidv7 } from 'uuid';
@@ -45,6 +46,7 @@ export class AiOrchestrator implements OnModuleInit {
     @Inject(ConversationsService) private readonly conversations: ConversationsService,
     @Inject(RealtimeService) private readonly rt: RealtimeService,
     @Inject(AiTrigger) private readonly trigger: AiTrigger,
+    @Inject(EntitlementsService) private readonly entitlements: EntitlementsService,
   ) { this.debounceMs = Number(process.env.AI_DEBOUNCE_MS ?? 1200); }
 
   onModuleInit(): void { this.trigger.handler = (e) => this.enqueue(e); }
@@ -143,6 +145,9 @@ export class AiOrchestrator implements OnModuleInit {
 
     try {
       // ---- 3. cheap, deterministic gates BEFORE any model call
+      // A lapsed workspace, or a plan without the AI assistant, never reaches the model: a person is asked to take over instead.
+      const plan = await this.entitlements.get(t);
+      if (plan.restricted || !plan.features.ai_assistant) { trace.outcome = 'plan_blocked'; await handover('The AI assistant is not available on the current plan'); await finish('SKIPPED', 'plan does not allow the AI assistant'); return; }
       const usage = await this.assistants.usage(t);
       if (usage.exceeded) { trace.outcome = 'token_cap_exceeded'; await handover('Monthly AI usage limit reached', assistant.fallbackMessage); await finish('SKIPPED', 'monthly token cap reached'); return; }
       const rules = (assistant.handoverRules as { keywords?: string[]; onNegotiation?: boolean; onComplaint?: boolean }) ?? {};

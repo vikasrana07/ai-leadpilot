@@ -12,6 +12,7 @@ export interface AutomationItem { id: string; templateKey: string | null; name: 
 export interface AutomationTemplate { key: string; name: string; description: string; category: string; trigger: AutomationItem['trigger']; actions: AutomationItem['actions']; requiresWhatsappTemplates: string[]; installed: boolean }
 export interface AutomationRun { id: string; automationId: string; automationName: string; eventType: string; leadId: string | null; leadName: string | null; status: 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'SKIPPED' | 'DRY_RUN'; attempts: number; error: string | null; steps: { i: number; type: string; status: string; detail?: string }[]; createdAt: string; finishedAt: string | null }
 export interface UsageView {
+  plan: { key: string; name: string; status: string; restricted: boolean; limits: Record<string, number | null>; features: Record<string, boolean>; meters: Record<string, number> };
   period: { from: string; to: string; timezone: string };
   ai: { runs: number; inputTokens: number; outputTokens: number; tokensUsed: number; cap: number; pct: number; warning: boolean; exceeded: boolean };
   messages: { inbound: number; aiReplies: number; agentReplies: number; automatedTemplates: number };
@@ -21,7 +22,7 @@ export interface UsageView {
 
 export const NOTIFICATION_LABELS: Record<string, string> = {
   lead_assigned: 'A lead is assigned to me', hot_lead: 'A lead turns hot', handover: 'The AI hands a chat to a person', appointment_booked: 'A visit is booked for me',
-  appointment_changed: 'A visit is cancelled, moved or missed', appointment_reminder: 'An hour before a visit', task_due: 'A task is due', sla_breach: 'A customer is waiting too long', automation_failed: 'An automation fails', lead_inactive: 'A lead goes quiet',
+  appointment_changed: 'A visit is cancelled, moved or missed', appointment_reminder: 'An hour before a visit', task_due: 'A task is due', sla_breach: 'A customer is waiting too long', automation_failed: 'An automation fails', lead_inactive: 'A lead goes quiet', billing: 'Billing and subscription notices', quota: 'A plan limit is almost used up',
 };
 export const TRIGGER_LABELS: Record<string, string> = {
   'lead.created': 'A lead is created', 'lead.assigned': 'A lead is assigned', 'lead.stage_changed': 'A lead changes stage', 'lead.temperature_changed': 'A lead’s temperature changes', 'lead.inactive': 'A lead goes quiet',

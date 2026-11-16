@@ -6,6 +6,7 @@ import {
 } from '@leadpilot/validation';
 import { z } from 'zod';
 import { actorFrom } from '../common/actor.js';
+import { BillingExempt } from '../common/billing-meta.js';
 import { CurrentTenant } from '../common/decorators.js';
 import type { TenantRequestContext } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
@@ -43,7 +44,7 @@ export class AppointmentsController {
   @Post(':id/reschedule') @HttpCode(200) reschedule(@CurrentTenant() c: TenantRequestContext, @Param('id', uuid()) id: string, @Body(new ZodPipe(appointmentRescheduleSchema)) b: z.infer<typeof appointmentRescheduleSchema>) { return this.svc.reschedule(actorFrom(c), id, b); }
 }
 
-@Controller('notifications')
+@Controller('notifications') @BillingExempt()
 export class NotificationsController {
   constructor(@Inject(NotificationsService) private readonly svc: NotificationsService) {}
 

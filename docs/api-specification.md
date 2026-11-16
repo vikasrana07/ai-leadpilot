@@ -83,3 +83,12 @@ Conversation `mode: AI` is set automatically for new conversations while the ass
 
 ## Notifications, tasks, SLA, usage
 `GET /notifications?unread&before` · `GET /notifications/unread-count` · `POST /notifications/:id/read` · `POST /notifications/read-all` · `GET|PUT /notifications/preferences` · SSE event `notification.created` on `/realtime/stream` · `GET|POST /tasks`, `PATCH|DELETE /tasks/:id` · `GET|PUT /sla` (write needs `settings:manage`) · `GET /usage` (`usage:read`)
+
+## Billing (Phase 6)
+All `/billing/*` routes keep working when a workspace is read-only. `GET /billing/summary` is open to every member (banners); the rest need `billing:manage`.
+`GET /billing/summary` (plan, effective status, `restricted`, dates, limits, features, `usage`, provider mode) · `GET /billing/plans` · `GET|PUT /billing/profile` `{legalName, gstin?, stateCode, addressLine, city?, pincode?}` · `POST /billing/subscribe` `{planKey}` → `{subscriptionId, keyId, mode, amountMinor (incl. GST), …}` (409 `billing_profile_required` / `already_subscribed`) · `POST /billing/change-plan` `{planKey}` → `{effective: now|cycle_end}` (409 `over_quota` with `details: [{key,label,used,allowed}]`, `payment_due`, `same_plan`, `no_active_subscription`) · `POST /billing/cancel` · `GET /billing/invoices[/:id]` · `POST /billing/mock/simulate` `{kind}` (mock provider outside production only; 404 otherwise)
+`POST /webhooks/razorpay` (public; header `X-Razorpay-Signature`, optional `X-Razorpay-Event-Id`): 200 `{status: processed|ignored|duplicate}`, 401 bad signature, 5xx = please retry.
+**Plan errors (HTTP 402):** `subscription_required` (workspace read-only), `feature_not_in_plan` (`details.feature`), `quota_exceeded` (`details.limit`, `details.allowed`).
+
+## Platform console (`/platform/*`, separate auth; disabled unless `PLATFORM_JWT_SECRET` is set)
+`POST /platform/auth/login|logout` · `GET /platform/me` · `GET /platform/metrics` (MRR in paise ex-GST, tenants, subscriptions, by plan, AI tokens) · `GET /platform/tenants?search&status&plan&limit&offset` · `GET /platform/tenants/:id` · `POST /platform/tenants/:id/{suspend|reactivate}` `{reason}` · `POST /platform/tenants/:id/plan` `{planKey, mode: complimentary|trial, days?, reason}` (409 `has_paid_subscription`) · `GET|POST /platform/plans` · `PATCH /platform/plans/:key` · `GET /platform/audit`. Reasons are mandatory and recorded in both the platform log and the tenant's audit log.

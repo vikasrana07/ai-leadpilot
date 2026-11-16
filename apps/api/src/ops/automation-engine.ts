@@ -1,3 +1,4 @@
+import { EntitlementsService } from '../billing/entitlements.service.js';
 import { HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import type { Prisma, TxClient } from '@leadpilot/database';
 import type { AutomationAction, AutomationCondition, AutomationTrigger } from '@leadpilot/validation';
@@ -27,6 +28,7 @@ export class AutomationEngine {
     @Inject(LeadsService) private readonly leads: LeadsService,
     @Inject(NotificationsService) private readonly notifications: NotificationsService,
     @Inject(OutboxService) private readonly outbox: OutboxService,
+    @Inject(EntitlementsService) private readonly ent: EntitlementsService,
   ) {}
 
   private machine(tenantId: string, automationId: string, depth: number): Actor {
@@ -67,6 +69,9 @@ export class AutomationEngine {
   async matchEvent(tx: TxClient, ev: DomainEvent): Promise<string[]> {
     const candidates = (await tx.automation.findMany({ where: { tenantId: ev.tenantId, enabled: true } })).filter((a) => this.triggerMatches(a.trigger as unknown as AutomationTrigger, ev));
     if (candidates.length === 0) return [];
+    // A lapsed workspace, or a plan without automations, does not run them (no runs are created, nothing is sent).
+    const plan = await this.ent.compute(tx, ev.tenantId);
+    if (plan.restricted || !plan.features.automations) return [];
     const ctx = await this.buildContext(tx, ev.tenantId, ev);
     const toRun: string[] = [];
     for (const a of candidates) {

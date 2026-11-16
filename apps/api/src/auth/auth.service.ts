@@ -1,9 +1,11 @@
 import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { Prisma } from '@leadpilot/database';
+import { Prisma, type TxClient } from '@leadpilot/database';
 import type { AuthContextResponse } from '@leadpilot/shared-types';
 import type { AcceptInviteInput, LoginInput, RegisterInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
+import { ENV } from '../common/tokens.js';
+import type { Env } from '../config/env.js';
 import { DbService } from '../db/db.module.js';
 import { MailService } from '../mail/mail.module.js';
 import { TenantsService } from '../tenants/tenants.service.js';
@@ -38,6 +40,7 @@ export class AuthService {
     @Inject(MailService) private readonly mail: MailService,
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(TenantsService) private readonly tenants: TenantsService,
+    @Inject(ENV) private readonly env: Env,
   ) {}
 
   // ---------------------------------------------------------------- registration & verification
@@ -51,6 +54,7 @@ export class AuthService {
         await tx.user.create({ data: { id: userId, email: input.email, passwordHash, name: input.name } });
         const { ownerRoleId } = await this.tenants.bootstrap(tx, tenantId, { name: input.businessName, email: input.email, industry: input.industry });
         await tx.membership.create({ data: { tenantId, userId, roleId: ownerRoleId } });
+        await this.startSignupPlan(tx, tenantId);
         await this.audit.record(tx, {
           tenantId, actorUserId: userId, action: 'auth.register', resourceType: 'tenant', resourceId: tenantId,
           requestId: meta.requestId, ip: meta.ip,
@@ -65,6 +69,15 @@ export class AuthService {
     }
     await this.sendVerification(userId, input.email);
     return this.issueSession(userId, tenantId, meta);
+  }
+
+  /** New workspaces start on SIGNUP_PLAN. A paid plan starts as a trial with no payment method; `internal` is unmetered (self-hosted/dev). */
+  private async startSignupPlan(tx: TxClient, tenantId: string): Promise<void> {
+    if (this.env.SIGNUP_PLAN === 'internal') return;
+    const plan = await tx.plan.findUnique({ where: { key: this.env.SIGNUP_PLAN } });
+    if (!plan || !plan.active) throw new Error(`SIGNUP_PLAN "${this.env.SIGNUP_PLAN}" is not an active plan`);
+    await tx.tenant.update({ where: { id: tenantId }, data: { planKey: plan.key } });
+    await tx.subscription.create({ data: { tenantId, planKey: plan.key, status: plan.trialDays > 0 ? 'TRIALING' : 'EXPIRED', trialEndsAt: plan.trialDays > 0 ? new Date(Date.now() + plan.trialDays * 86_400_000) : new Date() } });
   }
 
   private async sendVerification(userId: string, email: string): Promise<void> {

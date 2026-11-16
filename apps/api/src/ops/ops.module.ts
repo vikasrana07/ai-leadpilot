@@ -2,6 +2,8 @@ import { Global, Module } from '@nestjs/common';
 import { ConversationsModule } from '../conversations/conversations.module.js';
 import { LeadsModule } from '../leads/leads.module.js';
 import { AppointmentsService } from './appointments.service.js';
+import { BillingLifecycle } from './billing-lifecycle.js';
+import { BillingNotifier } from './billing-notify.js';
 import { AutomationEngine } from './automation-engine.js';
 import { AutomationsService } from './automations.service.js';
 import { EventNotifier } from './event-notifier.js';
@@ -23,7 +25,7 @@ export class OutboxModule {}
 @Module({
   imports: [LeadsModule, ConversationsModule],
   controllers: [AppointmentsController, NotificationsController, AutomationsController, TasksController, SlaController],
-  providers: [NotificationsService, AppointmentsService, AutomationEngine, AutomationsService, EventNotifier, OutboxRelay, ScannersService, SlaService, TasksService, JobsService],
-  exports: [AppointmentsService, NotificationsService, OutboxRelay, ScannersService, JobsService, AutomationEngine],
+  providers: [BillingNotifier, BillingLifecycle, NotificationsService, AppointmentsService, AutomationEngine, AutomationsService, EventNotifier, OutboxRelay, ScannersService, SlaService, TasksService, JobsService],
+  exports: [BillingNotifier, AppointmentsService, NotificationsService, OutboxRelay, ScannersService, JobsService, AutomationEngine],
 })
 export class OpsModule {}

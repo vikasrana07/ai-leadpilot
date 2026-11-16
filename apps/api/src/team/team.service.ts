@@ -1,3 +1,4 @@
+import { EntitlementsService } from '../billing/entitlements.service.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { SYSTEM_ROLES, type SystemRoleKey } from '@leadpilot/shared-types';
 import type { InviteInput } from '@leadpilot/validation';
@@ -16,6 +17,7 @@ export class TeamService {
     @Inject(DbService) private readonly db: DbService,
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(MailService) private readonly mail: MailService,
+    @Inject(EntitlementsService) private readonly ent: EntitlementsService,
   ) {}
 
   /** Privilege-escalation guard: you can only grant a role whose permissions you hold yourself. */
@@ -54,6 +56,7 @@ export class TeamService {
     const inviter = await this.db.prisma.user.findUniqueOrThrow({ where: { id: ctx.userId }, select: { name: true, emailVerifiedAt: true } });
     if (!inviter.emailVerifiedAt) throw new ForbiddenException({ code: 'email_unverified', message: 'Verify your email before inviting teammates' });
     this.assertCanGrant(ctx, input.roleKey);
+    await this.ent.assertCanAdd(ctx.tenantId, 'seats', 'team seats (members plus pending invitations)');
     const target = await this.db.prisma.user.findUnique({ where: { email: input.email }, select: { id: true } });
     const { token, hash } = generateToken();
     const result = await this.db.tenantTx(ctx, async (tx) => {
@@ -106,7 +109,8 @@ export class TeamService {
     });
   }
 
-  changeStatus(ctx: TenantRequestContext, membershipId: string, status: 'ACTIVE' | 'DEACTIVATED') {
+  async changeStatus(ctx: TenantRequestContext, membershipId: string, status: 'ACTIVE' | 'DEACTIVATED') {
+    if (status === 'ACTIVE') await this.ent.assertCanAdd(ctx.tenantId, 'seats', 'team seats (members plus pending invitations)');
     return this.db.tenantTx(ctx, async (tx) => {
       const m = await tx.membership.findFirst({ where: { id: membershipId, tenantId: ctx.tenantId }, select: { id: true, userId: true, role: { select: { key: true } } } });
       if (!m) throw new NotFoundException({ code: 'not_found', message: 'Member not found' });

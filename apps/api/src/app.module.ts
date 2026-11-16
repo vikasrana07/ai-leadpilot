@@ -6,6 +6,9 @@ import { AnalyticsModule } from './analytics/analytics.module.js';
 import { AiModule } from './ai/ai.module.js';
 import { AiTrigger } from './ai/ai-trigger.js';
 import { RedisThrottlerStorage } from './common/redis-throttler.js';
+import { BillingModule, EntitlementsModule } from './billing/billing.module.js';
+import { PlanGuard } from './billing/plan.guard.js';
+import { PlatformModule } from './platform/platform.module.js';
 import { AuditModule } from './audit/audit.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CaptureModule } from './capture/capture.module.js';
@@ -47,19 +50,20 @@ class IntegrationsCoreModule {}
 
 @Module({
   imports: [
-    ConfigModule, IntegrationsCoreModule, RealtimeModule, OutboxModule,
+    ConfigModule, IntegrationsCoreModule, RealtimeModule, OutboxModule, EntitlementsModule,
     ThrottlerModule.forRootAsync({
       inject: [ENV],
       // Redis-backed so limits hold across API instances (tests keep the in-memory store: counters would otherwise leak between runs).
       useFactory: (env: Env) => ({ throttlers: [{ name: 'default', ttl: 60_000, limit: env.THROTTLE_GLOBAL_LIMIT }], ...(env.NODE_ENV === 'test' ? {} : { storage: new RedisThrottlerStorage(env.REDIS_URL, env.QUEUE_PREFIX) }) }),
     }),
-    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, AiModule, OpsModule, UsageModule, TeamModule, RolesModule, HealthModule,
+    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, AiModule, OpsModule, BillingModule, PlatformModule, UsageModule, TeamModule, RolesModule, HealthModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: TenantGuard },
+    { provide: APP_GUARD, useClass: PlanGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
 })

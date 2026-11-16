@@ -272,3 +272,53 @@ export type SlaBreach = Prisma.SlaBreachModel
  * "Already emitted" markers so scanners (reminders, inactivity, SLA) fire each thing exactly once.
  */
 export type EventMark = Prisma.EventMarkModel
+/**
+ * Model Plan
+ * 
+ */
+export type Plan = Prisma.PlanModel
+/**
+ * Model PlanEntitlement
+ * 
+ */
+export type PlanEntitlement = Prisma.PlanEntitlementModel
+/**
+ * Model Subscription
+ * 
+ */
+export type Subscription = Prisma.SubscriptionModel
+/**
+ * Model BillingProfile
+ * 
+ */
+export type BillingProfile = Prisma.BillingProfileModel
+/**
+ * Model Invoice
+ * 
+ */
+export type Invoice = Prisma.InvoiceModel
+/**
+ * Model Payment
+ * 
+ */
+export type Payment = Prisma.PaymentModel
+/**
+ * Model BillingEvent
+ * 
+ */
+export type BillingEvent = Prisma.BillingEventModel
+/**
+ * Model InvoiceCounter
+ * 
+ */
+export type InvoiceCounter = Prisma.InvoiceCounterModel
+/**
+ * Model PlatformAdmin
+ * 
+ */
+export type PlatformAdmin = Prisma.PlatformAdminModel
+/**
+ * Model PlatformAuditLog
+ * 
+ */
+export type PlatformAuditLog = Prisma.PlatformAuditLogModel

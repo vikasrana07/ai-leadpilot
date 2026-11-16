@@ -1111,3 +1111,176 @@ model EventMark {
   @@id([tenantId, key])
   @@map("event_marks")
 }
+
+// ---------------------------------------------------------------- Phase 6: plans, billing, platform admin
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED // cancelled by the customer; access continues until current_period_end
+  EXPIRED // trial ended / grace ended / period ended: workspace is read-only until a plan is paid for
+}
+
+// Plans are rows, not code. Prices are paise per month, EXCLUDING GST.
+model Plan {
+  key                 String   @id
+  name                String
+  description         String   @default("")
+  priceMinor          Int      @map("price_minor")
+  currency            String   @default("INR")
+  trialDays           Int      @default(0) @map("trial_days")
+  isPublic            Boolean  @default(true) @map("is_public")
+  active              Boolean  @default(true)
+  sortOrder           Int      @default(0) @map("sort_order")
+  razorpayPlanId      String?  @map("razorpay_plan_id")
+  razorpayPlanAmount  Int?     @map("razorpay_plan_amount") // GST-inclusive paise the provider plan was created with
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entitlements PlanEntitlement[]
+
+  @@map("plans")
+}
+
+// key = limit (numeric; null limit with enabled = unlimited) or feature (enabled flag). Catalogue lives in @leadpilot/validation.
+model PlanEntitlement {
+  planKey String   @map("plan_key")
+  key     String
+  enabled Boolean  @default(true)
+  limit   Int?
+
+  plan Plan @relation(fields: [planKey], references: [key], onDelete: Cascade)
+
+  @@id([planKey, key])
+  @@map("plan_entitlements")
+}
+
+model Subscription {
+  id                     String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId               String             @unique @map("tenant_id") @db.Uuid
+  planKey                String             @map("plan_key")
+  pendingPlanKey         String?            @map("pending_plan_key")
+  status                 SubscriptionStatus
+  provider               String             @default("none") // none | razorpay | manual
+  providerSubscriptionId String?            @unique @map("provider_subscription_id")
+  providerCustomerId     String?            @map("provider_customer_id")
+  trialEndsAt            DateTime?          @map("trial_ends_at") @db.Timestamptz(3)
+  currentPeriodStart     DateTime?          @map("current_period_start") @db.Timestamptz(3)
+  currentPeriodEnd       DateTime?          @map("current_period_end") @db.Timestamptz(3)
+  cancelAtPeriodEnd      Boolean            @default(false) @map("cancel_at_period_end")
+  graceEndsAt            DateTime?          @map("grace_ends_at") @db.Timestamptz(3)
+  lastPaymentFailedAt    DateTime?          @map("last_payment_failed_at") @db.Timestamptz(3)
+  createdAt              DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("subscriptions")
+}
+
+model BillingProfile {
+  tenantId    String   @id @map("tenant_id") @db.Uuid
+  legalName   String   @map("legal_name")
+  gstin       String?
+  stateCode   String   @map("state_code") // GST state code, 2 digits
+  addressLine String   @map("address_line")
+  city        String   @default("")
+  pincode     String   @default("")
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("billing_profiles")
+}
+
+model Invoice {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  number            String   @unique
+  planKey           String   @map("plan_key")
+  description       String
+  periodStart       DateTime? @map("period_start") @db.Timestamptz(3)
+  periodEnd         DateTime? @map("period_end") @db.Timestamptz(3)
+  currency          String   @default("INR")
+  taxableMinor      Int      @map("taxable_minor")
+  cgstMinor         Int      @default(0) @map("cgst_minor")
+  sgstMinor         Int      @default(0) @map("sgst_minor")
+  igstMinor         Int      @default(0) @map("igst_minor")
+  totalMinor        Int      @map("total_minor")
+  gstRatePercent    Int      @map("gst_rate_percent")
+  sac               String
+  placeOfSupply     String   @map("place_of_supply")
+  buyer             Json
+  seller            Json
+  providerPaymentId String?  @unique @map("provider_payment_id")
+  issuedAt          DateTime @default(now()) @map("issued_at") @db.Timestamptz(3)
+
+  @@index([tenantId, issuedAt])
+  @@map("invoices")
+}
+
+model Payment {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  invoiceId         String?  @map("invoice_id") @db.Uuid
+  providerPaymentId String   @unique @map("provider_payment_id")
+  amountMinor       Int      @map("amount_minor")
+  status            String // captured | failed
+  failureReason     String?  @map("failure_reason")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([tenantId, createdAt])
+  @@map("payments")
+}
+
+// Provider webhooks, de-duplicated by (provider, event id). Global: the tenant is resolved from the subscription id.
+model BillingEvent {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider    String
+  eventId     String    @map("event_id")
+  type        String
+  payload     Json
+  status      String    @default("received") // received | processed | ignored | failed
+  error       String?
+  receivedAt  DateTime  @default(now()) @map("received_at") @db.Timestamptz(3)
+  processedAt DateTime? @map("processed_at") @db.Timestamptz(3)
+
+  @@unique([provider, eventId])
+  @@map("billing_events")
+}
+
+// Gap-free invoice numbering per financial year (GST rule); advanced by next_invoice_number() inside the invoice transaction.
+model InvoiceCounter {
+  financialYear String @id @map("financial_year")
+  last          Int    @default(0)
+
+  @@map("invoice_counters")
+}
+
+// Platform staff. Deliberately NOT users: separate credentials, token audience and audit trail (ADR-0003).
+model PlatformAdmin {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String    @unique @db.Citext
+  passwordHash String    @map("password_hash")
+  name         String
+  status       UserStatus @default(ACTIVE)
+  failedLogins Int       @default(0) @map("failed_logins")
+  lockedUntil  DateTime? @map("locked_until") @db.Timestamptz(3)
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("platform_admins")
+}
+
+model PlatformAuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adminId    String?  @map("admin_id") @db.Uuid
+  action     String
+  targetType String?  @map("target_type")
+  targetId   String?  @map("target_id")
+  tenantId   String?  @map("tenant_id") @db.Uuid
+  reason     String?
+  metadata   Json     @default("{}")
+  ip         String?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@index([tenantId, createdAt])
+  @@map("platform_audit_logs")
+}

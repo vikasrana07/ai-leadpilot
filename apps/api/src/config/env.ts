@@ -38,6 +38,23 @@ const schema = z.object({
   QUEUE_PREFIX: z.string().min(1).max(40).default('leadpilot'),
   AUTOMATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(5),
   AUTOMATION_RETRY_BASE_MS: z.coerce.number().int().min(10).default(2000),
+  // ---- Billing (Phase 6). Razorpay runs in 'mock' mode locally; 'live' talks to api.razorpay.com (use test-mode keys first).
+  RAZORPAY_MODE: z.enum(['mock', 'live']).default('mock'),
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().min(16).optional(),
+  /** Plan assigned to new workspaces. `internal` = unmetered (self-hosted/dev). Set to e.g. `growth` to start every signup on a trial of that plan. */
+  SIGNUP_PLAN: z.string().regex(/^[a-z][a-z0-9_]{1,31}$/).default('internal'),
+  BILLING_GRACE_DAYS: z.coerce.number().int().min(0).max(30).default(7),
+  /** Seller details printed on GST invoices. */
+  SELLER_LEGAL_NAME: z.string().default('LeadPilot (set SELLER_LEGAL_NAME)'),
+  SELLER_GSTIN: z.string().optional(),
+  SELLER_STATE_CODE: z.string().regex(/^\d{2}$/).default('29'),
+  SELLER_ADDRESS: z.string().default('Set SELLER_ADDRESS'),
+  /** Service Accounting Code on invoices. Confirm the right code with your chartered accountant before going live. */
+  INVOICE_SAC: z.string().regex(/^\d{4,8}$/).default('998314'),
+  /** Platform console (separate from tenant auth). Unset = the console is disabled. */
+  PLATFORM_JWT_SECRET: z.string().min(32).optional(),
   THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(10),
   THROTTLE_GLOBAL_LIMIT: z.coerce.number().int().positive().default(300),
 });
@@ -49,6 +66,9 @@ export function loadEnv(raw: NodeJS.ProcessEnv = process.env): Env {
     if (e.NODE_ENV === 'production' && e.WHATSAPP_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['WHATSAPP_MODE'], message: 'mock mode is not allowed in production' });
     if (e.NODE_ENV === 'production' && e.VIRUS_SCAN_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['VIRUS_SCAN_MODE'], message: 'mock virus scanning is not allowed in production' });
     if (e.AI_PROVIDER === 'mock' && e.NODE_ENV === 'production') ctx.addIssue({ code: 'custom', path: ['AI_PROVIDER'], message: 'the mock AI provider is not allowed in production' });
+    if (e.NODE_ENV === 'production' && e.RAZORPAY_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['RAZORPAY_MODE'], message: 'the mock payment provider is not allowed in production' });
+    if (e.RAZORPAY_MODE === 'live') for (const k of ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET'] as const) if (!e[k]) ctx.addIssue({ code: 'custom', path: [k], message: `${k} is required when RAZORPAY_MODE=live` });
+    if (e.NODE_ENV === 'production' && !e.SELLER_GSTIN) ctx.addIssue({ code: 'custom', path: ['SELLER_GSTIN'], message: 'SELLER_GSTIN is required in production (printed on invoices)' });
     if (e.AI_PROVIDER === 'openai' && !e.OPENAI_API_KEY) ctx.addIssue({ code: 'custom', path: ['OPENAI_API_KEY'], message: 'OPENAI_API_KEY is required when AI_PROVIDER=openai' });
   }).safeParse(raw);
   if (!parsed.success) {

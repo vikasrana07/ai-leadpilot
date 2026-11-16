@@ -1,3 +1,4 @@
+import { RequireFeature } from '../common/billing-meta.js';
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post, Put, Query } from '@nestjs/common';
 import {
   automationDryRunSchema, automationEnableSchema, automationFromTemplateSchema, automationInputSchema, automationRunsQuerySchema, slaSettingsSchema, taskCreateSchema, taskListQuerySchema, taskUpdateSchema,
@@ -14,7 +15,7 @@ import { TasksService } from './tasks.service.js';
 
 const uuid = () => new ParseUUIDPipe();
 
-@Controller('automations') @RequirePermissions('automation:manage')
+@Controller('automations') @RequirePermissions('automation:manage') @RequireFeature('automations')
 export class AutomationsController {
   constructor(@Inject(AutomationsService) private readonly svc: AutomationsService) {}
   @Get() list(@CurrentTenant() c: TenantRequestContext) { return this.svc.list(actorFrom(c)); }

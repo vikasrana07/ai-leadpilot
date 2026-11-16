@@ -1,3 +1,4 @@
+import { EntitlementsService } from '../../billing/entitlements.service.js';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException, PayloadTooLargeException, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma } from '@leadpilot/database';
 import { createHash } from 'node:crypto';
@@ -26,6 +27,7 @@ export class KnowledgeService {
     @Inject(OBJECT_STORAGE) private readonly storage: ObjectStorage,
     @Inject(VIRUS_SCANNER) private readonly scanner: VirusScanner,
     @Inject(EMBEDDING_PROVIDER) private readonly embeddings: EmbeddingProvider,
+    @Inject(EntitlementsService) private readonly ent: EntitlementsService,
   ) {}
 
   /** Resolves when all background processing has finished (used by tests and graceful shutdown). */
@@ -39,6 +41,7 @@ export class KnowledgeService {
   async upload(ctx: TenantRequestContext, file: { originalname: string; mimetype: string; buffer: Buffer; size: number } | undefined, meta: { title?: string; category?: string }) {
     if (!file) throw new BadRequestException({ code: 'file_required', message: 'Choose a file to upload' });
     if (file.size > MAX_UPLOAD_BYTES) throw new PayloadTooLargeException({ code: 'file_too_large', message: 'Files can be up to 10 MB' });
+    await this.ent.assertCanAdd(ctx.tenantId, 'knowledge_mb', 'MB of knowledge storage', Math.max(1, Math.ceil(file.size / 1048576)));
     const filename = file.originalname.replace(/[^\w.\- ]/g, '_').slice(0, 120) || 'document';
     const kind = detectKind(filename, file.mimetype, file.buffer);
     if (!kind) throw new UnprocessableEntityException({ code: 'unsupported_file', message: 'Upload a PDF, DOCX, TXT or CSV file. The file contents must match its type.' });

@@ -29,6 +29,7 @@ async function parse<T>(res: Response): Promise<T> {
   if (res.status === 204) return undefined as T;
   const text = await res.text();
   const json: unknown = text ? JSON.parse(text) : undefined;
+  if (res.status === 402 && typeof window !== 'undefined') window.dispatchEvent(new Event('lp:billing'));
   if (!res.ok) {
     const env = (json ?? {}) as ErrorEnvelope;
     throw new ApiError(res.status, env.error?.code ?? 'error', env.error?.message ?? 'Request failed', env.error?.details);

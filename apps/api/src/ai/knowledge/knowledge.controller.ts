@@ -3,12 +3,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { documentUpdateSchema, knowledgeSearchSchema } from '@leadpilot/validation';
 import type { z } from 'zod';
+import { RequireFeature } from '../../common/billing-meta.js';
 import { CurrentTenant, RequirePermissions } from '../../common/decorators.js';
 import type { TenantRequestContext } from '../../common/request-context.js';
 import { ZodPipe } from '../../common/zod.pipe.js';
 import { KnowledgeService, MAX_UPLOAD_BYTES } from './knowledge.service.js';
 
-@Controller('knowledge')
+@Controller('knowledge') @RequireFeature('ai_assistant')
 export class KnowledgeController {
   constructor(@Inject(KnowledgeService) private readonly svc: KnowledgeService) {}
 

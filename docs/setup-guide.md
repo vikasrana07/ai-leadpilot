@@ -69,3 +69,14 @@ pnpm --filter @leadpilot/api build
 pnpm --filter @leadpilot/worker start      # same .env as the API
 ```
 For single-process development set `WORKERS_ENABLED=true` instead. Run as many workers as you like. Reminders and automated WhatsApp messages need approved templates registered under Integrations (`welcome_lead`, `appointment_confirmation`, `appointment_reminder`, `no_show_followup`); until a template exists the message step is skipped and the run history says so.
+
+## Billing and the platform console (phase 6)
+**Local (default):** `RAZORPAY_MODE=mock` and `SIGNUP_PLAN=internal` give you an unmetered workspace. To try billing, set `SIGNUP_PLAN=growth` (new signups start a trial), open **Billing**, add billing details, choose a plan, and use the labelled *Test mode* buttons (they push signed, Razorpay-shaped events through the real webhook code).
+
+**Platform console:** set `PLATFORM_JWT_SECRET` (`openssl rand -base64 48`), then create an admin as the schema owner (the app role cannot):
+```
+PLATFORM_ADMIN_PASSWORD='a-long-passphrase' pnpm --filter @leadpilot/database platform:create-admin you@company.com "Your Name"
+```
+Sign in at `/platform/login`. The console manages plans, tenants (suspend, complimentary plan, trial extension) and shows MRR.
+
+**Live Razorpay (not yet verified; use TEST mode first):** create a Razorpay account, generate *test* API keys, set `RAZORPAY_MODE=live`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`; in Dashboard > Webhooks add `<PUBLIC_API_URL>/webhooks/razorpay` with a secret you also put in `RAZORPAY_WEBHOOK_SECRET`, events `subscription.*` and `payment.failed`. Set `SELLER_LEGAL_NAME`, `SELLER_GSTIN`, `SELLER_STATE_CODE`, `SELLER_ADDRESS`; confirm `INVOICE_SAC` with your accountant. Billing needs the worker process (grace expiry, trial notices and quota alerts run on its minute tick).
