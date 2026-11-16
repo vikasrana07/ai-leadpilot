@@ -1,7 +1,7 @@
 # LeadPilot AI — Progress
 
 Legend: ☐ pending · ◐ in progress · ☑ done (verified) · Tags: **M** = MVP, **V** = V1.1, **L** = Later
-Last updated: 2026-11-16 · Current phase: **Phase 6 (SaaS): built; verified with the mock payment provider only; Razorpay, Meta, real LLM and real email are still unverified; awaiting user review**
+Last updated: 2026-11-16 · Current phase: **Phase 7 (hardening & launch): built and verified locally; NOT launch-ready (see security-review.md and launch-checklist.md); Razorpay, Meta, real LLM, real email and AWS are unverified; awaiting user review**
 
 ## Phase status
 | Phase | Status |
@@ -13,7 +13,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 6 (SaaS): built; verified wit
 | 4 AI | ◐ built; verified with an offline mock model only (see below) |
 | 5 Automation & appointments | ☑ built; verified with mock WhatsApp/LLM (see below) |
 | 6 SaaS | ◐ plans, billing (mock-verified), GST invoices, gating, platform console built; Razorpay never called for real; 5 V1.1 items deferred (see below) |
-| 7 Hardening & launch | ☐ |
+| 7 Hardening & launch | ◐ E2E, security review, load test, restore drill, runbooks, Dockerfiles done; KMS key provider, bot protection, MFA, retention job, external security review, lawyer review of legal drafts, AWS deployment still open |
 
 ## Phase 0 deliverables
 - ☑ Repository inspected (only `MASTER_PROMPT.md` present; no git repo, no code)
@@ -108,8 +108,8 @@ Last updated: 2026-11-16 · Current phase: **Phase 6 (SaaS): built; verified wit
 - ☐ V WhatsApp Embedded Signup · ☐ V Google Calendar sync (both deferred: need real provider apps/credentials, ADR-0040)
 
 ### Quality & launch (Phase 7)
-- ☐ Full E2E suite · ☐ Security review · ☐ Load test vs budgets · ☐ Backup/restore drill
-- ☐ Runbooks · ☐ Deployment guide · ☐ SLOs/alerts · ☐ Legal templates reviewed
+- ☑ Full E2E suite (12 Playwright tests, desktop Chrome, local; CI job written but never run on GitHub) · ☑ Security review pass (self-review; `docs/security-review.md`) · ☑ Load test vs budgets (`docs/performance.md`; AI reply latency unmeasured) · ☑ Backup/restore drill (logical dump; RDS PITR not drilled)
+- ☑ Runbooks (9) · ☑ Deployment guide + Dockerfiles (images built and booted locally; AWS unverified) · ◐ SLOs/alerts (documented; only log/table-based SLIs measurable) · ◐ Legal templates (drafts written; **need a lawyer's review**) · ☑ DPDP single-lead export/erasure (API) · ☐ tenant-wide export/deletion, retention job, KMS key provider, bot protection, MFA (see security-review)
 
 ## Phase 1 verification (2026-11-16)
 - `pnpm lint` ✔ (ESLint incl. no-explicit-any, plus tsc) · `pnpm typecheck` ✔ · `pnpm test` ✔ (13 DB/RLS + 30 API tests) · built API boots under plain Node (`smoke`) ✔
@@ -164,3 +164,13 @@ Last updated: 2026-11-16 · Current phase: **Phase 6 (SaaS): built; verified wit
 - Real browser (Chrome, mock provider, SIGNUP_PLAN=growth, real worker): signup starts a 14-day trial → Billing page (plans, GST-inclusive prices) → billing-details dialog → subscribe → simulated signed webhooks activate the plan and issue invoice `LP/2026-27/…` → printable GST invoice (CGST+SGST) → notifications → platform console login, MRR (₹9,999 = the one paying subscription), plans page
 - **Bug found while verifying and fixed:** the plans page showed "0 workspaces" for every plan (the `tenants` table is under RLS and invisible to console code; counts now come from the SECURITY DEFINER metrics function; test added)
 - **Not verified:** real Razorpay (every request/response shape, checkout modal, real webhook payloads, proration), real dunning email delivery, invoice SAC/format with an accountant, platform tenant-detail/suspend/assign-plan and plan-edit screens in the browser, the red/amber/blue billing banners and the invoice page print layout, mobile layout
+
+## Phase 7 verification (2026-11-16)
+- `pnpm lint` ✔ · `pnpm typecheck` ✔ · `pnpm build` ✔ · `pnpm test` ✔ (**19 DB + 324 API tests**) · `scripts/e2e.sh` ✔ (**12 Playwright tests**, production builds on ports 3200/4100, ~45 s)
+- New tests: route inventory + authz matrix (14), webhook crash recovery, env-example validity, realtime across two API instances, lead export/erasure (3), plus the E2E journeys (auth, lead + stage move by mouse and keyboard, widget → inbox in real time, trial → subscribe → GST invoice, AI books a visit, platform console suspend/reactivate, CSP/redirect safety, keyboard smoke)
+- Load test at 100k leads: dashboard p95 415 ms (budget 2 s), webhook ACK p95 91 ms (budget 1 s), 0 errors under 20 concurrent workers (`docs/performance.md`)
+- Restore drill (logical dump, 192 MB): passed with row counts, RLS, grants, constraints and tenant isolation verified (`docs/runbooks/database-backup-restore.md`)
+- Docker images (api, web) built and booted locally; `/health/ready` verified
+- Bugs found and fixed: lost WhatsApp message after a crash mid-webhook; SSRF/redirect hole in media download; no CSP on the web app; SMTP without auth/TLS; open-redirect variant; invalid `.env.example`; concurrent queries on one connection (14 sites); unauthenticated `/auth/refresh` logged a serialisation error; a flaky automation test (order-dependent)
+- **Not verified / not done:** AWS deployment and managed-database PITR restore; CI on GitHub (incl. the new e2e job); real Razorpay, Meta, LLM (so AI reply p95 is unmeasured) and email; mobile/Firefox/WebKit; an independent security review; lawyer review of `docs/legal/`
+- **Known minor issues:** a `pg` "already executing a query" deprecation warning still appears occasionally (one remaining concurrent-query site, not located); the lead-detail stage `<select>` fires one change per typed letter when typed on the keyboard (arrow keys work)

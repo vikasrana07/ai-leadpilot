@@ -10,6 +10,6 @@ export default defineConfig({
     // Migrations run as the schema OWNER role. The runtime client uses DATABASE_URL (RLS-subject role).
     url: process.env.DATABASE_OWNER_URL ?? '',
     // Shadow DB for `migrate dev` (pre-created with the required extensions; see postgres-init.sh).
-    shadowDatabaseUrl: process.env.DATABASE_SHADOW_URL ?? '',
+    shadowDatabaseUrl: process.env.DATABASE_SHADOW_URL || undefined, // only `migrate dev` needs it; `migrate deploy` must work without
   },
 });

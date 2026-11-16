@@ -1,3 +1,4 @@
+import { series } from '../common/series.js';
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import type { Prisma, PropertyStatus } from '@leadpilot/database';
 import { propertyImportSchema, propertyListQuerySchema, propertySchema, propertyUpdateSchema, PROPERTY_STATUSES } from '@leadpilot/validation';
@@ -48,7 +49,7 @@ export class PropertiesService {
   list(ctx: TenantRequestContext, q: ListQuery) {
     return this.db.tenantTx(ctx, async (tx) => {
       const where = this.where(ctx.tenantId, q);
-      const [total, rows] = await Promise.all([tx.property.count({ where }), tx.property.findMany({ where, orderBy: [{ project: 'asc' }, { unitLabel: 'asc' }, { id: 'asc' }], skip: (q.page - 1) * q.pageSize, take: q.pageSize })]);
+      const [total, rows] = await series([ () => tx.property.count({ where }), () => tx.property.findMany({ where, orderBy: [{ project: 'asc' }, { unitLabel: 'asc' }, { id: 'asc' }], skip: (q.page - 1) * q.pageSize, take: q.pageSize })]);
       return { items: rows.map(toDto), total, page: q.page, pageSize: q.pageSize };
     });
   }

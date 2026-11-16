@@ -25,6 +25,7 @@ export interface WhatsAppClient {
 export const WHATSAPP_CLIENT = Symbol('WHATSAPP_CLIENT');
 
 /** Error codes Meta documents as rate/throughput limits (130429 throughput, 131056 pair rate limit, 80007 WABA rate limit). */
+const MAX_MEDIA_BYTES = 25 * 1024 * 1024;
 const RATE_LIMIT_CODES = new Set([130429, 131056, 80007, 4, 17, 613]);
 
 @Injectable()
@@ -69,12 +70,17 @@ export class LiveWhatsAppClient implements WhatsAppClient {
     return this.call<{ url: string; mime_type: string }>(`/${encodeURIComponent(mediaId)}`, c).then((r) => ({ url: r.url, mime: r.mime_type }));
   }
   async downloadMedia(c: WaCredentials, url: string): Promise<{ data: Buffer; mime: string }> {
-    // Media URLs are fetched with the same bearer token; only graph/lookaside Meta hosts are allowed (SSRF guard).
-    const host = new URL(url).hostname;
-    if (!/(^|\.)(facebook\.com|fbcdn\.net|whatsapp\.net)$/.test(host)) throw new WhatsAppApiError('Unexpected media host', false);
-    const res = await fetch(url, { headers: { authorization: `Bearer ${c.accessToken}` }, signal: AbortSignal.timeout(20_000) });
+    // Media URLs are fetched with the same bearer token, so they are a credential-exfiltration (SSRF) risk: HTTPS only, Meta hosts only,
+    // and redirects are never followed (a redirect to another host would carry the token with it).
+    let u: URL;
+    try { u = new URL(url); } catch { throw new WhatsAppApiError('Unexpected media URL', false); }
+    if (u.protocol !== 'https:' || u.username || u.password || u.port || !/(^|\.)(facebook\.com|fbcdn\.net|whatsapp\.net)$/.test(u.hostname)) throw new WhatsAppApiError('Unexpected media host', false);
+    const res = await fetch(u, { headers: { authorization: `Bearer ${c.accessToken}` }, redirect: 'error', signal: AbortSignal.timeout(20_000) });
     if (!res.ok) throw new WhatsAppApiError(`Media download failed (${res.status})`, res.status >= 500);
-    return { data: Buffer.from(await res.arrayBuffer()), mime: res.headers.get('content-type') ?? 'application/octet-stream' };
+    if (Number(res.headers.get('content-length') ?? 0) > MAX_MEDIA_BYTES) throw new WhatsAppApiError('Media file is too large', false);
+    const data = Buffer.from(await res.arrayBuffer());
+    if (data.length > MAX_MEDIA_BYTES) throw new WhatsAppApiError('Media file is too large', false);
+    return { data, mime: res.headers.get('content-type') ?? 'application/octet-stream' };
   }
 }
 

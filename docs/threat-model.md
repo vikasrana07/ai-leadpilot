@@ -65,7 +65,21 @@ Scope: identity, tenancy, RBAC, audit. Extended in each phase (webhooks Phase 3,
 | Tenant code reading/writing platform audit data | RLS: visible only with no tenant in scope | RLS test |
 | Console actions without accountability | required reason, append-only platform log + mirrored tenant audit entry | platform tests |
 
+## Phase 7 additions
+| Threat | Mitigation | Evidence |
+|---|---|---|
+| A newly added route is accidentally public or unprotected | route inventory test: public allow-list, 401-without-credentials sweep, reviewed list of service-enforced routes | `security-matrix.test.ts` |
+| Token exfiltration via media URL / redirect (SSRF) | HTTPS + exact Meta hosts + no userinfo/port + no redirects + size cap | media guard tests |
+| Customer message lost after a crash mid-webhook | stale unfinished webhook events are re-processed on redelivery | `webhook-recovery.test.ts` |
+| XSS/clickjacking/mixed content in the web app | CSP, frame denial, nosniff, referrer and permissions policies, HSTS | headers in `next.config.ts` (E2E checks them) |
+| Data-principal erasure leaves personal data behind | one `SECURITY DEFINER` function deletes across 15+ tables (incl. raw webhook payloads and merged duplicates), tenant verified, content-free audit | `privacy.test.ts` |
+| Operator error during recovery | restore drill script verifies counts, RLS, grants, constraints, isolation | `scripts/backup-restore-drill.sh` |
+| Mail credentials or content in clear | STARTTLS/TLS required in production, authenticated SMTP | env validation |
+
 ## Known gaps / accepted for now
+See `docs/security-review.md` for the current prioritised list (KMS provider, bot protection, MFA, retention job, CSP nonces).
+
+## Historical gaps (Phases 1-6; some now closed)
 - **Razorpay has never been called for real.** The live client follows the documented API; every billing test uses the mock provider (with real HMAC signatures). Verify with test-mode keys before relying on it.
 - Invoice SAC code / layout not reviewed by an accountant.
 - Platform-admin impersonation is not built (deliberately).

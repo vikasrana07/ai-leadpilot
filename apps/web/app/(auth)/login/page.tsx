@@ -25,7 +25,7 @@ function LoginForm() {
     try {
       const ctx = await authApi.login(values);
       qc.setQueryData(ME_KEY, ctx);
-      router.replace(next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard');
+      router.replace(next && /^\/(?![/\\])/.test(next) ? next : '/dashboard');
     } catch (e) { handleApiError(e); }
   }
 

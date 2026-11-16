@@ -1,3 +1,4 @@
+import { series } from '../common/series.js';
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import {
   leadListQuerySchema, lostReasonSchema, lostReasonUpdateSchema, stageCreateSchema, stageReorderSchema, stageUpdateSchema,
@@ -33,11 +34,7 @@ export class PipelineService {
   async stages(ctx: TenantRequestContext) {
     const a = actorFrom(ctx);
     return this.db.tenantTx(ctx, async (tx) => {
-      const [stages, reasons, counts] = await Promise.all([
-        tx.pipelineStage.findMany({ where: { tenantId: ctx.tenantId }, orderBy: { position: 'asc' } }),
-        tx.lostReason.findMany({ where: { tenantId: ctx.tenantId }, orderBy: { position: 'asc' } }),
-        tx.lead.groupBy({ by: ['stageId'], where: this.leads.buildWhere(a, {}), _count: { _all: true } }),
-      ]);
+      const [stages, reasons, counts] = await series([ () => tx.pipelineStage.findMany({ where: { tenantId: ctx.tenantId }, orderBy: { position: 'asc' } }), () => tx.lostReason.findMany({ where: { tenantId: ctx.tenantId }, orderBy: { position: 'asc' } }), () => tx.lead.groupBy({ by: ['stageId'], where: this.leads.buildWhere(a, {}), _count: { _all: true } })]);
       const byStage = new Map(counts.map((c) => [c.stageId, c._count._all]));
       return {
         stages: stages.map((s) => ({ id: s.id, key: s.key, name: s.name, position: s.position, kind: s.kind, qualifies: s.qualifies, canCloseWon: s.canCloseWon, leadCount: byStage.get(s.id) ?? 0 })),
@@ -54,7 +51,7 @@ export class PipelineService {
       const cols = [];
       for (const s of stages) {
         const where = { AND: [base, { stageId: s.id }] };
-        const [total, rows] = await Promise.all([tx.lead.count({ where }), tx.lead.findMany({ where, orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }], take: CARDS_PER_STAGE, include: LEAD_INCLUDE })]);
+        const [total, rows] = await series([ () => tx.lead.count({ where }), () => tx.lead.findMany({ where, orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }], take: CARDS_PER_STAGE, include: LEAD_INCLUDE })]);
         const names = new Map<string, string>();
         const ms = await tx.membership.findMany({ where: { id: { in: rows.map((r) => r.assignedMembershipId).filter((x): x is string => x !== null) } }, select: { id: true, userId: true } });
         const us = await tx.user.findMany({ where: { id: { in: ms.map((m) => m.userId) } }, select: { id: true, name: true } });

@@ -1,3 +1,4 @@
+import { series } from '../common/series.js';
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import type { BuyingTimeline, Prisma } from '@leadpilot/database';
 import { leadFieldsSchema, TIMELINES, type ImportInput, type LeadListQuery } from '@leadpilot/validation';
@@ -75,11 +76,7 @@ export class LeadImportService {
     if (!colField.includes('name')) throw new BadRequestException({ code: 'missing_name_column', message: 'The file needs a "name" column' });
 
     return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, async (tx) => {
-      const [stages, sources, members, defs] = await Promise.all([
-        tx.pipelineStage.findMany({ where: { tenantId: a.tenantId } }), tx.leadSource.findMany({ where: { tenantId: a.tenantId } }),
-        tx.membership.findMany({ where: { tenantId: a.tenantId, status: 'ACTIVE' }, select: { id: true, userId: true } }),
-        tx.customFieldDefinition.findMany({ where: { tenantId: a.tenantId, entity: 'lead' } }),
-      ]);
+      const [stages, sources, members, defs] = await series([ () => tx.pipelineStage.findMany({ where: { tenantId: a.tenantId } }), () => tx.leadSource.findMany({ where: { tenantId: a.tenantId } }), () => tx.membership.findMany({ where: { tenantId: a.tenantId, status: 'ACTIVE' }, select: { id: true, userId: true } }), () => tx.customFieldDefinition.findMany({ where: { tenantId: a.tenantId, entity: 'lead' } })]);
       const users = await tx.user.findMany({ where: { id: { in: members.map((m) => m.userId) } }, select: { id: true, email: true } });
       const memberByEmail = new Map(members.map((m) => [users.find((u) => u.id === m.userId)?.email.toLowerCase() ?? '', m.id]));
       const defaultStage = stages.filter((s) => s.kind === 'OPEN').sort((x, y) => x.position - y.position)[0];

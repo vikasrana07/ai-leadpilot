@@ -1,3 +1,4 @@
+import { series } from '../common/series.js';
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import type { Prisma } from '@leadpilot/database';
 import { type PlanInput, FEATURE_KEYS, LIMIT_KEYS, withGst } from '@leadpilot/validation';
@@ -69,12 +70,7 @@ export class PlatformService {
     return this.db.tenantTx({ tenantId: id }, async (tx) => {
       const found = await tx.tenant.findUnique({ where: { id }, select: { id: true } });
       if (!found) throw new NotFoundException({ code: 'not_found', message: 'Tenant not found' });
-      const [t, sub, e, usage, invoices, audit] = await Promise.all([
-        tx.tenant.findUniqueOrThrow({ where: { id }, select: { id: true, name: true, email: true, industry: true, planKey: true, status: true, createdAt: true, timezone: true } }),
-        tx.subscription.findUnique({ where: { tenantId: id } }), this.ent.compute(tx, id), this.ent.usage(tx, id),
-        tx.invoice.findMany({ where: { tenantId: id }, orderBy: { issuedAt: 'desc' }, take: 10, select: { id: true, number: true, totalMinor: true, issuedAt: true } }),
-        tx.auditLog.findMany({ where: { tenantId: id }, orderBy: { createdAt: 'desc' }, take: 15, select: { action: true, createdAt: true } }),
-      ]);
+      const [t, sub, e, usage, invoices, audit] = await series([ () => tx.tenant.findUniqueOrThrow({ where: { id }, select: { id: true, name: true, email: true, industry: true, planKey: true, status: true, createdAt: true, timezone: true } }), () => tx.subscription.findUnique({ where: { tenantId: id } }), () => this.ent.compute(tx, id), () => this.ent.usage(tx, id), () => tx.invoice.findMany({ where: { tenantId: id }, orderBy: { issuedAt: 'desc' }, take: 10, select: { id: true, number: true, totalMinor: true, issuedAt: true } }), () => tx.auditLog.findMany({ where: { tenantId: id }, orderBy: { createdAt: 'desc' }, take: 15, select: { action: true, createdAt: true } })]);
       const owners = await tx.membership.findMany({ where: { tenantId: id, status: 'ACTIVE', role: { key: 'owner' } }, select: { userId: true } });
       const ownerUsers = await this.db.prisma.user.findMany({ where: { id: { in: owners.map((o) => o.userId) } }, select: { name: true, email: true } });
       return {

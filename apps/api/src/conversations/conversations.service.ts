@@ -1,3 +1,4 @@
+import { series } from '../common/series.js';
 import { EntitlementsService, paymentRequired } from '../billing/entitlements.service.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma, type TxClient } from '@leadpilot/database';
@@ -73,11 +74,7 @@ export class ConversationsService {
         and.push({ leadId: { in: leads.map((l) => l.id) } });
       }
       const where = { AND: and };
-      const [total, rows, unreadTotal] = await Promise.all([
-        tx.conversation.count({ where }),
-        tx.conversation.findMany({ where, orderBy: [{ lastMessageAt: 'desc' }, { id: 'asc' }], skip: (q.page - 1) * q.pageSize, take: q.pageSize, include: { channel: { select: { id: true, type: true, name: true } } } }),
-        tx.conversation.count({ where: { AND: [{ tenantId: a.tenantId }, this.scope(a), { unreadCount: { gt: 0 } }, { status: 'OPEN' }] } }),
-      ]);
+      const [total, rows, unreadTotal] = await series([ () => tx.conversation.count({ where }), () => tx.conversation.findMany({ where, orderBy: [{ lastMessageAt: 'desc' }, { id: 'asc' }], skip: (q.page - 1) * q.pageSize, take: q.pageSize, include: { channel: { select: { id: true, type: true, name: true } } } }), () => tx.conversation.count({ where: { AND: [{ tenantId: a.tenantId }, this.scope(a), { unreadCount: { gt: 0 } }, { status: 'OPEN' }] } })]);
       const leads = await tx.lead.findMany({ where: { id: { in: rows.map((r) => r.leadId) } }, select: { id: true, name: true, phone: true, email: true, score: true, temperature: true } });
       const byLead = new Map(leads.map((l) => [l.id, l]));
       const names = await this.assigneeNames(tx, rows.map((r) => r.assignedMembershipId));

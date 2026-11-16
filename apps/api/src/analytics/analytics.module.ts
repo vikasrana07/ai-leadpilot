@@ -1,3 +1,4 @@
+import { series } from '../common/series.js';
 import { BadRequestException, Controller, ForbiddenException, Get, Inject, Injectable, Module, Query } from '@nestjs/common';
 import { Prisma } from '@leadpilot/database';
 import { analyticsQuerySchema, type AnalyticsQuery } from '@leadpilot/validation';
@@ -41,12 +42,7 @@ export class AnalyticsService {
       const convertedIn = (r: { from: Date; to: Date }) => tx.stageTransition.findMany({ where: { tenantId: ctx.tenantId, createdAt: { gte: r.from, lt: r.to }, lead: { is: { ...base } } }, select: { leadId: true, toStageId: true }, distinct: ['leadId', 'toStageId'] })
         .then(async (rows) => { const won = new Set((await tx.pipelineStage.findMany({ where: { tenantId: ctx.tenantId, kind: 'WON' }, select: { id: true } })).map((s) => s.id)); return new Set(rows.filter((r2) => won.has(r2.toStageId)).map((r2) => r2.leadId)).size; });
 
-      const [total, newCur, newPrev, qualCur, qualPrev, hot, convCur, convPrev, wonCohort, wonCohortPrev] = await Promise.all([
-        tx.lead.count({ where: base }), tx.lead.count({ where: inRange(range) }), tx.lead.count({ where: inRange(prev) }),
-        tx.lead.count({ where: { AND: [inRange(range), qualifiesStage] } }), tx.lead.count({ where: { AND: [inRange(prev), qualifiesStage] } }),
-        tx.lead.count({ where: hotNow }), convertedIn(range), convertedIn(prev),
-        tx.lead.count({ where: { AND: [inRange(range), wonNow] } }), tx.lead.count({ where: { AND: [inRange(prev), wonNow] } }),
-      ]);
+      const [total, newCur, newPrev, qualCur, qualPrev, hot, convCur, convPrev, wonCohort, wonCohortPrev] = await series([ () => tx.lead.count({ where: base }), () => tx.lead.count({ where: inRange(range) }), () => tx.lead.count({ where: inRange(prev) }), () => tx.lead.count({ where: { AND: [inRange(range), qualifiesStage] } }), () => tx.lead.count({ where: { AND: [inRange(prev), qualifiesStage] } }), () => tx.lead.count({ where: hotNow }), () => convertedIn(range), () => convertedIn(prev), () => tx.lead.count({ where: { AND: [inRange(range), wonNow] } }), () => tx.lead.count({ where: { AND: [inRange(prev), wonNow] } })]);
       const rate = newCur ? Math.round((wonCohort / newCur) * 1000) / 10 : 0;
       const ratePrev = newPrev ? Math.round((wonCohortPrev / newPrev) * 1000) / 10 : 0;
 
@@ -65,16 +61,7 @@ export class AnalyticsService {
         if (trend.length > 400) break;
       }
 
-      const [stages, stageCounts, sourceCounts, sources, agentRows, recent, hotList, followups] = await Promise.all([
-        tx.pipelineStage.findMany({ where: { tenantId: ctx.tenantId }, orderBy: { position: 'asc' } }),
-        tx.lead.groupBy({ by: ['stageId'], where: base, _count: { _all: true } }),
-        tx.lead.groupBy({ by: ['sourceId'], where: inRange(range), _count: { _all: true } }),
-        tx.leadSource.findMany({ where: { tenantId: ctx.tenantId }, select: { id: true, name: true } }),
-        all || ctx.permissions.has('analytics:read:team') ? tx.lead.groupBy({ by: ['assignedMembershipId'], where: { ...base, stage: { kind: 'OPEN' } }, _count: { _all: true } }) : Promise.resolve([]),
-        tx.lead.findMany({ where: base, orderBy: { createdAt: 'desc' }, take: 5, select: { id: true, name: true, createdAt: true, stage: { select: { name: true } }, source: { select: { name: true } }, temperature: true } }),
-        tx.lead.findMany({ where: hotNow, orderBy: [{ lastContactedAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'asc' }], take: 5, select: { id: true, name: true, score: true, lastContactedAt: true, nextFollowUpAt: true, stage: { select: { name: true } } } }),
-        tx.lead.findMany({ where: { ...base, stage: { kind: 'OPEN' }, nextFollowUpAt: { gte: new Date(), lt: addDays(startOfDay(new Date(), tz), 8, tz) } }, orderBy: { nextFollowUpAt: 'asc' }, take: 5, select: { id: true, name: true, nextFollowUpAt: true } }),
-      ]);
+      const [stages, stageCounts, sourceCounts, sources, agentRows, recent, hotList, followups] = await series([ () => tx.pipelineStage.findMany({ where: { tenantId: ctx.tenantId }, orderBy: { position: 'asc' } }), () => tx.lead.groupBy({ by: ['stageId'], where: base, _count: { _all: true } }), () => tx.lead.groupBy({ by: ['sourceId'], where: inRange(range), _count: { _all: true } }), () => tx.leadSource.findMany({ where: { tenantId: ctx.tenantId }, select: { id: true, name: true } }), () => all || ctx.permissions.has('analytics:read:team') ? tx.lead.groupBy({ by: ['assignedMembershipId'], where: { ...base, stage: { kind: 'OPEN' } }, _count: { _all: true } }) : Promise.resolve([]), () => tx.lead.findMany({ where: base, orderBy: { createdAt: 'desc' }, take: 5, select: { id: true, name: true, createdAt: true, stage: { select: { name: true } }, source: { select: { name: true } }, temperature: true } }), () => tx.lead.findMany({ where: hotNow, orderBy: [{ lastContactedAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'asc' }], take: 5, select: { id: true, name: true, score: true, lastContactedAt: true, nextFollowUpAt: true, stage: { select: { name: true } } } }), () => tx.lead.findMany({ where: { ...base, stage: { kind: 'OPEN' }, nextFollowUpAt: { gte: new Date(), lt: addDays(startOfDay(new Date(), tz), 8, tz) } }, orderBy: { nextFollowUpAt: 'asc' }, take: 5, select: { id: true, name: true, nextFollowUpAt: true } })]);
       const stageCount = new Map(stageCounts.map((c) => [c.stageId, c._count._all]));
       const srcName = new Map(sources.map((s) => [s.id, s.name]));
       const wonStageIds = stages.filter((s) => s.kind === 'WON').map((s) => s.id);

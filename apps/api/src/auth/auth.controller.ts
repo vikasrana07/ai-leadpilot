@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import {
@@ -61,7 +61,7 @@ export class AuthController {
   async refresh(@Body() body: { refreshToken?: string } | undefined, @Req() req: AppRequest, @Res({ passthrough: true }) res: Response) {
     const cookies = req.cookies as Record<string, string> | undefined;
     const token = cookies?.[REFRESH_COOKIE] ?? (typeof body?.refreshToken === 'string' ? body.refreshToken : undefined);
-    if (!token) return res.status(401).json({ error: { code: 'invalid_refresh', message: 'Session expired', requestId: req.requestId } });
+    if (!token) throw new UnauthorizedException({ code: 'invalid_refresh', message: 'Session expired' });
     return this.respond(req, res, await this.auth.refresh(token, this.meta(req)));
   }
 

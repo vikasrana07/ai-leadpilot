@@ -46,6 +46,9 @@ export function mapWaMessage(m: z.infer<typeof waMessage>): InboundMessage {
   return media('image', 'IMAGE') ?? media('video', 'VIDEO') ?? media('audio', 'AUDIO') ?? media('document', 'DOCUMENT') ?? { ...base, type: 'TEXT', body: `[Unsupported message type: ${m.type}]` };
 }
 
+/** An unfinished webhook older than this is presumed crashed and is re-processed when Meta redelivers it. */
+export const STALE_WEBHOOK_MS = 45_000;
+
 function safeEqual(a: string, b: string): boolean {
   const x = Buffer.from(a); const y = Buffer.from(b);
   return x.length === y.length && timingSafeEqual(x, y);
@@ -98,7 +101,14 @@ export class WhatsappWebhookController {
 
     const payloadHash = createHash('sha256').update(raw).digest('hex');
     const fresh = await this.db.tenantTx({ tenantId: ch.tenant_id }, (tx) => tx.webhookEvent.createMany({ data: [{ id: uuidv7(), tenantId: ch.tenant_id, channelId: ch.id, provider: 'whatsapp', payloadHash, payload: json as object }], skipDuplicates: true }));
-    if (fresh.count === 0) return { status: 'duplicate' };
+    if (fresh.count === 0) {
+      // A row that exists but never reached `processed` means an earlier attempt crashed mid-way (the error path deletes the row, a crash cannot).
+      // Treating Meta's redelivery as a duplicate would silently lose that customer message, so re-run it once the first attempt is clearly dead.
+      // Ingest is idempotent (messages are unique per provider message id), so re-processing is safe.
+      const prior = await this.db.tenantTx({ tenantId: ch.tenant_id }, (tx) => tx.webhookEvent.findUnique({ where: { channelId_payloadHash: { channelId: ch.id, payloadHash } }, select: { status: true, createdAt: true } }));
+      const stale = prior && prior.status !== 'processed' && Date.now() - prior.createdAt.getTime() > STALE_WEBHOOK_MS;
+      if (!stale) return { status: 'duplicate' };
+    }
 
     try {
       for (const entry of parsed.data.entry) for (const change of entry.changes) {

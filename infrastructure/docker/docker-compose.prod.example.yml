@@ -1,0 +1,89 @@
+# EXAMPLE production-shaped compose file for a single host or for reading alongside docs/deployment.md.
+# UNVERIFIED as a whole: the images were built and the API image was booted against a dev Postgres/Redis (see docs/deployment.md),
+# but this file itself has not been deployed. It deliberately contains NO databases: use managed services.
+#
+#   cp .env.prod.example .env.prod   # create it yourself; never commit it. Variables are listed in docs/deployment.md.
+#   docker compose -f docker-compose.prod.example.yml --env-file .env.prod up -d
+name: leadpilot-prod
+
+x-app-env: &app-env
+  NODE_ENV: production
+  API_PORT: "4000"
+  WEB_ORIGIN: ${WEB_ORIGIN:?https://app.example.com}
+  PUBLIC_API_URL: ${PUBLIC_API_URL:?https://api.example.com}
+  # --- EXTERNAL MANAGED SERVICES (not defined here) ---
+  # Postgres 17 + pgvector (e.g. RDS). The API/worker connect as the NON-owner app role so row-level security applies.
+  DATABASE_URL: ${DATABASE_URL:?postgresql://leadpilot_app:...@db-host:5432/leadpilot?sslmode=require}
+  # Redis 7 (e.g. ElastiCache): BullMQ queues + shared rate-limit counters.
+  REDIS_URL: ${REDIS_URL:?rediss://redis-host:6379}
+  # S3 (leave S3_ENDPOINT unset for AWS S3; set S3_ACCESS_KEY/S3_SECRET_KEY only if not using an IAM task role: check docs/deployment.md)
+  S3_REGION: ${S3_REGION:-ap-south-1}
+  S3_BUCKET: ${S3_BUCKET:?leadpilot-files-prod}
+  S3_FORCE_PATH_STYLE: "false"
+  # ClamAV daemon reachable on the private network (sidecar/service). Production refuses VIRUS_SCAN_MODE=mock.
+  VIRUS_SCAN_MODE: clamav
+  CLAMAV_HOST: ${CLAMAV_HOST:?clamav}
+  CLAMAV_PORT: "3310"
+  # --- secrets (inject from your secret manager; never write real values into this file) ---
+  JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?}
+  LOCAL_MASTER_KEY: ${LOCAL_MASTER_KEY:?}          # see docs/deployment.md: a KMS-backed key provider is NOT implemented yet
+  PLATFORM_JWT_SECRET: ${PLATFORM_JWT_SECRET:?}
+  # --- providers (production refuses mock modes) ---
+  WHATSAPP_MODE: live
+  AI_PROVIDER: openai
+  OPENAI_API_KEY: ${OPENAI_API_KEY:?}
+  RAZORPAY_MODE: live
+  RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:?}
+  RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:?}
+  RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:?}
+  SIGNUP_PLAN: ${SIGNUP_PLAN:-growth}
+  SELLER_LEGAL_NAME: ${SELLER_LEGAL_NAME:?}
+  SELLER_GSTIN: ${SELLER_GSTIN:?}
+  SELLER_STATE_CODE: ${SELLER_STATE_CODE:?}
+  SELLER_ADDRESS: ${SELLER_ADDRESS:?}
+  INVOICE_SAC: ${INVOICE_SAC:-998314}
+  SMTP_HOST: ${SMTP_HOST:?}
+  SMTP_PORT: ${SMTP_PORT:-587}
+  MAIL_FROM: ${MAIL_FROM:?}
+
+services:
+  api:
+    image: ${API_IMAGE:-leadpilot-api:latest}
+    command: ["node", "dist/main.js"]
+    environment:
+      <<: *app-env
+      WORKERS_ENABLED: "false"       # API replicas serve HTTP only; the worker service does background work
+    ports: ["4000:4000"]
+    restart: unless-stopped
+    # The image HEALTHCHECK is liveness. Point your load balancer at GET /health/ready (checks the database).
+
+  worker:
+    image: ${API_IMAGE:-leadpilot-api:latest}    # same image as the API
+    command: ["node", "dist/worker.js"]          # sets WORKERS_ENABLED=true itself; no HTTP listener
+    environment:
+      <<: *app-env
+    healthcheck: { disable: true }               # inherited HTTP healthcheck does not apply (no listener)
+    restart: unless-stopped
+    # Safe to run more than one (SKIP LOCKED outbox claims, compare-and-set run claims, event-mark scanners). Start with 1-2.
+
+  web:
+    image: ${WEB_IMAGE:-leadpilot-web:latest}    # built with --build-arg NEXT_PUBLIC_API_URL=<public API URL>
+    ports: ["3100:3100"]
+    restart: unless-stopped
+
+  # One-off migration job: run it BEFORE rolling out new api/worker versions, as the schema OWNER (never the app role).
+  #   docker compose -f docker-compose.prod.example.yml --profile ops run --rm migrate
+  migrate:
+    image: ${API_IMAGE:-leadpilot-api:latest}
+    profiles: ["ops"]
+    working_dir: /app/node_modules/@leadpilot/database
+    environment:
+      DATABASE_OWNER_URL: ${DATABASE_OWNER_URL:?postgresql://leadpilot_owner:...@db-host:5432/leadpilot?sslmode=require}
+      DATABASE_URL: ${DATABASE_URL:?}
+      # prisma.config.ts rejects an empty shadow URL and a shadow equal to the main DB, even for `migrate deploy` (which never uses it).
+      # Any URL with a DIFFERENT database name works, e.g. the owner URL with a different db name. (Verified: see docs/deployment.md.)
+      DATABASE_SHADOW_URL: ${DATABASE_SHADOW_URL:?postgresql://leadpilot_owner:...@db-host:5432/unused_shadow}
+    command: ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/sync-permissions.js && node dist/sync-system-roles.js && node dist/backfill-packs.js"]
+
+# A TLS-terminating reverse proxy / load balancer (ALB, nginx, Caddy) sits in front of api and web.
+# The API sets `trust proxy` to 1 hop, so exactly one proxy should sit in front of it for client IPs and rate limits to be right.

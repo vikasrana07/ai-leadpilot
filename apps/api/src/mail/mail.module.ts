@@ -8,7 +8,12 @@ export class MailService {
   private readonly log = new Logger('Mail');
   private readonly transport: Transporter;
   constructor(@Inject(ENV) private readonly env: Env) {
-    this.transport = createTransport({ host: env.SMTP_HOST, port: env.SMTP_PORT, secure: false, ignoreTLS: env.NODE_ENV !== 'production' });
+    this.transport = createTransport({
+      host: env.SMTP_HOST, port: env.SMTP_PORT, secure: env.SMTP_PORT === 465,
+      // Local Mailpit speaks plain SMTP; production must negotiate TLS (STARTTLS on 587, implicit TLS on 465).
+      ...(env.NODE_ENV === 'production' ? { requireTLS: env.SMTP_PORT !== 465 } : { ignoreTLS: true }),
+      ...(env.SMTP_USER && env.SMTP_PASS ? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASS } } : {}),
+    });
   }
 
   /** Mail failures never break the calling flow; they are logged (no recipient content, no tokens). */

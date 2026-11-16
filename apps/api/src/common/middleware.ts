@@ -37,3 +37,26 @@ function safeOrigin(referer: string | undefined): string | undefined {
   if (!referer) return undefined;
   try { return new URL(referer).origin; } catch { return undefined; }
 }
+
+/**
+ * One structured JSON line per request (stdout), so latency, error rate and per-tenant traffic can be measured from logs without extra
+ * infrastructure. Carries requestId, tenantId and userId when known. Uses the route PATTERN (never raw ids, query strings or bodies),
+ * so no personal data or tokens reach the logs. Health probes are skipped.
+ */
+export function accessLogMiddleware(enabled: boolean) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!enabled || req.path.startsWith('/health')) return next();
+    const start = process.hrtime.bigint();
+    res.on('finish', () => {
+      const r = req as AppRequest;
+      const route = (r.route as { path?: string } | undefined)?.path;
+      process.stdout.write(`${JSON.stringify({
+        ts: new Date().toISOString(), level: res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info', msg: 'request',
+        requestId: r.requestId, method: req.method, route: route ? `${req.baseUrl}${route}` : 'unmatched', status: res.statusCode,
+        durationMs: Math.round(Number(process.hrtime.bigint() - start) / 1e5) / 10,
+        ...(r.tenant?.tenantId ? { tenantId: r.tenant.tenantId } : {}), ...(r.auth?.userId ? { userId: r.auth.userId } : {}),
+      })}\n`);
+    });
+    next();
+  };
+}

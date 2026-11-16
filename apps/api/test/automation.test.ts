@@ -261,7 +261,8 @@ describe('failures are retried, then surfaced', () => {
       const board = await ctx.http().get('/pipeline/stages').set(auth(owner.accessToken));
       await ctx.http().post(`/leads/${l}/stage`).set(auth(owner.accessToken)).send({ stageId: board.body.stages.filter((s: { kind: string }) => s.kind === 'OPEN')[1].id });
       await relay.drainOnce(200);
-      const runId = (await q<{ id: string }>(`SELECT id FROM automation_runs WHERE automation_id = $1`, [id]))[0]?.id as string;
+      // leftover events from earlier tests can also match this automation: pick the run for THIS lead (was an order-dependent flake)
+      const runId = (await q<{ id: string }>(`SELECT id FROM automation_runs WHERE automation_id = $1 AND lead_id = $2 ORDER BY created_at LIMIT 1`, [id, l]))[0]?.id as string;
       await expect(engine.execute(owner.tenantId, runId, false)).rejects.toThrow('provider exploded');
       let [run] = await runsOf(id);
       expect(run).toMatchObject({ status: 'QUEUED', attempts: 1 }); expect(run?.error).toContain('provider exploded');

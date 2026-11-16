@@ -1,3 +1,4 @@
+import { series } from '../common/series.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma, type TxClient } from '@leadpilot/database';
 import type { BulkInput, CreateLeadInput, LeadListQuery, StageChangeInput, UpdateLeadInput } from '@leadpilot/validation';
@@ -144,10 +145,7 @@ export class LeadsService {
         q.sort === 'name' ? [{ name: q.dir }, { id: 'asc' }]
         : q.sort === 'score' || q.sort === 'nextFollowUpAt' ? [{ [q.sort]: { sort: q.dir, nulls: 'last' } }, { id: 'asc' }]
         : [{ [q.sort]: q.dir }, { id: 'asc' }];
-      const [total, rows] = await Promise.all([
-        tx.lead.count({ where }),
-        tx.lead.findMany({ where, orderBy, skip: (q.page - 1) * q.pageSize, take: q.pageSize, include: LEAD_INCLUDE }),
-      ]);
+      const [total, rows] = await series([ () => tx.lead.count({ where }), () => tx.lead.findMany({ where, orderBy, skip: (q.page - 1) * q.pageSize, take: q.pageSize, include: LEAD_INCLUDE })]);
       return { items: await this.dto(tx, rows), total, page: q.page, pageSize: q.pageSize };
     });
   }
@@ -377,11 +375,7 @@ export class LeadsService {
   /** Lookup data for forms and filters: sources, tags and the tenant's custom field definitions. */
   meta(a: Actor) {
     return this.db.tenantTx({ tenantId: a.tenantId }, async (tx) => {
-      const [sources, tags, customFields] = await Promise.all([
-        tx.leadSource.findMany({ where: { tenantId: a.tenantId }, orderBy: { name: 'asc' }, select: { id: true, key: true, name: true } }),
-        tx.tag.findMany({ where: { tenantId: a.tenantId }, orderBy: { name: 'asc' }, select: { id: true, name: true, color: true } }),
-        tx.customFieldDefinition.findMany({ where: { tenantId: a.tenantId, entity: 'lead' }, orderBy: { position: 'asc' }, select: { key: true, label: true, type: true, options: true, required: true } }),
-      ]);
+      const [sources, tags, customFields] = await series([ () => tx.leadSource.findMany({ where: { tenantId: a.tenantId }, orderBy: { name: 'asc' }, select: { id: true, key: true, name: true } }), () => tx.tag.findMany({ where: { tenantId: a.tenantId }, orderBy: { name: 'asc' }, select: { id: true, name: true, color: true } }), () => tx.customFieldDefinition.findMany({ where: { tenantId: a.tenantId, entity: 'lead' }, orderBy: { position: 'asc' }, select: { key: true, label: true, type: true, options: true, required: true } })]);
       return { sources, tags, customFields };
     });
   }

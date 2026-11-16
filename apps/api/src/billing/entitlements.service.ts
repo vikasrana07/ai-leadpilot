@@ -1,3 +1,4 @@
+import { series } from '../common/series.js';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { TxClient } from '@leadpilot/database';
 import { FEATURE_KEYS, LIMIT_KEYS, type FeatureKey, type LimitKey, type SubscriptionStatusKey } from '@leadpilot/validation';
@@ -106,14 +107,7 @@ export class EntitlementsService {
     const tz = (await tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { timezone: true } })).timezone;
     const month = resolveRange({ range: 'month' }, tz, now);
     const inRange = { gte: month.from, lt: month.to };
-    const [seats, invites, automations, docs, ai, wa] = await Promise.all([
-      tx.membership.count({ where: { tenantId, status: 'ACTIVE' } }),
-      tx.invitation.count({ where: { tenantId, acceptedAt: null, revokedAt: null, expiresAt: { gt: now } } }),
-      tx.automation.count({ where: { tenantId, enabled: true } }),
-      tx.knowledgeDocument.aggregate({ where: { tenantId }, _sum: { sizeBytes: true } }),
-      tx.aiRun.aggregate({ where: { tenantId, createdAt: inRange }, _sum: { inputTokens: true, outputTokens: true } }),
-      tx.message.count({ where: { tenantId, direction: 'OUTBOUND', senderType: { in: ['AGENT', 'AI', 'SYSTEM'] }, conversation: { channel: { type: 'WHATSAPP' } }, createdAt: inRange } }),
-    ]);
+    const [seats, invites, automations, docs, ai, wa] = await series([ () => tx.membership.count({ where: { tenantId, status: 'ACTIVE' } }), () => tx.invitation.count({ where: { tenantId, acceptedAt: null, revokedAt: null, expiresAt: { gt: now } } }), () => tx.automation.count({ where: { tenantId, enabled: true } }), () => tx.knowledgeDocument.aggregate({ where: { tenantId }, _sum: { sizeBytes: true } }), () => tx.aiRun.aggregate({ where: { tenantId, createdAt: inRange }, _sum: { inputTokens: true, outputTokens: true } }), () => tx.message.count({ where: { tenantId, direction: 'OUTBOUND', senderType: { in: ['AGENT', 'AI', 'SYSTEM'] }, conversation: { channel: { type: 'WHATSAPP' } }, createdAt: inRange } })]);
     return { seats: seats + invites, active_automations: automations, knowledge_mb: Math.ceil((docs._sum.sizeBytes ?? 0) / MB), ai_tokens_monthly: (ai._sum.inputTokens ?? 0) + (ai._sum.outputTokens ?? 0), whatsapp_messages_monthly: wa };
   }
 }

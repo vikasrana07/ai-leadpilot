@@ -1,3 +1,4 @@
+import { series } from '../common/series.js';
 import { EntitlementsService } from '../billing/entitlements.service.js';
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { Prisma } from '@leadpilot/database';
@@ -89,18 +90,9 @@ export class AiOrchestrator implements OnModuleInit {
     const t = e.tenantId;
     // ---- 1. load everything needed, in one tenant-scoped read
     const ctx = await this.db.tenantTx({ tenantId: t }, async (tx) => {
-      const [assistant, convo, tenant] = await Promise.all([
-        tx.aiAssistant.findUnique({ where: { tenantId: t } }),
-        tx.conversation.findUnique({ where: { id: e.conversationId }, include: { channel: { select: { type: true } } } }),
-        tx.tenant.findUniqueOrThrow({ where: { id: t } }),
-      ]);
+      const [assistant, convo, tenant] = await series([ () => tx.aiAssistant.findUnique({ where: { tenantId: t } }), () => tx.conversation.findUnique({ where: { id: e.conversationId }, include: { channel: { select: { type: true } } } }), () => tx.tenant.findUniqueOrThrow({ where: { id: t } })]);
       if (!assistant?.enabled || !convo || convo.status !== 'OPEN' || convo.mode !== 'AI') return null;
-      const [lead, recent, aiCount, prior] = await Promise.all([
-        tx.lead.findUniqueOrThrow({ where: { id: convo.leadId } }),
-        tx.message.findMany({ where: { conversationId: convo.id, senderType: { not: 'SYSTEM' } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: HISTORY }),
-        tx.message.count({ where: { conversationId: convo.id, senderType: 'AI' } }),
-        tx.aiRun.findFirst({ where: { conversationId: convo.id, status: { in: ['COMPLETED', 'SKIPPED'] } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { trace: true } }),
-      ]);
+      const [lead, recent, aiCount, prior] = await series([ () => tx.lead.findUniqueOrThrow({ where: { id: convo.leadId } }), () => tx.message.findMany({ where: { conversationId: convo.id, senderType: { not: 'SYSTEM' } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: HISTORY }), () => tx.message.count({ where: { conversationId: convo.id, senderType: 'AI' } }), () => tx.aiRun.findFirst({ where: { conversationId: convo.id, status: { in: ['COMPLETED', 'SKIPPED'] } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { trace: true } })]);
       return { assistant, convo, tenant, lead, messages: recent.reverse(), aiCount, answeredThrough: (prior?.trace as Trace | null)?.answeredThrough ?? null };
     });
     if (!ctx) return;

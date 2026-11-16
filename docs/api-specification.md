@@ -92,3 +92,7 @@ All `/billing/*` routes keep working when a workspace is read-only. `GET /billin
 
 ## Platform console (`/platform/*`, separate auth; disabled unless `PLATFORM_JWT_SECRET` is set)
 `POST /platform/auth/login|logout` · `GET /platform/me` · `GET /platform/metrics` (MRR in paise ex-GST, tenants, subscriptions, by plan, AI tokens) · `GET /platform/tenants?search&status&plan&limit&offset` · `GET /platform/tenants/:id` · `POST /platform/tenants/:id/{suspend|reactivate}` `{reason}` · `POST /platform/tenants/:id/plan` `{planKey, mode: complimentary|trial, days?, reason}` (409 `has_paid_subscription`) · `GET|POST /platform/plans` · `PATCH /platform/plans/:key` · `GET /platform/audit`. Reasons are mandatory and recorded in both the platform log and the tenant's audit log.
+
+## Privacy (Phase 7, data-principal rights)
+`GET /privacy/leads/:id/export` (`lead:export` + `lead:read:all`: managers and owners) returns everything held about the lead (profile, notes, activity, consents, scores, appointments, tasks, conversations and messages, merged duplicates). `POST /privacy/leads/:id/erase` `{reason, confirm: "ERASE"}` (`lead:delete`: owners) irreversibly deletes it all, including raw webhook payloads mentioning the phone number; returns row counts; 404 for unknown or other-tenant ids. Both are audited (`privacy.lead_exported`, `privacy.lead_erased`; counts and reason only).
+`GET /health` liveness · `GET /health/ready` → `{status, db, redis}` (503 only when the database is down).

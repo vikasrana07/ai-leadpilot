@@ -1,3 +1,4 @@
+import { series } from '../common/series.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Prisma, type TxClient } from '@leadpilot/database';
 import { ENTITLEMENT_LABELS, FEATURE_KEYS, financialYear, GST_RATE_PERCENT, LIMIT_KEYS, splitGst, STATE_CODES, withGst, type BillingProfileInput, type LimitKey } from '@leadpilot/validation';
@@ -187,11 +188,7 @@ export class BillingService {
   /** Issues a GST invoice for a captured payment, once. Inside the caller's transaction so the gap-free number rolls back with a failure. */
   private async issueInvoice(tx: TxClient, tenantId: string, p: { paymentId: string; totalMinor: number; planKey: string; periodStart: Date | null; periodEnd: Date | null }): Promise<string | null> {
     if (await tx.payment.findUnique({ where: { providerPaymentId: p.paymentId } })) return null; // already recorded (duplicate delivery)
-    const [plan, profile, tenant] = await Promise.all([
-      tx.plan.findUnique({ where: { key: p.planKey } }),
-      tx.billingProfile.findUnique({ where: { tenantId } }),
-      tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { name: true } }),
-    ]);
+    const [plan, profile, tenant] = await series([ () => tx.plan.findUnique({ where: { key: p.planKey } }), () => tx.billingProfile.findUnique({ where: { tenantId } }), () => tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { name: true } })]);
     const seller = { legalName: this.env.SELLER_LEGAL_NAME, gstin: this.env.SELLER_GSTIN ?? null, stateCode: this.env.SELLER_STATE_CODE, address: this.env.SELLER_ADDRESS };
     const buyer = profile ? { legalName: profile.legalName, gstin: profile.gstin, stateCode: profile.stateCode, address: [profile.addressLine, profile.city, profile.pincode].filter(Boolean).join(', ') } : { legalName: tenant.name, gstin: null, stateCode: seller.stateCode, address: '' };
     const tax = splitGst(p.totalMinor, GST_RATE_PERCENT, buyer.stateCode === seller.stateCode);

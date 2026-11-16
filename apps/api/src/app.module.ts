@@ -8,6 +8,7 @@ import { AiTrigger } from './ai/ai-trigger.js';
 import { RedisThrottlerStorage } from './common/redis-throttler.js';
 import { BillingModule, EntitlementsModule } from './billing/billing.module.js';
 import { PlanGuard } from './billing/plan.guard.js';
+import { PrivacyModule } from './privacy/privacy.module.js';
 import { PlatformModule } from './platform/platform.module.js';
 import { AuditModule } from './audit/audit.module.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -16,7 +17,7 @@ import { ChannelsModule } from './channels/channels.module.js';
 import { ConfigModule } from './common/config.module.js';
 import { AllExceptionsFilter } from './common/http-exception.filter.js';
 import { AuthGuard, PermissionsGuard, TenantGuard } from './common/guards.js';
-import { csrfOriginMiddleware, requestIdMiddleware } from './common/middleware.js';
+import { accessLogMiddleware, csrfOriginMiddleware, requestIdMiddleware } from './common/middleware.js';
 import { ENV } from './common/tokens.js';
 import type { Env } from './config/env.js';
 import { ConversationsModule } from './conversations/conversations.module.js';
@@ -56,7 +57,7 @@ class IntegrationsCoreModule {}
       // Redis-backed so limits hold across API instances (tests keep the in-memory store: counters would otherwise leak between runs).
       useFactory: (env: Env) => ({ throttlers: [{ name: 'default', ttl: 60_000, limit: env.THROTTLE_GLOBAL_LIMIT }], ...(env.NODE_ENV === 'test' ? {} : { storage: new RedisThrottlerStorage(env.REDIS_URL, env.QUEUE_PREFIX) }) }),
     }),
-    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, AiModule, OpsModule, BillingModule, PlatformModule, UsageModule, TeamModule, RolesModule, HealthModule,
+    DbModule, MailModule, AuditModule, AuthModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, AiModule, OpsModule, BillingModule, PlatformModule, PrivacyModule, UsageModule, TeamModule, RolesModule, HealthModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
@@ -71,6 +72,6 @@ export class AppModule implements NestModule {
   constructor(@Inject(ENV) private readonly env: Env) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(requestIdMiddleware, cookieParser(), csrfOriginMiddleware([this.env.WEB_ORIGIN])).forRoutes('*path');
+    consumer.apply(requestIdMiddleware, accessLogMiddleware(this.env.ACCESS_LOG ?? this.env.NODE_ENV === 'production'), cookieParser(), csrfOriginMiddleware([this.env.WEB_ORIGIN])).forRoutes('*path');
   }
 }

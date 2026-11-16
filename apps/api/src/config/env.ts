@@ -31,8 +31,13 @@ const schema = z.object({
   WHATSAPP_GRAPH_VERSION: z.string().regex(/^v\d+\.\d+$/).default('v21.0'),
   SMTP_HOST: z.string().default('localhost'),
   SMTP_PORT: z.coerce.number().int().default(1026),
+  /** Optional SMTP authentication (e.g. Amazon SES SMTP credentials). Port 465 uses implicit TLS; other ports upgrade with STARTTLS. */
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
   MAIL_FROM: z.string().default('LeadPilot <no-reply@leadpilot.local>'),
   ENABLE_SWAGGER: bool,
+  /** One JSON access-log line per request on stdout. Default: on in production, off elsewhere. */
+  ACCESS_LOG: z.enum(['true', 'false']).optional().transform((v) => (v === undefined ? undefined : v === 'true')),
   /** Run the outbox relay, BullMQ workers and scanners in this process. The API process normally leaves this off and `apps/worker` turns it on. */
   WORKERS_ENABLED: bool,
   QUEUE_PREFIX: z.string().min(1).max(40).default('leadpilot'),
@@ -69,8 +74,9 @@ export function loadEnv(raw: NodeJS.ProcessEnv = process.env): Env {
     if (e.NODE_ENV === 'production' && e.RAZORPAY_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['RAZORPAY_MODE'], message: 'the mock payment provider is not allowed in production' });
     if (e.RAZORPAY_MODE === 'live') for (const k of ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET'] as const) if (!e[k]) ctx.addIssue({ code: 'custom', path: [k], message: `${k} is required when RAZORPAY_MODE=live` });
     if (e.NODE_ENV === 'production' && !e.SELLER_GSTIN) ctx.addIssue({ code: 'custom', path: ['SELLER_GSTIN'], message: 'SELLER_GSTIN is required in production (printed on invoices)' });
+    if (!!e.SMTP_USER !== !!e.SMTP_PASS) ctx.addIssue({ code: 'custom', path: ['SMTP_PASS'], message: 'SMTP_USER and SMTP_PASS must be set together' });
     if (e.AI_PROVIDER === 'openai' && !e.OPENAI_API_KEY) ctx.addIssue({ code: 'custom', path: ['OPENAI_API_KEY'], message: 'OPENAI_API_KEY is required when AI_PROVIDER=openai' });
-  }).safeParse(raw);
+  }).safeParse(Object.fromEntries(Object.entries(raw).filter(([, v]) => v !== ''))); // `KEY=` in a .env file means "unset"
   if (!parsed.success) {
     const lines = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid environment configuration:\n${lines}`);
