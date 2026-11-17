@@ -18,6 +18,8 @@ import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { downloadReportCsv, fmt, RANGES, REPORTS, reportQuery, type RangeKey, type ReportData, type ReportKey } from '@/lib/reports';
 import type { BillingSummary } from '@/lib/billing';
+import { useTerms } from '@/lib/pack';
+import { applyTerms } from '@/lib/terms-text';
 
 const tooltipStyle = { background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12, color: 'var(--foreground)', boxShadow: 'var(--shadow-md)' };
 const COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)'];
@@ -42,8 +44,10 @@ const LABELS: Record<string, [string, string]> = {
   activeAutomations: ['Active automations', ''], runs: ['Runs', ''], succeeded: ['Succeeded', ''], successRatePct: ['Success rate', '%'],
 };
 
-function Chart({ spec, data }: { spec: ChartSpec; data: Record<string, string | number | null>[] }) {
+function Chart({ spec: rawSpec, data }: { spec: ChartSpec; data: Record<string, string | number | null>[] }) {
   const reduce = useReducedMotion();
+  const terms = useTerms();
+  const spec: ChartSpec = { ...rawSpec, title: applyTerms(rawSpec.title, terms), keys: rawSpec.keys.map((k) => ({ ...k, label: applyTerms(k.label, terms) })) };
   if (!data?.length) return <p className="text-helper py-10 text-center">Nothing in this period.</p>;
   const vertical = spec.layout === 'vertical';
   return (
@@ -74,6 +78,8 @@ function Chart({ spec, data }: { spec: ChartSpec; data: Record<string, string | 
 
 export default function ReportsPage() {
   const { ctx } = useAuth();
+  const terms = useTerms();
+  const T = (x: string) => applyTerms(x, terms);
   const manager = ctx.permissions.includes('analytics:read:all') || ctx.permissions.includes('analytics:read:team');
   const visible = REPORTS.filter((r) => manager || !('managerOnly' in r));
   const [key, setKey] = useState<ReportKey>('acquisition');
@@ -94,14 +100,14 @@ export default function ReportsPage() {
 
   return (
     <>
-      <PageHeader title="Reports" description={meta?.blurb ?? ''} actions={(
+      <PageHeader title="Reports" description={T(meta?.blurb ?? '')} actions={(
         <div className="flex flex-wrap items-center gap-2">
           <Select aria-label="Date range" value={range} onChange={(e) => setRange(e.target.value as RangeKey)} className="w-40">{RANGES.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}</Select>
           {range === 'custom' ? <><Input aria-label="From date" type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-40" /><Input aria-label="To date" type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className="w-40" /></> : null}
         </div>
       )} />
       <div role="tablist" aria-label="Reports" className="mb-4 flex flex-wrap gap-1 border-b border-border">
-        {visible.map((r) => <button key={r.key} role="tab" aria-selected={key === r.key} onClick={() => setKey(r.key)} className={cn('relative px-3 py-2.5 text-[13px] font-medium', key === r.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>{r.label}{key === r.key ? <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" /> : null}</button>)}
+        {visible.map((r) => <button key={r.key} role="tab" aria-selected={key === r.key} onClick={() => setKey(r.key)} className={cn('relative px-3 py-2.5 text-[13px] font-medium', key === r.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>{T(r.label)}{key === r.key ? <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" /> : null}</button>)}
       </div>
 
       {!customReady ? <Card><EmptyState icon={BarChart3} title="Choose a start and end date" description="Pick both dates for a custom range." /></Card>
@@ -111,10 +117,10 @@ export default function ReportsPage() {
           <div className="space-y-4">
             <p className="text-helper">{q.data.range.label}, {new Date(q.data.range.from).toLocaleDateString('en-IN', { timeZone: q.data.range.timezone })} to {new Date(new Date(q.data.range.to).getTime() - 1).toLocaleDateString('en-IN', { timeZone: q.data.range.timezone })} ({q.data.range.timezone}){q.data.scope === 'own' ? ' · only your own leads and conversations' : ''}</p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {Object.entries(q.data.summary).map(([k, v]) => { const [label, suffix] = LABELS[k] ?? [k, '']; return <div key={k} className="rounded-lg border border-border bg-card p-3.5 shadow-sm"><p className="text-[12px] font-medium text-muted-foreground">{label}</p><p className="num mt-1.5 text-[22px] font-semibold leading-none">{fmt(v, suffix)}</p></div>; })}
+              {Object.entries(q.data.summary).map(([k, v]) => { const [rawLabel, suffix] = LABELS[k] ?? [k, '']; const label = T(rawLabel); return <div key={k} className="rounded-lg border border-border bg-card p-3.5 shadow-sm"><p className="text-[12px] font-medium text-muted-foreground">{label}</p><p className="num mt-1.5 text-[22px] font-semibold leading-none">{fmt(v, suffix)}</p></div>; })}
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
-              {CHARTS[key].map((c) => <Card key={c.title}><CardHeader><CardTitle>{c.title}</CardTitle></CardHeader><CardBody><Chart spec={c} data={q.data.series[c.data] ?? []} /></CardBody></Card>)}
+              {CHARTS[key].map((c) => <Card key={c.title}><CardHeader><CardTitle>{T(c.title)}</CardTitle></CardHeader><CardBody><Chart spec={c} data={q.data.series[c.data] ?? []} /></CardBody></Card>)}
             </div>
             {q.data.tables.map((t) => (
               <Card key={t.name}>

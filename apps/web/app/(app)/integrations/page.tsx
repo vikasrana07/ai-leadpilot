@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { API_URL, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useTerms } from '@/lib/pack';
 import { timeAgo } from '@/lib/format';
 import { handleApiError } from '@/lib/forms';
 
@@ -22,6 +23,7 @@ interface Key { id: string; name: string; keyPrefix: string; lastUsedAt: string 
 
 export default function IntegrationsPage() {
   const { can } = useAuth();
+  const terms = useTerms();
   const qc = useQueryClient();
   const keys = useQuery({ queryKey: ['api-keys'], queryFn: () => api<Key[]>('/api-keys'), enabled: can('integration:manage') });
   const [name, setName] = useState(''); const [fresh, setFresh] = useState<string | null>(null); const [copied, setCopied] = useState(false);
@@ -31,9 +33,9 @@ export default function IntegrationsPage() {
 
   return (
     <>
-      <PageHeader title="Integrations" description="Connect the places your leads come from." />
+      <PageHeader title="Integrations" description={`Connect the places your ${terms.leads} come from.`} />
       {can('integration:manage') ? <div className="mb-6 space-y-6"><WhatsappCard /><WidgetCard /></div> : null}
-      <Card className="mb-6"><CardBody className="flex items-start gap-3"><CalendarDays className="mt-0.5 h-5 w-5 text-muted-foreground" aria-hidden /><div className="flex-1"><p className="text-[13px] font-medium">Google Calendar</p><p className="text-helper">Sync site visits to your calendar.</p></div><Badge>Soon</Badge></CardBody></Card>
+      <Card className="mb-6"><CardBody className="flex items-start gap-3"><CalendarDays className="mt-0.5 h-5 w-5 text-muted-foreground" aria-hidden /><div className="flex-1"><p className="text-[13px] font-medium">Google Calendar</p><p className="text-helper">Sync {terms.visits} to your calendar.</p></div><Badge>Soon</Badge></CardBody></Card>
 
       <Card>
         <CardHeader><div><CardTitle><KeyRound className="mr-1.5 inline h-4 w-4" aria-hidden />Lead capture API</CardTitle><p className="text-helper mt-0.5">Send leads from your website form, ad platform or any backend. Keep keys secret: call this from a server, never from browser code.</p></div></CardHeader>

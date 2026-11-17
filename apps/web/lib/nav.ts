@@ -9,6 +9,8 @@ export interface NavItem {
   permission?: string;
   /** Hidden unless the workspace's industry pack enables this module. */
   module?: 'properties';
+  /** Label follows the industry's word for a lead (Leads / Enquiries / Customers). */
+  term?: 'leads';
   description?: string;
 }
 
@@ -16,7 +18,7 @@ export const CURRENT_PHASE = 6;
 
 export const WORKSPACE_NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, phase: 1 },
-  { href: '/leads', label: 'Leads', icon: Users, phase: 2, description: 'Capture, search, score and assign every lead.' },
+  { href: '/leads', label: 'Leads', term: 'leads', icon: Users, phase: 2, description: 'Capture, search, score and assign every lead.' },
   { href: '/inbox', label: 'Inbox', icon: Inbox, phase: 3, permission: 'conversation:read:own', description: 'WhatsApp and website chat in one place.' },
   { href: '/pipeline', label: 'Sales Pipeline', icon: KanbanSquare, phase: 2, description: 'Move leads from first contact to closed.' },
   { href: '/properties', label: 'Properties', icon: Building2, phase: 2, permission: 'property:read', module: 'properties' },
@@ -44,3 +46,6 @@ export const ADMIN_NAV: NavItem[] = [
 export const ALL_NAV = [...WORKSPACE_NAV, ...ADMIN_NAV];
 export const ORG_ICON = Building2;
 export const isLive = (item: NavItem): boolean => item.phase <= CURRENT_PHASE;
+
+/** The label to show for a nav item in the active workspace's words. */
+export const navLabel = (item: NavItem, terms: { Leads: string }): string => (item.term === 'leads' ? terms.Leads : item.label);

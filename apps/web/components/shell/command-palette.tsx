@@ -6,13 +6,17 @@ import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
-import { ALL_NAV, isLive } from '@/lib/nav';
+import { ALL_NAV, isLive, navLabel } from '@/lib/nav';
+import { usePack, useTerms } from '@/lib/pack';
 import { BLOCKED_DURING_SUPPORT, useSupportSession } from '@/lib/support';
 import { useTheme } from '@/lib/theme';
 
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const router = useRouter();
-  const { can, logout } = useAuth();
+  const { can, logout, activeWorkspace } = useAuth();
+  const terms = useTerms();
+  const pack = usePack();
+  const modules = activeWorkspace?.industryChosen ? pack.modules : { properties: false };
   const { setPreference } = useTheme();
   // Modal behaviour: remember what had focus, keep Tab inside, give the dialog a name, and hand focus back on close.
   const opener = useRef<HTMLElement | null>(null);
@@ -34,7 +38,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
 
   const run = (fn: () => void) => { onOpenChange(false); fn(); };
   const support = useSupportSession().data?.active === true;
-  const nav = ALL_NAV.filter((n) => isLive(n) && (!n.permission || can(n.permission)) && !(support && BLOCKED_DURING_SUPPORT.has(n.href)));
+  const nav = ALL_NAV.filter((n) => isLive(n) && (!n.permission || can(n.permission)) && (!n.module || modules[n.module]) && !(support && BLOCKED_DURING_SUPPORT.has(n.href)));
 
   return (
     <AnimatePresence>
@@ -52,8 +56,8 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                 <Command.Empty className="py-8 text-center text-[13px] text-muted-foreground">No results.</Command.Empty>
                 <Command.Group heading="Go to" className="[&_[cmdk-group-heading]]:text-label [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-muted-foreground">
                   {nav.map((n) => (
-                    <Command.Item key={n.href} value={n.label} onSelect={() => run(() => router.push(n.href))} className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-[13px] data-[selected=true]:bg-muted">
-                      <n.icon className="h-4 w-4 text-muted-foreground" aria-hidden />{n.label}
+                    <Command.Item key={n.href} value={navLabel(n, terms)} onSelect={() => run(() => router.push(n.href))} className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-[13px] data-[selected=true]:bg-muted">
+                      <n.icon className="h-4 w-4 text-muted-foreground" aria-hidden />{navLabel(n, terms)}
                     </Command.Item>
                   ))}
                 </Command.Group>

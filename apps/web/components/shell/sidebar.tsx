@@ -11,9 +11,11 @@ import { useAuth } from '@/lib/auth';
 import { useUnreadCount } from '@/lib/inbox';
 import { cn } from '@/lib/cn';
 import { BLOCKED_DURING_SUPPORT, useSupportSession } from '@/lib/support';
-import { ADMIN_NAV, isLive, WORKSPACE_NAV, type NavItem } from '@/lib/nav';
+import { ADMIN_NAV, isLive, navLabel, WORKSPACE_NAV, type NavItem } from '@/lib/nav';
+import { useTerms } from '@/lib/pack';
 
 function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: boolean; onNavigate?: () => void }) {
+  const label = navLabel(item, useTerms());
   const pathname = usePathname();
   const unread = useUnreadCount(item.href === '/inbox');
   const badge = item.href === '/inbox' && (unread.data ?? 0) > 0 ? unread.data : null;
@@ -29,16 +31,16 @@ function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: bo
       {active ? <motion.span layoutId="nav-active" className="absolute inset-0 rounded-md bg-sidebar-accent ring-1 ring-sidebar-border" transition={{ type: 'spring', stiffness: 500, damping: 40 }} /> : null}
       {active ? <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-primary" aria-hidden /> : null}
       <item.icon className="relative h-4 w-4 shrink-0" aria-hidden />
-      {collapsed ? <span className="sr-only">{item.label}</span> : (
+      {collapsed ? <span className="sr-only">{label}</span> : (
         <>
-          <span className="relative flex-1 truncate">{item.label}</span>
+          <span className="relative flex-1 truncate">{label}</span>
           {soon ? <span className="relative rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] font-medium text-sidebar-muted">Soon</span> : null}
           {badge ? <span aria-label={`${badge} unread`} className="num relative rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">{badge > 99 ? '99+' : badge}</span> : null}
         </>
       )}
     </Link>
   );
-  return collapsed ? <Tooltip label={item.label}>{link}</Tooltip> : link;
+  return collapsed ? <Tooltip label={label}>{link}</Tooltip> : link;
 }
 
 export function SidebarContent({ collapsed, onToggle, onNavigate }: { collapsed: boolean; onToggle?: () => void; onNavigate?: () => void }) {

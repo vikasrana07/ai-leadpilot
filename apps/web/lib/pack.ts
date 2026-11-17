@@ -1,6 +1,6 @@
 'use client';
 
-import { packForIndustry, type IndustryPack } from '@leadpilot/shared-types';
+import { packForIndustry, packTerms, type IndustryPack, type PackTerms } from '@leadpilot/shared-types';
 import { useAuth } from '@/lib/auth';
 
 /**
@@ -12,12 +12,13 @@ export function usePack(): IndustryPack {
   return packForIndustry(activeWorkspace?.industryPackId ?? 'real_estate');
 }
 
-const pluralise = (noun: string) => (noun.endsWith('s') ? `${noun}es` : `${noun}s`);
-
 /** The pack's word for an appointment in the forms we need: "Site visit" / "site visit" / "site visits" / "a site visit" / "Site visits". */
 export function visitWords(pack: IndustryPack) {
-  const Visit = pack.terminology.visit;
-  const visit = Visit.toLowerCase();
-  const visits = pluralise(visit);
-  return { Visit, visit, visits, Visits: pluralise(Visit), a: `${/^[aeiou]/.test(visit) ? 'an' : 'a'} ${visit}` };
+  const t = packTerms(pack);
+  return { Visit: t.Visit, visit: t.visit, visits: t.visits, Visits: t.Visits, a: t.aVisit };
+}
+
+/** Every noun form for the active workspace's industry: lead/leads/Lead/Leads, visit forms, short event word, summary words. */
+export function useTerms(): PackTerms {
+  return packTerms(usePack());
 }

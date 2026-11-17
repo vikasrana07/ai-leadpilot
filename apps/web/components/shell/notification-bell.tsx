@@ -10,10 +10,13 @@ import { Dropdown } from '@/components/ui/dropdown';
 import { api } from '@/lib/api';
 import { handleApiError } from '@/lib/forms';
 import { timeAgo } from '@/lib/format';
-import { NOTIFICATION_LABELS, type Notification } from '@/lib/ops';
+import { notificationLabels, type Notification } from '@/lib/ops';
+import { useTerms } from '@/lib/pack';
 
 function Preferences({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
+  const terms = useTerms();
+  const labels = notificationLabels(terms);
   const prefs = useQuery({ queryKey: ['notifications', 'prefs'], queryFn: () => api<{ preferences: { type: string; inApp: boolean }[] }>('/notifications/preferences') });
   const save = useMutation({ mutationFn: (p: { type: string; inApp: boolean }) => api('/notifications/preferences', { method: 'PUT', body: { preferences: [p] } }), onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications', 'prefs'] }), onError: (e) => handleApiError(e) });
   return (
@@ -21,7 +24,7 @@ function Preferences({ onClose }: { onClose: () => void }) {
       <DialogContent title="Notification settings" description="Choose what appears in your bell">
         <p className="text-helper mb-3">Tell me when…</p>
         <ul className="space-y-2">{(prefs.data?.preferences ?? []).map((p) => (
-          <li key={p.type}><label className="flex items-center gap-2.5 text-[13px]"><input type="checkbox" checked={p.inApp} onChange={(e) => save.mutate({ type: p.type, inApp: e.target.checked })} />{NOTIFICATION_LABELS[p.type] ?? p.type}</label></li>))}</ul>
+          <li key={p.type}><label className="flex items-center gap-2.5 text-[13px]"><input type="checkbox" checked={p.inApp} onChange={(e) => save.mutate({ type: p.type, inApp: e.target.checked })} />{labels[p.type] ?? p.type}</label></li>))}</ul>
         <div className="mt-4 flex justify-end"><Button onClick={onClose}>Done</Button></div>
       </DialogContent>
     </Dialog>

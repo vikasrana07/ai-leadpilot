@@ -20,8 +20,9 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useTerms } from '@/lib/pack';
 import { chooseView, useEditorView } from '@/lib/automation-view';
-import { blankGraph, canonical, defaultNode, editorReducer, initialState, isDirty, nodeById, type Slot } from '@/lib/automation-graph-state';
+import { blankGraph, canonical, defaultNode, editorReducer, initialState, isDirty, nodeById, setNodeTerms, type Slot } from '@/lib/automation-graph-state';
 import { handleApiError } from '@/lib/forms';
 import type { AutomationItem, AutomationRun, DryRunPathItem, DryRunResult } from '@/lib/ops';
 import { Canvas } from './canvas';
@@ -53,8 +54,9 @@ function readDraft(key: string, initial: Source): DraftData | null {
 export function AutomationEditor({ id }: { id?: string }) {
   const { can } = useAuth();
   const allowed = can('automation:manage');
+  const leadWord = useTerms().lead;
   const q = useQuery({ queryKey: ['automations', 'one', id], enabled: !!id && allowed, queryFn: () => api<AutomationItem>(`/automations/${id}`), gcTime: 0, refetchOnWindowFocus: false, retry: false });
-  const blank = useMemo<Source>(() => ({ name: '', description: '', cooldownMinutes: 60, graph: blankGraph({ trigger: newId(), action: newId() }), version: 1, enabled: false }), []);
+  const blank = useMemo<Source>(() => ({ name: '', description: '', cooldownMinutes: 60, graph: blankGraph({ trigger: newId(), action: newId() }, leadWord), version: 1, enabled: false }), [leadWord]);
   if (!allowed) return <><PageHeader title="Automations" /><Card><EmptyState icon={Workflow} title="You do not have access" description="Ask a workspace owner or manager for the automations permission." /></Card></>;
   if (id && q.isPending) return <><PageHeader title="Edit automation" /><Skeleton className="h-96" /></>;
   if (id && (q.isError || !q.data)) return <><PageHeader title="Edit automation" /><Card><EmptyState icon={Workflow} title="Automation not found" description="It may have been deleted, or the link is wrong." action={<Button asChild variant="primary"><Link href="/automations">Back to automations</Link></Button>} /></Card></>;
@@ -65,6 +67,8 @@ export function AutomationEditor({ id }: { id?: string }) {
 
 function EditorBody({ initial, reload }: { initial: Source; reload: (() => Promise<AutomationItem | null>) | null }) {
   const router = useRouter(); const qc = useQueryClient();
+  const terms = useTerms();
+  setNodeTerms(terms.summary); // before anything renders a step title
   const [server, setServer] = useState<Source>(initial);
   const [state, dispatch] = useReducer(editorReducer, initial.graph, initialState);
   const [name, setName] = useState(initial.name); const [description, setDescription] = useState(initial.description); const [cooldown, setCooldown] = useState(String(initial.cooldownMinutes));
@@ -101,7 +105,7 @@ function EditorBody({ initial, reload }: { initial: Source; reload: (() => Promi
   const taken = useMemo(() => (marks ? takenEdges(graph, marks) : null), [graph, marks]);
   const showCanvas = view === 'canvas' || !!runId;
   const canvasReadOnly = !desktop || !!runId;
-  const summaryText = valid ? summarizeGraph(graph).map((l) => l.trim().replace(/^- /, '')).join('. ') : 'The automation has problems to fix.';
+  const summaryText = valid ? summarizeGraph(graph, terms.summary).map((l) => l.trim().replace(/^- /, '')).join('. ') : 'The automation has problems to fix.';
 
   // ---- announcements: structural changes are spoken once; refusals are also shown for a few seconds
   const visibleError = state.noticeIsError && state.noticeSeq !== dismissedSeq ? state.notice : '';
@@ -228,8 +232,8 @@ function EditorBody({ initial, reload }: { initial: Source; reload: (() => Promi
 
       <Card className="mb-4 p-4">
         <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
-          <Field label="Name" htmlFor="ae-name" error={nameError}><Input id="ae-name" ref={nameRef} value={name} maxLength={120} placeholder="e.g. Follow up on new leads" onChange={(e) => setName(e.target.value)} /></Field>
-          <Field label="Do not repeat for the same lead within (minutes)" htmlFor="ae-cooldown" error={attempted || cooldown !== String(server.cooldownMinutes) ? cooldownError : undefined} hint="0 means no limit. 1,440 = one day."><Input id="ae-cooldown" type="number" inputMode="numeric" min={0} max={43200} value={cooldown} onChange={(e) => setCooldown(e.target.value)} /></Field>
+          <Field label="Name" htmlFor="ae-name" error={nameError}><Input id="ae-name" ref={nameRef} value={name} maxLength={120} placeholder={`e.g. Follow up on new ${terms.leads}`} onChange={(e) => setName(e.target.value)} /></Field>
+          <Field label={`Do not repeat for the same ${terms.lead} within (minutes)`} htmlFor="ae-cooldown" error={attempted || cooldown !== String(server.cooldownMinutes) ? cooldownError : undefined} hint="0 means no limit. 1,440 = one day."><Input id="ae-cooldown" type="number" inputMode="numeric" min={0} max={43200} value={cooldown} onChange={(e) => setCooldown(e.target.value)} /></Field>
         </div>
         <Field label="Description (optional)" htmlFor="ae-desc" className="mt-3"><Textarea id="ae-desc" rows={2} maxLength={400} value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-0" /></Field>
         {server.id ? <p className="text-helper mt-3 flex flex-wrap items-center gap-2"><Badge tone={server.enabled ? 'success' : 'neutral'}>{server.enabled ? 'On' : 'Off'}</Badge><span>Version {server.version}. Changes apply to new events as soon as you save; runs already in progress finish with the version they started with.</span></p> : null}

@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { CustomFieldInputs, type CustomValues } from '@/components/crm/custom-field-inputs';
-import { usePack } from '@/lib/pack';
+import { usePack, useTerms } from '@/lib/pack';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useLeadMeta, useMembers, type DuplicateInfo } from '@/lib/crm';
@@ -30,6 +30,7 @@ export function LeadFormDialog({ open, onOpenChange, onCreated }: { open: boolea
   const meta = useLeadMeta();
   const members = useMembers();
   const lf = usePack().leadFields;
+  const terms = useTerms();
   const [f, setF] = useState<FormState>(EMPTY);
   const [cf, setCf] = useState<CustomValues>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -49,13 +50,13 @@ export function LeadFormDialog({ open, onOpenChange, onCreated }: { open: boolea
     } catch (e) {
       if (e instanceof ApiError && e.code === 'duplicate_lead') setDupes(((e as unknown as { details?: DuplicateInfo[] }).details ?? []) as DuplicateInfo[]);
       else if (e instanceof ApiError && e.details) setErrors(Object.fromEntries(e.details.map((d) => [d.path, d.message])));
-      else toast.error(e instanceof ApiError ? e.message : 'Could not add the lead');
+      else toast.error(e instanceof ApiError ? e.message : `Could not add the ${terms.lead}`);
     } finally { setBusy(false); }
   }
 
   return (
     <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setDupes([]); }}>
-      <DialogContent title="Add lead" description="Phone or email is required. Duplicates are checked automatically." className="max-w-xl">
+      <DialogContent title={`Add ${terms.lead}`} description="Phone or email is required. Duplicates are checked automatically." className="max-w-xl">
         <form onSubmit={(e) => { e.preventDefault(); void submit(false); }} className="grid max-h-[70vh] gap-3 overflow-y-auto pr-1 sm:grid-cols-2" noValidate>
           <Field label="Name" htmlFor="lf-name" error={errors.name} className="sm:col-span-2"><Input id="lf-name" autoFocus value={f.name} onChange={set('name')} aria-invalid={!!errors.name} /></Field>
           <Field label="Phone" htmlFor="lf-phone" error={errors.phone}><Input id="lf-phone" inputMode="tel" placeholder="98765 43210" value={f.phone} onChange={set('phone')} aria-invalid={!!errors.phone} /></Field>
@@ -78,14 +79,14 @@ export function LeadFormDialog({ open, onOpenChange, onCreated }: { open: boolea
 
           {dupes.length ? (
             <div role="alert" className="rounded-lg border border-warning/40 bg-warning-soft p-3 text-[13px] sm:col-span-2">
-              <p className="font-medium text-warning">This looks like an existing lead</p>
+              <p className="font-medium text-warning">This looks like an existing {terms.lead}</p>
               <ul className="mt-1.5 space-y-1">{dupes.map((d) => <li key={d.id}><Link className="text-primary underline underline-offset-2 hover:no-underline" href={`/leads/${d.id}`} onClick={() => onOpenChange(false)}>{d.name}</Link> <span className="text-muted-foreground">· {d.phone ?? d.email} · {d.stage}</span></li>)}</ul>
             </div>
           ) : null}
           <div className={cn('flex justify-end gap-2 pt-1 sm:col-span-2')}>
             <Button type="button" onClick={() => onOpenChange(false)}>Cancel</Button>
             {dupes.length ? <Button type="button" loading={busy} onClick={() => void submit(true)}>Add anyway</Button> : null}
-            <Button type="submit" variant="primary" loading={busy}>Add lead</Button>
+            <Button type="submit" variant="primary" loading={busy}>Add {terms.lead}</Button>
           </div>
         </form>
       </DialogContent>

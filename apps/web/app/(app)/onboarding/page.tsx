@@ -17,6 +17,8 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { handleApiError } from '@/lib/forms';
+import { useTerms } from '@/lib/pack';
+import { applyTerms } from '@/lib/terms-text';
 
 interface Tenant { name: string; email: string; phone: string | null; website: string | null; address: string | null; industry: string; timezone: string; currency: string }
 
@@ -96,6 +98,7 @@ function TeamStep({ onDone }: { onDone: () => Promise<void> }) {
 }
 
 export default function OnboardingPage() {
+  const terms = useTerms();
   const qc = useQueryClient();
   const progress = useQuery({ queryKey: ['tenant', 'onboarding'], queryFn: () => api<OnboardingProgress>('/tenant/onboarding') });
   const tenant = useQuery({ queryKey: ['tenant'], queryFn: () => api<Tenant>('/tenant') });
@@ -151,7 +154,7 @@ export default function OnboardingPage() {
                   <div>
                     <p className="text-label text-muted-foreground">Step {idx + 1} of {STEPS.length}</p>
                     <h2 className="text-title mt-1">{step.title}</h2>
-                    <p className="text-helper mb-6 mt-1 !text-[13px]">{step.blurb}</p>
+                    <p className="text-helper mb-6 mt-1 !text-[13px]">{applyTerms(step.blurb, terms)}</p>
                     {step.key === 'business' ? <BusinessStep tenant={tenant.data} onDone={() => advance('business', 'completed')} /> : null}
                     {step.key === 'industry' ? <IndustryStep tenant={tenant.data} onDone={() => advance('industry', 'completed')} /> : null}
                     {step.key === 'team' ? <TeamStep onDone={() => advance('team', 'completed')} /> : null}

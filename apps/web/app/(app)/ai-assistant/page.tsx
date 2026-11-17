@@ -19,6 +19,8 @@ import { api, ApiError } from '@/lib/api';
 import { TOOL_INFO, type AiRun, type AiUsage, type Assistant, type ScoringRules } from '@/lib/ai';
 import { cn } from '@/lib/cn';
 import { timeAgo } from '@/lib/format';
+import { useTerms } from '@/lib/pack';
+import { applyTerms } from '@/lib/terms-text';
 
 const DAYS = [['mon', 'Monday'], ['tue', 'Tuesday'], ['wed', 'Wednesday'], ['thu', 'Thursday'], ['fri', 'Friday'], ['sat', 'Saturday'], ['sun', 'Sunday']] as const;
 const LANG_LABEL: Record<string, string> = { en: 'English', hi: 'Hindi', hinglish: 'Hinglish' };
@@ -144,13 +146,14 @@ function ScoringTab() {
 }
 
 function ScoringEditor({ data, onSaved }: { data: { version: number; rules: ScoringRules; defaults: ScoringRules }; onSaved: () => Promise<void> }) {
+  const terms = useTerms();
   const [r, setR] = useState<ScoringRules>(data.rules);
   const [err, setErr] = useState<string | null>(null);
   const total = r.criteria.filter((c) => c.enabled).reduce((s, c) => s + c.points, 0);
   const save = useMutation({ mutationFn: () => api('/scoring/rules', { method: 'PUT', body: r }), onSuccess: async () => { setErr(null); toast.success('Scoring rules saved. Existing leads are being re-scored.'); await onSaved(); }, onError: (e) => setErr(e instanceof ApiError ? (e.details?.map((d) => d.message).join(' · ') ?? e.message) : 'Could not save') });
   return (
     <Card>
-      <CardHeader><div><CardTitle>Lead scoring rules</CardTitle><p className="text-helper mt-0.5">Points are added when the customer has shared something. Missing information is never held against a lead. Version {data.version || 'default'}.</p></div></CardHeader>
+      <CardHeader><div><CardTitle>{applyTerms('Lead scoring rules', terms)}</CardTitle><p className="text-helper mt-0.5">Points are added when the customer has shared something. Missing information is never held against {terms.aLead}. Version {data.version || 'default'}.</p></div></CardHeader>
       <CardBody className="space-y-4">
         <ul className="space-y-2">
           {r.criteria.map((c, i) => (
@@ -202,6 +205,7 @@ function ActivityTab() {
 }
 
 export default function AiAssistantPage() {
+  const terms = useTerms();
   const [tab, setTab] = useState<(typeof TABS)[number][0]>('assistant');
   const assistant = useQuery({ queryKey: ['ai', 'assistant'], queryFn: () => api<Assistant>('/ai/assistant') });
   const usage = useQuery({ queryKey: ['ai', 'usage'], queryFn: () => api<AiUsage>('/ai/usage'), refetchInterval: 30_000 });
@@ -210,7 +214,7 @@ export default function AiAssistantPage() {
       <PageHeader title="AI assistant" description="Greets new enquiries, asks the right questions, answers from your inventory and documents, and brings in your team when it should." actions={assistant.data ? <Badge tone={assistant.data.enabled ? 'success' : 'neutral'}><Bot className="h-3 w-3" aria-hidden />{assistant.data.enabled ? 'On' : 'Off'}</Badge> : undefined} />
       {usage.data ? <UsageMeter u={usage.data} /> : null}
       <div role="tablist" aria-label="Assistant sections" className="mb-4 flex gap-1 border-b border-border">
-        {TABS.map(([k, label]) => <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cn('relative px-3 py-2.5 text-[13px] font-medium', tab === k ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>{label}{tab === k ? <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" /> : null}</button>)}
+        {TABS.map(([k, rawLabel]) => { const label = applyTerms(rawLabel, terms); return <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cn('relative px-3 py-2.5 text-[13px] font-medium', tab === k ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>{label}{tab === k ? <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" /> : null}</button>; })}
       </div>
       {tab === 'assistant' ? (assistant.isPending ? <Skeleton className="h-96" /> : assistant.isError || !assistant.data ? <p className="flex items-center gap-2 text-[13px] text-danger"><Info className="h-4 w-4" aria-hidden />Could not load the assistant settings.</p> : <AssistantForm key={JSON.stringify(assistant.data).length} data={assistant.data} />) : tab === 'scoring' ? <ScoringTab /> : <ActivityTab />}
     </>

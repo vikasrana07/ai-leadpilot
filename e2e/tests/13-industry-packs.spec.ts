@@ -10,16 +10,19 @@ const INDUSTRIES = [
     id: 'coaching', label: 'coaching', stages: ['Enquiry', 'Demo class booked', 'Demo class attended', 'Enrolled', 'Dropped'],
     interest: 'Course or exam', customField: 'Who is enquiring', visit: 'demo class', template: 'Remind students the day before the demo class',
     absent: ['Budget min (₹)', 'Property type', 'Buying timeline'],
+    nav: 'Enquiries', lead: 'enquiry', leads: 'enquiries', when: '24 hours before a demo class',
   },
   {
     id: 'healthcare', label: 'clinic', stages: ['Enquiry', 'Appointment booked', 'Visited', 'Treatment started', 'Lost'],
     interest: 'Service interested in', customField: 'Preferred doctor', visit: 'consultation', template: 'Remind patients the day before the consultation',
     absent: ['Budget min (₹)', 'Property type', 'Buying timeline'],
+    nav: 'Enquiries', lead: 'enquiry', leads: 'enquiries', when: '24 hours before a consultation',
   },
   {
     id: 'home_services', label: 'home', stages: ['Enquiry', 'Quote sent', 'Site inspection', 'Booked', 'Lost'],
     interest: 'Service needed', customField: 'How soon is it needed', visit: 'inspection', template: 'Follow up two days after sending a quote',
     absent: ['Buying timeline'], // (its own custom field is also called "Property type", so only the core field names are checked)
+    nav: 'Customers', lead: 'customer', leads: 'customers', when: 'A customer changes stage',
   },
 ] as const;
 
@@ -37,19 +40,23 @@ for (const ind of INDUSTRIES) {
 
     // menu: real-estate-only module hidden, everything else present
     await page.goto('/dashboard');
-    await expect(sidebarLink(page, 'Leads')).toBeVisible();
+    await expect(sidebarLink(page, ind.nav)).toBeVisible();
+    await expect(sidebarLink(page, 'Leads')).toHaveCount(0);
     await expect(sidebarLink(page, 'Properties')).toHaveCount(0);
+    await expect(page.getByText(`Total ${ind.leads}`, { exact: true })).toBeVisible();
+    await expect(page.getByText('Total leads')).toHaveCount(0);
 
     // lead form uses the pack's labels, hides real-estate fields, and shows the pack's custom fields
     await page.goto('/leads');
-    await page.getByRole('button', { name: 'Add lead' }).click();
+    await expect(page.getByRole('heading', { name: new RegExp(`^${ind.nav}$`, 'i') }).first()).toBeVisible();
+    await page.getByRole('button', { name: `Add ${ind.lead}` }).first().click(); // header button (the empty state repeats it)
     await expect(page.getByLabel(ind.interest)).toBeVisible();
     await expect(page.getByLabel(ind.customField)).toBeVisible();
     for (const hidden of ind.absent) await expect(page.getByLabel(hidden)).toHaveCount(0);
     await page.getByLabel('Name').fill(`Pack ${ind.label} Lead`);
     await page.getByLabel('Phone').fill('98765 43211');
     await page.getByLabel(ind.interest).fill('Starter interest');
-    await page.getByRole('button', { name: 'Add lead' }).last().click();
+    await page.getByRole('button', { name: `Add ${ind.lead}` }).last().click();
     await expect(page.getByRole('link', { name: new RegExp(`Pack ${ind.label} Lead`) }).first()).toBeVisible();
 
     // the lead detail card says the pack's words, not "Property" / "Buying timeline"
@@ -72,6 +79,9 @@ for (const ind of INDUSTRIES) {
     await page.getByRole('tab', { name: 'Templates' }).click();
     await expect(page.getByText(ind.template)).toBeVisible();
     for (const other of INDUSTRIES) if (other.id !== ind.id) await expect(page.getByText(other.template)).toHaveCount(0);
+    // trigger wording follows the industry too ("a demo class", "a customer"), never "a visit" / "a lead"
+    await expect(page.getByText(ind.when, { exact: false }).first()).toBeVisible();
+    await expect(page.getByText(/before a visit/)).toHaveCount(0);
   });
 }
 
@@ -81,6 +91,8 @@ test('real estate (control): Properties, the property fields and site-visit word
   await signInViaApi(page, acct);
   await page.goto('/dashboard');
   await expect(sidebarLink(page, 'Properties')).toBeVisible();
+  await expect(sidebarLink(page, 'Leads')).toBeVisible();
+  await expect(page.getByText('Total leads', { exact: true })).toBeVisible();
   await page.goto('/leads');
   await page.getByRole('button', { name: 'Add lead' }).click();
   for (const shown of ['Budget min (₹)', 'Property type', 'Buying timeline', 'Preferred location']) await expect(page.getByLabel(shown)).toBeVisible();
@@ -89,6 +101,11 @@ test('real estate (control): Properties, the property fields and site-visit word
   await expect(page.getByRole('button', { name: /Book site visit/i }).first()).toBeVisible();
   await page.goto('/pipeline');
   await expect(page.getByText('Site Visit Scheduled', { exact: true }).first()).toBeVisible();
+  // automation wording is exactly as before
+  await page.goto('/automations');
+  await page.getByRole('tab', { name: 'Templates' }).click();
+  await expect(page.getByText('24 hours before a visit').first()).toBeVisible();
+  await expect(page.getByText('A lead is created').first()).toBeVisible();
 });
 
 test('onboarding: before an industry is chosen Properties is hidden; choosing Coaching re-seeds the pipeline in the UI', async ({ page, request }) => {

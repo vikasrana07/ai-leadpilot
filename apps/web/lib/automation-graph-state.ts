@@ -1,6 +1,6 @@
 import {
   describeActionData, describeConditionData, describeTriggerData, describeWait, GRAPH_LIMITS, outEdge,
-  type AutomationGraph, type EdgeLabel, type GraphEdge, type GraphNode,
+  type AutomationGraph, type EdgeLabel, type GraphEdge, type GraphNode, type SummaryTerms,
 } from '@leadpilot/validation';
 import { tidyGraph, type Positions } from './automation-layout';
 
@@ -117,13 +117,18 @@ export function validTargets(g: AutomationGraph, from: string, slot: Slot): Grap
 const SLOT_WORDS: Record<Slot, string> = { next: 'next', yes: 'If', no: 'Otherwise', replied: 'If they reply', timeout: 'If they do not reply' };
 export const slotLabel = (n: GraphNode, slot: Slot): string => (n.type === 'wait' ? (slot === 'replied' ? 'If they reply' : 'If they do not reply, or after the wait') : slot === 'next' ? 'Next' : SLOT_WORDS[slot]);
 
+// The workspace's words for a lead and an appointment. One editor is open at a time, so a module-level setting (written by the editor on render)
+// keeps every call site of nodeTitle - reducer announcements, canvas, outline - consistent without threading a parameter through each.
+let nodeTerms: SummaryTerms | undefined;
+export const setNodeTerms = (t?: SummaryTerms): void => { nodeTerms = t; };
+
 /** One-line plain-language title of a step (also used in announcements). */
 export function nodeTitle(n: GraphNode): string {
   switch (n.type) {
-    case 'trigger': return `When ${describeTriggerData(n.data)}`;
-    case 'action': return describeActionData(n.data).replace(/^./, (c) => c.toUpperCase());
+    case 'trigger': return `When ${describeTriggerData(n.data, nodeTerms)}`;
+    case 'action': return describeActionData(n.data, nodeTerms).replace(/^./, (c) => c.toUpperCase());
     case 'wait': return `Wait ${describeWait(n.data.minutes)}`;
-    case 'branch': return `If ${n.data.conditions.map(describeConditionData).join(n.data.match === 'any' ? ' or ' : ' and ')}`;
+    case 'branch': return `If ${n.data.conditions.map((c) => describeConditionData(c)).join(n.data.match === 'any' ? ' or ' : ' and ')}`;
     case 'end': return 'Stop';
   }
 }
@@ -135,10 +140,10 @@ export function defaultNode(kind: 'action' | 'branch' | 'wait', id: string): Gra
 }
 
 /** The starting point of "New automation": a trigger and one action. */
-export function blankGraph(ids: { trigger: string; action: string }): AutomationGraph {
+export function blankGraph(ids: { trigger: string; action: string }, lead = 'lead'): AutomationGraph {
   return {
     v: 1,
-    nodes: [{ id: ids.trigger, type: 'trigger', data: { type: 'lead.created' } }, { id: ids.action, type: 'action', data: { type: 'notify', target: 'managers', title: 'New lead: {{lead.name}}' } }],
+    nodes: [{ id: ids.trigger, type: 'trigger', data: { type: 'lead.created' } }, { id: ids.action, type: 'action', data: { type: 'notify', target: 'managers', title: `New ${lead}: {{lead.name}}` } }],
     edges: [{ id: `e-${ids.trigger}-next`, from: ids.trigger, to: ids.action, label: 'next' }],
   };
 }

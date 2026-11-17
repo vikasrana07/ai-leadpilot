@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useTerms } from '@/lib/pack';
 import { cn } from '@/lib/cn';
 import { handleApiError } from '@/lib/forms';
 import { useTheme, type ThemePreference } from '@/lib/theme';
@@ -62,17 +63,18 @@ function BusinessProfile() {
 
 function Assignment() {
   const { can } = useAuth();
+  const terms = useTerms();
   const qc = useQueryClient();
   const canEdit = can('settings:manage');
   const cfg = useQuery({ queryKey: ['tenant', 'assignment'], queryFn: () => api<{ strategy: 'manual' | 'round_robin' }>('/tenant/assignment') });
   const save = useMutation({ mutationFn: (strategy: string) => api('/tenant/assignment', { method: 'PUT', body: { strategy } }), onSuccess: async () => { toast.success('Assignment rule saved'); await qc.invalidateQueries({ queryKey: ['tenant', 'assignment'] }); }, onError: (e) => handleApiError(e) });
   return (
     <Card>
-      <CardHeader><CardTitle>Lead assignment</CardTitle>{!canEdit ? <Badge>Read only</Badge> : null}</CardHeader>
+      <CardHeader><CardTitle>{terms.Lead} assignment</CardTitle>{!canEdit ? <Badge>Read only</Badge> : null}</CardHeader>
       <CardBody>
         {cfg.isPending ? <Skeleton className="h-9" /> : (
           <div className="max-w-md space-y-2">
-            <Field label="When a new lead arrives" htmlFor="assign-rule"><select id="assign-rule" disabled={!canEdit || save.isPending} value={cfg.data?.strategy} onChange={(e) => save.mutate(e.target.value)} className="h-9 w-full rounded-md border border-border bg-surface px-3 text-[13px]"><option value="manual">Leave unassigned for a manager</option><option value="round_robin">Share equally between sales agents (round robin)</option></select></Field>
+            <Field label={`When a new ${terms.lead} arrives`} htmlFor="assign-rule"><select id="assign-rule" disabled={!canEdit || save.isPending} value={cfg.data?.strategy} onChange={(e) => save.mutate(e.target.value)} className="h-9 w-full rounded-md border border-border bg-surface px-3 text-[13px]"><option value="manual">Leave unassigned for a manager</option><option value="round_robin">Share equally between sales agents (round robin)</option></select></Field>
             <p className="text-helper">Round robin skips deactivated people and falls back to managers if there are no agents.</p>
           </div>
         )}

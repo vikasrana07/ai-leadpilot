@@ -53,8 +53,12 @@ export interface IndustryPack {
   lostReasons: string[];
   sources: { key: string; name: string }[];
   customFields: PackCustomField[];
-  /** `visit` is the noun used for appointments ("Site visit", "Demo class", "Consultation", "Inspection", "Meeting"). */
-  terminology: { lead: string; visit: string };
+  /**
+   * `lead` is what the business calls a person in its pipeline ("Lead", "Enquiry", "Customer"); `visit` is the noun used for appointments
+   * ("Site visit", "Demo class", "Consultation", "Inspection", "Meeting"). `visitShort` is the shorter everyday word used inside automation
+   * and notification sentences where the original real-estate copy says plain "visit" (defaults to the lower-cased `visit`).
+   */
+  terminology: { lead: string; leadPlural?: string; visit: string; visitShort?: string };
   /** Optional modules shown in the app. Only what an industry actually uses appears in the menu. */
   modules: { properties: boolean };
   leadFields: LeadFieldsConfig;
@@ -90,7 +94,7 @@ export const REAL_ESTATE_PACK: IndustryPack = {
     { key: 'facing', label: 'Preferred facing', type: 'select', options: ['East', 'West', 'North', 'South', 'No preference'] },
     { key: 'possession', label: 'Possession preference', type: 'select', options: ['Ready to move', 'Under construction', 'Either'] },
   ],
-  terminology: { lead: 'Lead', visit: 'Site visit' },
+  terminology: { lead: 'Lead', visit: 'Site visit', visitShort: 'visit' },
   modules: { properties: true },
   leadFields: {
     budget: { label: 'Budget' },
@@ -132,7 +136,7 @@ export const COACHING_PACK: IndustryPack = {
     { key: 'preferred_batch', label: 'Preferred batch timing', type: 'select', options: ['Morning', 'Afternoon', 'Evening', 'Weekend', 'Flexible'] },
     { key: 'mode', label: 'Classroom or online', type: 'select', options: ['Classroom', 'Online', 'Either'] },
   ],
-  terminology: { lead: 'Enquiry', visit: 'Demo class' },
+  terminology: { lead: 'Enquiry', leadPlural: 'Enquiries', visit: 'Demo class' },
   modules: { properties: false },
   leadFields: {
     budget: null,
@@ -180,7 +184,7 @@ export const HEALTHCARE_PACK: IndustryPack = {
     { key: 'preferred_time', label: 'Preferred time of day', type: 'select', options: ['Morning', 'Afternoon', 'Evening', 'Any'] },
     { key: 'heard_about', label: 'How they heard about us', type: 'select', options: ['Doctor referral', 'Friend or family', 'Online search', 'Social media', 'Other'] },
   ],
-  terminology: { lead: 'Enquiry', visit: 'Consultation' },
+  terminology: { lead: 'Enquiry', leadPlural: 'Enquiries', visit: 'Consultation' },
   modules: { properties: false },
   leadFields: {
     budget: null,
@@ -313,4 +317,41 @@ export function industryChosen(onboardingState: unknown): boolean {
   const completed = Array.isArray(s.completed) ? s.completed : [];
   const skipped = Array.isArray(s.skipped) ? s.skipped : [];
   return completed.includes('industry') && !skipped.includes('industry');
+}
+
+// ----------------------------------------------------------------------------- wording
+/** Plural of a simple English noun: enquiry -> enquiries, class -> classes, lead -> leads. */
+export function pluralise(noun: string): string {
+  if (/[^aeiou]y$/i.test(noun)) return `${noun.slice(0, -1)}ies`;
+  if (/(s|x|z|ch|sh)$/i.test(noun)) return `${noun}es`;
+  return `${noun}s`;
+}
+/** "a lead", "an enquiry". */
+export const withArticle = (noun: string): string => `${/^[aeiou]/i.test(noun) ? 'an' : 'a'} ${noun}`;
+
+export interface PackTerms {
+  /** "lead" / "enquiry" / "customer" */
+  lead: string; Lead: string; leads: string; Leads: string; aLead: string;
+  /** The appointment noun in full: "site visit" / "demo class" / "consultation" / "inspection" / "meeting" */
+  visit: string; Visit: string; visits: string; Visits: string; aVisit: string;
+  /** Short appointment word used inside automation/notification sentences ("visit" for real estate, otherwise the same as `visit`). */
+  event: string;
+  /** Words for the plain-English automation summary. Real estate and general keep the original generic wording ("lead", "appointment"). */
+  summary: { lead: string; appointment: string };
+}
+
+/** Every noun form the UI needs, derived from a pack's terminology. Pure, so it can be unit tested and used on the server. */
+export function packTerms(pack: IndustryPack): PackTerms {
+  const Lead = pack.terminology.lead;
+  const lead = Lead.toLowerCase();
+  const Leads = pack.terminology.leadPlural ?? pluralise(Lead);
+  const Visit = pack.terminology.visit;
+  const visit = Visit.toLowerCase();
+  const generic = pack.id === 'real_estate' || pack.id === 'general';
+  return {
+    lead, Lead, leads: Leads.toLowerCase(), Leads, aLead: withArticle(lead),
+    visit, Visit, visits: pluralise(visit), Visits: pluralise(Visit), aVisit: withArticle(visit),
+    event: (pack.terminology.visitShort ?? visit).toLowerCase(),
+    summary: { lead: generic ? 'lead' : lead, appointment: generic ? 'appointment' : visit },
+  };
 }

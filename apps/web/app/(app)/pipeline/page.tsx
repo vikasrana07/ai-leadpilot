@@ -23,13 +23,14 @@ import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { qs, useMembers, useStages } from '@/lib/crm';
 import { formatBudget } from '@/lib/format';
-import { usePack } from '@/lib/pack';
+import { usePack, useTerms } from '@/lib/pack';
 
 interface Column { stage: { id: string; key: string; name: string; kind: 'OPEN' | 'WON' | 'LOST'; position: number }; total: number; leads: LeadDto[] }
 
 export default function PipelinePage() {
   const { can } = useAuth();
   const lf = usePack().leadFields;
+  const terms = useTerms();
   const qc = useQueryClient();
   const stages = useStages(); const members = useMembers();
   const [filters, setFilters] = useState({ assigned: '', temperature: '' });
@@ -52,7 +53,7 @@ export default function PipelinePage() {
       if (prev) qc.setQueryData(key, { columns: prev.columns.map((c) => c.stage.id === v.lead.stage.id ? { ...c, total: c.total - 1, leads: c.leads.filter((l) => l.id !== v.lead.id) } : c.stage.id === v.stageId ? { ...c, total: c.total + 1, leads: [{ ...v.lead, stage: { ...c.stage } }, ...c.leads] } : c) });
       return { prev, key };
     },
-    onError: (e, _v, ctx) => { if (ctx?.prev) qc.setQueryData(ctx.key, ctx.prev); setNotice({ text: e instanceof ApiError ? e.message : 'Could not move the lead', ok: false }); },
+    onError: (e, _v, ctx) => { if (ctx?.prev) qc.setQueryData(ctx.key, ctx.prev); setNotice({ text: e instanceof ApiError ? e.message : `Could not move the ${terms.lead}`, ok: false }); },
     onSuccess: (_d, v) => { const name = stages.data?.stages.find((s) => s.id === v.stageId)?.name; setNotice({ text: `${v.lead.name} moved to ${name}`, ok: true }); setLost(null); setReason(''); setNote(''); },
     onSettled: () => { void qc.invalidateQueries({ queryKey: ['pipeline'] }); void qc.invalidateQueries({ queryKey: ['leads'] }); void qc.invalidateQueries({ queryKey: ['analytics'] }); },
   });
@@ -81,7 +82,7 @@ export default function PipelinePage() {
       ) : (
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6">
           {board.data.columns.map((col) => (
-            <section key={col.stage.id} aria-label={`${col.stage.name}, ${col.total} leads`} onDragOver={(e) => { e.preventDefault(); setOver(col.stage.id); }} onDragLeave={() => setOver((o) => (o === col.stage.id ? null : o))} onDrop={() => { if (drag) request(drag, col.stage.id); setDrag(null); setOver(null); }}
+            <section key={col.stage.id} aria-label={`${col.stage.name}, ${col.total} ${terms.leads}`} onDragOver={(e) => { e.preventDefault(); setOver(col.stage.id); }} onDragLeave={() => setOver((o) => (o === col.stage.id ? null : o))} onDrop={() => { if (drag) request(drag, col.stage.id); setDrag(null); setOver(null); }}
               className={cn('flex max-h-[calc(100dvh-14rem)] w-64 shrink-0 flex-col rounded-lg border bg-muted/50 transition-colors', over === col.stage.id ? 'border-primary bg-primary-soft/40' : 'border-border')}>
               <header className="flex items-center justify-between px-3 py-2.5"><h2 className="flex items-center gap-1.5 text-label"><span className={cn('h-2 w-2 rounded-full', col.stage.kind === 'WON' ? 'bg-success' : col.stage.kind === 'LOST' ? 'bg-danger' : 'bg-primary')} aria-hidden />{col.stage.name}</h2><span className="num text-helper">{col.total}</span></header>
               <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto px-2 pb-2">
@@ -101,7 +102,7 @@ export default function PipelinePage() {
                   </motion.li>
                 ))}
                 {col.total > col.leads.length ? <li className="text-helper py-1 text-center">Showing {col.leads.length} of {col.total}. <Link className="text-primary underline underline-offset-2 hover:no-underline" href={`/leads?stageId=${col.stage.id}`}>See all</Link></li> : null}
-                {col.leads.length === 0 ? <li className="rounded-lg border border-dashed border-border-strong py-6 text-center text-helper">Drop a lead here</li> : null}
+                {col.leads.length === 0 ? <li className="rounded-lg border border-dashed border-border-strong py-6 text-center text-helper">Drop {terms.aLead} here</li> : null}
               </ul>
             </section>
           ))}
@@ -109,7 +110,7 @@ export default function PipelinePage() {
       )}
 
       <Dialog open={lost !== null} onOpenChange={(o) => { if (!o) setLost(null); }}>
-        <DialogContent title={`Mark ${lost?.lead.name ?? 'lead'} as lost?`} description="Choose a reason so you can see where deals fall through.">
+        <DialogContent title={`Mark ${lost?.lead.name ?? terms.lead} as lost?`} description="Choose a reason so you can see where deals fall through.">
           <div className="space-y-3">
             <Field label="Reason" htmlFor="pl-reason"><Select id="pl-reason" value={reason} onChange={(e) => setReason(e.target.value)}><option value="">Choose a reason…</option>{stages.data?.lostReasons.filter((r) => r.active).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}</Select></Field>
             <Field label="Note (optional)" htmlFor="pl-note"><Textarea id="pl-note" value={note} onChange={(e) => setNote(e.target.value)} /></Field>

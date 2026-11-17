@@ -1,3 +1,4 @@
+import type { PackTerms } from '@leadpilot/shared-types';
 import type { AutomationGraph, GraphIssue } from '@leadpilot/validation';
 
 export interface Appointment {
@@ -27,21 +28,34 @@ export interface UsageView {
   storage: { documents: number; bytes: number }; seats: { active: number };
 }
 
-export const NOTIFICATION_LABELS: Record<string, string> = {
-  lead_assigned: 'A lead is assigned to me', hot_lead: 'A lead turns hot', handover: 'The AI hands a chat to a person', appointment_booked: 'A visit is booked for me',
-  appointment_changed: 'A visit is cancelled, moved or missed', appointment_reminder: 'An hour before a visit', task_due: 'A task is due', sla_breach: 'A customer is waiting too long', automation_failed: 'An automation fails', lead_inactive: 'A lead goes quiet', billing: 'Billing and subscription notices', quota: 'A plan limit is almost used up', integration: 'A webhook endpoint is switched off after repeated failures', security: 'LeadPilot support opens or closes a read-only support session', privacy: 'A data export is ready or a deletion is scheduled',
-};
-export const TRIGGER_LABELS: Record<string, string> = {
-  'lead.created': 'A lead is created', 'lead.assigned': 'A lead is assigned', 'lead.stage_changed': 'A lead changes stage', 'lead.temperature_changed': 'A lead’s temperature changes', 'lead.inactive': 'A lead goes quiet',
-  'message.inbound': 'A customer writes', 'conversation.handover': 'The AI hands over a chat', 'appointment.booked': 'A visit is booked', 'appointment.confirmed': 'A visit is confirmed', 'appointment.cancelled': 'A visit is cancelled',
-  'appointment.rescheduled': 'A visit is rescheduled', 'appointment.completed': 'A visit is completed', 'appointment.no_show': 'A customer does not show up', 'appointment.upcoming': 'A visit is coming up', 'task.due': 'A task is due', 'sla.breached': 'A customer waits too long',
-};
+type Words = Pick<PackTerms, 'lead' | 'Lead' | 'event'>;
+const REAL_ESTATE_WORDS: Words = { lead: 'lead', Lead: 'Lead', event: 'visit' };
+const cap = (w: string) => w.charAt(0).toUpperCase() + w.slice(1);
+const an = (w: string) => `${/^[aeiou]/i.test(w) ? 'an' : 'a'} ${w}`;
+
+/** In-app alert preference labels in the workspace's own words (real estate keeps "lead" and "visit"). */
+export function notificationLabels(w: Words = REAL_ESTATE_WORDS): Record<string, string> {
+  return {
+    lead_assigned: `${cap(an(w.lead))} is assigned to me`, hot_lead: `${cap(an(w.lead))} turns hot`, handover: 'The AI hands a chat to a person', appointment_booked: `${cap(an(w.event))} is booked for me`,
+    appointment_changed: `${cap(an(w.event))} is cancelled, moved or missed`, appointment_reminder: `An hour before ${an(w.event)}`, task_due: 'A task is due', sla_breach: 'A customer is waiting too long', automation_failed: 'An automation fails', lead_inactive: `${cap(an(w.lead))} goes quiet`, billing: 'Billing and subscription notices', quota: 'A plan limit is almost used up', integration: 'A webhook endpoint is switched off after repeated failures', security: 'LeadPilot support opens or closes a read-only support session', privacy: 'A data export is ready or a deletion is scheduled',
+  };
+}
+export function triggerLabels(w: Words = REAL_ESTATE_WORDS): Record<string, string> {
+  const lead = cap(an(w.lead)); const ev = cap(an(w.event));
+  return {
+    'lead.created': `${lead} is created`, 'lead.assigned': `${lead} is assigned`, 'lead.stage_changed': `${lead} changes stage`, 'lead.temperature_changed': `${lead}’s temperature changes`, 'lead.inactive': `${lead} goes quiet`,
+    'message.inbound': 'A customer writes', 'conversation.handover': 'The AI hands over a chat', 'appointment.booked': `${ev} is booked`, 'appointment.confirmed': `${ev} is confirmed`, 'appointment.cancelled': `${ev} is cancelled`,
+    'appointment.rescheduled': `${ev} is rescheduled`, 'appointment.completed': `${ev} is completed`, 'appointment.no_show': 'A customer does not show up', 'appointment.upcoming': `${ev} is coming up`, 'task.due': 'A task is due', 'sla.breached': 'A customer waits too long',
+  };
+}
+export const NOTIFICATION_LABELS: Record<string, string> = notificationLabels();
+export const TRIGGER_LABELS: Record<string, string> = triggerLabels();
 export const ACTION_LABELS: Record<string, string> = { send_whatsapp_template: 'Send a WhatsApp template', send_message: 'Send a message', assign_round_robin: 'Assign to the least busy agent', assign_to: 'Assign to a person', create_task: 'Create a task', notify: 'Send an in-app alert', change_stage: 'Move to a stage', add_tag: 'Add a tag' };
 
-export function describeTrigger(t: AutomationItem['trigger']): string {
-  const base = TRIGGER_LABELS[t.type] ?? t.type;
-  if (t.type === 'appointment.upcoming' && t.hoursBefore) return `${t.hoursBefore} hour${t.hoursBefore === 1 ? '' : 's'} before a visit`;
-  if (t.type === 'lead.inactive' && t.days) return `A lead has no contact for ${t.days} days`;
+export function describeTrigger(t: AutomationItem['trigger'], w: Words = REAL_ESTATE_WORDS): string {
+  const base = triggerLabels(w)[t.type] ?? t.type;
+  if (t.type === 'appointment.upcoming' && t.hoursBefore) return `${t.hoursBefore} hour${t.hoursBefore === 1 ? '' : 's'} before ${an(w.event)}`;
+  if (t.type === 'lead.inactive' && t.days) return `${cap(an(w.lead))} has no contact for ${t.days} days`;
   return base;
 }
 

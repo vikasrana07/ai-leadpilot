@@ -19,7 +19,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { qs, useMembers } from '@/lib/crm';
-import { usePack, visitWords } from '@/lib/pack';
+import { usePack, useTerms, visitWords } from '@/lib/pack';
 import { handleApiError } from '@/lib/forms';
 import { DAY_NAMES, fmtDay, fmtTime, localDate, minuteLabel, parseMinute, type Appointment, type AvailabilityView, type SlotsResponse } from '@/lib/ops';
 import { cn } from '@/lib/cn';
@@ -110,7 +110,7 @@ function DetailDialog({ id, tz, onClose, onReschedule }: { id: string; tz: strin
             <Button size="sm" onClick={() => onReschedule(a)}>Reschedule</Button>
             {started ? <><Button size="sm" onClick={() => act.mutate({ path: 'complete' })}>Mark completed</Button><Button size="sm" onClick={() => act.mutate({ path: 'no-show' })}>No-show</Button></> : null}
           </div> : null}
-          {active ? <div className="flex gap-2"><Input aria-label="Cancellation reason" placeholder="Reason (optional)" value={reason} onChange={(e) => setReason(e.target.value)} /><Button size="sm" variant="danger" onClick={() => act.mutate({ path: 'cancel', body: { reason: reason || undefined } })}>Cancel visit</Button></div> : null}
+          {active ? <div className="flex gap-2"><Input aria-label="Cancellation reason" placeholder="Reason (optional)" value={reason} onChange={(e) => setReason(e.target.value)} /><Button size="sm" variant="danger" onClick={() => act.mutate({ path: 'cancel', body: { reason: reason || undefined } })}>Cancel {vw.visit}</Button></div> : null}
           {a.events?.length ? <div className="border-t border-border pt-3"><p className="text-label mb-1">History</p><ul className="space-y-1">{a.events.map((e) => <li key={e.id} className="text-helper">{new Date(e.createdAt).toLocaleString('en-IN')} · {e.type.replace(/_/g, ' ')}</li>)}</ul></div> : null}
         </div>}
       </DialogContent>
@@ -163,6 +163,7 @@ function AvailabilityDialog({ onClose }: { onClose: () => void }) {
 
 export default function AppointmentsPage() {
   const vw = visitWords(usePack());
+  const terms = useTerms();
   const { can } = useAuth(); const manager = can('appointment:read:all'); const write = can('appointment:write');
   const tzGuess = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [view, setView] = useState<'week' | 'list'>('week'); const [weekStart, setWeekStart] = useState(() => mondayOf(localDate(new Date(), tzGuess)));
@@ -194,7 +195,7 @@ export default function AppointmentsPage() {
                   <span className="num font-medium">{fmtTime(a.startsAt, tz)}</span> <Badge tone={TONE[a.status]} className="ml-1 !px-1 !py-0 text-[10px]">{a.status === 'PENDING' ? 'Confirm' : LABEL[a.status]}</Badge>
                   <span className="block truncate">{a.leadName}</span>{manager ? <span className="text-helper block truncate">{a.agentName}</span> : null}</button>))}</div>
             </div>))}</div></div>
-        ) : list.data.items.length === 0 ? <EmptyState icon={CalendarDays} title={`No upcoming ${vw.visits}`} description={`Book ${vw.a} from a lead, or let the AI assistant arrange them from chat.`} action={write ? <Button variant="primary" onClick={() => setBook(true)}>Book {vw.visit}</Button> : undefined} /> : (
+        ) : list.data.items.length === 0 ? <EmptyState icon={CalendarDays} title={`No upcoming ${vw.visits}`} description={`Book ${vw.a} from ${terms.aLead}, or let the AI assistant arrange them from chat.`} action={write ? <Button variant="primary" onClick={() => setBook(true)}>Book {vw.visit}</Button> : undefined} /> : (
           <div className="divide-y divide-border">{list.data.items.map((a) => (
             <button key={a.id} onClick={() => setOpen(a.id)} className="flex w-full flex-wrap items-center gap-3 px-4 py-3 text-left text-[13px] hover:bg-muted/40"><span className="num w-44 shrink-0 font-medium">{fmtDay(a.startsAt, tz)}, {fmtTime(a.startsAt, tz)}</span><span className="min-w-0 flex-1 truncate">{a.leadName}{manager ? <span className="text-helper"> · {a.agentName}</span> : null}</span>{a.source === 'ai' ? <Badge tone="primary">AI</Badge> : null}<Badge tone={TONE[a.status]}>{LABEL[a.status]}</Badge></button>))}</div>
         )}

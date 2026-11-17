@@ -90,6 +90,16 @@ describe('summarizeGraph', () => {
     expect(text).toContain('When a lead is created:'); expect(text).toContain('If temperature is HOT or score is at least 80:');
     expect(text).toContain('Otherwise:'); expect(text).toContain('wait 1 day'); expect(text).toContain('add the tag "vip"');
   });
+  it('keeps the original wording by default and follows the industry words when given', () => {
+    const g = branching(); g.nodes[2] = { id: 'a1', type: 'action', data: { type: 'assign_round_robin' } };
+    const plain = summarizeGraph(g).join('\n');
+    expect(plain).toContain('When a lead is created:'); expect(plain).toContain('assign the lead to the least busy agent');
+    expect(summarizeGraph(g, { lead: 'lead', appointment: 'appointment' }).join('\n')).toBe(plain);
+    const coaching = summarizeGraph(g, { lead: 'enquiry', appointment: 'demo class' }).join('\n');
+    expect(coaching).toContain('When an enquiry is created:'); expect(coaching).toContain('assign the enquiry to the least busy agent');
+    const appt = summarizeGraph({ v: 1, nodes: [{ id: 't', type: 'trigger', data: { type: 'appointment.upcoming', hoursBefore: 24 } }, { id: 'a', type: 'action', data: { type: 'notify', target: 'lead_owner', title: 'Hi' } }], edges: [{ id: 'e', from: 't', to: 'a', label: 'next' }] }, { lead: 'customer', appointment: 'inspection' }).join('\n');
+    expect(appt).toContain('When an inspection is coming up (24h before):'); expect(appt).toContain('notify the customer owner: "Hi"');
+  });
   it('shows replied / not replied paths for a wait', () => {
     const g = branching(); g.edges.push({ id: 'er', from: 'w', to: 'a1', label: 'replied' });
     expect(summarizeGraph(g).join('\n')).toContain('If they reply:');

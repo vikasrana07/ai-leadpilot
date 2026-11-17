@@ -44,5 +44,15 @@ Medical information is sensitive personal data and the product is not built or r
 - Only English wording; no Hindi pack labels.
 - The WhatsApp message templates the new automation templates need (`demo_class_reminder`, `consultation_reminder`, `inspection_reminder`) must be registered with Meta by the tenant; none has been sent to the real provider.
 - The offline mock model and the evaluation set (`apps/api/test/eval`) are real-estate flavoured; the new prompts are tested for content, not for model behaviour. Real-model quality for each industry, in English or Hinglish, is unmeasured until the live evaluation runs.
-- Reports and dashboard copy still use generic "Leads" wording; the per-pack lead noun (Enquiry / Customer) is stored but not used anywhere yet.
+- (Superseded by the addendum below: the lead noun is now used across the UI.)
 - Scoring notes and criteria labels are generic or pack-worded, but score thresholds (Hot 70+, Warm 40-69) are unchanged and unvalidated for these industries.
+
+## Addendum: pack terminology across the UI (2026-11-17)
+`terminology` now drives the wording of the whole web app, not only the appointments page.
+- **Nouns per pack** (conservative; chosen to read naturally in buttons such as "Add enquiry"): real estate **Lead / Leads** and **site visit** (unchanged); coaching **Enquiry / Enquiries**, **demo class**; healthcare **Enquiry / Enquiries** (not "Patient": the product does not keep patient records), **consultation**; home services **Customer / Customers**, **inspection**; general **Lead / Leads**, **meeting**.
+- **One pure function**, `packTerms(pack)` in `packages/shared-types`, returns every form the UI needs (`lead`, `Leads`, `aLead`, `visit`, `Visits`, `aVisit`, a short `event` word and the words for the plain-English summary). The web reads it through `useTerms()` in `apps/web/lib/pack.ts`; plural rules (enquiry to enquiries) live in `pluralise`.
+- **Real estate output is byte-identical**: the short event word for real estate stays "visit" (existing copy says "A visit is booked"), and the plain-English automation summary keeps its generic "lead" / "appointment" for real estate and general (`terms.summary`). Unit tests pin both.
+- **Where it applies:** nav label (Leads / Enquiries / Customers), page headings, buttons and empty states on the leads list, lead detail, pipeline, dashboard, reports, settings, inbox panel, merge dialog, activity timeline, onboarding and AI assistant tabs, notification preferences, automation trigger/action wording, the automation builder (forms, summary, test dialog, step titles) and `summarizeGraph(graph, terms?)`. Static labels use `applyTerms()` (`apps/web/lib/terms-text.ts`), which only re-words whole words in our own fixed copy, never server or customer text.
+- **Budget conditions:** an automation condition on maximum budget is hidden for packs without a budget field (a saved one stays visible).
+- **Not changed (deliberately):** routes, API fields, permission names and the public API scope descriptions keep the word "lead"; the API's own summaries and report table column titles come from the server and still say "Lead"; the usage page ("Leads created"), the lead-capture API docs and the WhatsApp template example text keep generic wording; the Properties module is only shown for real estate.
+

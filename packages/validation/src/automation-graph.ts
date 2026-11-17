@@ -205,35 +205,49 @@ export function effectiveGraph(row: { graph?: unknown; trigger: unknown; conditi
 // ----------------------------------------------------------------------------- plain English
 const FIELD_LABEL: Record<string, string> = { 'lead.stage': 'stage', 'lead.temperature': 'temperature', 'lead.score': 'score', 'lead.source': 'source', 'lead.assigned': 'is assigned', 'lead.budgetMax': 'maximum budget', 'lead.location': 'location', 'event.toStage': 'new stage', 'event.toTemperature': 'new temperature' };
 const OP_LABEL: Record<string, string> = { eq: 'is', neq: 'is not', gt: 'is above', gte: 'is at least', lt: 'is below', lte: 'is at most', in: 'is one of' };
-export const TRIGGER_LABEL: Record<string, string> = {
-  'lead.created': 'a lead is created', 'lead.assigned': 'a lead is assigned', 'lead.stage_changed': 'a lead changes stage', 'lead.temperature_changed': 'a lead changes temperature',
-  'lead.inactive': 'a lead goes quiet', 'message.inbound': 'a customer messages', 'conversation.handover': 'a conversation is handed to a person',
-  'appointment.booked': 'an appointment is booked', 'appointment.confirmed': 'an appointment is confirmed', 'appointment.cancelled': 'an appointment is cancelled',
-  'appointment.rescheduled': 'an appointment is rescheduled', 'appointment.completed': 'an appointment is completed', 'appointment.no_show': 'a customer does not show up',
-  'appointment.upcoming': 'an appointment is coming up', 'task.due': 'a task is due', 'sla.breached': 'a reply deadline is missed',
-};
-const ACTION_LABEL: Record<AutomationAction['type'], (a: never) => string> = {
-  send_whatsapp_template: (a: Extract<AutomationAction, { type: 'send_whatsapp_template' }>) => `send the WhatsApp template "${a.template}"`,
-  send_message: (a: Extract<AutomationAction, { type: 'send_message' }>) => `send the message "${a.text.length > 60 ? `${a.text.slice(0, 57)}...` : a.text}"`,
-  assign_round_robin: () => 'assign the lead to the least busy agent',
-  assign_to: () => 'assign the lead to a chosen team member',
-  create_task: (a: Extract<AutomationAction, { type: 'create_task' }>) => `create the task "${a.title}" due in ${a.dueInHours}h`,
-  notify: (a: Extract<AutomationAction, { type: 'notify' }>) => `notify ${a.target === 'managers' ? 'managers' : 'the lead owner'}: "${a.title}"`,
-  change_stage: (a: Extract<AutomationAction, { type: 'change_stage' }>) => `move the lead to "${a.stageKey}"`,
-  add_tag: (a: Extract<AutomationAction, { type: 'add_tag' }>) => `add the tag "${a.tag}"`,
-} as Record<AutomationAction['type'], (a: never) => string>;
+/** Words the plain-English summary uses for the person and the appointment. Defaults keep the original generic wording. */
+export interface SummaryTerms { lead?: string; appointment?: string }
+const article = (w: string) => `${/^[aeiou]/i.test(w) ? 'an' : 'a'} ${w}`;
+const termsOf = (t?: SummaryTerms) => ({ lead: t?.lead ?? 'lead', appt: t?.appointment ?? 'appointment' });
 
-export const describeTriggerData = (t: AutomationTrigger): string => `${TRIGGER_LABEL[t.type] ?? t.type}${t.type === 'appointment.upcoming' && t.hoursBefore ? ` (${t.hoursBefore}h before)` : ''}${t.type === 'lead.inactive' && t.days ? ` (${t.days} days)` : ''}`;
+export function triggerLabels(terms?: SummaryTerms): Record<string, string> {
+  const { lead, appt } = termsOf(terms);
+  const aLead = article(lead), aAppt = article(appt);
+  return {
+    'lead.created': `${aLead} is created`, 'lead.assigned': `${aLead} is assigned`, 'lead.stage_changed': `${aLead} changes stage`, 'lead.temperature_changed': `${aLead} changes temperature`,
+    'lead.inactive': `${aLead} goes quiet`, 'message.inbound': 'a customer messages', 'conversation.handover': 'a conversation is handed to a person',
+    'appointment.booked': `${aAppt} is booked`, 'appointment.confirmed': `${aAppt} is confirmed`, 'appointment.cancelled': `${aAppt} is cancelled`,
+    'appointment.rescheduled': `${aAppt} is rescheduled`, 'appointment.completed': `${aAppt} is completed`, 'appointment.no_show': 'a customer does not show up',
+    'appointment.upcoming': `${aAppt} is coming up`, 'task.due': 'a task is due', 'sla.breached': 'a reply deadline is missed',
+  };
+}
+export const TRIGGER_LABEL: Record<string, string> = triggerLabels();
+
+const actionLabels = (terms?: SummaryTerms): Record<AutomationAction['type'], (a: never) => string> => {
+  const { lead } = termsOf(terms);
+  return {
+    send_whatsapp_template: (a: Extract<AutomationAction, { type: 'send_whatsapp_template' }>) => `send the WhatsApp template "${a.template}"`,
+    send_message: (a: Extract<AutomationAction, { type: 'send_message' }>) => `send the message "${a.text.length > 60 ? `${a.text.slice(0, 57)}...` : a.text}"`,
+    assign_round_robin: () => `assign the ${lead} to the least busy agent`,
+    assign_to: () => `assign the ${lead} to a chosen team member`,
+    create_task: (a: Extract<AutomationAction, { type: 'create_task' }>) => `create the task "${a.title}" due in ${a.dueInHours}h`,
+    notify: (a: Extract<AutomationAction, { type: 'notify' }>) => `notify ${a.target === 'managers' ? 'managers' : `the ${lead} owner`}: "${a.title}"`,
+    change_stage: (a: Extract<AutomationAction, { type: 'change_stage' }>) => `move the ${lead} to "${a.stageKey}"`,
+    add_tag: (a: Extract<AutomationAction, { type: 'add_tag' }>) => `add the tag "${a.tag}"`,
+  } as Record<AutomationAction['type'], (a: never) => string>;
+};
+
+export const describeTriggerData = (t: AutomationTrigger, terms?: SummaryTerms): string => `${triggerLabels(terms)[t.type] ?? t.type}${t.type === 'appointment.upcoming' && t.hoursBefore ? ` (${t.hoursBefore}h before)` : ''}${t.type === 'lead.inactive' && t.days ? ` (${t.days} days)` : ''}`;
 export const describeConditionData = (c: AutomationCondition): string => `${FIELD_LABEL[c.field] ?? c.field} ${OP_LABEL[c.op] ?? c.op} ${Array.isArray(c.value) ? c.value.join(', ') : String(c.value)}`;
-export const describeActionData = (a: AutomationAction): string => (ACTION_LABEL[a.type] as (a: AutomationAction) => string)(a);
+export const describeActionData = (a: AutomationAction, terms?: SummaryTerms): string => (actionLabels(terms)[a.type] as (a: AutomationAction) => string)(a);
 export const describeWait = (minutes: number): string => (minutes % 1440 === 0 ? `${minutes / 1440} day${minutes === 1440 ? '' : 's'}` : minutes % 60 === 0 ? `${minutes / 60} hour${minutes === 60 ? '' : 's'}` : `${minutes} minutes`);
 
 /** Indented plain-English outline of a valid graph (also the accessible text alternative to the canvas). Invalid graphs return an empty list. */
-export function summarizeGraph(g: AutomationGraph): string[] {
+export function summarizeGraph(g: AutomationGraph, terms?: SummaryTerms): string[] {
   const byId = new Map(g.nodes.map((n) => [n.id, n]));
   const trigger = g.nodes.find((n) => n.type === 'trigger');
   if (!trigger || trigger.type !== 'trigger') return [];
-  const lines = [`When ${describeTriggerData(trigger.data)}:`];
+  const lines = [`When ${describeTriggerData(trigger.data, terms)}:`];
   const seen = new Set<string>();
   const walk = (id: string | undefined, indent: number) => {
     if (!id || seen.has(id)) return;
@@ -241,7 +255,7 @@ export function summarizeGraph(g: AutomationGraph): string[] {
     seen.add(id);
     const pad = '  '.repeat(indent);
     switch (n.type) {
-      case 'action': lines.push(`${pad}- ${describeActionData(n.data)}`); walk(outEdge(g, id, 'next')?.to, indent); break;
+      case 'action': lines.push(`${pad}- ${describeActionData(n.data, terms)}`); walk(outEdge(g, id, 'next')?.to, indent); break;
       case 'wait': {
         lines.push(`${pad}- wait ${describeWait(n.data.minutes)}`);
         const replied = outEdge(g, id, 'replied'); const next = outEdge(g, id, 'next', 'timeout');

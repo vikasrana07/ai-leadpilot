@@ -3,6 +3,7 @@
 import { summarizeGraph, type AutomationGraph } from '@leadpilot/validation';
 import { useMemo } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useTerms } from '@/lib/pack';
 
 /**
  * Plain-English description of the whole automation. It lives in a polite live region, but follows the graph with a delay so a screen reader
@@ -10,7 +11,8 @@ import { useDebounce } from '@/hooks/use-debounce';
  */
 export function Summary({ graph, valid }: { graph: AutomationGraph; valid: boolean }) {
   const settled = useDebounce(graph, 1200);
-  const lines = useMemo(() => { if (!valid) return []; try { return summarizeGraph(settled); } catch { return []; } }, [settled, valid]);
+  const terms = useTerms();
+  const lines = useMemo(() => { if (!valid) return []; try { return summarizeGraph(settled, terms.summary); } catch { return []; } }, [settled, valid, terms]);
   return (
     <section aria-labelledby="summary-h" className="rounded-lg border border-border bg-card p-4">
       <h2 id="summary-h" className="text-heading mb-2">What this automation does</h2>

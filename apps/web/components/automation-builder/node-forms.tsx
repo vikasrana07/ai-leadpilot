@@ -15,7 +15,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/api';
 import { useLeadMeta, useMembers, useStages } from '@/lib/crm';
 import type { WaTemplate } from '@/lib/inbox';
-import { TRIGGER_LABELS } from '@/lib/ops';
+import { triggerLabels } from '@/lib/ops';
+import { usePack, useTerms } from '@/lib/pack';
 import {
   ACTION_DEFAULTS, ACTION_TYPE_LABELS, defaultValue, FIELD_LABELS, OP_LABELS, opsFor, PLACEHOLDERS, splitMinutes, TEMPERATURES, toMinutes, valueKind, WAIT_UNITS,
   type Choice, type ConditionField, type ConditionOp, type WaitUnit,
@@ -27,6 +28,9 @@ import {
  * form says so. Forms are re-mounted per step (key = node id), so react-hook-form's defaults are always that step's saved data.
  */
 type Data<T extends GraphNode['type']> = Extract<GraphNode, { type: T }>['data'];
+
+/** A saved condition that already uses a field stays visible even if the pack would not offer it. */
+const watchedUses = (watched: { field: ConditionField }[] | undefined, f: ConditionField): boolean => !!watched?.some((w) => w.field === f);
 
 function useLiveForm(schema: z.ZodType, defaults: FieldValues, toData: (v: FieldValues) => unknown, onApply: (data: never) => void) {
   const form = useForm<FieldValues>({ resolver: zodResolver(schema as never) as never, defaultValues: defaults, mode: 'onChange' });
@@ -72,6 +76,7 @@ const append = (form: UseFormReturn<FieldValues>, name: string, text: string) =>
 // ----------------------------------------------------------------------------- trigger
 export function TriggerForm({ data, onApply }: { data: Data<'trigger'>; onApply: (d: Data<'trigger'>) => void }) {
   const id = useId();
+  const terms = useTerms(); const labels = triggerLabels(terms);
   const num = (v: unknown) => (v === '' || v === undefined || v === null || Number.isNaN(Number(v)) ? undefined : Number(v));
   const { form, notApplied } = useLiveForm(triggerSchema, { type: data.type, hoursBefore: data.hoursBefore, days: data.days },
     (v) => ({ type: v.type, ...(v.type === 'appointment.upcoming' ? { hoursBefore: num(v.hoursBefore) } : {}), ...(v.type === 'lead.inactive' ? { days: num(v.days) } : {}) }), onApply as never);
@@ -80,9 +85,9 @@ export function TriggerForm({ data, onApply }: { data: Data<'trigger'>; onApply:
     <form className="space-y-3" noValidate onSubmit={(e) => e.preventDefault()}>
       <NotApplied show={notApplied} />
       <Field label="What starts this automation?" htmlFor={`${id}-type`}>
-        <Select id={`${id}-type`} {...form.register('type')}>{TRIGGER_TYPES.map((t) => <option key={t} value={t}>{TRIGGER_LABELS[t] ?? t}</option>)}</Select>
+        <Select id={`${id}-type`} {...form.register('type')}>{TRIGGER_TYPES.map((t) => <option key={t} value={t}>{labels[t] ?? t}</option>)}</Select>
       </Field>
-      {type === 'appointment.upcoming' ? <Field label="Hours before the visit" htmlFor={`${id}-h`} error={err(form, 'hoursBefore')} hint="From 0.25 (15 minutes) to 168 (a week)."><Input id={`${id}-h`} type="number" inputMode="decimal" step="any" min={0.25} max={168} {...form.register('hoursBefore', { setValueAs: (v) => (v === '' || v == null ? undefined : Number(v)) })} /></Field> : null}
+      {type === 'appointment.upcoming' ? <Field label={`Hours before the ${terms.event}`} htmlFor={`${id}-h`} error={err(form, 'hoursBefore')} hint="From 0.25 (15 minutes) to 168 (a week)."><Input id={`${id}-h`} type="number" inputMode="decimal" step="any" min={0.25} max={168} {...form.register('hoursBefore', { setValueAs: (v) => (v === '' || v == null ? undefined : Number(v)) })} /></Field> : null}
       {type === 'lead.inactive' ? <Field label="Days without contact" htmlFor={`${id}-d`} error={err(form, 'days')} hint="1 to 90 days."><Input id={`${id}-d`} type="number" inputMode="numeric" min={1} max={90} {...form.register('days', { setValueAs: (v) => (v === '' || v == null ? undefined : Number(v)) })} /></Field> : null}
     </form>
   );
@@ -111,6 +116,7 @@ function StringList({ control, name, label, max, addLabel }: { control: Control<
 
 export function ActionForm({ data, onApply }: { data: Data<'action'>; onApply: (d: Data<'action'>) => void }) {
   const id = useId();
+  const terms = useTerms();
   const members = useMembers(); const stages = useStages();
   const templates = useQuery({ queryKey: ['whatsapp', 'templates'], queryFn: () => api<WaTemplate[]>('/whatsapp/templates'), retry: false });
   const blank = (v: FieldValues) => { const o: Record<string, unknown> = { ...v }; for (const k of ['body']) if (o[k] === '') delete o[k]; return o; };
@@ -144,7 +150,7 @@ export function ActionForm({ data, onApply }: { data: Data<'action'>; onApply: (
         <Placeholders onPick={(p) => append(form, 'text', p)} />
       </> : null}
 
-      {type === 'assign_round_robin' ? <p className="text-helper">Gives the lead to the agent with the fewest open leads. Skipped when the lead already has an owner.</p> : null}
+      {type === 'assign_round_robin' ? <p className="text-helper">Gives the {terms.lead} to the agent with the fewest open {terms.leads}. Skipped when the {terms.lead} already has an owner.</p> : null}
 
       {type === 'assign_to' ? <Field label="Assign to" htmlFor={`${id}-who`} error={err(form, 'membershipId')} hint={members.isError ? 'Could not load your team.' : undefined}>
         <Select id={`${id}-who`} {...reg('membershipId')}><option value="">Choose a person</option>{active.map((m) => <option key={m.id} value={m.id}>{m.user.name} ({m.roleName})</option>)}</Select>
@@ -155,18 +161,18 @@ export function ActionForm({ data, onApply }: { data: Data<'action'>; onApply: (
         <Placeholders onPick={(p) => append(form, 'title', p)} />
         <Field label="Due in (hours)" htmlFor={`${id}-due`} error={err(form, 'dueInHours')} hint="0 to 1440 hours (60 days)."><Input id={`${id}-due`} type="number" inputMode="decimal" min={0} max={1440} {...reg('dueInHours', { setValueAs: (v) => (v === '' || v == null ? undefined : Number(v)) })} /></Field>
         <Field label="Assigned to" htmlFor={`${id}-asg`} error={err(form, 'assignee')}>
-          <Select id={`${id}-asg`} {...reg('assignee')}><option value="lead_owner">The lead&apos;s owner</option>{active.map((m) => <option key={m.id} value={m.id}>{m.user.name}</option>)}</Select>
+          <Select id={`${id}-asg`} {...reg('assignee')}><option value="lead_owner">The {terms.lead}&apos;s owner</option>{active.map((m) => <option key={m.id} value={m.id}>{m.user.name}</option>)}</Select>
         </Field>
       </> : null}
 
       {type === 'notify' ? <>
-        <Field label="Who gets the alert?" htmlFor={`${id}-tg`}><Select id={`${id}-tg`} {...reg('target')}><option value="lead_owner">The lead&apos;s owner (managers if no owner)</option><option value="managers">Managers</option></Select></Field>
+        <Field label="Who gets the alert?" htmlFor={`${id}-tg`}><Select id={`${id}-tg`} {...reg('target')}><option value="lead_owner">The {terms.lead}&apos;s owner (managers if no owner)</option><option value="managers">Managers</option></Select></Field>
         <Field label="Alert title" htmlFor={`${id}-nt`} error={err(form, 'title')}><Input id={`${id}-nt`} {...reg('title')} /></Field>
         <Field label="Details (optional)" htmlFor={`${id}-nb`} error={err(form, 'body')}><Textarea id={`${id}-nb`} rows={2} maxLength={500} {...reg('body')} /></Field>
         <Placeholders onPick={(p) => append(form, 'title', p)} />
       </> : null}
 
-      {type === 'change_stage' ? <Field label="Move the lead to" htmlFor={`${id}-st`} error={err(form, 'stageKey')}>
+      {type === 'change_stage' ? <Field label={`Move the ${terms.lead} to`} htmlFor={`${id}-st`} error={err(form, 'stageKey')}>
         <Select id={`${id}-st`} {...reg('stageKey')}><option value="">Choose a stage</option>{(stages.data?.stages ?? []).map((s) => <option key={s.key} value={s.key}>{s.name}</option>)}</Select>
       </Field> : null}
 
@@ -223,13 +229,15 @@ function ConditionValue({ control, index, field, op, choices, id, error }: { con
 
 export function BranchForm({ data, onApply }: { data: Data<'branch'>; onApply: (d: Data<'branch'>) => void }) {
   const id = useId();
+  const terms = useTerms(); const pack = usePack();
   const stages = useStages(); const meta = useLeadMeta();
   const { form, notApplied } = useLiveForm(branchFormSchema, { match: data.match, conditions: data.conditions }, (v) => v, onApply as never);
   const { fields, append: add, remove } = useFieldArray({ control: form.control, name: 'conditions' });
   const stageChoices: Choice[] = (stages.data?.stages ?? []).map((s) => ({ value: s.key, label: s.name }));
   const choicesFor = (f: ConditionField): Choice[] => { const k = valueKind(f); return k === 'stage' ? stageChoices : k === 'temperature' ? TEMPERATURES.map((t) => ({ value: t, label: t.charAt(0) + t.slice(1).toLowerCase() })) : k === 'source' ? (meta.data?.sources ?? []).map((s) => ({ value: s.key, label: s.name })) : []; };
   const watched = form.watch('conditions') as { field: ConditionField; op: ConditionOp }[];
-  const fieldNames = Object.keys(FIELD_LABELS) as ConditionField[];
+  // Industries without a budget field cannot ask about it (the condition would never be true).
+  const fieldNames = (Object.keys(FIELD_LABELS) as ConditionField[]).filter((f) => f !== 'lead.budgetMax' || pack.leadFields.budget !== null || watchedUses(watched, f));
   const onField = (i: number, f: ConditionField) => {
     const ops = opsFor(f); const cur = form.getValues(`conditions.${i}.op`) as ConditionOp; const op = ops.includes(cur) ? cur : (ops[0] as ConditionOp);
     form.setValue(`conditions.${i}.field`, f, { shouldDirty: true }); form.setValue(`conditions.${i}.op`, op, { shouldDirty: true });
@@ -244,8 +252,8 @@ export function BranchForm({ data, onApply }: { data: Data<'branch'>; onApply: (
   return (
     <form className="space-y-3" noValidate onSubmit={(e) => e.preventDefault()}>
       <NotApplied show={notApplied} />
-      <p className="text-helper">This step asks a question about the lead. Leads that match follow the <strong>If</strong> path; all others follow <strong>Otherwise</strong>.</p>
-      <Field label="The lead must match" htmlFor={`${id}-m`}><Select id={`${id}-m`} {...form.register('match')}><option value="all">All of the conditions</option><option value="any">Any one of the conditions</option></Select></Field>
+      <p className="text-helper">This step asks a question about the {terms.lead}. {terms.Leads} that match follow the <strong>If</strong> path; all others follow <strong>Otherwise</strong>.</p>
+      <Field label={`The ${terms.lead} must match`} htmlFor={`${id}-m`}><Select id={`${id}-m`} {...form.register('match')}><option value="all">All of the conditions</option><option value="any">Any one of the conditions</option></Select></Field>
       {err(form, 'conditions') ? <p role="alert" className="text-helper !text-danger">{err(form, 'conditions')}</p> : null}
       <ol className="space-y-3">
         {fields.map((c, i) => {

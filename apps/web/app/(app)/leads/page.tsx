@@ -25,7 +25,7 @@ import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { qs, useLeadMeta, useMembers, useStages } from '@/lib/crm';
 import { formatBudget, timeAgo } from '@/lib/format';
-import { usePack } from '@/lib/pack';
+import { usePack, useTerms } from '@/lib/pack';
 import { t } from '@/lib/i18n';
 
 type SortKey = 'createdAt' | 'name' | 'score' | 'nextFollowUpAt';
@@ -34,6 +34,7 @@ type BulkBody = { action: 'assign'; assignedMembershipId: string | null } | { ac
 export default function LeadsPage() {
   const { can } = useAuth();
   const lf = usePack().leadFields;
+  const terms = useTerms();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const q = useDebounce(search, 300);
@@ -79,17 +80,17 @@ export default function LeadsPage() {
 
   return (
     <>
-      <PageHeader title={t('leads.title')} description="Every enquiry, scored and assigned." actions={<>
+      <PageHeader title={terms.Leads} description="Every enquiry, scored and assigned." actions={<>
         {can('lead:import') ? <Button onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" aria-hidden />{t('leads.import')}</Button> : null}
         {can('lead:export') ? <Button onClick={() => void exportCsv()}><Download className="h-4 w-4" aria-hidden />{t('leads.export')}</Button> : null}
-        {can('lead:write:all') || can('lead:write:own') ? <Button variant="primary" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4" aria-hidden />{t('leads.add')}</Button> : null}
+        {can('lead:write:all') || can('lead:write:own') ? <Button variant="primary" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4" aria-hidden />Add {terms.lead}</Button> : null}
       </>} />
 
       <Card className="overflow-hidden">
         <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
           <div className="relative min-w-52 flex-1 sm:max-w-xs">
             <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden />
-            <Input aria-label="Search leads" placeholder="Search name, phone, email" className="pl-8" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+            <Input aria-label={`Search ${terms.leads}`} placeholder="Search name, phone, email" className="pl-8" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
           </div>
           <Select aria-label="Stage" className="w-auto" value={f.stageId} onChange={sel('stageId')}><option value="">All stages</option>{stages.data?.stages.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</Select>
           <Select aria-label="Temperature" className="w-auto" value={f.temperature} onChange={sel('temperature')}><option value="">Any temperature</option><option value="HOT">Hot</option><option value="WARM">Warm</option><option value="COLD">Cold</option><option value="UNKNOWN">Unscored</option></Select>
@@ -110,12 +111,12 @@ export default function LeadsPage() {
         ) : null}
 
         {leads.isPending ? <div className="space-y-2 p-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-11" />)}</div> : leads.isError ? (
-          <EmptyState icon={Users} title="Could not load leads" description="Check your connection and try again." action={<Button onClick={() => void leads.refetch()}>Retry</Button>} />
+          <EmptyState icon={Users} title={`Could not load ${terms.leads}`} description="Check your connection and try again." action={<Button onClick={() => void leads.refetch()}>Retry</Button>} />
         ) : items.length === 0 ? (
-          <EmptyState icon={Users} title={filtered ? 'No leads match these filters' : t('leads.empty.title')} description={filtered ? 'Try clearing a filter or searching for something else.' : t('leads.empty.body')} action={!filtered && (can('lead:write:all') || can('lead:write:own')) ? <Button variant="primary" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4" aria-hidden />{t('leads.add')}</Button> : undefined} />
+          <EmptyState icon={Users} title={filtered ? `No ${terms.leads} match these filters` : `No ${terms.leads} yet`} description={filtered ? 'Try clearing a filter or searching for something else.' : `Add your first ${terms.lead}, import a CSV, or connect a lead source.`} action={!filtered && (can('lead:write:all') || can('lead:write:own')) ? <Button variant="primary" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4" aria-hidden />Add {terms.lead}</Button> : undefined} />
         ) : (
           <div className={cn(leads.isPlaceholderData && 'opacity-60 transition-opacity')}>
-            <ul className="divide-y divide-border md:hidden" aria-label="Leads">
+            <ul className="divide-y divide-border md:hidden" aria-label={terms.Leads}>
               {items.map((l) => (
                 <li key={l.id}>
                   <div className="flex items-start gap-3 px-4 py-3">
@@ -135,7 +136,7 @@ export default function LeadsPage() {
               <thead className="bg-muted/50 text-label text-muted-foreground">
                 <tr>
                   <th scope="col" className="w-10 px-3 py-2.5"><input type="checkbox" aria-label="Select all on this page" checked={allOnPage} onChange={(e) => setSelected((s) => { const n = new Set(s); items.forEach((l) => (e.target.checked ? n.add(l.id) : n.delete(l.id))); return n; })} /></th>
-                  {th('Lead', 'name')}{th('Stage')}{th('Temp.')}{lf.budget ? th(lf.budget.label) : null}{th('Assigned')}{th('Score', 'score', 'text-right')}{th('Follow-up', 'nextFollowUpAt')}{th('Added', 'createdAt')}
+                  {th(terms.Lead, 'name')}{th('Stage')}{th('Temp.')}{lf.budget ? th(lf.budget.label) : null}{th('Assigned')}{th('Score', 'score', 'text-right')}{th('Follow-up', 'nextFollowUpAt')}{th('Added', 'createdAt')}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -164,8 +165,8 @@ export default function LeadsPage() {
       </Card>
 
       <LeadFormDialog open={addOpen} onOpenChange={setAddOpen} />
-      <ImportDialog open={importOpen} onOpenChange={setImportOpen} endpoint="/leads/import" title="Import leads" hint={lf.budget ? 'CSV with a header row. Columns: name, phone, email, budget, location, source, tags… Amounts like 85 L or 1.2 Cr work.' : 'CSV with a header row. Columns: name, phone, email, location, source, tags…'} invalidate={[['leads'], ['pipeline'], ['analytics']]} />
-      <ConfirmDialog open={deleteOpen} onOpenChange={setDeleteOpen} danger title={`Delete ${selected.size} lead${selected.size === 1 ? '' : 's'}?`} description="They disappear from lists and reports. This is recorded in the audit log." confirmLabel="Delete" onConfirm={async () => { await bulk.mutateAsync({ action: 'delete' }); }} />
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} endpoint="/leads/import" title={`Import ${terms.leads}`} hint={lf.budget ? 'CSV with a header row. Columns: name, phone, email, budget, location, source, tags… Amounts like 85 L or 1.2 Cr work.' : 'CSV with a header row. Columns: name, phone, email, location, source, tags…'} invalidate={[['leads'], ['pipeline'], ['analytics']]} />
+      <ConfirmDialog open={deleteOpen} onOpenChange={setDeleteOpen} danger title={`Delete ${selected.size} ${selected.size === 1 ? terms.lead : terms.leads}?`} description="They disappear from lists and reports. This is recorded in the audit log." confirmLabel="Delete" onConfirm={async () => { await bulk.mutateAsync({ action: 'delete' }); }} />
     </>
   );
 }

@@ -31,7 +31,7 @@ import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { useLeadMeta, useMembers, useStages } from '@/lib/crm';
 import { formatBudget, TIMELINE_LABELS, timeAgo } from '@/lib/format';
-import { usePack } from '@/lib/pack';
+import { usePack, useTerms } from '@/lib/pack';
 import { CustomFieldInputs } from '@/components/crm/custom-field-inputs';
 import { handleApiError } from '@/lib/forms';
 
@@ -40,7 +40,7 @@ interface Note { id: string; body: string; author: string; createdAt: string }
 function EditDialog({ lead, open, onOpenChange }: { lead: LeadDto; open: boolean; onOpenChange: (o: boolean) => void }) {
   const qc = useQueryClient();
   const meta = useLeadMeta();
-  const lf = usePack().leadFields;
+  const lf = usePack().leadFields; const terms = useTerms();
   const [f, setF] = useState({ name: lead.name, phone: lead.phone ?? '', email: lead.email ?? '', budgetMin: lead.budgetMin?.toString() ?? '', budgetMax: lead.budgetMax?.toString() ?? '', location: lead.location ?? '', propertyType: lead.propertyType ?? '', requirements: lead.requirements ?? '', buyingTimeline: lead.buyingTimeline, nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.slice(0, 16) : '' });
   const [cf, setCf] = useState<Record<string, string | number | boolean>>(lead.customFields);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -51,14 +51,14 @@ function EditDialog({ lead, open, onOpenChange }: { lead: LeadDto; open: boolean
     setBusy(true); setErrors({});
     try {
       await api(`/leads/${lead.id}`, { method: 'PATCH', body: { name: f.name, phone: f.phone || null, email: f.email || null, budgetMin: num(f.budgetMin), budgetMax: num(f.budgetMax), location: f.location || null, propertyType: f.propertyType || null, requirements: f.requirements || null, buyingTimeline: f.buyingTimeline, nextFollowUpAt: f.nextFollowUpAt ? new Date(f.nextFollowUpAt).toISOString() : null, customFields: cf } });
-      toast.success('Lead updated');
+      toast.success(`${terms.Lead} updated`);
       await qc.invalidateQueries({ queryKey: ['leads'] }); await qc.invalidateQueries({ queryKey: ['pipeline'] });
       onOpenChange(false);
     } catch (e) { if (e instanceof ApiError && e.details) setErrors(Object.fromEntries(e.details.map((d) => [d.path, d.message]))); else handleApiError(e); } finally { setBusy(false); }
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title="Edit lead" className="max-w-xl">
+      <DialogContent title={`Edit ${terms.lead}`} className="max-w-xl">
         <div className="grid max-h-[70vh] gap-3 overflow-y-auto pr-1 sm:grid-cols-2">
           <Field label="Name" htmlFor="e-name" error={errors.name} className="sm:col-span-2"><Input id="e-name" value={f.name} onChange={set('name')} /></Field>
           <Field label="Phone" htmlFor="e-phone" error={errors.phone}><Input id="e-phone" value={f.phone} onChange={set('phone')} /></Field>
@@ -84,7 +84,7 @@ export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const qc = useQueryClient();
-  const lf = usePack().leadFields;
+  const lf = usePack().leadFields; const terms = useTerms();
   const { can } = useAuth();
   const stages = useStages(); const members = useMembers();
   const [tab, setTab] = useState<'activity' | 'notes'>('activity');
@@ -112,8 +112,8 @@ export default function LeadDetailPage() {
   const addNote = useMutation({ mutationFn: (body: string) => api(`/leads/${id}/notes`, { method: 'POST', body: { body } }), onSuccess: async () => { setNoteText(''); await refresh(); }, onError: (e) => handleApiError(e) });
   const setTags = useMutation({ mutationFn: (names: string[]) => api(`/leads/${id}/tags`, { method: 'PUT', body: { names } }), onSuccess: async () => { setTagText(''); await refresh(); }, onError: (e) => handleApiError(e) });
 
-  if (lead.isPending) return <><PageHeader title="Lead" /><div className="space-y-3"><Skeleton className="h-24" /><Skeleton className="h-64" /></div></>;
-  if (lead.isError) return <Card><EmptyState icon={Pencil} title="Lead not found" description="It may have been deleted, merged into another lead, or assigned to someone else." action={<Button asChild><Link href="/leads">Back to leads</Link></Button>} /></Card>;
+  if (lead.isPending) return <><PageHeader title={terms.Lead} /><div className="space-y-3"><Skeleton className="h-24" /><Skeleton className="h-64" /></div></>;
+  if (lead.isError) return <Card><EmptyState icon={Pencil} title={`${terms.Lead} not found`} description={`It may have been deleted, merged into another ${terms.lead}, or assigned to someone else.`} action={<Button asChild><Link href="/leads">Back to leads</Link></Button>} /></Card>;
   const l = lead.data;
   const openStages = stages.data?.stages ?? [];
   const tagNames = l.tags.map((t) => t.name);
@@ -128,11 +128,11 @@ export default function LeadDetailPage() {
 
   return (
     <>
-      <PageHeader title={l.name} breadcrumbs={[{ label: 'Leads', href: '/leads' }, { label: l.name }]} actions={<>
+      <PageHeader title={l.name} breadcrumbs={[{ label: terms.Leads, href: '/leads' }, { label: l.name }]} actions={<>
         {can('lead:write:all') ? <Button onClick={() => setMergeOpen(true)}><GitMerge className="h-4 w-4" aria-hidden />Merge duplicates</Button> : null}
         {l.canWrite ? <Button onClick={() => setEditOpen(true)}><Pencil className="h-4 w-4" aria-hidden />Edit</Button> : null}
         <LeadPrivacyMenu leadId={id} leadName={l.name} />
-        {can('lead:delete') ? <Button variant="ghost" size="icon" aria-label="Delete lead" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4" /></Button> : null}
+        {can('lead:delete') ? <Button variant="ghost" size="icon" aria-label={`Delete ${terms.lead}`} onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4" /></Button> : null}
       </>} />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -144,7 +144,7 @@ export default function LeadDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <Card>
-          <div role="tablist" aria-label="Lead sections" className="flex gap-1 border-b border-border px-3">
+          <div role="tablist" aria-label={`${terms.Lead} sections`} className="flex gap-1 border-b border-border px-3">
             {([['activity', 'Activity'], ['notes', `Notes${notes.data?.length ? ` (${notes.data.length})` : ''}`]] as const).map(([k, label]) => (
               <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cn('relative px-3 py-3 text-[13px] font-medium', tab === k ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>{label}{tab === k ? <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" /> : null}</button>
             ))}
@@ -154,7 +154,7 @@ export default function LeadDetailPage() {
               <div className="space-y-4">
                 {l.canWrite ? (
                   <form onSubmit={(e) => { e.preventDefault(); if (noteText.trim()) addNote.mutate(noteText.trim()); }} className="space-y-2">
-                    <Textarea aria-label="Add a note" placeholder="Add a note about this lead…" value={noteText} onChange={(e) => setNoteText(e.target.value)} />
+                    <Textarea aria-label="Add a note" placeholder={`Add a note about this ${terms.lead}…`} value={noteText} onChange={(e) => setNoteText(e.target.value)} />
                     <div className="flex justify-end"><Button type="submit" variant="primary" size="sm" loading={addNote.isPending} disabled={!noteText.trim()}>Add note</Button></div>
                   </form>
                 ) : null}
@@ -211,9 +211,9 @@ export default function LeadDetailPage() {
 
       <EditDialog key={l.updatedAt} lead={l} open={editOpen} onOpenChange={setEditOpen} />
       <MergeDialog open={mergeOpen} onOpenChange={setMergeOpen} lead={l} />
-      <ConfirmDialog open={deleteOpen} onOpenChange={setDeleteOpen} danger title="Delete this lead?" description="It disappears from lists and reports. This is recorded in the audit log." confirmLabel="Delete lead" onConfirm={async () => { try { await api(`/leads/${id}`, { method: 'DELETE' }); toast.success('Lead deleted'); await refresh(); router.replace('/leads'); } catch (e) { handleApiError(e); throw e; } }} />
+      <ConfirmDialog open={deleteOpen} onOpenChange={setDeleteOpen} danger title={`Delete this ${terms.lead}?`} description="It disappears from lists and reports. This is recorded in the audit log." confirmLabel="Delete lead" onConfirm={async () => { try { await api(`/leads/${id}`, { method: 'DELETE' }); toast.success('Lead deleted'); await refresh(); router.replace('/leads'); } catch (e) { handleApiError(e); throw e; } }} />
       <Dialog open={lostFor !== null} onOpenChange={(o) => { if (!o) setLostFor(null); }}>
-        <DialogContent title="Why was this lead lost?" description="This helps you see where deals fall through.">
+        <DialogContent title={`Why was this ${terms.lead} lost?`} description="This helps you see where deals fall through.">
           <div className="space-y-3">
             <Field label="Reason" htmlFor="lost-reason"><Select id="lost-reason" value={lostReason} onChange={(e) => setLostReason(e.target.value)}><option value="">Choose a reason…</option>{stages.data?.lostReasons.filter((r) => r.active).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}</Select></Field>
             <Field label="Note (optional)" htmlFor="lost-note"><Textarea id="lost-note" value={lostNote} onChange={(e) => setLostNote(e.target.value)} /></Field>
