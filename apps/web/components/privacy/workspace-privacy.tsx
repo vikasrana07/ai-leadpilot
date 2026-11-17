@@ -13,20 +13,27 @@ import { Input } from '@/components/ui/input';
 import { API_URL, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { handleApiError } from '@/lib/forms';
+import { useTerms } from '@/lib/pack';
 
-interface Retention { settings: { webhookPayloadDays: number; softDeletedLeadDays: number; closedConversationDays: number | null; auditLogDays: number | null }; minDays: number; defaults: { webhookPayloadDays: number; softDeletedLeadDays: number } }
+interface Retention { settings: { webhookPayloadDays: number; softDeletedLeadDays: number; closedConversationDays: number | null; auditLogDays: number | null; automationDryRunDays: number; automationRunDays: number; automationVersionDays: number }; minDays: number; defaults: { webhookPayloadDays: number; softDeletedLeadDays: number; automationDryRunDays: number; automationRunDays: number; automationVersionDays: number } }
 interface ExportRow { id: string; status: 'QUEUED' | 'RUNNING' | 'READY' | 'FAILED' | 'EXPIRED'; sizeBytes: number | null; error: string | null; createdAt: string; expiresAt: string | null }
 interface DeletionState { pending: boolean; requestedAt: string | null; purgeAfter: string | null; coolingOffDays: number }
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—');
 
 function RetentionCard() {
+  const terms = useTerms();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ['retention'], queryFn: () => api<Retention>('/privacy/retention') });
-  const [form, setForm] = useState<{ webhook: string; leads: string; convos: string; audit: string } | null>(null);
-  const v = form ?? (q.data ? { webhook: String(q.data.settings.webhookPayloadDays), leads: String(q.data.settings.softDeletedLeadDays), convos: q.data.settings.closedConversationDays?.toString() ?? '', audit: q.data.settings.auditLogDays?.toString() ?? '' } : null);
+  const [form, setForm] = useState<{ webhook: string; leads: string; convos: string; audit: string; dry: string; runs: string; versions: string } | null>(null);
+  const v = form ?? (q.data ? { webhook: String(q.data.settings.webhookPayloadDays), leads: String(q.data.settings.softDeletedLeadDays), convos: q.data.settings.closedConversationDays?.toString() ?? '', audit: q.data.settings.auditLogDays?.toString() ?? '', dry: String(q.data.settings.automationDryRunDays), runs: String(q.data.settings.automationRunDays), versions: String(q.data.settings.automationVersionDays) } : null);
   const num = (s: string) => (s.trim() === '' ? null : Number(s));
+  // The server enforces the same bounds (shortest period from the platform setting, at most 10 years); checking here gives an inline message.
+  const minDays = q.data?.minDays ?? 1;
+  const dayError = (s: string): string | undefined => { const n = Number(s); return s.trim() !== '' && Number.isInteger(n) && n >= minDays && n <= 3650 ? undefined : `Enter a whole number of days from ${minDays} to 3650`; };
+  const autoErrors = v ? { dry: dayError(v.dry), runs: dayError(v.runs), versions: dayError(v.versions) } : { dry: undefined, runs: undefined, versions: undefined };
+  const hasError = Boolean(autoErrors.dry || autoErrors.runs || autoErrors.versions);
   const save = useMutation({
-    mutationFn: () => api('/privacy/retention', { method: 'PUT', body: { webhookPayloadDays: Number(v?.webhook), softDeletedLeadDays: Number(v?.leads), closedConversationDays: num(v?.convos ?? ''), auditLogDays: num(v?.audit ?? '') } }),
+    mutationFn: () => api('/privacy/retention', { method: 'PUT', body: { webhookPayloadDays: Number(v?.webhook), softDeletedLeadDays: Number(v?.leads), closedConversationDays: num(v?.convos ?? ''), auditLogDays: num(v?.audit ?? ''), automationDryRunDays: Number(v?.dry), automationRunDays: Number(v?.runs), automationVersionDays: Number(v?.versions) } }),
     onSuccess: async () => { toast.success('Retention saved'); setForm(null); await qc.invalidateQueries({ queryKey: ['retention'] }); },
     onError: (e) => handleApiError(e),
   });
@@ -40,12 +47,19 @@ function RetentionCard() {
         <p className="text-helper mb-3">Old data is purged automatically once a day. Leave a field empty to keep that data forever. Shortest allowed period: {q.data.minDays} days.</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Raw WhatsApp webhook payloads (days)" htmlFor="ret-webhook" hint="Technical copies of provider messages; the conversation itself is not affected"><Input id="ret-webhook" inputMode="numeric" value={v.webhook} onChange={(e) => set('webhook', e.target.value)} /></Field>
-          <Field label="Deleted leads, until permanently erased (days)" htmlFor="ret-leads" hint="Leads you delete stay recoverable for this long"><Input id="ret-leads" inputMode="numeric" value={v.leads} onChange={(e) => set('leads', e.target.value)} /></Field>
+          <Field label={`Deleted ${terms.leads}, until permanently erased (days)`} htmlFor="ret-leads" hint={`${terms.Leads} you delete stay recoverable for this long`}><Input id="ret-leads" inputMode="numeric" value={v.leads} onChange={(e) => set('leads', e.target.value)} /></Field>
           <Field label="Closed conversations (days after closing)" htmlFor="ret-convos" hint="Empty = keep"><Input id="ret-convos" inputMode="numeric" value={v.convos} onChange={(e) => set('convos', e.target.value)} /></Field>
           <Field label="Audit log (days)" htmlFor="ret-audit" hint="Empty = keep. Records of privacy actions are never aged out"><Input id="ret-audit" inputMode="numeric" value={v.audit} onChange={(e) => set('audit', e.target.value)} /></Field>
         </div>
+        <h3 className="mt-6 text-[13px] font-semibold">Automation history</h3>
+        <p className="text-helper mb-3">Cleaned up once a day. Automations that are queued, running or waiting are never deleted, and neither is the live version of an automation or any version a remaining run still points to.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Test runs (days)" htmlFor="ret-auto-dry" error={autoErrors.dry} hint={`Runs from "Test" on an automation. Default ${q.data.defaults.automationDryRunDays} days`}><Input id="ret-auto-dry" inputMode="numeric" value={v.dry} onChange={(e) => set('dry', e.target.value)} /></Field>
+          <Field label="Finished runs (days)" htmlFor="ret-auto-runs" error={autoErrors.runs} hint={`Succeeded, failed and skipped runs in the run history. Default ${q.data.defaults.automationRunDays} days`}><Input id="ret-auto-runs" inputMode="numeric" value={v.runs} onChange={(e) => set('runs', e.target.value)} /></Field>
+          <Field label="Old automation versions (days)" htmlFor="ret-auto-versions" error={autoErrors.versions} hint={`Earlier saved copies of an automation that no run uses any more. Default ${q.data.defaults.automationVersionDays} days`}><Input id="ret-auto-versions" inputMode="numeric" value={v.versions} onChange={(e) => set('versions', e.target.value)} /></Field>
+        </div>
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Button variant="primary" loading={save.isPending} disabled={!form} onClick={() => save.mutate()}>Save retention</Button>
+          <Button variant="primary" loading={save.isPending} disabled={!form || hasError} onClick={() => save.mutate()}>Save retention</Button>
           <Button loading={preview.isPending} onClick={() => preview.mutate()}>Preview what would be deleted</Button>
           {preview.data ? <span className="text-helper" role="status">{Object.values(preview.data).every((x) => x === 0) ? 'Nothing is due for deletion right now.' : `Due now: ${Object.entries(preview.data).filter(([, n]) => n > 0).map(([k, n]) => `${n} ${k.replace(/_/g, ' ')}`).join(', ')}`}</span> : null}
         </div>
@@ -55,6 +69,7 @@ function RetentionCard() {
 }
 
 function ExportCard() {
+  const terms = useTerms();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ['exports'], queryFn: () => api<ExportRow[]>('/privacy/exports'), refetchInterval: (query) => (query.state.data?.some((e) => e.status === 'QUEUED' || e.status === 'RUNNING') ? 4000 : false) });
   const request = useMutation({ mutationFn: () => api('/privacy/exports', { method: 'POST', body: {} }), onSuccess: async () => { toast.success('Export started. We will notify you when it is ready.'); await qc.invalidateQueries({ queryKey: ['exports'] }); }, onError: (e) => handleApiError(e) });
@@ -63,7 +78,7 @@ function ExportCard() {
     <Card>
       <CardHeader><CardTitle>Export your workspace data</CardTitle></CardHeader>
       <CardBody>
-        <p className="text-helper mb-3">A single file (JSON, compressed) with your leads, conversations, appointments, notes, consents, automations, settings and invoices. Passwords, access tokens and integration secrets are never included. Downloads stay available for 7 days.</p>
+        <p className="text-helper mb-3">A single file (JSON, compressed) with your {terms.leads}, conversations, appointments, notes, consents, automations, settings and invoices. Passwords, access tokens and integration secrets are never included. Downloads stay available for 7 days.</p>
         <Button variant="primary" loading={request.isPending} disabled={active} onClick={() => request.mutate()}>{active ? 'Preparing export…' : 'Request export'}</Button>
         {q.data && q.data.length > 0 ? (
           <ul className="mt-4 divide-y divide-border text-[13px]">
@@ -83,6 +98,7 @@ function ExportCard() {
 }
 
 function DeleteCard() {
+  const terms = useTerms();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ['deletion'], queryFn: () => api<DeletionState>('/privacy/workspace/deletion') });
   const [open, setOpen] = useState(false);
@@ -102,7 +118,7 @@ function DeleteCard() {
           </>
         ) : (
           <>
-            <p className="text-helper mb-3">Permanently deletes all leads, conversations, files and team accounts that belong only to this workspace. After a {q.data.coolingOffDays}-day cooling-off period during which the workspace is read-only, this cannot be undone. Invoices are kept as required for tax records. Export your data first.</p>
+            <p className="text-helper mb-3">Permanently deletes all {terms.leads}, conversations, files and team accounts that belong only to this workspace. After a {q.data.coolingOffDays}-day cooling-off period during which the workspace is read-only, this cannot be undone. Invoices are kept as required for tax records. Export your data first.</p>
             <Button variant="danger" onClick={() => setOpen(true)}><Trash2 className="h-4 w-4" aria-hidden />Delete workspace…</Button>
           </>
         )}

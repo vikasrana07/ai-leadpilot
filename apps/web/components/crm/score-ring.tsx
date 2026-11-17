@@ -4,11 +4,13 @@ import { motion } from 'motion/react';
 import { useState } from 'react';
 import { cn } from '@/lib/cn';
 import type { ScoreItem } from '@/lib/ai';
+import { useTerms } from '@/lib/pack';
 
 const tone = (t: string) => (t === 'HOT' ? { name: 'Hot', cls: 'text-danger', stroke: 'var(--danger)' } : t === 'WARM' ? { name: 'Warm', cls: 'text-warning', stroke: 'var(--warning)' } : t === 'COLD' ? { name: 'Cold', cls: 'text-muted-foreground', stroke: 'var(--muted-foreground)' } : { name: 'Unscored', cls: 'text-muted-foreground', stroke: 'var(--border-strong)' });
 
 /** Animated score ring. Click or focus reveals exactly how the score was built (unknown signals are never held against a lead). */
 export function ScoreRing({ score, temperature, factors, size = 72 }: { score: number | null; temperature: string; factors: ScoreItem[]; size?: number }) {
+  const terms = useTerms();
   const [open, setOpen] = useState(false);
   const t = tone(temperature);
   const r = (size - 8) / 2; const c = 2 * Math.PI * r;
@@ -31,7 +33,7 @@ export function ScoreRing({ score, temperature, factors, size = 72 }: { score: n
               <span className={cn('num whitespace-nowrap', f.state === 'met' ? 'font-medium text-success' : 'text-muted-foreground')}>{f.state === 'met' ? `+${f.points}` : f.state === 'not_met' ? '0' : 'unknown'}<span className="text-muted-foreground"> / {f.max}</span></span>
             </li>
           ))}</ul>
-          <p className="text-helper mt-2 border-t border-border pt-2">Missing information is never counted against a lead.</p>
+          <p className="text-helper mt-2 border-t border-border pt-2">Missing information is never counted against {terms.aLead}.</p>
         </motion.div>
       ) : null}
     </div>

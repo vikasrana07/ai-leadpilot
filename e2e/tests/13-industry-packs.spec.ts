@@ -129,3 +129,39 @@ test('onboarding: before an industry is chosen Properties is hidden; choosing Co
   await page.goto('/dashboard');
   await expect(sidebarLink(page, 'Properties')).toHaveCount(0);
 });
+
+// ---- wording follow-up: report titles and CSV headers, other fixed copy, and names people typed are never rewritten
+const WORDING = [
+  { id: 'real_estate', label: 'wordre', leads: 'Leads', sourceTitle: 'Leads by source', header: 'Leads', capture: 'Lead capture API' },
+  { id: 'coaching', label: 'wordco', leads: 'Enquiries', sourceTitle: 'Enquiries by source', header: 'Enquiries', capture: 'Enquiry capture API' },
+  { id: 'healthcare', label: 'wordcl', leads: 'Enquiries', sourceTitle: 'Enquiries by source', header: 'Enquiries', capture: 'Enquiry capture API' },
+  { id: 'home_services', label: 'wordhs', leads: 'Customers', sourceTitle: 'Customers by source', header: 'Customers', capture: 'Customer capture API' },
+] as const;
+
+for (const w of WORDING) {
+  test(`${w.id}: report tables, CSV headers and fixed copy use the pack's words; typed automation names are untouched`, async ({ page, request }) => {
+    const acct = await registerViaApi(request, w.label, w.id);
+    await chooseIndustry(request, acct);
+    await signInViaApi(page, acct);
+
+    // reports: table title and the CSV header row follow the pack (the same labels the server sends)
+    await page.goto('/reports');
+    await expect(page.getByRole('heading', { name: w.sourceTitle })).toBeVisible();
+    const csv = await request.get(`http://localhost:4100/reports/acquisition/export?range=30d&table=by_source`, { headers: { Authorization: `Bearer ${acct.accessToken}` } });
+    expect(csv.status()).toBe(200);
+    const header = (await csv.text()).replace(/^\uFEFF/, '').split('\n')[0] ?? '';
+    expect(header).toContain(w.header);
+    if (w.id !== 'real_estate') expect(header).not.toContain('Leads');
+
+    // integrations page copy
+    await page.goto('/integrations');
+    await expect(page.getByText(w.capture, { exact: true })).toBeVisible();
+
+    // a name the user typed is never reworded, even when it contains "leads" or "visit"
+    const typed = 'Send leads to Slack after every visit';
+    const made = await api(request, acct, 'post', '/automations', { name: typed, trigger: { type: 'lead.created' }, conditions: [], actions: [{ type: 'notify', target: 'managers', title: 'New lead' }], cooldownMinutes: 0 });
+    expect(made.status).toBe(201);
+    await page.goto('/automations');
+    await expect(page.getByText(typed, { exact: true })).toBeVisible();
+  });
+}

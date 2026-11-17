@@ -13,9 +13,11 @@ import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { handleApiError } from '@/lib/forms';
+import { useTerms } from '@/lib/pack';
 
 /** Data-principal rights for one lead: download everything held about them, or erase it permanently. */
 export function LeadPrivacyMenu({ leadId, leadName }: { leadId: string; leadName: string }) {
+  const terms = useTerms();
   const { can } = useAuth();
   const router = useRouter();
   const [eraseOpen, setEraseOpen] = useState(false);
@@ -49,7 +51,7 @@ export function LeadPrivacyMenu({ leadId, leadName }: { leadId: string; leadName
       <Dialog open={eraseOpen} onOpenChange={setEraseOpen}>
         <DialogContent title={`Erase ${leadName} permanently?`} description="This cannot be undone.">
           <div className="space-y-3 text-[13px]">
-            <p>This deletes the lead and everything linked to them: conversations and messages, notes, activity, appointments, tasks, consent records, scores and stored provider payloads that mention their phone number. Only a record that an erasure happened (who, when, why) is kept in the audit log.</p>
+            <p>This deletes the {terms.lead} and everything linked to them: conversations and messages, notes, activity, appointments, tasks, consent records, scores and stored provider payloads that mention their phone number. Only a record that an erasure happened (who, when, why) is kept in the audit log.</p>
             <Field label="Why are you erasing this data?" htmlFor="erase-reason" hint="e.g. the request reference from the customer"><Input id="erase-reason" value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
             <Field label="Type ERASE to confirm" htmlFor="erase-confirm"><Input id="erase-confirm" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" /></Field>
           </div>

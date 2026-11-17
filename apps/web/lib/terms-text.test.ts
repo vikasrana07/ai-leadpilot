@@ -23,3 +23,12 @@ describe('applyTerms', () => {
     expect(applyTerms('Leadership, misleading, leader', t('coaching'))).toBe('Leadership, misleading, leader');
   });
 });
+
+describe('applyTerms: capitalised visit words (report column labels)', () => {
+  it('re-words "Visits completed" per industry and leaves real estate alone', () => {
+    expect(applyTerms('Visits completed', t('real_estate'))).toBe('Visits completed');
+    expect(applyTerms('Visits completed', t('coaching'))).toBe('Demo classes completed');
+    expect(applyTerms('Visit', t('healthcare'))).toBe('Consultation');
+    expect(applyTerms('Visits completed', t('home_services'))).toBe('Inspections completed');
+  });
+});

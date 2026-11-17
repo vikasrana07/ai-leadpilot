@@ -1,5 +1,6 @@
 export * from './permissions.js';
 export * from './industry-packs.js';
+export * from './terms-text.js';
 export * from './crm.js';
 
 export interface WorkspaceSummary {

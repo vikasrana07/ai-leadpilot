@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@leadpilot/database';
+import { applyTerms, packForIndustry, packTerms } from '@leadpilot/shared-types';
 import type { ReportKey, ReportQuery } from '@leadpilot/validation';
 import { addDays, resolveRange, type Range } from '../analytics/date-range.js';
 import type { TenantRequestContext } from '../common/request-context.js';
@@ -31,12 +32,16 @@ export class ReportsService {
     const scope = this.scopeOf(ctx, key);
     if (q.range === 'custom' && (!q.from || !q.to)) throw new BadRequestException({ code: 'validation_error', message: 'Custom ranges need a start and end date' });
     return this.db.tenantTx(ctx, async (tx) => {
-      const t = await tx.tenant.findUniqueOrThrow({ where: { id: ctx.tenantId }, select: { timezone: true, settings: true } });
+      const t = await tx.tenant.findUniqueOrThrow({ where: { id: ctx.tenantId }, select: { timezone: true, settings: true, industryPackId: true } });
       const range = resolveRange(q, t.timezone);
       if (range.to.getTime() - range.from.getTime() > 400 * 86_400_000) throw new BadRequestException({ code: 'range_too_large', message: 'Choose a range of up to 13 months' });
       const env: Env = { tx, ctx, tz: t.timezone, range, own: scope === 'own', sla: readSla(t.settings).firstResponseMinutes };
       const body = await this[key](env);
-      return { report: key, range: { label: range.label, from: range.from.toISOString(), to: range.to.toISOString(), timezone: t.timezone }, scope, ...body };
+      // Table titles and column labels are our own fixed copy: word them for the workspace's industry (Enquiries by source...). The CSV export
+      // uses the same result, so its headers match the screen. Field keys and row data are untouched; real estate output is identical.
+      const terms = packTerms(packForIndustry(t.industryPackId));
+      const tables = body.tables.map((tb) => ({ ...tb, title: applyTerms(tb.title, terms), columns: tb.columns.map((c) => ({ ...c, label: applyTerms(c.label, terms) })) }));
+      return { report: key, range: { label: range.label, from: range.from.toISOString(), to: range.to.toISOString(), timezone: t.timezone }, scope, ...body, tables };
     });
   }
 

@@ -18,9 +18,11 @@ import type { ScoreView } from '@/lib/ai';
 import { useAuth } from '@/lib/auth';
 import { timeAgo } from '@/lib/format';
 import { handleApiError } from '@/lib/forms';
+import { useTerms } from '@/lib/pack';
 
 /** Lead score: ring with explanation, manager override (reason required, audited), and score history. */
 export function ScoreCard({ leadId }: { leadId: string }) {
+  const terms = useTerms();
   const { can } = useAuth();
   const qc = useQueryClient();
   const score = useQuery({ queryKey: ['leads', 'score', leadId], queryFn: () => api<ScoreView>(`/leads/${leadId}/score`) });
@@ -33,7 +35,7 @@ export function ScoreCard({ leadId }: { leadId: string }) {
 
   return (
     <Card>
-      <CardHeader><CardTitle>Lead score</CardTitle>{v?.overridden ? <Badge tone="warning"><ShieldCheck className="h-3 w-3" aria-hidden />Set by a manager</Badge> : <Badge>Automatic</Badge>}</CardHeader>
+      <CardHeader><CardTitle>{terms.Lead} score</CardTitle>{v?.overridden ? <Badge tone="warning"><ShieldCheck className="h-3 w-3" aria-hidden />Set by a manager</Badge> : <Badge>Automatic</Badge>}</CardHeader>
       <CardBody className="space-y-4">
         {score.isPending ? <Skeleton className="h-20" /> : !v ? <p className="text-helper">Score unavailable.</p> : (
           <>
@@ -55,7 +57,7 @@ export function ScoreCard({ leadId }: { leadId: string }) {
         )}
       </CardBody>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent title="Override the lead score" description="Use this when you know something the data does not show. The reason is saved with your name.">
+        <DialogContent title={`Override the ${terms.lead} score`} description="Use this when you know something the data does not show. The reason is saved with your name.">
           <div className="space-y-3">
             <Field label="New score (0 to 100)" htmlFor="ov-score"><Input id="ov-score" type="number" min={0} max={100} value={value} onChange={(e) => setValue(e.target.value)} /></Field>
             <Field label="Reason" htmlFor="ov-reason" hint="For example: customer phoned the office and is ready to pay the token amount."><Textarea id="ov-reason" value={reason} onChange={(e) => setReason(e.target.value)} /></Field>

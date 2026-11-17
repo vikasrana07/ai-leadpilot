@@ -38,7 +38,7 @@ export default function IntegrationsPage() {
       <Card className="mb-6"><CardBody className="flex items-start gap-3"><CalendarDays className="mt-0.5 h-5 w-5 text-muted-foreground" aria-hidden /><div className="flex-1"><p className="text-[13px] font-medium">Google Calendar</p><p className="text-helper">Sync {terms.visits} to your calendar.</p></div><Badge>Soon</Badge></CardBody></Card>
 
       <Card>
-        <CardHeader><div><CardTitle><KeyRound className="mr-1.5 inline h-4 w-4" aria-hidden />Lead capture API</CardTitle><p className="text-helper mt-0.5">Send leads from your website form, ad platform or any backend. Keep keys secret: call this from a server, never from browser code.</p></div></CardHeader>
+        <CardHeader><div><CardTitle><KeyRound className="mr-1.5 inline h-4 w-4" aria-hidden />{terms.Lead} capture API</CardTitle><p className="text-helper mt-0.5">Send {terms.leads} from your website form, ad platform or any backend. Keep keys secret: call this from a server, never from browser code.</p></div></CardHeader>
         <CardBody className="space-y-5">
           {!can('integration:manage') ? <p className="text-helper">Only workspace owners can manage API keys.</p> : (
             <>
@@ -46,7 +46,7 @@ export default function IntegrationsPage() {
               {keys.isPending ? <Skeleton className="h-12" /> : keys.data && keys.data.length > 0 ? (
                 <ul className="divide-y divide-border rounded-lg border border-border">{keys.data.map((k) => <li key={k.id} className="flex items-center gap-3 px-4 py-2.5 text-[13px]"><div className="flex-1"><p className="font-medium">{k.name}</p><p className="text-helper num">{k.keyPrefix}… · created {timeAgo(k.createdAt)} · {k.lastUsedAt ? `used ${timeAgo(k.lastUsedAt)}` : 'never used'}</p></div><Button variant="ghost" size="icon" aria-label={`Revoke ${k.name}`} onClick={() => revoke.mutate(k.id)}><Trash2 className="h-4 w-4" /></Button></li>)}</ul>
               ) : <p className="text-helper">No API keys yet.</p>}
-              <div><p className="text-label mb-1.5">Example</p><pre className="overflow-x-auto rounded-lg border border-border bg-muted p-3 font-mono text-[12px] leading-5">{curl}</pre><p className="text-helper mt-1.5">Repeat enquiries from the same phone or email are added to the existing lead instead of creating a duplicate.</p></div>
+              <div><p className="text-label mb-1.5">Example</p><pre className="overflow-x-auto rounded-lg border border-border bg-muted p-3 font-mono text-[12px] leading-5">{curl}</pre><p className="text-helper mt-1.5">Repeat enquiries from the same phone or email are added to the existing {terms.lead} instead of creating a duplicate.</p></div>
             </>
           )}
         </CardBody>

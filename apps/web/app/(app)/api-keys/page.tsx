@@ -20,6 +20,8 @@ import { API_URL, api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { timeAgo } from '@/lib/format';
 import { handleApiError } from '@/lib/forms';
+import { useTerms } from '@/lib/pack';
+import { applyTerms } from '@/lib/terms-text';
 
 interface Key { id: string; name: string; keyPrefix: string; scopes: string[]; lastUsedAt: string | null; createdAt: string; expiresAt: string | null; requestCount: number }
 const SCOPE_HELP: Record<string, string> = {
@@ -28,6 +30,7 @@ const SCOPE_HELP: Record<string, string> = {
 };
 
 export default function ApiKeysPage() {
+  const terms = useTerms();
   const { can } = useAuth();
   const qc = useQueryClient();
   const keys = useQuery({ queryKey: ['api-keys'], queryFn: () => api<Key[]>('/api-keys'), enabled: can('integration:manage') });
@@ -56,7 +59,7 @@ export default function ApiKeysPage() {
                 <li key={k.id} className="flex flex-wrap items-start gap-3 px-4 py-3 text-[13px]">
                   <div className="min-w-0 flex-1">
                     <p className="font-medium">{k.name} <code className="ml-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">{k.keyPrefix}…</code></p>
-                    <div className="mt-1.5 flex flex-wrap gap-1">{k.scopes.map((s) => <Badge key={s} tone="primary" title={SCOPE_HELP[s]}>{s}</Badge>)}</div>
+                    <div className="mt-1.5 flex flex-wrap gap-1">{k.scopes.map((s) => <Badge key={s} tone="primary" title={applyTerms(SCOPE_HELP[s] ?? '', terms)}>{s}</Badge>)}</div>
                     <p className="text-helper mt-1.5">Created {timeAgo(k.createdAt)} · {k.lastUsedAt ? `last used ${timeAgo(k.lastUsedAt)}` : 'never used'} · {k.requestCount.toLocaleString('en-IN')} requests · {k.expiresAt ? (new Date(k.expiresAt) < new Date() ? <span className="text-danger">expired</span> : `expires ${new Date(k.expiresAt).toLocaleDateString('en-IN')}`) : 'no expiry'}</p>
                   </div>
                   <Button size="sm" variant="danger" onClick={() => { if (window.confirm(`Revoke "${k.name}"? Anything using it stops working immediately.`)) revoke.mutate(k.id); }}>Revoke</Button>
@@ -78,9 +81,9 @@ export default function ApiKeysPage() {
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); if (name.trim() && scopes.length) create.mutate(); }}>
             <Field label="Name" htmlFor="k-name"><Input id="k-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. CRM sync" maxLength={80} required /></Field>
             <fieldset><legend className="text-label mb-1.5">Access</legend><div className="space-y-1.5">{API_SCOPES.map((s) => (
-              <label key={s} className="flex items-start gap-2 text-[13px]"><input type="checkbox" className="mt-0.5" checked={scopes.includes(s)} onChange={() => toggle(s)} /><span><code className="font-mono text-[12px]">{s}</code><span className="text-helper block">{SCOPE_HELP[s]}</span></span></label>))}</div></fieldset>
+              <label key={s} className="flex items-start gap-2 text-[13px]"><input type="checkbox" className="mt-0.5" checked={scopes.includes(s)} onChange={() => toggle(s)} /><span><code className="font-mono text-[12px]">{s}</code><span className="text-helper block">{applyTerms(SCOPE_HELP[s] ?? '', terms)}</span></span></label>))}</div></fieldset>
             <Field label="Expires" htmlFor="k-exp"><Select id="k-exp" value={days} onChange={(e) => setDays(e.target.value)}><option value="30">In 30 days</option><option value="90">In 90 days</option><option value="365">In 1 year</option><option value="">Never</option></Select></Field>
-            {upgrade ? <p className="rounded-lg border border-warning/40 bg-warning-soft p-2.5 text-[13px]">The public API is not included in your plan. <Link href="/billing" className="font-medium underline">See plans</Link>. Lead-capture-only keys (<code>leads:create</code>) work on every plan.</p> : null}
+            {upgrade ? <p className="rounded-lg border border-warning/40 bg-warning-soft p-2.5 text-[13px]">The public API is not included in your plan. <Link href="/billing" className="font-medium underline">See plans</Link>. {terms.Lead}-capture-only keys (<code>leads:create</code>) work on every plan.</p> : null}
             <div className="flex justify-end gap-2"><Button type="button" onClick={() => setOpen(false)}>Cancel</Button><Button type="submit" variant="primary" disabled={create.isPending || !name.trim() || scopes.length === 0}>Create key</Button></div>
           </form>
         </DialogContent>

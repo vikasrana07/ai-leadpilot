@@ -19,6 +19,7 @@ import { api } from '@/lib/api';
 import { timeAgo } from '@/lib/format';
 import { handleApiError } from '@/lib/forms';
 import type { WaTemplate } from '@/lib/inbox';
+import { useTerms } from '@/lib/pack';
 
 interface Channel { id: string; name: string; status: 'ACTIVE' | 'DISABLED' | 'ERROR'; phoneNumberId: string; displayPhone: string | null; webhookUrl: string; verifyToken: string; lastVerifiedAt: string | null }
 type ConnectForm = z.infer<typeof channelWhatsappSchema>;
@@ -58,6 +59,7 @@ function ConnectDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o
 }
 
 function Templates() {
+  const terms = useTerms();
   const qc = useQueryClient();
   const list = useQuery({ queryKey: ['whatsapp', 'templates'], queryFn: () => api<WaTemplate[]>('/whatsapp/templates') });
   const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting } } = useForm<TemplateForm, unknown, z.infer<typeof templateSchema>>({ resolver: zodResolver(templateSchema), defaultValues: { language: 'en', category: 'UTILITY' } });
@@ -69,7 +71,7 @@ function Templates() {
       <form className="grid gap-2 sm:grid-cols-[1fr_5rem_1.5fr_auto] sm:items-start" noValidate onSubmit={handleSubmit(async (v) => { try { await api('/whatsapp/templates', { method: 'POST', body: v }); reset(); await qc.invalidateQueries({ queryKey: ['whatsapp', 'templates'] }); } catch (e) { handleApiError(e, setError); } })}>
         <Field label="Name" htmlFor="tpl-name" error={errors.name?.message}><Input id="tpl-name" placeholder="appointment_reminder" {...register('name')} /></Field>
         <Field label="Language" htmlFor="tpl-lang" error={errors.language?.message}><Input id="tpl-lang" {...register('language')} /></Field>
-        <Field label="Text (use {{1}}, {{2}} for values)" htmlFor="tpl-body" error={errors.bodyPreview?.message}><Input id="tpl-body" placeholder="Hi {{1}}, your visit is on {{2}}" {...register('bodyPreview')} /></Field>
+        <Field label="Text (use {{1}}, {{2}} for values)" htmlFor="tpl-body" error={errors.bodyPreview?.message}><Input id="tpl-body" placeholder={`Hi {{1}}, your ${terms.visit} is on {{2}}`} {...register('bodyPreview')} /></Field>
         <Button type="submit" className="sm:mt-[22px]" loading={isSubmitting}><Plus className="h-4 w-4" aria-hidden />Add</Button>
       </form>
     </div>

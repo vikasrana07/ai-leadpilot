@@ -11,9 +11,12 @@ import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
 import { useStages } from '@/lib/crm';
 import { handleApiError } from '@/lib/forms';
+import { useTerms } from '@/lib/pack';
+import { applyTerms } from '@/lib/terms-text';
 
 /** Stage and lost-reason configuration (pipeline:manage). Won/Lost stages are protected and stay last. */
 export function StageConfigDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+  const terms = useTerms();
   const qc = useQueryClient();
   const stages = useStages();
   const [name, setName] = useState(''); const [reason, setReason] = useState('');
@@ -24,7 +27,7 @@ export function StageConfigDialog({ open, onOpenChange }: { open: boolean; onOpe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title="Configure pipeline" description="Rename, reorder and add stages. Stages with leads cannot be removed." className="max-w-lg">
+      <DialogContent title="Configure pipeline" description={applyTerms("Rename, reorder and add stages. Stages with leads cannot be removed.", terms)} className="max-w-lg">
         <div className="max-h-[60vh] space-y-5 overflow-y-auto pr-1">
           <ul className="space-y-1.5">
             {list.map((s, i) => (
@@ -33,8 +36,8 @@ export function StageConfigDialog({ open, onOpenChange }: { open: boolean; onOpe
                 <Input aria-label={`Name of stage ${s.name}`} defaultValue={s.name} className="h-8" onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== s.name) call.mutate({ path: `/pipeline/stages/${s.id}`, method: 'PATCH', body: { name: v } }); }} />
                 {s.kind !== 'OPEN' ? <Badge tone={s.kind === 'WON' ? 'success' : 'danger'}>{s.kind === 'WON' ? 'Won' : 'Lost'}</Badge> : (
                   <>
-                    <label className="flex items-center gap-1 text-[11px] text-muted-foreground" title="Leads at or past this stage count as qualified"><input type="checkbox" defaultChecked={s.qualifies} onChange={(e) => call.mutate({ path: `/pipeline/stages/${s.id}`, method: 'PATCH', body: { qualifies: e.target.checked } })} />Qualified</label>
-                    <label className="flex items-center gap-1 text-[11px] text-muted-foreground" title="Leads can be marked Won from this stage"><input type="checkbox" defaultChecked={s.canCloseWon} onChange={(e) => call.mutate({ path: `/pipeline/stages/${s.id}`, method: 'PATCH', body: { canCloseWon: e.target.checked } })} />Can win</label>
+                    <label className="flex items-center gap-1 text-[11px] text-muted-foreground" title={applyTerms("Leads at or past this stage count as qualified", terms)}><input type="checkbox" defaultChecked={s.qualifies} onChange={(e) => call.mutate({ path: `/pipeline/stages/${s.id}`, method: 'PATCH', body: { qualifies: e.target.checked } })} />Qualified</label>
+                    <label className="flex items-center gap-1 text-[11px] text-muted-foreground" title={applyTerms("Leads can be marked Won from this stage", terms)}><input type="checkbox" defaultChecked={s.canCloseWon} onChange={(e) => call.mutate({ path: `/pipeline/stages/${s.id}`, method: 'PATCH', body: { canCloseWon: e.target.checked } })} />Can win</label>
                     <Button variant="ghost" size="icon" aria-label={`Delete ${s.name}`} onClick={() => call.mutate({ path: `/pipeline/stages/${s.id}`, method: 'DELETE' })}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </>
                 )}

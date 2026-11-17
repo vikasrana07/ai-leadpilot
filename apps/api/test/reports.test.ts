@@ -171,3 +171,30 @@ describe('scoping, filters, export and isolation', () => {
     finally { await q(`DELETE FROM subscriptions WHERE tenant_id = $1`, [owner.tenantId]); }
   });
 });
+
+describe('industry wording', () => {
+  const titles = async (a: Account) => {
+    const r = await get(a, `/reports/acquisition?${RANGE}`);
+    expect(r.status).toBe(200);
+    const t = (r.body as { tables: { name: string; title: string; columns: { key: string; label: string }[] }[] }).tables.find((x) => x.name === 'by_source');
+    return { title: t?.title, labels: t?.columns.map((c) => c.label), keys: t?.columns.map((c) => c.key) };
+  };
+  it('real estate keeps "Leads" and the field keys never change', async () => {
+    expect(await titles(owner)).toEqual({ title: 'Leads by source', labels: ['Source', 'Leads', 'Qualified', 'Won', 'Conversion %'], keys: ['source', 'leads', 'qualified', 'won', 'conversionPct'] });
+  });
+  it('other industries get their own nouns in table titles, column labels and the CSV header; keys and data are untouched', async () => {
+    const co = await registerAccount(ctx, 'repCoach', 'coaching');
+    const hs = await registerAccount(ctx, 'repHome', 'home_services');
+    const t = await titles(co);
+    expect(t.title).toBe('Enquiries by source');
+    expect(t.labels).toContain('Enquiries');
+    expect(t.keys).toEqual(['source', 'leads', 'qualified', 'won', 'conversionPct']); // contract unchanged
+    expect((await titles(hs)).title).toBe('Customers by source');
+    const agents = (await get(co, `/reports/agents?${RANGE}`)).body as { tables: { columns: { label: string }[] }[] };
+    expect(agents.tables[0]?.columns.map((c) => c.label)).toContain('Demo classes completed'); // "Visits completed" follows the appointment noun
+    const csv = await get(co, `/reports/acquisition/export?${RANGE}&table=by_source`);
+    expect(csv.status).toBe(200);
+    expect(String(csv.text).replace(/^\uFEFF/, '').split('\n')[0]).toContain('Enquiries');
+    expect(String(csv.text)).not.toContain('Leads');
+  });
+});
