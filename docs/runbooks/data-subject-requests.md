@@ -8,7 +8,7 @@ Roles: LeadPilot is the **processor**; the workspace owner is the **fiduciary** 
 3. Verify (owner SQL): `SELECT count(*) FROM leads WHERE id = '<id>';` is 0; the audit entry exists.
 
 ## Retention
-Settings → **Data retention** (owner/`settings:manage`). Defaults: raw webhook payloads 30 days, deleted leads purged after 30 days, closed conversations and audit log kept. Platform minimum 7 days (`RETENTION_MIN_DAYS`). The job runs once a day per workspace from the worker. To see what is due: *Preview* in the UI or `POST /privacy/retention/preview`. If a workspace has a legal hold, set its retention fields empty (keep) and leave a note in the ticket.
+Settings → **Data retention** (owner/`settings:manage`). Defaults: raw webhook payloads 30 days, deleted leads purged after 30 days, closed conversations and audit log kept. Automation history is also purged (ADR-0010, ADR-0074): dry-run rows after 7 days, finished runs after 180 days, old unreferenced automation versions after 365 days (`RETENTION_AUTOMATION_*_DAYS`; per-workspace override via the API only). `QUEUED`/`RUNNING`/`WAITING` runs and the live version are never purged. Platform minimum 7 days (`RETENTION_MIN_DAYS`). The job runs once a day per workspace from the worker. To see what is due: *Preview* in the UI or `POST /privacy/retention/preview`. If a workspace has a legal hold, set its retention fields empty (keep) and leave a note in the ticket.
 Check it ran: `SELECT created_at, metadata FROM audit_logs WHERE tenant_id = '<id>' AND action = 'privacy.retention_purged' ORDER BY created_at DESC LIMIT 5;` (no row = nothing was due). Check the worker is running (see worker-and-queues.md).
 
 ## Workspace export (customer asks for all their data, or before closing)

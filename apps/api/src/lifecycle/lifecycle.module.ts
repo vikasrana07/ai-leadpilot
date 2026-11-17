@@ -22,7 +22,7 @@ import { BillingNotifier } from '../ops/billing-notify.js';
 import { PlatformGuard, PlatformTokens, type PlatformRequest } from '../platform/platform-auth.js';
 
 const day = (min: number) => z.number().int().min(min).max(3650);
-const retentionSchema = z.object({ webhookPayloadDays: day(1), softDeletedLeadDays: day(1), closedConversationDays: day(1).nullable(), auditLogDays: day(1).nullable() });
+const retentionSchema = z.object({ webhookPayloadDays: day(1), softDeletedLeadDays: day(1), closedConversationDays: day(1).nullable(), auditLogDays: day(1).nullable(), automationDryRunDays: day(1).optional(), automationRunDays: day(1).optional(), automationVersionDays: day(1).optional() });
 const deletionSchema = z.object({ reason: z.string().trim().min(5).max(500), confirm: z.literal('DELETE WORKSPACE'), password: z.string().min(1).max(128) });
 const STRICT = { default: { limit: () => Number(process.env.THROTTLE_AUTH_LIMIT ?? 5), ttl: 60_000 } };
 
@@ -41,7 +41,7 @@ export class LifecycleService {
   // ------------------------------------------------------------------ retention
   async getRetention(c: TenantRequestContext) {
     const t = await this.db.tenantTx(c, (tx) => tx.tenant.findUniqueOrThrow({ where: { id: c.tenantId }, select: { settings: true } }));
-    return { settings: effectiveRetention(t.settings, this.env), minDays: this.env.RETENTION_MIN_DAYS, defaults: { webhookPayloadDays: this.env.RETENTION_WEBHOOK_PAYLOAD_DAYS, softDeletedLeadDays: this.env.RETENTION_SOFT_DELETED_LEAD_DAYS, closedConversationDays: null, auditLogDays: null } };
+    return { settings: effectiveRetention(t.settings, this.env), minDays: this.env.RETENTION_MIN_DAYS, defaults: { webhookPayloadDays: this.env.RETENTION_WEBHOOK_PAYLOAD_DAYS, softDeletedLeadDays: this.env.RETENTION_SOFT_DELETED_LEAD_DAYS, closedConversationDays: null, auditLogDays: null, automationDryRunDays: this.env.RETENTION_AUTOMATION_DRY_RUN_DAYS, automationRunDays: this.env.RETENTION_AUTOMATION_RUN_DAYS, automationVersionDays: this.env.RETENTION_AUTOMATION_VERSION_DAYS } };
   }
 
   async saveRetention(c: TenantRequestContext, input: z.infer<typeof retentionSchema>) {
@@ -50,7 +50,9 @@ export class LifecycleService {
     await this.db.tenantTx(c, async (tx) => {
       const t = await tx.tenant.findUniqueOrThrow({ where: { id: c.tenantId }, select: { settings: true } });
       const settings = (t.settings ?? {}) as Record<string, unknown>;
-      await tx.tenant.update({ where: { id: c.tenantId }, data: { settings: { ...settings, retention: input } as Prisma.InputJsonObject } });
+      // merge, so the optional automation overrides (no UI yet) survive a save from the privacy page that does not send them
+      const prior = (settings.retention ?? {}) as Record<string, unknown>;
+      await tx.tenant.update({ where: { id: c.tenantId }, data: { settings: { ...settings, retention: { ...prior, ...Object.fromEntries(Object.entries(input).filter(([, v]) => v !== undefined)) } } as Prisma.InputJsonObject } });
       await this.audit.record(tx, { tenantId: c.tenantId, actorUserId: c.userId, action: 'privacy.retention_changed', resourceType: 'tenant', resourceId: c.tenantId, metadata: { ...input }, requestId: c.requestId, ip: c.ip });
     });
     return this.getRetention(c);

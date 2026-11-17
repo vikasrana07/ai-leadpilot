@@ -88,11 +88,11 @@ export class AutomationEngine {
   }
 
   /** Every automation runs a pinned, immutable version. Rows that predate versions get theirs created here, lifted from the linear columns. */
-  private async ensureVersions(tx: TxClient, rows: { id: string; tenantId: string; activeVersionId: string | null; graphVersion: number; graph: unknown; trigger: unknown; conditions: unknown; actions: unknown; cooldownMinutes: number }[]): Promise<Map<string, { id: string; source: string; graph: AutomationGraph }>> {
-    const out = new Map<string, { id: string; source: string; graph: AutomationGraph }>();
+  private async ensureVersions(tx: TxClient, rows: { id: string; tenantId: string; activeVersionId: string | null; graphVersion: number; graph: unknown; trigger: unknown; conditions: unknown; actions: unknown; cooldownMinutes: number }[]): Promise<Map<string, { id: string; source: string; graph: AutomationGraph; cooldownMinutes: number }>> {
+    const out = new Map<string, { id: string; source: string; graph: AutomationGraph; cooldownMinutes: number }>();
     const known = rows.filter((r) => r.activeVersionId);
     const found = known.length ? await tx.automationVersion.findMany({ where: { id: { in: known.map((r) => r.activeVersionId as string) } } }) : [];
-    for (const v of found) { const owner = known.find((r) => r.activeVersionId === v.id); if (owner) out.set(owner.id, { id: v.id, source: v.source, graph: parseGraph(v.graph) }); }
+    for (const v of found) { const owner = known.find((r) => r.activeVersionId === v.id); if (owner) out.set(owner.id, { id: v.id, source: v.source, graph: parseGraph(v.graph), cooldownMinutes: v.cooldownMinutes }); }
     for (const r of rows) {
       if (out.has(r.id)) continue;
       const graph = effectiveGraph(r);
@@ -100,7 +100,7 @@ export class AutomationEngine {
       await tx.automationVersion.createMany({ data: [{ id: uuidv7(), tenantId: r.tenantId, automationId: r.id, version: r.graphVersion, source, graph: graph as unknown as Prisma.InputJsonObject, cooldownMinutes: r.cooldownMinutes }], skipDuplicates: true });
       const v = await tx.automationVersion.findFirstOrThrow({ where: { automationId: r.id, version: r.graphVersion } });
       await tx.automation.updateMany({ where: { id: r.id, activeVersionId: null }, data: { activeVersionId: v.id } });
-      out.set(r.id, { id: v.id, source: v.source, graph: parseGraph(v.graph) });
+      out.set(r.id, { id: v.id, source: v.source, graph: parseGraph(v.graph), cooldownMinutes: v.cooldownMinutes });
     }
     return out;
   }
@@ -122,15 +122,16 @@ export class AutomationEngine {
     const versions = await this.ensureVersions(tx, candidates);
     const toRun: string[] = [...resumed];
     for (const a of candidates) {
-      const version = versions.get(a.id) as { id: string; source: string; graph: AutomationGraph };
+      const version = versions.get(a.id) as { id: string; source: string; graph: AutomationGraph; cooldownMinutes: number };
       // A converted linear automation keeps its up-front gate (the single `all` branch); graph-authored ones decide inside the run.
       const gate = version.source === 'linear' ? ((version.graph.nodes.find((n) => n.type === 'branch')?.data as { conditions?: AutomationCondition[] } | undefined)?.conditions ?? []) : [];
       let skip: string | null = null;
       if (!ctx) skip = 'no_lead';
       else if (ctx.event.depth >= MAX_CHAIN_DEPTH || ctx.event.originAutomationId === a.id) skip = 'loop_protection';
       else if (!evaluateConditions(gate, ctx)) skip = 'conditions_not_met';
-      else if (a.cooldownMinutes > 0 && ctx.lead.id) {
-        const recent = await tx.automationRun.findFirst({ where: { automationId: a.id, leadId: ctx.lead.id, status: { in: ['QUEUED', 'RUNNING', 'WAITING', 'SUCCEEDED'] }, createdAt: { gt: new Date(Date.now() - a.cooldownMinutes * 60_000) } }, select: { id: true } });
+      // The cooldown belongs to the version the run is pinned to (immutable), not to the live row's mirrored column.
+      else if (version.cooldownMinutes > 0 && ctx.lead.id) {
+        const recent = await tx.automationRun.findFirst({ where: { automationId: a.id, leadId: ctx.lead.id, status: { in: ['QUEUED', 'RUNNING', 'WAITING', 'SUCCEEDED'] }, createdAt: { gt: new Date(Date.now() - version.cooldownMinutes * 60_000) } }, select: { id: true } });
         if (recent) skip = 'cooldown';
       }
       const id = uuidv7();

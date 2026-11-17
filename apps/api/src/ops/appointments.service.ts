@@ -30,6 +30,33 @@ export function overlapKind(e: unknown): 'agent' | 'lead' | null {
   return null;
 }
 
+/**
+ * When several transactions insert conflicting rows at once, Postgres aborts one of them as a deadlock victim (40P01), or reports a
+ * serialization failure (40001); Prisma surfaces both as P2034. Nothing was written, so the transaction is safe to run again.
+ */
+export function isTxConflict(e: unknown): boolean {
+  let cur: unknown = e;
+  for (let i = 0; i < 6 && cur; i++) {
+    const c = cur as { code?: string; message?: string; cause?: unknown };
+    if (c.code === 'P2034' || /deadlock detected|could not serialize access|write conflict or a deadlock/i.test(c.message ?? '')) return true;
+    cur = c.cause;
+  }
+  return false;
+}
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+const BUSY = { code: 'booking_busy', message: 'Another booking for that time was being made at the same moment. Please try again.' };
+
+/** Runs a booking transaction again if it was chosen as a deadlock victim; the retry then sees the winner's row and ends as a normal conflict. */
+async function retryOnTxConflict<T>(fn: () => Promise<T>): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try { return await fn(); } catch (e) {
+      if (!isTxConflict(e)) throw e;
+      if (attempt >= 4) throw new ConflictException(BUSY);
+      await sleep(10 + Math.random() * 40 * (attempt + 1));
+    }
+  }
+}
+
 @Injectable()
 export class AppointmentsService {
   constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(OutboxService) private readonly outbox: OutboxService) {}
@@ -158,7 +185,7 @@ export class AppointmentsService {
     let lastKind: 'agent' | 'lead' | null = null;
     for (const membershipId of plan.ordered) {
       try {
-        const id = await this.tx(a, async (tx) => {
+        const id = await retryOnTxConflict(() => this.tx(a, async (tx) => {
           const status = opts.status ?? (opts.source === 'manual' ? 'CONFIRMED' : 'PENDING');
           const visitNoun = packForIndustry((await tx.tenant.findUnique({ where: { id: a.tenantId }, select: { industryPackId: true } }))?.industryPackId ?? 'real_estate').terminology.visit;
           const created = await tx.appointment.create({ data: {
@@ -167,7 +194,7 @@ export class AppointmentsService {
           } });
           await this.afterBooked(tx, a, created, 'booked');
           return created.id;
-        });
+        }));
         return this.get({ ...a, permissions: new Set([...a.permissions, 'appointment:read:all']) }, id);
       } catch (e) {
         const kind = overlapKind(e);
@@ -230,7 +257,7 @@ export class AppointmentsService {
     if (startsAt.getTime() < Date.now()) throw new UnprocessableEntityException({ code: 'in_the_past', message: 'That time has already passed' });
     let newId: string;
     try {
-      newId = await this.tx(a, async (tx) => {
+      newId = await retryOnTxConflict(() => this.tx(a, async (tx) => {
         const cur = await tx.appointment.findFirst({ where: { id } });
         if (!cur) throw new NotFoundException({ code: 'not_found', message: 'Appointment not found' });
         this.assertOwnsOrAll(a, cur.membershipId);
@@ -255,7 +282,7 @@ export class AppointmentsService {
         await tx.appointmentEvent.create({ data: { id: uuidv7(), tenantId: a.tenantId, appointmentId: cur.id, type: 'rescheduled_from', actorUserId: a.userId, data: { toAppointmentId: created.id, ...(input.reason ? { reason: input.reason } : {}) } } });
         await this.afterBooked(tx, a, created, 'rescheduled', { fromAppointmentId: cur.id });
         return created.id;
-      });
+      }));
     } catch (e) {
       const kind = overlapKind(e);
       if (kind === 'lead') throw new ConflictException({ code: 'lead_busy', message: 'This customer already has an appointment at that time' });

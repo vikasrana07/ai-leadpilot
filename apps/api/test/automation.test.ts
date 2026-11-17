@@ -456,18 +456,33 @@ describe('outbox claiming', () => {
 
 describe('real BullMQ workers', () => {
   let ctx2: TestCtx;
+  /**
+   * Any API or worker started with WORKERS_ENABLED=true against this database (an e2e server, a dev worker, a forgotten background API) also
+   * claims this workspace's outbox events and runs the automation with ITS working providers, so the failure injected below (in this process only)
+   * never happens and the run ends SUCCEEDED. That is an environment problem, not a product one: detect it up front (nothing in this process
+   * drains the outbox until ctx2 exists, so any claim of a probe event is foreign) and skip with a clear message instead of timing out.
+   */
+  let foreignConsumer = false;
   beforeAll(async () => {
+    const ids = await Promise.all(Array.from({ length: 3 }, async () => (await q<{ id: string }>(`INSERT INTO outbox_events (id, tenant_id, type, payload) VALUES (gen_random_uuid(), $1, 'test.noop', '{}') RETURNING id`, [owner.tenantId]))[0]?.id as string));
+    for (let i = 0; i < 30 && !foreignConsumer; i++) { await sleep(100); foreignConsumer = (await q<{ n: number }>(`SELECT count(*)::int n FROM outbox_events WHERE id = ANY($1::uuid[]) AND status <> 'pending'`, [ids]))[0]!.n > 0; }
+    await q(`DELETE FROM outbox_events WHERE id = ANY($1::uuid[])`, [ids]);
+    if (foreignConsumer) console.warn('SKIPPING real BullMQ workers tests: another process sharing this database is consuming outbox events (stop any API/worker with WORKERS_ENABLED=true, e.g. an e2e or dev server)');
     ctx2 = await createTestApp([{ provide: ENV, useValue: { ...loadEnv(), WORKERS_ENABLED: true, QUEUE_PREFIX: `t${RUN}`, AUTOMATION_MAX_ATTEMPTS: 3, AUTOMATION_RETRY_BASE_MS: 40 } }]);
   });
   afterAll(async () => { await ctx2.close(); });
 
-  const waitFor = async <T>(fn: () => Promise<T | null | false>, ms = 20_000): Promise<T> => { const end = Date.now() + ms; for (;;) { const v = await fn(); if (v) return v; if (Date.now() > end) throw new Error('timed out'); await sleep(100); } };
+  /** Polls until `fn` returns something. On timeout `why` explains the state: the usual cause of a timeout here is not slowness but ANOTHER process on the same database (a dev or e2e API started with WORKERS_ENABLED=true) claiming the event and running the automation with its own, working providers. */
+  const waitFor = async <T>(fn: () => Promise<T | null | false>, ms = 20_000, why?: () => Promise<string>): Promise<T> => { const end = Date.now() + ms; for (;;) { const v = await fn(); if (v) return v; if (Date.now() > end) throw new Error(`timed out${why ? `: ${await why()}` : ''}`); await sleep(100); } };
+  const foreign = (id: string, lead: string) => async () => { const r = (await runsOf(id)).find((x) => x.lead_id === lead); return r ? `the run is ${r.status} after ${r.attempts} attempt(s). If it is SUCCEEDED or SKIPPED, another process sharing this database processed the event (stop any API/worker started with WORKERS_ENABLED=true, e.g. an e2e or dev server)` : 'no run was created (the event was not relayed)'; };
 
-  it('processes an event end to end through Redis, and retries with backoff before dead-lettering', async () => {
+  it('processes an event end to end through Redis, and retries with backoff before dead-lettering', async (t) => {
+    if (foreignConsumer) t.skip();
     expect(ctx2.app.get(JobsService).running).toBe(true);
     const id = await createAuto({ name: 'BullFlow', trigger: { type: 'lead.created' }, actions: [{ type: 'create_task', title: 'Bull task {{lead.name}}', dueInHours: 1, assignee: 'lead_owner' }] });
     const l = await mkLead({ assignedMembershipId: agentM });
-    const run = await waitFor(async () => (await runsOf(id)).find((r) => r.lead_id === l && r.status === 'SUCCEEDED') ?? null);
+    await ctx2.app.get(OutboxRelay).drainOnce(200); // claim our own event at once instead of waiting for the 1 s timer (narrows the window a foreign consumer could win)
+    const run = await waitFor(async () => (await runsOf(id)).find((r) => r.lead_id === l && r.status === 'SUCCEEDED') ?? null, 20_000, foreign(id, l));
     expect(run.attempts).toBe(1);
     expect((await q<{ c: number }>(`SELECT count(*)::int c FROM tasks WHERE lead_id = $1`, [l]))[0]?.c).toBe(1);
 
@@ -480,7 +495,8 @@ describe('real BullMQ workers', () => {
       const l2 = await mkLead(); await consent(l2);
       const board = await ctx.http().get('/pipeline/stages').set(auth(owner.accessToken));
       await ctx.http().post(`/leads/${l2}/stage`).set(auth(owner.accessToken)).send({ stageId: board.body.stages.filter((s: { kind: string }) => s.kind === 'OPEN')[1].id });
-      const failed = await waitFor(async () => (await runsOf(failing)).find((r) => r.lead_id === l2 && r.status === 'FAILED') ?? null);
+      await ctx2.app.get(OutboxRelay).drainOnce(200);
+      const failed = await waitFor(async () => (await runsOf(failing)).find((r) => r.lead_id === l2 && r.status === 'FAILED') ?? null, 20_000, foreign(failing, l2));
       expect(failed.attempts).toBe(3);
       expect(failed.error).toContain('provider down');
       expect((await notifs(ownerM, 'automation_failed')).some((x) => x.title.includes('BullFail'))).toBe(true);

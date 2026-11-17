@@ -12,9 +12,9 @@ import { BillingNotifier } from './billing-notify.js';
 import { EXPORT_INCLUDED } from './export-tables.js';
 
 /** Per-workspace retention, stored in `tenants.settings.retention`. `null` = keep forever. */
-export interface RetentionSettings { webhookPayloadDays: number; closedConversationDays: number | null; auditLogDays: number | null; softDeletedLeadDays: number }
+export interface RetentionSettings { webhookPayloadDays: number; closedConversationDays: number | null; auditLogDays: number | null; softDeletedLeadDays: number; automationDryRunDays: number; automationRunDays: number; automationVersionDays: number }
 
-export function effectiveRetention(settings: Prisma.JsonValue, env: Pick<Env, 'RETENTION_WEBHOOK_PAYLOAD_DAYS' | 'RETENTION_SOFT_DELETED_LEAD_DAYS' | 'RETENTION_MIN_DAYS'>): RetentionSettings {
+export function effectiveRetention(settings: Prisma.JsonValue, env: Pick<Env, 'RETENTION_WEBHOOK_PAYLOAD_DAYS' | 'RETENTION_SOFT_DELETED_LEAD_DAYS' | 'RETENTION_MIN_DAYS' | 'RETENTION_AUTOMATION_DRY_RUN_DAYS' | 'RETENTION_AUTOMATION_RUN_DAYS' | 'RETENTION_AUTOMATION_VERSION_DAYS'>): RetentionSettings {
   const r = ((settings as { retention?: Partial<Record<keyof RetentionSettings, unknown>> } | null)?.retention ?? {});
   const days = (v: unknown, dflt: number | null): number | null => (typeof v === 'number' && Number.isFinite(v) ? Math.max(env.RETENTION_MIN_DAYS, Math.floor(v)) : v === null ? null : dflt === null ? null : Math.max(env.RETENTION_MIN_DAYS, dflt));
   return {
@@ -22,6 +22,9 @@ export function effectiveRetention(settings: Prisma.JsonValue, env: Pick<Env, 'R
     closedConversationDays: typeof r.closedConversationDays === 'number' ? days(r.closedConversationDays, null) : null,
     auditLogDays: typeof r.auditLogDays === 'number' ? days(r.auditLogDays, null) : null,
     softDeletedLeadDays: days(r.softDeletedLeadDays, env.RETENTION_SOFT_DELETED_LEAD_DAYS) as number,
+    automationDryRunDays: days(r.automationDryRunDays, env.RETENTION_AUTOMATION_DRY_RUN_DAYS) as number,
+    automationRunDays: days(r.automationRunDays, env.RETENTION_AUTOMATION_RUN_DAYS) as number,
+    automationVersionDays: days(r.automationVersionDays, env.RETENTION_AUTOMATION_VERSION_DAYS) as number,
   };
 }
 
@@ -57,6 +60,14 @@ export class LifecycleJobs {
       let batch = 0;
       for (const [k, v] of Object.entries(r)) { totals[k] = (totals[k] ?? 0) + v; if (k !== 'messages') batch += v; }
       if (batch < BATCH) break; // the last batch was not full: nothing left
+    }
+    // Automation history lives in its own function so the workspace-data purge above keeps its signature. Runs are purged before the versions they pinned.
+    for (let i = 0; i < (dry ? 1 : 20); i++) {
+      const rows = await this.db.prisma.$queryRaw<{ r: Record<string, number> | null }[]>`SELECT purge_automation_data(${tenantId}::uuid, ${policy.automationDryRunDays}::int, ${policy.automationRunDays}::int, ${policy.automationVersionDays}::int, ${BATCH}::int, ${dry}::boolean) AS r`;
+      const r = rows[0]?.r ?? {};
+      let batch = 0;
+      for (const [k, v] of Object.entries(r)) { totals[k] = (totals[k] ?? 0) + v; batch = Math.max(batch, v); }
+      if (batch < BATCH) break;
     }
     const any = Object.values(totals).some((v) => v > 0);
     if (!dry && any) await this.db.tenantTx({ tenantId }, (tx) => this.audit.record(tx, { tenantId, actorUserId: o.actorUserId ?? null, action: 'privacy.retention_purged', resourceType: 'tenant', resourceId: tenantId, metadata: { counts: totals, policy: policy as unknown as Prisma.InputJsonObject } }));

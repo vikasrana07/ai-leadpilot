@@ -71,6 +71,10 @@ const schema = z.object({
   // ---- Data lifecycle (Phase 8). Platform-wide defaults and hard minimums for per-workspace retention settings.
   RETENTION_WEBHOOK_PAYLOAD_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
   RETENTION_SOFT_DELETED_LEAD_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
+  /** Automation history: dry-run rows (one per test click), finished runs, and old unreferenced versions. Per-workspace overrides are accepted by the API. */
+  RETENTION_AUTOMATION_DRY_RUN_DAYS: z.coerce.number().int().min(1).max(3650).default(7),
+  RETENTION_AUTOMATION_RUN_DAYS: z.coerce.number().int().min(1).max(3650).default(180),
+  RETENTION_AUTOMATION_VERSION_DAYS: z.coerce.number().int().min(1).max(3650).default(365),
   /** No workspace may configure a retention period shorter than this (protects against accidental or malicious data loss). */
   RETENTION_MIN_DAYS: z.coerce.number().int().min(1).max(365).default(7),
   DELETION_COOLING_OFF_DAYS: z.coerce.number().int().min(0).max(90).default(14),

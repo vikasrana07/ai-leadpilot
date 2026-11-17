@@ -57,3 +57,6 @@ Overdue rows mean the worker or scanner is down (see the next sections); they re
 
 ## Worker restarts / deploys
 Shutdown hooks close workers cleanly. A worker killed mid-run leaves the run `RUNNING`; it is requeued after 10 minutes. AI turns run in the API process (not the worker): a crash mid-turn leaves a stale `RUNNING` ai_run that expires after 3 minutes, and the scanner re-triggers an unanswered customer message once (90 seconds to 6 hours old).
+
+## Running tests next to a worker
+Any API or worker with `WORKERS_ENABLED=true` on the same database (an e2e server on port 4100, `apps/worker`, a background API left running) claims outbox events of **every** workspace, including those of a running test suite, and executes automations with its own providers. Tests that inject failures in their own process (the "real BullMQ workers" test) then see runs end differently. Before running `pnpm test`: stop e2e servers and stray background APIs (`pgrep -fl dist/main.js`; the dev API from `pnpm dev` is fine, it has workers off). The BullMQ test skips itself with a warning when it detects another consumer.
