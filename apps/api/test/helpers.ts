@@ -10,7 +10,7 @@ import { configureApp } from '../src/bootstrap.js';
 import { loadEnv } from '../src/config/env.js';
 import { MailService } from '../src/mail/mail.module.js';
 
-export interface SentMail { to: string; kind: 'verify' | 'reset' | 'invite' | 'exists' | 'billing'; token?: string; subject?: string }
+export interface SentMail { to: string; kind: 'verify' | 'reset' | 'invite' | 'exists' | 'billing' | 'mfa_reset'; token?: string; subject?: string }
 
 export class FakeMail {
   sent: SentMail[] = [];
@@ -18,6 +18,7 @@ export class FakeMail {
   sendPasswordReset = async (to: string, token: string) => void this.sent.push({ to, kind: 'reset', token });
   sendInvitation = async (to: string, token: string) => void this.sent.push({ to, kind: 'invite', token });
   sendBilling = async (to: string, subject: string) => void this.sent.push({ to, kind: 'billing', subject });
+  sendMfaReset = async (to: string) => void this.sent.push({ to, kind: 'mfa_reset' });
   sendAccountExists = async (to: string) => void this.sent.push({ to, kind: 'exists' });
   last(kind: SentMail['kind'], to: string): SentMail | undefined {
     return [...this.sent].reverse().find((m) => m.kind === kind && m.to === to);

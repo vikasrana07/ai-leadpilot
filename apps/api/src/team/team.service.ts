@@ -35,7 +35,9 @@ export class TeamService {
       });
       const users = await this.db.prisma.user.findMany({ where: { id: { in: rows.map((r) => r.userId) } }, select: { id: true, name: true, email: true, emailVerifiedAt: true } });
       const byId = new Map(users.map((u) => [u.id, u]));
+      const enrolled = new Set((await this.db.prisma.mfaCredential.findMany({ where: { subjectType: 'user', subjectId: { in: rows.map((r) => r.userId) }, confirmedAt: { not: null } }, select: { subjectId: true } })).map((c) => c.subjectId));
       return rows.map((r) => ({
+        mfaEnabled: enrolled.has(r.userId),
         id: r.id, status: r.status, joinedAt: r.createdAt, roleKey: r.role.key, roleName: r.role.name,
         user: { id: r.userId, name: byId.get(r.userId)?.name ?? '', email: byId.get(r.userId)?.email ?? '' },
       }));
@@ -121,5 +123,35 @@ export class TeamService {
       await this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'team.member_status_changed', resourceType: 'membership', resourceId: membershipId, metadata: { status }, requestId: ctx.requestId, ip: ctx.ip });
       return { id: membershipId, status };
     });
+  }
+
+  /**
+   * Lost-phone recovery: a workspace admin removes a teammate's two-step verification so they can sign in and enrol again.
+   * Guards: same rank rule as role changes, never yourself, only when this is the person's only workspace (MFA is account-wide, so
+   * otherwise another workspace's protection would be removed by a stranger), reason required, sessions revoked, person emailed, audited.
+   */
+  async resetMemberMfa(ctx: TenantRequestContext, membershipId: string, reason: string) {
+    const target = await this.db.tenantTx(ctx, async (tx) => {
+      const m = await tx.membership.findFirst({ where: { id: membershipId, tenantId: ctx.tenantId }, select: { userId: true, role: { select: { key: true } } } });
+      if (!m) throw new NotFoundException({ code: 'not_found', message: 'Member not found' });
+      if (m.userId === ctx.userId) throw new BadRequestException({ code: 'self_change', message: 'Use the Security page to change your own two-step verification' });
+      this.assertCanGrant(ctx, m.role.key as SystemRoleKey);
+      return m;
+    });
+    const subject = { subjectType: 'user', subjectId: target.userId };
+    const cred = await this.db.prisma.mfaCredential.findUnique({ where: { subjectType_subjectId: subject }, select: { confirmedAt: true } });
+    if (!cred?.confirmedAt) throw new ConflictException({ code: 'mfa_not_enabled', message: 'This person has not turned on two-step verification' });
+    const counted = await this.db.prisma.$queryRaw<{ n: number }[]>`SELECT user_active_workspace_count(${target.userId}::uuid) AS n`;
+    const n = counted[0]?.n ?? 2; // fail safe: if the count is unknown, refuse
+    if (n > 1) throw new ConflictException({ code: 'user_in_other_workspaces', message: 'This person also belongs to another workspace, so their two-step verification can only be reset by them (recovery code) or by LeadPilot support.' });
+    const user = await this.db.prisma.user.findUniqueOrThrow({ where: { id: target.userId }, select: { email: true } });
+    await this.db.prisma.$transaction([
+      this.db.prisma.mfaRecoveryCode.deleteMany({ where: subject }),
+      this.db.prisma.mfaCredential.delete({ where: { subjectType_subjectId: subject } }),
+      this.db.prisma.session.updateMany({ where: { userId: target.userId, revokedAt: null }, data: { revokedAt: new Date() } }),
+    ]);
+    await this.db.tenantTx(ctx, (tx) => this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'team.mfa_reset', resourceType: 'membership', resourceId: membershipId, metadata: { reason }, requestId: ctx.requestId, ip: ctx.ip }));
+    await this.mail.sendMfaReset(user.email);
+    return { id: membershipId, mfaEnabled: false };
   }
 }

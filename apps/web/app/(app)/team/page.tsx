@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { inviteSchema, type InviteInput } from '@leadpilot/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MoreHorizontal, Send, UserPlus } from 'lucide-react';
+import { MoreHorizontal, Send, ShieldCheck, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -23,7 +23,7 @@ import { useAuth } from '@/lib/auth';
 import { handleApiError } from '@/lib/forms';
 
 interface Workload { members: { membershipId: string; name: string; email: string; role: string; openLeads: number; overdueFollowUps: number }[]; unassignedOpenLeads: number }
-interface Member { id: string; status: 'ACTIVE' | 'INVITED' | 'DEACTIVATED'; roleKey: string; roleName: string; joinedAt: string; user: { id: string; name: string; email: string } }
+interface Member { id: string; status: 'ACTIVE' | 'INVITED' | 'DEACTIVATED'; roleKey: string; roleName: string; mfaEnabled?: boolean; joinedAt: string; user: { id: string; name: string; email: string } }
 interface Invitation { id: string; email: string; expiresAt: string; role: { key: string; name: string } }
 
 const ROLES = [{ key: 'owner', name: 'Business Owner' }, { key: 'manager', name: 'Sales Manager' }, { key: 'agent', name: 'Sales Agent' }] as const;
@@ -58,10 +58,38 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o:
   );
 }
 
+function ResetMfaDialog({ member, onClose }: { member: Member | null; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!member) return;
+    setBusy(true);
+    try {
+      await api(`/team/members/${member.id}/mfa-reset`, { method: 'POST', body: { reason } });
+      toast.success(`Two-step verification reset for ${member.user.name}`);
+      await qc.invalidateQueries({ queryKey: ['team'] });
+      setReason(''); onClose();
+    } catch (err) { handleApiError(err); } finally { setBusy(false); }
+  }
+  return (
+    <Dialog open={!!member} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent title={`Reset two-step verification for ${member?.user.name ?? ''}`} description="Use this only when they have lost their phone and their recovery codes. They are signed out, emailed, and must set it up again. Check who is asking before you continue.">
+        <form onSubmit={submit} className="space-y-4" noValidate>
+          <Field label="Reason (kept in the audit log)" htmlFor="mfa-reset-reason"><Input id="mfa-reset-reason" autoFocus value={reason} maxLength={200} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Lost phone, confirmed by phone call" /></Field>
+          <div className="flex justify-end gap-2 pt-2"><Button type="button" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary" loading={busy} disabled={reason.trim().length < 5}>Reset two-step verification</Button></div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function TeamPage() {
   const { can, ctx } = useAuth();
   const qc = useQueryClient();
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [resetMfa, setResetMfa] = useState<Member | null>(null);
   const canInvite = can('team:invite');
   const canManage = can('team:manage');
   const members = useQuery({ queryKey: ['team', 'members'], queryFn: () => api<Member[]>('/team/members') });
@@ -91,12 +119,14 @@ export default function TeamPage() {
                   <div className="min-w-0 flex-1"><p className="truncate text-[13px] font-medium">{m.user.name}{self ? <span className="text-helper ml-1.5">(you)</span> : null}</p><p className="text-helper truncate">{m.user.email}</p></div>
                   <Badge tone={m.roleKey === 'owner' ? 'primary' : 'neutral'}>{m.roleName}</Badge>
                   {m.status === 'DEACTIVATED' ? <Badge tone="warning">Deactivated</Badge> : null}
+                  {m.mfaEnabled ? <span className="text-helper inline-flex items-center gap-1" title="Two-step verification is on"><ShieldCheck className="h-3.5 w-3.5" aria-hidden /><span className="sr-only">Two-step verification is on</span></span> : null}
                   {canManage && !self ? (
                     <Dropdown trigger={<Button variant="ghost" size="icon" aria-label={`Actions for ${m.user.name}`}><MoreHorizontal className="h-4 w-4" /></Button>}>
                       {ROLES.filter((r) => r.key !== m.roleKey).map((r) => (
                         <DropdownItem key={r.key} onSelect={() => act.mutate({ path: `/team/members/${m.id}/role`, method: 'PATCH', body: { roleKey: r.key }, ok: `${m.user.name} is now ${r.name}` })}>Make {r.name}</DropdownItem>
                       ))}
                       <DropdownSeparator />
+                      {m.mfaEnabled ? <DropdownItem onSelect={() => setResetMfa(m)}>Reset two-step verification</DropdownItem> : null}
                       {m.status === 'ACTIVE'
                         ? <DropdownItem danger onSelect={() => act.mutate({ path: `/team/members/${m.id}/status`, method: 'PATCH', body: { status: 'DEACTIVATED' }, ok: `${m.user.name} was deactivated` })}>Deactivate</DropdownItem>
                         : <DropdownItem onSelect={() => act.mutate({ path: `/team/members/${m.id}/status`, method: 'PATCH', body: { status: 'ACTIVE' }, ok: `${m.user.name} was re-activated` })}>Re-activate</DropdownItem>}
@@ -131,6 +161,7 @@ export default function TeamPage() {
           </ul>
         </Card>
       ) : null}
+      <ResetMfaDialog member={resetMfa} onClose={() => setResetMfa(null)} />
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} />
     </>
   );

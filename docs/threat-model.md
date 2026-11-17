@@ -77,9 +77,10 @@ Scope: identity, tenancy, RBAC, audit. Extended in each phase (webhooks Phase 3,
 | Mail credentials or content in clear | STARTTLS/TLS required in production, authenticated SMTP | env validation |
 
 ## Known gaps / accepted for now
-See `docs/security-review.md` for the current prioritised list (KMS provider, bot protection, MFA, retention job, CSP nonces).
+See `docs/security-review.md` for the current prioritised list. Phase 8 built the KMS provider, Turnstile bot protection, TOTP MFA (including the platform console), and the retention purge, all verified with mocks or locally only.
 
-## Historical gaps (Phases 1-6; some now closed)
+## Historical gaps (Phases 1-6; status updated after Phase 8)
+Closed in Phases 7-8 (locally verified only): platform-console MFA and user MFA; the Next.js CSP; the webhook payload retention job; bot protection on the widget; mobile/responsive layouts (Chrome emulation, 375 and 768 px).
 - **Razorpay has never been called for real.** The live client follows the documented API; every billing test uses the mock provider (with real HMAC signatures). Verify with test-mode keys before relying on it.
 - Invoice SAC code / layout not reviewed by an accountant.
 - Platform-admin impersonation is not built (deliberately).

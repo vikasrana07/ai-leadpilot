@@ -4,7 +4,12 @@ Console: `/platform` on the web app (separate login `/platform/login`; disabled 
 ```
 PLATFORM_ADMIN_PASSWORD='<long passphrase>' pnpm --filter @leadpilot/database platform:create-admin <email> "<name>"
 ```
-(In a container: `node dist/create-platform-admin.js <email> "<name>"` from `/app/node_modules/@leadpilot/database` with `DATABASE_OWNER_URL` set.) Disable an admin: `UPDATE platform_admins SET status='DISABLED' WHERE email='<email>'` (effective on their next request). 5 failed logins lock an account for 15 minutes. No MFA yet.
+(In a container: `node dist/create-platform-admin.js <email> "<name>"` from `/app/node_modules/@leadpilot/database` with `DATABASE_OWNER_URL` set.) Disable an admin: `UPDATE platform_admins SET status='DISABLED' WHERE email='<email>'` (effective on their next request). 5 failed logins lock an account for 15 minutes. Platform admins can enrol TOTP MFA from the console's Security page.
+
+## Lost phone: resetting someone's two-step verification
+- **Single-workspace user:** a workspace owner or manager opens Team, the member's menu, "Reset two-step verification", and gives a reason. The person is signed out, emailed, and re-enrols at next sign-in. Verify identity out of band first (for example a call to a known number). Audited as `team.mfa_reset`.
+- **User in several workspaces** (the UI refuses, because MFA is account-wide): verify identity, then as the owner role run `DELETE FROM mfa_recovery_codes WHERE subject_type='user' AND subject_id='<user uuid>'; DELETE FROM mfa_credentials WHERE subject_type='user' AND subject_id='<user uuid>'; UPDATE sessions SET revoked_at=now() WHERE user_id='<user uuid>' AND revoked_at IS NULL;` and record who asked and why in your ticket.
+- **Platform admin:** same SQL with `subject_type='platform_admin'`.
 
 **There is no impersonation.** Support cannot "log in as" a customer by design. Diagnose with the console's tenant detail (owners, subscription, entitlements, usage, invoices, recent activity), the tenant's audit log, and the tables above; ask the customer to share a screen or screenshots for UI issues.
 

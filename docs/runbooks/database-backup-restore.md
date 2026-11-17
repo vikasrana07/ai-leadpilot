@@ -11,7 +11,7 @@ Postgres 17 with extensions `vector`, `citext`, `btree_gist`, `pgcrypto`, `pg_tr
   ```
   Store encrypted in a separate account/region. The dump contains personal data and envelope-encrypted provider secrets: treat it as production data.
 - Object storage (S3) is not in the database: enable bucket versioning for the knowledge-base files (tenant data lives under `tenants/<tenantId>/`).
-- **The master key (`LOCAL_MASTER_KEY` today) is not in any backup.** Provider tokens in `integration_credentials` are unreadable without it. Back it up separately in your secret manager.
+- **The master key is not in any database backup.** With `KEY_PROVIDER=local` it is `LOCAL_MASTER_KEY`: back it up separately in your secret manager. With `KEY_PROVIDER=kms` the key lives in AWS KMS: keep the key and its policy, and never schedule it for deletion while backups exist. Provider tokens in `integration_credentials` (and webhook/MFA secrets) are unreadable without it. The KMS path has not been run against real AWS.
 
 ## Restore: point in time (RDS)
 1. Restore to a **new** instance at the chosen timestamp (never over the live one). 2. Wait for it to become available. 3. Run verification below against the new instance. 4. Repoint `DATABASE_URL`/`DATABASE_OWNER_URL` (or swap endpoints) and restart api + worker. 5. Re-check `/health/ready`.

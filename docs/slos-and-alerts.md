@@ -60,6 +60,7 @@ Availability budget at 99.5% = about 3.6 hours/month. If more than 50% is burned
 
 ## Gaps (honest list)
 - No request-duration or error-rate metrics: SLOs 2, 3, 8 cannot be measured in production until an access-log/metrics layer exists (OpenTelemetry/Prometheus or CloudWatch embedded metrics from ALB logs).
-- No Sentry, no log aggregation, no alert routing. Logs are Nest console logs (plain text, not JSON); `x-request-id` is on every response and in error logs.
-- `/health/ready` checks the database only in the code as audited by this document; confirm whether Redis was added before relying on it as a Redis check.
+- No Sentry, no log aggregation, no alert routing. The API writes a JSON access log (`ACCESS_LOG`) with `route` and `durationMs`, but nothing aggregates it yet; `x-request-id` is on every response and in error logs.
+- `/health/ready` checks both the database and Redis (Phase 7). It is still only useful once an external probe calls it.
+- AI latency (SLO 4) has never been measured against a real model.
 - Customer-visible AI latency (inbound webhook to outbound send) is not recorded as one number.
