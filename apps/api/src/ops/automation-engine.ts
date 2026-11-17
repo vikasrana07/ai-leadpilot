@@ -7,6 +7,7 @@ import { ConversationsService } from '../conversations/conversations.service.js'
 import type { Actor } from '../common/actor.js';
 import { DbService } from '../db/db.module.js';
 import { LeadsService } from '../leads/leads.service.js';
+import { metrics } from '../observability/metrics.js';
 import { evaluateConditions, MAX_CHAIN_DEPTH, render, type EvalContext } from './automation-logic.js';
 import { cursorFrom, endWaitingRuns, evaluateBranch, parseGraph, resumeWaitingRun, safeTrigger, type StepRecord } from './graph-executor.js';
 import { NotificationsService, type CreatedNotification } from './notifications.service.js';
@@ -236,6 +237,7 @@ export class AutomationEngine {
   }
 
   private async finish(tenantId: string, runId: string, status: 'SUCCEEDED' | 'FAILED' | 'SKIPPED', steps: StepResult[], error: string | null): Promise<void> {
+    metrics.job('automation', status === 'SUCCEEDED' ? 'ok' : status === 'FAILED' ? 'failed' : 'skipped');
     await this.db.tenantTx({ tenantId }, (tx) => tx.automationRun.update({ where: { id: runId }, data: { status, steps: steps as unknown as Prisma.InputJsonValue, error, finishedAt: new Date(), resumeAt: null, waitingNode: null } }));
   }
 

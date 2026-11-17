@@ -1,7 +1,10 @@
 import { Inject, Injectable, Logger, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
 import { Queue, Worker, type ConnectionOptions, type Job } from 'bullmq';
 import { ENV } from '../common/tokens.js';
+import { metrics } from '../observability/metrics.js';
 import { runWithLogContext } from '../observability/request-context.js';
+import { HealthSnapshotService } from './health-snapshot.service.js';
+import { WorkerHeartbeat } from './worker-heartbeat.js';
 import type { Env } from '../config/env.js';
 import { AutomationEngine } from './automation-engine.js';
 import { LifecycleJobs } from './lifecycle-jobs.js';
@@ -39,6 +42,8 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     @Inject(ScannersService) private readonly scanners: ScannersService,
     @Inject(WebhookDispatcher) private readonly webhooks: WebhookDispatcher,
     @Inject(LifecycleJobs) private readonly lifecycle: LifecycleJobs,
+    @Inject(WorkerHeartbeat) private readonly heartbeat: WorkerHeartbeat,
+    @Inject(HealthSnapshotService) private readonly snapshot: HealthSnapshotService,
   ) {}
 
   get running(): boolean { return this.runsQueue !== null; }
@@ -67,6 +72,7 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
 
     await this.maintenanceQueue.upsertJobScheduler('tick', { every: 60_000 }, { name: 'tick', data: {} });
     this.relayTimer = setInterval(() => { void this.drain(); }, 1000);
+    this.heartbeat.start();
     this.log.log('Background workers started');
   }
 
@@ -88,6 +94,19 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
   }
 
   async maintenance(): Promise<void> {
+    const started = Date.now();
+    let ok = true;
+    try { await this.maintenanceBody(); } catch (e) { ok = false; throw e; } finally { metrics.scannerTick(Date.now() - started, ok); }
+    // Health snapshot -> gauges, Redis copy for the Ops page and alert rules. Must never fail the maintenance job.
+    await this.publishSnapshot().catch((e: unknown) => this.log.error(`snapshot: ${e instanceof Error ? e.message : String(e)}`));
+  }
+
+  private async publishSnapshot(): Promise<void> {
+    const c = this.runsQueue ? await this.runsQueue.getJobCounts('wait', 'active', 'delayed', 'failed').catch(() => null) : null;
+    await this.snapshot.tick(c ? { waiting: c.wait ?? 0, active: c.active ?? 0, delayed: c.delayed ?? 0, failed: c.failed ?? 0 } : null);
+  }
+
+  private async maintenanceBody(): Promise<void> {
     const reports = await this.scanners.scanAll();
     // data lifecycle: queued workspace exports, expired export files, workspaces past their deletion cooling-off period
     await this.lifecycle.processExports().catch((e: unknown) => this.log.error(`exports: ${e instanceof Error ? e.message : String(e)}`));

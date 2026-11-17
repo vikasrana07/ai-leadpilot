@@ -15,6 +15,7 @@ import { AssistantsService } from './assistants.service.js';
 import { checkReply } from './guards.js';
 import { KnowledgeService, type KnowledgeHit } from './knowledge/knowledge.service.js';
 import { LLM_PROVIDER, LlmError, type ChatMessage, type LlmProvider } from './llm.js';
+import { metrics } from '../observability/metrics.js';
 import { buildSystemPrompt, CANARY, PROMPT_VERSION } from './prompt.js';
 import { modelTools, ToolRunner, type ToolContext } from './tools.js';
 import type { WorkingHours } from './working-hours.js';
@@ -123,6 +124,7 @@ export class AiOrchestrator implements OnModuleInit {
     let inTok = 0; let outTok = 0; let model: string = assistant.model ?? this.env.AI_CHAT_MODEL;
     const finish = async (status: 'COMPLETED' | 'FAILED' | 'SKIPPED', error?: string) => {
       if (status !== 'FAILED' && newestPending) trace.answeredThrough = newestPending;
+      metrics.aiRun(status === 'COMPLETED' ? 'ok' : status === 'FAILED' ? 'failed' : 'skipped', Date.now() - started);
       await this.db.tenantTx({ tenantId: t }, (tx) => tx.aiRun.update({ where: { id: runId }, data: { status, model, inputTokens: inTok, outputTokens: outTok, latencyMs: Date.now() - started, error: error ?? null, trace: trace as unknown as Prisma.InputJsonValue, completedAt: new Date() } }));
     };
     const toolCtx: ToolContext = {

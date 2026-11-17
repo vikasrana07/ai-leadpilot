@@ -17,6 +17,14 @@ SELECT id, tenant_id, automation_id, started_at, attempts FROM automation_runs W
 ```
 If the outbox grows and nothing is claimed: worker not running, cannot reach the database, or crash-looping. Check worker logs for `Worker running (relay, automation queue, scheduler)` and for `relay:` / `Scan failed` errors.
 
+### Worker heartbeat (fast check)
+Every background process writes `<QUEUE_PREFIX>:worker:heartbeat:<instanceId>` to Redis every 30 s with a 90 s lifetime, and the once-a-minute tick publishes the count as the `WorkersAlive` gauge and stores the latest snapshot at `<QUEUE_PREFIX>:ops:snapshot`.
+```
+redis-cli -p 6380 --scan --pattern 'leadpilot:worker:heartbeat:*'      # one key per live worker (use your QUEUE_PREFIX)
+redis-cli -p 6380 GET leadpilot:ops:snapshot | jq '.workers, .db.outbox, .db.automation_runs'
+```
+No heartbeat keys for over 90 s means no worker is running (or Redis is down). A missing or older-than-5-minute snapshot means the maintenance job is not running: check that a worker with `WORKERS_ENABLED=true` is up and the `maintenance` queue has its repeatable `tick` job.
+
 ## Stuck or failed outbox rows
 - `processing` rows older than the 2-minute lease are re-claimed automatically by any running worker; no action needed once a worker is up.
 - `failed` rows (attempts >= 10): fix the cause, then re-queue (WRITE, as owner):

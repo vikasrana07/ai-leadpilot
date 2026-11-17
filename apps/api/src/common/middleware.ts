@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
+import { metrics } from '../observability/metrics.js';
 import { runWithLogContext } from '../observability/request-context.js';
 import type { AppRequest } from './request-context.js';
 
@@ -61,4 +62,18 @@ export function accessLogMiddleware(enabled: boolean) {
     });
     next();
   };
+}
+
+/**
+ * Records request count and duration in the in-process metrics (status class and a coarse route group only: never a path, id or tenant).
+ * Independent of ACCESS_LOG. Health probes are skipped, like the access log.
+ */
+export function httpMetricsMiddleware(req: Request, res: Response, next: NextFunction): void {
+  if (req.path.startsWith('/health')) return next();
+  const start = process.hrtime.bigint();
+  res.on('finish', () => {
+    const route = (req.route as { path?: string } | undefined)?.path;
+    metrics.http(res.statusCode, route ? `${req.baseUrl}${route}` : '', Number(process.hrtime.bigint() - start) / 1e6);
+  });
+  next();
 }

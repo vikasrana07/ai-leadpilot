@@ -11,6 +11,7 @@ import type { Env } from '../config/env.js';
 import { DbService } from '../db/db.module.js';
 import { BillingNotifier } from '../ops/billing-notify.js';
 import { EntitlementsService } from './entitlements.service.js';
+import { metrics } from '../observability/metrics.js';
 import { buildMockEvent, type MockEventKind } from './mock-events.js';
 import { BILLING_PROVIDER, type BillingProvider, MockBillingProvider } from './provider.js';
 
@@ -217,14 +218,16 @@ export class BillingService {
     } catch (e) {
       if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002')) throw e;
       const prior = await this.db.prisma.billingEvent.findUnique({ where: { provider_eventId: { provider: 'razorpay', eventId } } });
-      if (prior && (prior.status === 'processed' || prior.status === 'ignored')) return { status: 'duplicate' };
+      if (prior && (prior.status === 'processed' || prior.status === 'ignored')) { metrics.job('billing', 'skipped'); return { status: 'duplicate' }; }
       // 'received' / 'failed': a previous attempt did not finish. Fall through and apply it again; every step below is idempotent.
     }
     try {
       const result = await this.apply(parsed);
       await this.db.prisma.billingEvent.update({ where: { provider_eventId: { provider: 'razorpay', eventId } }, data: { status: result.status === 'processed' ? 'processed' : 'ignored', processedAt: new Date(), error: result.reason ?? null } });
+      metrics.job('billing', result.status === 'processed' ? 'ok' : 'skipped');
       return result;
     } catch (e) {
+      metrics.job('billing', 'failed');
       await this.db.prisma.billingEvent.update({ where: { provider_eventId: { provider: 'razorpay', eventId } }, data: { status: 'failed', error: (e instanceof Error ? e.message : String(e)).slice(0, 500) } }).catch(() => undefined);
       throw e;
     }

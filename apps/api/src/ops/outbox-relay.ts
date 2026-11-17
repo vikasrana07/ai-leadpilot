@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DbService } from '../db/db.module.js';
+import { metrics } from '../observability/metrics.js';
 import { AutomationEngine, type DomainEvent } from './automation-engine.js';
 import { EventNotifier } from './event-notifier.js';
 import { WebhookDispatcher } from './webhook-dispatcher.js';
@@ -42,7 +43,9 @@ export class OutboxRelay {
         this.notifications.publish(ev.tenantId, out.created);
         for (const runId of out.runs) await this.enqueueRun(ev.tenantId, runId);
         await this.db.prisma.$executeRaw`SELECT complete_outbox(${ev.id}::uuid)`;
+        metrics.job('outbox', 'ok');
       } catch (e) {
+        metrics.job('outbox', 'failed');
         this.log.error(`Event ${ev.type} ${ev.id} failed (attempt ${r.attempts}): ${e instanceof Error ? e.message : String(e)}`);
         const delay = Math.min(300, 2 ** Math.min(r.attempts, 8));
         await this.db.prisma.$executeRaw`SELECT fail_outbox(${ev.id}::uuid, ${delay}::int)`;

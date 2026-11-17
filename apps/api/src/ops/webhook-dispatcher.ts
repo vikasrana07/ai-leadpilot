@@ -7,6 +7,7 @@ import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
 import { SecretBox } from '../crypto/secret-box.js';
 import { DbService } from '../db/db.module.js';
+import { metrics } from '../observability/metrics.js';
 import { BillingNotifier } from './billing-notify.js';
 import type { DomainEvent } from './automation-engine.js';
 
@@ -91,11 +92,13 @@ export class WebhookDispatcher {
     let disabledNow = false;
     await this.db.tenantTx({ tenantId }, async (tx) => {
       if (!error) {
+        metrics.job('webhook', 'ok');
         await tx.webhookDelivery.update({ where: { id: row.id }, data: { status: 'SUCCEEDED', deliveredAt: new Date(), lastStatusCode: status, lastLatencyMs: latency, lastError: null } });
         await tx.webhookEndpoint.updateMany({ where: { id: ep.id }, data: { consecutiveFailures: 0 } });
         return;
       }
       const exhausted = terminal || row.attempts >= this.env.WEBHOOK_MAX_ATTEMPTS;
+      metrics.job('webhook', exhausted ? 'failed' : 'skipped'); // 'skipped' = failed attempt that will be retried
       await tx.webhookDelivery.update({ where: { id: row.id }, data: exhausted
         ? { status: 'FAILED', lastStatusCode: status, lastLatencyMs: latency, lastError: error }
         : { status: 'PENDING', nextAttemptAt: new Date(Date.now() + this.backoffMs(row.attempts)), lastStatusCode: status, lastLatencyMs: latency, lastError: error } });

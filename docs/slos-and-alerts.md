@@ -1,18 +1,18 @@
 # SLOs and alerts
 
-**Status: proposed.** Targets are tied to the performance budgets in the master prompt (B4). Only some SLIs are measurable today. Nothing below pages anyone yet: **no metrics endpoint, OpenTelemetry, Sentry or alerting is built** (see "Gaps"). Load-test results against these budgets belong in `PROGRESS.md` (Phase 7 verification), not here.
+**Status: proposed.** Targets are tied to the performance budgets in the master prompt (B4). Only some SLIs are measurable today. Nothing below pages anyone yet: metrics exist (milestone 2) but **alert rules and delivery are milestone 3, and no Sentry/OpenTelemetry is built** (see "Gaps"). Load-test results against these budgets belong in `PROGRESS.md` (Phase 7 verification), not here.
 
 ## SLOs
 | # | SLI | Objective | Measurable today? |
 |---|---|---|---|
 | 1 | Availability: share of minutes where `GET /health/ready` succeeds (external probe) | 99.5% monthly (revisit after 3 months of data) | Only with an external uptime probe you configure; the endpoint exists |
-| 2 | Dashboard load (`/analytics/*` responses) at 100k leads/tenant | p95 < 2 s | Yes, from the JSON access log (`route` + `durationMs`, `ACCESS_LOG`, on by default in production); also by load test (`scripts/loadtest.mjs`) |
-| 3 | Webhook ACK: WhatsApp `POST /webhooks/whatsapp/:key` | p95 < 1 s | Yes from the access log (`route=/webhooks/whatsapp/:key`); also by load test |
-| 4 | AI turn latency (model + tools, from `ai_runs.latency_ms`) | p95 < 8 s (customer-visible reply also includes ~1.2 s debounce and WhatsApp send; track end to end separately) | Yes (query below) |
-| 5 | Outbox lag: age of oldest `pending`/`processing` outbox row | < 60 s for 99% of minutes | Yes |
-| 6 | Automation run success (not counting intended skips) | > 99% of runs end SUCCEEDED/SKIPPED, none stuck | Yes |
-| 7 | Billing webhook health: failed/unprocessed `billing_events` | 0 older than 15 min | Yes |
-| 8 | Server errors | 5xx < 0.5% of requests | Yes from the access log (`status >= 500`) once something aggregates the lines |
+| 2 | Dashboard load (`/analytics/*` responses) at 100k leads/tenant | p95 < 2 s | Yes: the `RequestDurationP95Ms` metric (`RouteGroup=analytics`, from the EMF lines, milestone 2) or the JSON access log; also by load test (`scripts/loadtest.mjs`) |
+| 3 | Webhook ACK: WhatsApp `POST /webhooks/whatsapp/:key` | p95 < 1 s | Yes: `RequestDurationP95Ms` with `RouteGroup=webhook`, or the access log (`route=/webhooks/whatsapp/:key`); also by load test |
+| 4 | AI turn latency (model + tools, from `ai_runs.latency_ms`) | p95 < 8 s (customer-visible reply also includes ~1.2 s debounce and WhatsApp send; track end to end separately) | Yes: gauge `AiLatencyP95Ms24h` (from `ops_health_snapshot()`) or the query below |
+| 5 | Outbox lag: age of oldest `pending`/`processing` outbox row | < 60 s for 99% of minutes | Yes: gauge `OutboxOldestPendingSeconds` (once a minute) |
+| 6 | Automation run success (not counting intended skips) | > 99% of runs end SUCCEEDED/SKIPPED, none stuck | Yes: counters `JobOutcome` (automation) and gauges `RunsStuckRunning`, `RunsQueuedOld`, `RunsWaitingOverdue` |
+| 7 | Billing webhook health: failed/unprocessed `billing_events` | 0 older than 15 min | Yes: gauge `BillingEventsNeedingAttention` |
+| 8 | Server errors | 5xx < 0.5% of requests | Yes: `RequestCount` by `StatusClass` (5xx / total) from the EMF lines; in CloudWatch via a metric-math expression |
 
 ## Queries (run as owner; schedule them in whatever cron/monitor you use)
 ```sql
@@ -60,7 +60,7 @@ Queue depth (Redis): `redis-cli ZCARD leadpilot:automation-runs:failed` and `LLE
 Availability budget at 99.5% = about 3.6 hours/month. If more than 50% is burned in a month, freeze feature releases except fixes until the cause has a corrective action; if 100% burned, only reliability work until the next month. Every Sev 1/2 gets a written review.
 
 ## Gaps (honest list)
-- No request-duration or error-rate metrics: SLOs 2, 3, 8 cannot be measured in production until an access-log/metrics layer exists (OpenTelemetry/Prometheus or CloudWatch embedded metrics from ALB logs).
+- Metrics exist now (milestone 2, see `docs/monitoring.md`): request count and duration, job outcomes and a once-a-minute health snapshot are written as CloudWatch EMF lines. They have not been read by a real CloudWatch yet, and nothing evaluates them into alerts until milestone 3.
 - No Sentry, no log aggregation, no alert routing. The API writes a JSON access log (`ACCESS_LOG`) with `route` and `durationMs`, but nothing aggregates it yet; `x-request-id` is on every response and in error logs.
 - `/health/ready` checks both the database and Redis (Phase 7). It is still only useful once an external probe calls it.
 - AI latency (SLO 4) has never been measured against a real model.

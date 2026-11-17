@@ -215,3 +215,9 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 - **Not verified:** a real log collector/CloudWatch; the error boundary end to end (render test only); the request id is not carried into background jobs; no client error beacon.
 - **Next:** milestone 2 (metrics, `ops_health_snapshot()`, worker heartbeat, EMF output), milestone 3 (alert rules, `ops_alerts`, email, Ops Status page), milestone 4 (IaC example, docs).
 
+## Monitoring, milestone 2: metrics, health snapshot, heartbeat (2026-11-17)
+- **Built:** in-process metrics registry (fixed dimension lists, series cap, no ids as labels); request, job, AI and billing outcomes recorded; CloudWatch EMF output every `METRICS_INTERVAL_SECONDS` (default on in production), final flush on shutdown; `ops_health_snapshot()` (migration `20261117120000`, SECURITY DEFINER, counts and ages only); the once-a-minute maintenance tick publishes 22 gauges plus queue depth and worker heartbeats and stores the latest snapshot in Redis (`<QUEUE_PREFIX>:ops:snapshot`, 5 min); worker heartbeat key (30 s, 90 s lifetime). 23 billable CloudWatch series, the rest are log fields.
+- **Verified locally (my own run on the committed tree):** lint, build, `pnpm test` (602 API, 44 web, 19 DB, 11 validation; new: metrics 12, ops-health 6), `scripts/e2e.sh` 54/54, plus a real run on port 4300 with workers on (EMF lines, gauges for a seeded failed outbox event and unprocessed billing event, Redis snapshot, heartbeat removed on shutdown).
+- **Not verified:** real CloudWatch reading the lines; CloudWatch cost for your region; per-instance p95 aggregation. A stuck RUNNING run self-heals within a minute when a worker is up, so that gauge is only non-zero without a worker.
+- **Next:** milestone 3 (alert rules, `ops_alerts`, alert emails, `/platform/ops` page), milestone 4 (IaC example, docs).
+

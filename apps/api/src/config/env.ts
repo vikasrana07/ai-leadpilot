@@ -48,6 +48,8 @@ const schema = z.object({
   LOG_LEVEL: z.enum(['verbose', 'debug', 'log', 'warn', 'error']).default('log'),
   /** Emit CloudWatch Embedded Metric Format lines once a minute (milestone 2). Default: on in production, off elsewhere. */
   METRICS_EMF: z.enum(['true', 'false']).optional().transform((v) => (v === undefined ? undefined : v === 'true')),
+  /** How often the metrics are written as CloudWatch EMF lines (seconds). */
+  METRICS_INTERVAL_SECONDS: z.coerce.number().int().min(5).max(3600).default(60),
   /** Evaluate the alert rules and email platform admins (milestone 3). */
   ALERTS_ENABLED: bool,
   /** Comma-separated recipients for alert emails; empty means every active platform admin. */

@@ -23,7 +23,8 @@ import { ChannelsModule } from './channels/channels.module.js';
 import { ConfigModule } from './common/config.module.js';
 import { AllExceptionsFilter } from './common/http-exception.filter.js';
 import { AuthGuard, PermissionsGuard, TenantGuard } from './common/guards.js';
-import { accessLogMiddleware, csrfOriginMiddleware, requestIdMiddleware } from './common/middleware.js';
+import { accessLogMiddleware, csrfOriginMiddleware, httpMetricsMiddleware, requestIdMiddleware } from './common/middleware.js';
+import { ObservabilityModule } from './observability/observability.module.js';
 import { ENV } from './common/tokens.js';
 import type { Env } from './config/env.js';
 import { ConversationsModule } from './conversations/conversations.module.js';
@@ -58,7 +59,7 @@ class IntegrationsCoreModule {}
 
 @Module({
   imports: [
-    ConfigModule, IntegrationsCoreModule, RealtimeModule, OutboxModule, EntitlementsModule,
+    ConfigModule, ObservabilityModule, IntegrationsCoreModule, RealtimeModule, OutboxModule, EntitlementsModule,
     ThrottlerModule.forRootAsync({
       inject: [ENV],
       // Redis-backed so limits hold across API instances (tests keep the in-memory store: counters would otherwise leak between runs).
@@ -79,6 +80,6 @@ export class AppModule implements NestModule {
   constructor(@Inject(ENV) private readonly env: Env) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(requestIdMiddleware, accessLogMiddleware(this.env.ACCESS_LOG ?? this.env.NODE_ENV === 'production'), cookieParser(), csrfOriginMiddleware([this.env.WEB_ORIGIN])).forRoutes('*path');
+    consumer.apply(requestIdMiddleware, httpMetricsMiddleware, accessLogMiddleware(this.env.ACCESS_LOG ?? this.env.NODE_ENV === 'production'), cookieParser(), csrfOriginMiddleware([this.env.WEB_ORIGIN])).forRoutes('*path');
   }
 }
