@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { SYSTEM_ROLES, type SystemRoleKey } from '@leadpilot/shared-types';
+import { packForIndustry, SYSTEM_ROLES, type SystemRoleKey } from '@leadpilot/shared-types';
 import type { TxClient } from './index.js';
 import { applyIndustryPack } from './industry-pack.js';
 
@@ -14,7 +14,7 @@ export async function bootstrapTenant(
 ): Promise<{ ownerRoleId: string; roleIds: Record<SystemRoleKey, string> }> {
   const newId = input.newId ?? randomUUID;
   await tx.tenant.create({
-    data: { id: tenantId, name: input.name, email: input.email, industry: input.industry, onboardingState: { step: 'business', completed: [], skipped: [] } },
+    data: { id: tenantId, name: input.name, email: input.email, industry: input.industry, industryPackId: packForIndustry(input.industry).id, onboardingState: { step: 'business', completed: [], skipped: [] } },
   });
   const roleIds = {} as Record<SystemRoleKey, string>;
   for (const key of Object.keys(SYSTEM_ROLES) as SystemRoleKey[]) {

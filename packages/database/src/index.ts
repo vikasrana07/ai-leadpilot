@@ -3,7 +3,7 @@ import { PrismaClient, type Prisma } from './generated/client.js';
 
 export * from './generated/client.js';
 export { bootstrapTenant } from './bootstrap-tenant.js';
-export { applyIndustryPack } from './industry-pack.js';
+export { applyIndustryPack, switchIndustryPack } from './industry-pack.js';
 
 export function createPrismaClient(connectionString: string): PrismaClient {
   const adapter = new PrismaPg({ connectionString });

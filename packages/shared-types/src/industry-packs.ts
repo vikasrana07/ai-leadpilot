@@ -15,6 +15,8 @@ export interface IndustryPack {
   sources: { key: string; name: string }[];
   customFields: PackCustomField[];
   terminology: { lead: string; visit: string };
+  /** Optional modules shown in the app. Only what an industry actually uses appears in the menu. */
+  modules: { properties: boolean };
 }
 
 const SOURCES = [
@@ -45,6 +47,7 @@ export const REAL_ESTATE_PACK: IndustryPack = {
     { key: 'possession', label: 'Possession preference', type: 'select', options: ['Ready to move', 'Under construction', 'Either'] },
   ],
   terminology: { lead: 'Lead', visit: 'Site visit' },
+  modules: { properties: true },
 };
 
 export const GENERAL_PACK: IndustryPack = {
@@ -63,6 +66,7 @@ export const GENERAL_PACK: IndustryPack = {
   sources: SOURCES,
   customFields: [],
   terminology: { lead: 'Lead', visit: 'Meeting' },
+  modules: { properties: false },
 };
 
 const PACKS: Record<string, IndustryPack> = { real_estate: REAL_ESTATE_PACK, general: GENERAL_PACK };

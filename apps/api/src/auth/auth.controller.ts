@@ -86,7 +86,7 @@ export class AuthController {
 
   @NoTenant() @Get('me')
   async me(@CurrentAuth() auth: AuthContext, @Req() req: AppRequest) {
-    if (req.support) return supportMe(req, await this.auth.workspaceName(auth.activeTenantId as string)); // platform support session
+    if (req.support) return supportMe(req, await this.auth.workspaceInfo(auth.activeTenantId as string)); // platform support session
     return this.auth.buildContext(auth.userId, auth.activeTenantId);
   }
 

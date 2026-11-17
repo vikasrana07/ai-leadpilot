@@ -7,6 +7,8 @@ export interface WorkspaceSummary {
   name: string;
   roleKey: string;
   roleName: string;
+  /** Industry pack the workspace was set up with; decides which optional modules (e.g. Properties) the menu shows. */
+  industryPackId: string;
 }
 
 export interface SessionUser {

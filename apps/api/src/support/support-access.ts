@@ -71,12 +71,12 @@ export function supportTenantContext(req: AppRequest): TenantRequestContext {
   return { tenantId: a.activeTenantId, userId: s.adminId, membershipId: '', roleKey: 'support', permissions: new Set(SUPPORT_PERMISSIONS), requestId: req.requestId, ip: req.ip };
 }
 
-export function supportMe(req: AppRequest, tenantName: string): AuthContextResponse {
+export function supportMe(req: AppRequest, tenant: { name: string; industryPackId: string }): AuthContextResponse {
   const s = req.support;
   if (!s || !req.auth?.activeTenantId) throw new UnauthorizedException({ code: 'unauthenticated', message: 'Authentication required' });
   return {
     user: { id: s.adminId, email: 'support@leadpilot.invalid', name: `${s.adminName} (LeadPilot support)`, emailVerified: true },
-    workspaces: [{ tenantId: req.auth.activeTenantId, name: tenantName, roleKey: 'support', roleName: 'Support (read-only)' }],
+    workspaces: [{ tenantId: req.auth.activeTenantId, name: tenant.name, roleKey: 'support', roleName: 'Support (read-only)', industryPackId: tenant.industryPackId }],
     activeTenantId: req.auth.activeTenantId, permissions: [...SUPPORT_PERMISSIONS],
   };
 }

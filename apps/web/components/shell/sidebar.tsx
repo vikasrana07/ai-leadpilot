@@ -1,5 +1,6 @@
 'use client';
 
+import { packForIndustry } from '@leadpilot/shared-types';
 import { motion } from 'motion/react';
 import { ChevronsLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -41,14 +42,15 @@ function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: bo
 }
 
 export function SidebarContent({ collapsed, onToggle, onNavigate }: { collapsed: boolean; onToggle?: () => void; onNavigate?: () => void }) {
-  const { can } = useAuth();
+  const { can, activeWorkspace } = useAuth();
+  const modules = packForIndustry(activeWorkspace?.industryPackId ?? 'general').modules;
   const support = useSupportSession().data?.active === true;
   const admin = ADMIN_NAV.filter((i) => (!i.permission || can(i.permission)) && !(support && BLOCKED_DURING_SUPPORT.has(i.href)));
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className={cn('flex h-14 shrink-0 items-center border-b border-sidebar-border px-4', collapsed && 'justify-center px-0')}><Logo tone="light" collapsed={collapsed} /></div>
       <nav aria-label="Main" className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
-        <ul className="space-y-0.5">{WORKSPACE_NAV.filter((i) => !i.permission || can(i.permission)).map((i) => <li key={i.href}><NavLink item={i} collapsed={collapsed} onNavigate={onNavigate} /></li>)}</ul>
+        <ul className="space-y-0.5">{WORKSPACE_NAV.filter((i) => (!i.permission || can(i.permission)) && (!i.module || modules[i.module])).map((i) => <li key={i.href}><NavLink item={i} collapsed={collapsed} onNavigate={onNavigate} /></li>)}</ul>
         <div>
           {collapsed ? <div className="mx-2 mb-2 h-px bg-sidebar-border" /> : <p className="text-label mb-2 px-2.5 !text-sidebar-muted">Administration</p>}
           <ul className="space-y-0.5">{admin.map((i) => <li key={i.href}><NavLink item={i} collapsed={collapsed} onNavigate={onNavigate} /></li>)}</ul>

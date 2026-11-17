@@ -246,15 +246,15 @@ export class AuthService {
       tx.membership.findMany({
         where: { userId, status: 'ACTIVE', tenant: { status: 'ACTIVE' } },
         orderBy: { createdAt: 'asc' },
-        select: { tenant: { select: { id: true, name: true } }, role: { select: { key: true, name: true } } },
+        select: { tenant: { select: { id: true, name: true, industryPackId: true } }, role: { select: { key: true, name: true } } },
       }),
     );
-    return rows.map((m) => ({ tenantId: m.tenant.id, name: m.tenant.name, roleKey: m.role.key, roleName: m.role.name }));
+    return rows.map((m) => ({ tenantId: m.tenant.id, name: m.tenant.name, roleKey: m.role.key, roleName: m.role.name, industryPackId: m.tenant.industryPackId }));
   }
 
-  /** Name of a workspace (support sessions have no membership to read it from). */
-  async workspaceName(tenantId: string): Promise<string> {
-    return this.db.tenantTx({ tenantId }, async (tx) => (await tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { name: true } })).name);
+  /** Name and industry pack of a workspace (support sessions have no membership to read them from). */
+  async workspaceInfo(tenantId: string): Promise<{ name: string; industryPackId: string }> {
+    return this.db.tenantTx({ tenantId }, (tx) => tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { name: true, industryPackId: true } }));
   }
 
   async buildContext(userId: string, activeTenantId: string | null): Promise<AuthContextResponse> {

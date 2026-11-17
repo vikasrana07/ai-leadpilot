@@ -7,6 +7,8 @@ export interface NavItem {
   /** Phase in which this module becomes functional. Items for later phases render as "Soon". */
   phase: number;
   permission?: string;
+  /** Hidden unless the workspace's industry pack enables this module. */
+  module?: 'properties';
   description?: string;
 }
 
@@ -17,7 +19,7 @@ export const WORKSPACE_NAV: NavItem[] = [
   { href: '/leads', label: 'Leads', icon: Users, phase: 2, description: 'Capture, search, score and assign every lead.' },
   { href: '/inbox', label: 'Inbox', icon: Inbox, phase: 3, permission: 'conversation:read:own', description: 'WhatsApp and website chat in one place.' },
   { href: '/pipeline', label: 'Sales Pipeline', icon: KanbanSquare, phase: 2, description: 'Move leads from first contact to closed.' },
-  { href: '/properties', label: 'Properties', icon: Building2, phase: 2, permission: 'property:read' },
+  { href: '/properties', label: 'Properties', icon: Building2, phase: 2, permission: 'property:read', module: 'properties' },
   { href: '/appointments', label: 'Appointments', icon: CalendarDays, phase: 5, description: 'Site visits and meetings without double booking.' },
   { href: '/ai-assistant', label: 'AI Assistant', icon: Sparkles, phase: 4, permission: 'ai:configure', description: 'Configure how your assistant talks and qualifies.' },
   { href: '/knowledge', label: 'Knowledge Base', icon: BookOpen, phase: 4, permission: 'knowledge:manage', description: 'Documents your assistant answers from.' },

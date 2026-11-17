@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { bootstrapTenant, type TxClient } from '@leadpilot/database';
+import { bootstrapTenant, switchIndustryPack, type TxClient } from '@leadpilot/database';
 import type { OnboardingProgress, UpdateTenantInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
@@ -31,11 +31,13 @@ export class TenantsService {
     return this.db.tenantTx(ctx, async (tx) => {
       const data = Object.fromEntries(Object.entries(input).filter(([, v]) => v !== undefined));
       const updated = await tx.tenant.update({ where: { id: ctx.tenantId }, data });
+      // Picking a different industry before any lead exists re-seeds the pipeline, lost reasons and fields for it.
+      const switched = typeof input.industry === 'string' ? await switchIndustryPack(tx, ctx.tenantId, input.industry, uuidv7) : false;
       await this.audit.record(tx, {
         tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'tenant.updated', resourceType: 'tenant',
-        resourceId: ctx.tenantId, metadata: { fields: Object.keys(data) }, requestId: ctx.requestId, ip: ctx.ip,
+        resourceId: ctx.tenantId, metadata: { fields: Object.keys(data), ...(switched ? { industryPackSwitched: true } : {}) }, requestId: ctx.requestId, ip: ctx.ip,
       });
-      return updated;
+      return switched ? tx.tenant.findUniqueOrThrow({ where: { id: ctx.tenantId } }) : updated;
     });
   }
 

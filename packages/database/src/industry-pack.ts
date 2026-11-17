@@ -25,3 +25,21 @@ export async function applyIndustryPack(tx: TxClient, tenantId: string, industry
     });
   }
 }
+
+/**
+ * Changing industry during onboarding: swaps the pipeline, lost reasons and custom fields for the new pack, but ONLY while the workspace
+ * has no leads yet (nothing to orphan). Once data exists the pack stays as it is and only the industry label changes.
+ * Returns true when the pack was replaced.
+ */
+export async function switchIndustryPack(tx: TxClient, tenantId: string, industry: string, newId: () => string = randomUUID): Promise<boolean> {
+  const pack = packForIndustry(industry);
+  const tenant = await tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { industryPackId: true } });
+  if (tenant.industryPackId === pack.id) return false;
+  if ((await tx.lead.count({ where: { tenantId } })) > 0) return false;
+  await tx.pipelineStage.deleteMany({ where: { tenantId } });
+  await tx.lostReason.deleteMany({ where: { tenantId } });
+  await tx.customFieldDefinition.deleteMany({ where: { tenantId, entity: 'lead' } });
+  await applyIndustryPack(tx, tenantId, industry, newId);
+  await tx.tenant.update({ where: { id: tenantId }, data: { industryPackId: pack.id } });
+  return true;
+}
