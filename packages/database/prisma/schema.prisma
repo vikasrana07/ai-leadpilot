@@ -910,6 +910,7 @@ enum AppointmentStatus {
 enum RunStatus {
   QUEUED
   RUNNING
+  WAITING
   SUCCEEDED
   FAILED
   SKIPPED
@@ -1010,8 +1011,13 @@ model Automation {
   createdBy       String?  @map("created_by") @db.Uuid
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  /// Graph definition (ADR-0010). Null = legacy linear row (trigger/conditions/actions are authoritative and lifted to a graph at run time).
+  graph           Json?
+  graphVersion    Int      @default(1) @map("graph_version")
+  activeVersionId String?  @map("active_version_id") @db.Uuid
 
-  runs AutomationRun[]
+  runs     AutomationRun[]
+  versions AutomationVersion[]
 
   @@index([tenantId, enabled])
   @@map("automations")
@@ -1033,13 +1039,42 @@ model AutomationRun {
   /// set when a worker claims the run; a run stuck RUNNING past a timeout is re-queued by the sweeper
   startedAt    DateTime? @map("started_at") @db.Timestamptz(3)
   finishedAt   DateTime? @map("finished_at") @db.Timestamptz(3)
+  /// the immutable definition this run executes (a run never follows later edits)
+  versionId    String?   @map("version_id") @db.Uuid
+  /// WAITING runs: when the wait ends, and which wait node the run is parked on
+  resumeAt     DateTime? @map("resume_at") @db.Timestamptz(3)
+  waitingNode  String?   @map("waiting_node")
 
-  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  automation Automation         @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  version    AutomationVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
 
   @@unique([automationId, eventId])
+  @@index([status, resumeAt])
+  @@index([tenantId, leadId, status])
   @@index([tenantId, createdAt(sort: Desc)])
   @@index([tenantId, status])
   @@map("automation_runs")
+}
+
+/// Immutable saved definition of an automation (ADR-0010). Runs pin to a version. App role: SELECT + INSERT only.
+model AutomationVersion {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  automationId    String   @map("automation_id") @db.Uuid
+  version         Int
+  /// linear | graph
+  source          String   @default("graph")
+  graph           Json
+  cooldownMinutes Int      @default(60) @map("cooldown_minutes")
+  createdBy       String?  @map("created_by") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  automation Automation      @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  runs       AutomationRun[]
+
+  @@unique([automationId, version])
+  @@index([tenantId, automationId])
+  @@map("automation_versions")
 }
 
 model Task {

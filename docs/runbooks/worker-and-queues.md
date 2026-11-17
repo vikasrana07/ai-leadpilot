@@ -41,6 +41,15 @@ redis-cli ZCARD leadpilot:automation-runs:wait            # backlog
 ```
 The database is the source of truth: a run whose job was lost stays `QUEUED` and the minute scanner re-enqueues it, so you rarely need to touch Redis. To retry a failed one, retry the **run** (UI/API above), not the job.
 
+## Runs stuck WAITING (automation waits)
+A wait node parks a run as `WAITING` with `resume_at`; the minute scanner puts it back in the queue once `resume_at` has passed (a customer reply or an opt-out/disable can end it earlier). It is **not** swept like a stuck `RUNNING` run, because waiting is normal. Check for overdue ones (alert if any is more than 15 minutes late, which means the scanner/worker is not running):
+```
+SELECT id, automation_id, lead_id, waiting_node, resume_at, now() - resume_at AS overdue
+FROM automation_runs WHERE status = 'WAITING' AND resume_at < now() - interval '15 minutes' ORDER BY resume_at LIMIT 50;
+SELECT count(*), min(resume_at) FROM automation_runs WHERE status = 'WAITING';   -- parked in total, next deadline
+```
+Overdue rows mean the worker or scanner is down (see the next sections); they resume by themselves on the next tick after recovery, in `resume_at` order, 200 per workspace per minute. To release one by hand: `UPDATE automation_runs SET resume_at = now() WHERE id = '<run id>' AND status = 'WAITING';` (the scanner resumes it on the next tick). To end one for good, set it SKIPPED: `UPDATE automation_runs SET status='SKIPPED', finished_at=now(), resume_at=NULL, waiting_node=NULL WHERE id='<run id>' AND status='WAITING';`. Runs pin an immutable version (`automation_versions`), so editing the automation does not change a waiting run.
+
 ## Redis down
 - Queue processing pauses; the outbox keeps accumulating in Postgres (nothing lost) and drains after Redis returns. Queued runs are re-enqueued by the scanner.
 - Rate limiting degrades to per-instance memory counters (limits weaker across replicas).

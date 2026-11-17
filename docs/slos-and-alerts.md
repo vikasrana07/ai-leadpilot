@@ -46,6 +46,7 @@ Queue depth (Redis): `redis-cli ZCARD leadpilot:automation-runs:failed` and `LLE
 | Worker not running | outbox lag > 120 s for 5 min, or no ECS worker task running | Sev 2 | On-call (page) |
 | Outbox failures | `failed` outbox rows > 0 | Sev 3 | Engineering channel |
 | Automation stuck | RUNNING > 15 min or QUEUED > 10 min | Sev 3 | Engineering channel |
+| Waits overdue | `automation_runs` WAITING with `resume_at` more than 15 min in the past (query in [worker-and-queues](runbooks/worker-and-queues.md)) | Sev 2 | On-call (the scanner is not running) |
 | Billing webhook failing | `billing_events` failed/received > 15 min, or Razorpay dashboard shows failing endpoint | Sev 2 | On-call |
 | WhatsApp deliveries unprocessed | `webhook_events` received > 5 min > 0 | Sev 2 | On-call |
 | AI error rate | > 20% of `ai_runs` FAILED in 15 min | Sev 2 | On-call; consider `AI_KILL_SWITCH` |

@@ -84,3 +84,4 @@ export * from './crm.js';
 export * from './ops.js';
 export * from './billing.js';
 export * from './integrations.js';
+export * from './automation-graph.js';

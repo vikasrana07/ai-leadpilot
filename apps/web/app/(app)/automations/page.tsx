@@ -23,7 +23,7 @@ import { ACTION_LABELS, describeTrigger, type AutomationItem, type AutomationRun
 import { timeAgo } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
-const RUN_TONE = { QUEUED: 'neutral', RUNNING: 'primary', SUCCEEDED: 'success', FAILED: 'danger', SKIPPED: 'warning', DRY_RUN: 'neutral' } as const;
+const RUN_TONE = { QUEUED: 'neutral', RUNNING: 'primary', WAITING: 'primary', SUCCEEDED: 'success', FAILED: 'danger', SKIPPED: 'warning', DRY_RUN: 'neutral' } as const;
 const STEP_TONE = { done: 'success', skipped: 'warning', failed: 'danger', preview: 'neutral' } as const;
 const GATE_TEXT: Record<string, string> = { conditions_not_met: 'Conditions were not met', cooldown: 'Ran recently for this lead (cooldown)', loop_protection: 'Stopped to prevent a loop', no_lead: 'The lead no longer exists' };
 
@@ -55,7 +55,7 @@ function RunsPanel() {
   return (
     <Card className="overflow-hidden">
       <div className="flex flex-wrap items-center gap-2 border-b border-border p-3"><h2 className="text-heading">Run history</h2>
-        <select aria-label="Status" className="ml-auto h-8 rounded-md border border-border bg-surface px-2 text-[12px]" value={status} onChange={(e) => setStatus(e.target.value)}><option value="">All</option>{['SUCCEEDED', 'FAILED', 'SKIPPED', 'DRY_RUN', 'QUEUED'].map((s) => <option key={s} value={s}>{s.replace('_', ' ').toLowerCase()}</option>)}</select></div>
+        <select aria-label="Status" className="ml-auto h-8 rounded-md border border-border bg-surface px-2 text-[12px]" value={status} onChange={(e) => setStatus(e.target.value)}><option value="">All</option>{['SUCCEEDED', 'FAILED', 'SKIPPED', 'DRY_RUN', 'QUEUED', 'WAITING'].map((s) => <option key={s} value={s}>{s.replace('_', ' ').toLowerCase()}</option>)}</select></div>
       {runs.isPending ? <div className="space-y-2 p-4">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}</div> : runs.data?.items.length === 0 ? <EmptyState icon={Workflow} title="Nothing has run yet" description="Runs appear here as soon as an enabled automation reacts to something." /> : (
         <div className="divide-y divide-border">{runs.data?.items.map((r) => (
           <div key={r.id} className="px-4 py-2.5 text-[13px]">

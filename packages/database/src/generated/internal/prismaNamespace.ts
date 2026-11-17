@@ -443,6 +443,7 @@ export const ModelName = {
   AppointmentEvent: 'AppointmentEvent',
   Automation: 'Automation',
   AutomationRun: 'AutomationRun',
+  AutomationVersion: 'AutomationVersion',
   Task: 'Task',
   Notification: 'Notification',
   NotificationPreference: 'NotificationPreference',
@@ -481,7 +482,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "automation" | "automationRun" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest"
+    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3889,6 +3890,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AutomationVersion: {
+      payload: Prisma.$AutomationVersionPayload<ExtArgs>
+      fields: Prisma.AutomationVersionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AutomationVersionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AutomationVersionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload>
+        }
+        findFirst: {
+          args: Prisma.AutomationVersionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AutomationVersionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload>
+        }
+        findMany: {
+          args: Prisma.AutomationVersionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload>[]
+        }
+        create: {
+          args: Prisma.AutomationVersionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload>
+        }
+        createMany: {
+          args: Prisma.AutomationVersionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AutomationVersionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload>[]
+        }
+        delete: {
+          args: Prisma.AutomationVersionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload>
+        }
+        update: {
+          args: Prisma.AutomationVersionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload>
+        }
+        deleteMany: {
+          args: Prisma.AutomationVersionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AutomationVersionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AutomationVersionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload>[]
+        }
+        upsert: {
+          args: Prisma.AutomationVersionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationVersionPayload>
+        }
+        aggregate: {
+          args: Prisma.AutomationVersionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAutomationVersion>
+        }
+        groupBy: {
+          args: Prisma.AutomationVersionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AutomationVersionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AutomationVersionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AutomationVersionCountAggregateOutputType> | number
+        }
+      }
+    }
     Task: {
       payload: Prisma.$TaskPayload<ExtArgs>
       fields: Prisma.TaskFieldRefs
@@ -6334,7 +6409,10 @@ export const AutomationScalarFieldEnum = {
   cooldownMinutes: 'cooldownMinutes',
   createdBy: 'createdBy',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  graph: 'graph',
+  graphVersion: 'graphVersion',
+  activeVersionId: 'activeVersionId'
 } as const
 
 export type AutomationScalarFieldEnum = (typeof AutomationScalarFieldEnum)[keyof typeof AutomationScalarFieldEnum]
@@ -6353,10 +6431,28 @@ export const AutomationRunScalarFieldEnum = {
   steps: 'steps',
   createdAt: 'createdAt',
   startedAt: 'startedAt',
-  finishedAt: 'finishedAt'
+  finishedAt: 'finishedAt',
+  versionId: 'versionId',
+  resumeAt: 'resumeAt',
+  waitingNode: 'waitingNode'
 } as const
 
 export type AutomationRunScalarFieldEnum = (typeof AutomationRunScalarFieldEnum)[keyof typeof AutomationRunScalarFieldEnum]
+
+
+export const AutomationVersionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  automationId: 'automationId',
+  version: 'version',
+  source: 'source',
+  graph: 'graph',
+  cooldownMinutes: 'cooldownMinutes',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt'
+} as const
+
+export type AutomationVersionScalarFieldEnum = (typeof AutomationVersionScalarFieldEnum)[keyof typeof AutomationVersionScalarFieldEnum]
 
 
 export const TaskScalarFieldEnum = {
@@ -7376,6 +7472,7 @@ export type GlobalOmitConfig = {
   appointmentEvent?: Prisma.AppointmentEventOmit
   automation?: Prisma.AutomationOmit
   automationRun?: Prisma.AutomationRunOmit
+  automationVersion?: Prisma.AutomationVersionOmit
   task?: Prisma.TaskOmit
   notification?: Prisma.NotificationOmit
   notificationPreference?: Prisma.NotificationPreferenceOmit

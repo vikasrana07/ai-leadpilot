@@ -121,7 +121,7 @@ describe('role matrix on sensitive routes', () => {
     const { addMember } = await import('./helpers.js');
     await ctx.http().post('/auth/verify-email').send({ token: ctx.mail.last('verify', owner.email)?.token });
     const agent = await addMember(ctx, owner, 'secAgent', 'agent');
-    const forbidden: [string, string][] = [['GET', '/team/members/invitations'], ['POST', '/team/invitations'], ['GET', '/audit-logs'], ['GET', '/billing/invoices'], ['PUT', '/billing/profile'], ['POST', '/billing/subscribe'], ['GET', '/integrations'], ['PUT', '/ai/assistant'], ['GET', '/knowledge/documents'], ['POST', '/automations'], ['GET', '/usage'], ['GET', '/channels']];
+    const forbidden: [string, string][] = [['GET', '/team/members/invitations'], ['POST', '/team/invitations'], ['GET', '/audit-logs'], ['GET', '/billing/invoices'], ['PUT', '/billing/profile'], ['POST', '/billing/subscribe'], ['GET', '/integrations'], ['PUT', '/ai/assistant'], ['GET', '/knowledge/documents'], ['POST', '/automations'], ['POST', '/automations/validate'], ['GET', '/automations/00000000-0000-0000-0000-000000000000/versions'], ['GET', '/usage'], ['GET', '/channels']];
     const bad: string[] = [];
     for (const [m, p] of forbidden) {
       const res = await ctx.http()[m.toLowerCase() as 'get'](p).set(auth(agent.accessToken)).send({});

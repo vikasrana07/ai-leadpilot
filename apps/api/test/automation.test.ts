@@ -260,9 +260,9 @@ describe('failures are retried, then surfaced', () => {
     try {
       const board = await ctx.http().get('/pipeline/stages').set(auth(owner.accessToken));
       await ctx.http().post(`/leads/${l}/stage`).set(auth(owner.accessToken)).send({ stageId: board.body.stages.filter((s: { kind: string }) => s.kind === 'OPEN')[1].id });
-      await relay.drainOnce(200);
-      // leftover events from earlier tests can also match this automation: pick the run for THIS lead (was an order-dependent flake)
-      const runId = (await q<{ id: string }>(`SELECT id FROM automation_runs WHERE automation_id = $1 AND lead_id = $2 ORDER BY created_at LIMIT 1`, [id, l]))[0]?.id as string;
+      // Other test files run their own relays against the same outbox and may claim this event first: wait until the run for THIS lead exists.
+      let runId = '';
+      for (let t = 0; t < 100 && !runId; t++) { await relay.drainOnce(200); runId = (await q<{ id: string }>(`SELECT id FROM automation_runs WHERE automation_id = $1 AND lead_id = $2 ORDER BY created_at LIMIT 1`, [id, l]))[0]?.id ?? ''; if (!runId) await sleep(100); }
       await expect(engine.execute(owner.tenantId, runId, false)).rejects.toThrow('provider exploded');
       let [run] = await runsOf(id);
       expect(run).toMatchObject({ status: 'QUEUED', attempts: 1 }); expect(run?.error).toContain('provider exploded');

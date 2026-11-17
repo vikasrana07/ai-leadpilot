@@ -4,7 +4,7 @@
  * Value = columns removed from the export (secrets, hashes, internal storage paths).
  */
 export const EXPORT_INCLUDED: Record<string, readonly string[]> = {
-  ai_assistants: [], ai_runs: [], appointment_events: [], appointments: [], audit_logs: [], automation_runs: [], automations: [],
+  ai_assistants: [], ai_runs: [], appointment_events: [], appointments: [], audit_logs: [], automation_runs: [], automation_versions: [], automations: [],
   availability_exceptions: [], availability_rules: [], billing_profiles: [],
   channels: ['webhook_key', 'config', 'credential_id'], // connection secrets stay out; name, type, number and status are exported
   consents: [], conversation_notes: [], conversations: [], custom_field_definitions: [],

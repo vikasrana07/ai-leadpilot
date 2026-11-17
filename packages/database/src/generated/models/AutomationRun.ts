@@ -47,6 +47,9 @@ export type AutomationRunMinAggregateOutputType = {
   createdAt: Date | null
   startedAt: Date | null
   finishedAt: Date | null
+  versionId: string | null
+  resumeAt: Date | null
+  waitingNode: string | null
 }
 
 export type AutomationRunMaxAggregateOutputType = {
@@ -62,6 +65,9 @@ export type AutomationRunMaxAggregateOutputType = {
   createdAt: Date | null
   startedAt: Date | null
   finishedAt: Date | null
+  versionId: string | null
+  resumeAt: Date | null
+  waitingNode: string | null
 }
 
 export type AutomationRunCountAggregateOutputType = {
@@ -78,6 +84,9 @@ export type AutomationRunCountAggregateOutputType = {
   createdAt: number
   startedAt: number
   finishedAt: number
+  versionId: number
+  resumeAt: number
+  waitingNode: number
   _all: number
 }
 
@@ -103,6 +112,9 @@ export type AutomationRunMinAggregateInputType = {
   createdAt?: true
   startedAt?: true
   finishedAt?: true
+  versionId?: true
+  resumeAt?: true
+  waitingNode?: true
 }
 
 export type AutomationRunMaxAggregateInputType = {
@@ -118,6 +130,9 @@ export type AutomationRunMaxAggregateInputType = {
   createdAt?: true
   startedAt?: true
   finishedAt?: true
+  versionId?: true
+  resumeAt?: true
+  waitingNode?: true
 }
 
 export type AutomationRunCountAggregateInputType = {
@@ -134,6 +149,9 @@ export type AutomationRunCountAggregateInputType = {
   createdAt?: true
   startedAt?: true
   finishedAt?: true
+  versionId?: true
+  resumeAt?: true
+  waitingNode?: true
   _all?: true
 }
 
@@ -237,6 +255,9 @@ export type AutomationRunGroupByOutputType = {
   createdAt: Date
   startedAt: Date | null
   finishedAt: Date | null
+  versionId: string | null
+  resumeAt: Date | null
+  waitingNode: string | null
   _count: AutomationRunCountAggregateOutputType | null
   _avg: AutomationRunAvgAggregateOutputType | null
   _sum: AutomationRunSumAggregateOutputType | null
@@ -276,7 +297,11 @@ export type AutomationRunWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"AutomationRun"> | Date | string
   startedAt?: Prisma.DateTimeNullableFilter<"AutomationRun"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"AutomationRun"> | Date | string | null
+  versionId?: Prisma.UuidNullableFilter<"AutomationRun"> | string | null
+  resumeAt?: Prisma.DateTimeNullableFilter<"AutomationRun"> | Date | string | null
+  waitingNode?: Prisma.StringNullableFilter<"AutomationRun"> | string | null
   automation?: Prisma.XOR<Prisma.AutomationScalarRelationFilter, Prisma.AutomationWhereInput>
+  version?: Prisma.XOR<Prisma.AutomationVersionNullableScalarRelationFilter, Prisma.AutomationVersionWhereInput> | null
 }
 
 export type AutomationRunOrderByWithRelationInput = {
@@ -293,7 +318,11 @@ export type AutomationRunOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  versionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  resumeAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  waitingNode?: Prisma.SortOrderInput | Prisma.SortOrder
   automation?: Prisma.AutomationOrderByWithRelationInput
+  version?: Prisma.AutomationVersionOrderByWithRelationInput
 }
 
 export type AutomationRunWhereUniqueInput = Prisma.AtLeast<{
@@ -314,7 +343,11 @@ export type AutomationRunWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"AutomationRun"> | Date | string
   startedAt?: Prisma.DateTimeNullableFilter<"AutomationRun"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"AutomationRun"> | Date | string | null
+  versionId?: Prisma.UuidNullableFilter<"AutomationRun"> | string | null
+  resumeAt?: Prisma.DateTimeNullableFilter<"AutomationRun"> | Date | string | null
+  waitingNode?: Prisma.StringNullableFilter<"AutomationRun"> | string | null
   automation?: Prisma.XOR<Prisma.AutomationScalarRelationFilter, Prisma.AutomationWhereInput>
+  version?: Prisma.XOR<Prisma.AutomationVersionNullableScalarRelationFilter, Prisma.AutomationVersionWhereInput> | null
 }, "id" | "automationId_eventId">
 
 export type AutomationRunOrderByWithAggregationInput = {
@@ -331,6 +364,9 @@ export type AutomationRunOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  versionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  resumeAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  waitingNode?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AutomationRunCountOrderByAggregateInput
   _avg?: Prisma.AutomationRunAvgOrderByAggregateInput
   _max?: Prisma.AutomationRunMaxOrderByAggregateInput
@@ -355,6 +391,9 @@ export type AutomationRunScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"AutomationRun"> | Date | string
   startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AutomationRun"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AutomationRun"> | Date | string | null
+  versionId?: Prisma.UuidNullableWithAggregatesFilter<"AutomationRun"> | string | null
+  resumeAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AutomationRun"> | Date | string | null
+  waitingNode?: Prisma.StringNullableWithAggregatesFilter<"AutomationRun"> | string | null
 }
 
 export type AutomationRunCreateInput = {
@@ -370,7 +409,10 @@ export type AutomationRunCreateInput = {
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  resumeAt?: Date | string | null
+  waitingNode?: string | null
   automation: Prisma.AutomationCreateNestedOneWithoutRunsInput
+  version?: Prisma.AutomationVersionCreateNestedOneWithoutRunsInput
 }
 
 export type AutomationRunUncheckedCreateInput = {
@@ -387,6 +429,9 @@ export type AutomationRunUncheckedCreateInput = {
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  versionId?: string | null
+  resumeAt?: Date | string | null
+  waitingNode?: string | null
 }
 
 export type AutomationRunUpdateInput = {
@@ -402,7 +447,10 @@ export type AutomationRunUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resumeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  waitingNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   automation?: Prisma.AutomationUpdateOneRequiredWithoutRunsNestedInput
+  version?: Prisma.AutomationVersionUpdateOneWithoutRunsNestedInput
 }
 
 export type AutomationRunUncheckedUpdateInput = {
@@ -419,6 +467,9 @@ export type AutomationRunUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  versionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  waitingNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AutomationRunCreateManyInput = {
@@ -435,6 +486,9 @@ export type AutomationRunCreateManyInput = {
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  versionId?: string | null
+  resumeAt?: Date | string | null
+  waitingNode?: string | null
 }
 
 export type AutomationRunUpdateManyMutationInput = {
@@ -450,6 +504,8 @@ export type AutomationRunUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resumeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  waitingNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AutomationRunUncheckedUpdateManyInput = {
@@ -466,6 +522,9 @@ export type AutomationRunUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  versionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  waitingNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AutomationRunListRelationFilter = {
@@ -497,6 +556,9 @@ export type AutomationRunCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
+  versionId?: Prisma.SortOrder
+  resumeAt?: Prisma.SortOrder
+  waitingNode?: Prisma.SortOrder
 }
 
 export type AutomationRunAvgOrderByAggregateInput = {
@@ -516,6 +578,9 @@ export type AutomationRunMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
+  versionId?: Prisma.SortOrder
+  resumeAt?: Prisma.SortOrder
+  waitingNode?: Prisma.SortOrder
 }
 
 export type AutomationRunMinOrderByAggregateInput = {
@@ -531,6 +596,9 @@ export type AutomationRunMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
+  versionId?: Prisma.SortOrder
+  resumeAt?: Prisma.SortOrder
+  waitingNode?: Prisma.SortOrder
 }
 
 export type AutomationRunSumOrderByAggregateInput = {
@@ -583,6 +651,48 @@ export type EnumRunStatusFieldUpdateOperationsInput = {
   set?: $Enums.RunStatus
 }
 
+export type AutomationRunCreateNestedManyWithoutVersionInput = {
+  create?: Prisma.XOR<Prisma.AutomationRunCreateWithoutVersionInput, Prisma.AutomationRunUncheckedCreateWithoutVersionInput> | Prisma.AutomationRunCreateWithoutVersionInput[] | Prisma.AutomationRunUncheckedCreateWithoutVersionInput[]
+  connectOrCreate?: Prisma.AutomationRunCreateOrConnectWithoutVersionInput | Prisma.AutomationRunCreateOrConnectWithoutVersionInput[]
+  createMany?: Prisma.AutomationRunCreateManyVersionInputEnvelope
+  connect?: Prisma.AutomationRunWhereUniqueInput | Prisma.AutomationRunWhereUniqueInput[]
+}
+
+export type AutomationRunUncheckedCreateNestedManyWithoutVersionInput = {
+  create?: Prisma.XOR<Prisma.AutomationRunCreateWithoutVersionInput, Prisma.AutomationRunUncheckedCreateWithoutVersionInput> | Prisma.AutomationRunCreateWithoutVersionInput[] | Prisma.AutomationRunUncheckedCreateWithoutVersionInput[]
+  connectOrCreate?: Prisma.AutomationRunCreateOrConnectWithoutVersionInput | Prisma.AutomationRunCreateOrConnectWithoutVersionInput[]
+  createMany?: Prisma.AutomationRunCreateManyVersionInputEnvelope
+  connect?: Prisma.AutomationRunWhereUniqueInput | Prisma.AutomationRunWhereUniqueInput[]
+}
+
+export type AutomationRunUpdateManyWithoutVersionNestedInput = {
+  create?: Prisma.XOR<Prisma.AutomationRunCreateWithoutVersionInput, Prisma.AutomationRunUncheckedCreateWithoutVersionInput> | Prisma.AutomationRunCreateWithoutVersionInput[] | Prisma.AutomationRunUncheckedCreateWithoutVersionInput[]
+  connectOrCreate?: Prisma.AutomationRunCreateOrConnectWithoutVersionInput | Prisma.AutomationRunCreateOrConnectWithoutVersionInput[]
+  upsert?: Prisma.AutomationRunUpsertWithWhereUniqueWithoutVersionInput | Prisma.AutomationRunUpsertWithWhereUniqueWithoutVersionInput[]
+  createMany?: Prisma.AutomationRunCreateManyVersionInputEnvelope
+  set?: Prisma.AutomationRunWhereUniqueInput | Prisma.AutomationRunWhereUniqueInput[]
+  disconnect?: Prisma.AutomationRunWhereUniqueInput | Prisma.AutomationRunWhereUniqueInput[]
+  delete?: Prisma.AutomationRunWhereUniqueInput | Prisma.AutomationRunWhereUniqueInput[]
+  connect?: Prisma.AutomationRunWhereUniqueInput | Prisma.AutomationRunWhereUniqueInput[]
+  update?: Prisma.AutomationRunUpdateWithWhereUniqueWithoutVersionInput | Prisma.AutomationRunUpdateWithWhereUniqueWithoutVersionInput[]
+  updateMany?: Prisma.AutomationRunUpdateManyWithWhereWithoutVersionInput | Prisma.AutomationRunUpdateManyWithWhereWithoutVersionInput[]
+  deleteMany?: Prisma.AutomationRunScalarWhereInput | Prisma.AutomationRunScalarWhereInput[]
+}
+
+export type AutomationRunUncheckedUpdateManyWithoutVersionNestedInput = {
+  create?: Prisma.XOR<Prisma.AutomationRunCreateWithoutVersionInput, Prisma.AutomationRunUncheckedCreateWithoutVersionInput> | Prisma.AutomationRunCreateWithoutVersionInput[] | Prisma.AutomationRunUncheckedCreateWithoutVersionInput[]
+  connectOrCreate?: Prisma.AutomationRunCreateOrConnectWithoutVersionInput | Prisma.AutomationRunCreateOrConnectWithoutVersionInput[]
+  upsert?: Prisma.AutomationRunUpsertWithWhereUniqueWithoutVersionInput | Prisma.AutomationRunUpsertWithWhereUniqueWithoutVersionInput[]
+  createMany?: Prisma.AutomationRunCreateManyVersionInputEnvelope
+  set?: Prisma.AutomationRunWhereUniqueInput | Prisma.AutomationRunWhereUniqueInput[]
+  disconnect?: Prisma.AutomationRunWhereUniqueInput | Prisma.AutomationRunWhereUniqueInput[]
+  delete?: Prisma.AutomationRunWhereUniqueInput | Prisma.AutomationRunWhereUniqueInput[]
+  connect?: Prisma.AutomationRunWhereUniqueInput | Prisma.AutomationRunWhereUniqueInput[]
+  update?: Prisma.AutomationRunUpdateWithWhereUniqueWithoutVersionInput | Prisma.AutomationRunUpdateWithWhereUniqueWithoutVersionInput[]
+  updateMany?: Prisma.AutomationRunUpdateManyWithWhereWithoutVersionInput | Prisma.AutomationRunUpdateManyWithWhereWithoutVersionInput[]
+  deleteMany?: Prisma.AutomationRunScalarWhereInput | Prisma.AutomationRunScalarWhereInput[]
+}
+
 export type AutomationRunCreateWithoutAutomationInput = {
   id?: string
   tenantId: string
@@ -596,6 +706,9 @@ export type AutomationRunCreateWithoutAutomationInput = {
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  resumeAt?: Date | string | null
+  waitingNode?: string | null
+  version?: Prisma.AutomationVersionCreateNestedOneWithoutRunsInput
 }
 
 export type AutomationRunUncheckedCreateWithoutAutomationInput = {
@@ -611,6 +724,9 @@ export type AutomationRunUncheckedCreateWithoutAutomationInput = {
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  versionId?: string | null
+  resumeAt?: Date | string | null
+  waitingNode?: string | null
 }
 
 export type AutomationRunCreateOrConnectWithoutAutomationInput = {
@@ -656,6 +772,71 @@ export type AutomationRunScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"AutomationRun"> | Date | string
   startedAt?: Prisma.DateTimeNullableFilter<"AutomationRun"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"AutomationRun"> | Date | string | null
+  versionId?: Prisma.UuidNullableFilter<"AutomationRun"> | string | null
+  resumeAt?: Prisma.DateTimeNullableFilter<"AutomationRun"> | Date | string | null
+  waitingNode?: Prisma.StringNullableFilter<"AutomationRun"> | string | null
+}
+
+export type AutomationRunCreateWithoutVersionInput = {
+  id?: string
+  tenantId: string
+  eventId: string
+  eventType: string
+  leadId?: string | null
+  status?: $Enums.RunStatus
+  attempts?: number
+  error?: string | null
+  steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  resumeAt?: Date | string | null
+  waitingNode?: string | null
+  automation: Prisma.AutomationCreateNestedOneWithoutRunsInput
+}
+
+export type AutomationRunUncheckedCreateWithoutVersionInput = {
+  id?: string
+  tenantId: string
+  automationId: string
+  eventId: string
+  eventType: string
+  leadId?: string | null
+  status?: $Enums.RunStatus
+  attempts?: number
+  error?: string | null
+  steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  resumeAt?: Date | string | null
+  waitingNode?: string | null
+}
+
+export type AutomationRunCreateOrConnectWithoutVersionInput = {
+  where: Prisma.AutomationRunWhereUniqueInput
+  create: Prisma.XOR<Prisma.AutomationRunCreateWithoutVersionInput, Prisma.AutomationRunUncheckedCreateWithoutVersionInput>
+}
+
+export type AutomationRunCreateManyVersionInputEnvelope = {
+  data: Prisma.AutomationRunCreateManyVersionInput | Prisma.AutomationRunCreateManyVersionInput[]
+  skipDuplicates?: boolean
+}
+
+export type AutomationRunUpsertWithWhereUniqueWithoutVersionInput = {
+  where: Prisma.AutomationRunWhereUniqueInput
+  update: Prisma.XOR<Prisma.AutomationRunUpdateWithoutVersionInput, Prisma.AutomationRunUncheckedUpdateWithoutVersionInput>
+  create: Prisma.XOR<Prisma.AutomationRunCreateWithoutVersionInput, Prisma.AutomationRunUncheckedCreateWithoutVersionInput>
+}
+
+export type AutomationRunUpdateWithWhereUniqueWithoutVersionInput = {
+  where: Prisma.AutomationRunWhereUniqueInput
+  data: Prisma.XOR<Prisma.AutomationRunUpdateWithoutVersionInput, Prisma.AutomationRunUncheckedUpdateWithoutVersionInput>
+}
+
+export type AutomationRunUpdateManyWithWhereWithoutVersionInput = {
+  where: Prisma.AutomationRunScalarWhereInput
+  data: Prisma.XOR<Prisma.AutomationRunUpdateManyMutationInput, Prisma.AutomationRunUncheckedUpdateManyWithoutVersionInput>
 }
 
 export type AutomationRunCreateManyAutomationInput = {
@@ -671,6 +852,9 @@ export type AutomationRunCreateManyAutomationInput = {
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  versionId?: string | null
+  resumeAt?: Date | string | null
+  waitingNode?: string | null
 }
 
 export type AutomationRunUpdateWithoutAutomationInput = {
@@ -686,6 +870,9 @@ export type AutomationRunUpdateWithoutAutomationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resumeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  waitingNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.AutomationVersionUpdateOneWithoutRunsNestedInput
 }
 
 export type AutomationRunUncheckedUpdateWithoutAutomationInput = {
@@ -701,6 +888,9 @@ export type AutomationRunUncheckedUpdateWithoutAutomationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  versionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  waitingNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AutomationRunUncheckedUpdateManyWithoutAutomationInput = {
@@ -716,6 +906,81 @@ export type AutomationRunUncheckedUpdateManyWithoutAutomationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  versionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resumeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  waitingNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type AutomationRunCreateManyVersionInput = {
+  id?: string
+  tenantId: string
+  automationId: string
+  eventId: string
+  eventType: string
+  leadId?: string | null
+  status?: $Enums.RunStatus
+  attempts?: number
+  error?: string | null
+  steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  resumeAt?: Date | string | null
+  waitingNode?: string | null
+}
+
+export type AutomationRunUpdateWithoutVersionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumRunStatusFieldUpdateOperationsInput | $Enums.RunStatus
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number
+  error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resumeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  waitingNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  automation?: Prisma.AutomationUpdateOneRequiredWithoutRunsNestedInput
+}
+
+export type AutomationRunUncheckedUpdateWithoutVersionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  automationId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumRunStatusFieldUpdateOperationsInput | $Enums.RunStatus
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number
+  error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resumeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  waitingNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type AutomationRunUncheckedUpdateManyWithoutVersionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  automationId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventType?: Prisma.StringFieldUpdateOperationsInput | string
+  leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumRunStatusFieldUpdateOperationsInput | $Enums.RunStatus
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number
+  error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resumeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  waitingNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -734,7 +999,11 @@ export type AutomationRunSelect<ExtArgs extends runtime.Types.Extensions.Interna
   createdAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  versionId?: boolean
+  resumeAt?: boolean
+  waitingNode?: boolean
   automation?: boolean | Prisma.AutomationDefaultArgs<ExtArgs>
+  version?: boolean | Prisma.AutomationRun$versionArgs<ExtArgs>
 }, ExtArgs["result"]["automationRun"]>
 
 export type AutomationRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -751,7 +1020,11 @@ export type AutomationRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   createdAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  versionId?: boolean
+  resumeAt?: boolean
+  waitingNode?: boolean
   automation?: boolean | Prisma.AutomationDefaultArgs<ExtArgs>
+  version?: boolean | Prisma.AutomationRun$versionArgs<ExtArgs>
 }, ExtArgs["result"]["automationRun"]>
 
 export type AutomationRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -768,7 +1041,11 @@ export type AutomationRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   createdAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  versionId?: boolean
+  resumeAt?: boolean
+  waitingNode?: boolean
   automation?: boolean | Prisma.AutomationDefaultArgs<ExtArgs>
+  version?: boolean | Prisma.AutomationRun$versionArgs<ExtArgs>
 }, ExtArgs["result"]["automationRun"]>
 
 export type AutomationRunSelectScalar = {
@@ -785,23 +1062,30 @@ export type AutomationRunSelectScalar = {
   createdAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  versionId?: boolean
+  resumeAt?: boolean
+  waitingNode?: boolean
 }
 
-export type AutomationRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "automationId" | "eventId" | "eventType" | "leadId" | "status" | "attempts" | "error" | "steps" | "createdAt" | "startedAt" | "finishedAt", ExtArgs["result"]["automationRun"]>
+export type AutomationRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "automationId" | "eventId" | "eventType" | "leadId" | "status" | "attempts" | "error" | "steps" | "createdAt" | "startedAt" | "finishedAt" | "versionId" | "resumeAt" | "waitingNode", ExtArgs["result"]["automationRun"]>
 export type AutomationRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   automation?: boolean | Prisma.AutomationDefaultArgs<ExtArgs>
+  version?: boolean | Prisma.AutomationRun$versionArgs<ExtArgs>
 }
 export type AutomationRunIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   automation?: boolean | Prisma.AutomationDefaultArgs<ExtArgs>
+  version?: boolean | Prisma.AutomationRun$versionArgs<ExtArgs>
 }
 export type AutomationRunIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   automation?: boolean | Prisma.AutomationDefaultArgs<ExtArgs>
+  version?: boolean | Prisma.AutomationRun$versionArgs<ExtArgs>
 }
 
 export type $AutomationRunPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AutomationRun"
   objects: {
     automation: Prisma.$AutomationPayload<ExtArgs>
+    version: Prisma.$AutomationVersionPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -823,6 +1107,15 @@ export type $AutomationRunPayload<ExtArgs extends runtime.Types.Extensions.Inter
      */
     startedAt: Date | null
     finishedAt: Date | null
+    /**
+     * the immutable definition this run executes (a run never follows later edits)
+     */
+    versionId: string | null
+    /**
+     * WAITING runs: when the wait ends, and which wait node the run is parked on
+     */
+    resumeAt: Date | null
+    waitingNode: string | null
   }, ExtArgs["result"]["automationRun"]>
   composites: {}
 }
@@ -1218,6 +1511,7 @@ readonly fields: AutomationRunFieldRefs;
 export interface Prisma__AutomationRunClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   automation<T extends Prisma.AutomationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AutomationDefaultArgs<ExtArgs>>): Prisma.Prisma__AutomationClient<runtime.Types.Result.GetResult<Prisma.$AutomationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  version<T extends Prisma.AutomationRun$versionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AutomationRun$versionArgs<ExtArgs>>): Prisma.Prisma__AutomationVersionClient<runtime.Types.Result.GetResult<Prisma.$AutomationVersionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1260,6 +1554,9 @@ export interface AutomationRunFieldRefs {
   readonly createdAt: Prisma.FieldRef<"AutomationRun", 'DateTime'>
   readonly startedAt: Prisma.FieldRef<"AutomationRun", 'DateTime'>
   readonly finishedAt: Prisma.FieldRef<"AutomationRun", 'DateTime'>
+  readonly versionId: Prisma.FieldRef<"AutomationRun", 'String'>
+  readonly resumeAt: Prisma.FieldRef<"AutomationRun", 'DateTime'>
+  readonly waitingNode: Prisma.FieldRef<"AutomationRun", 'String'>
 }
     
 
@@ -1658,6 +1955,25 @@ export type AutomationRunDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many AutomationRuns to delete.
    */
   limit?: number
+}
+
+/**
+ * AutomationRun.version
+ */
+export type AutomationRun$versionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AutomationVersion
+   */
+  select?: Prisma.AutomationVersionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AutomationVersion
+   */
+  omit?: Prisma.AutomationVersionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AutomationVersionInclude<ExtArgs> | null
+  where?: Prisma.AutomationVersionWhereInput
 }
 
 /**

@@ -200,6 +200,7 @@ export type AppointmentStatus = (typeof AppointmentStatus)[keyof typeof Appointm
 export const RunStatus = {
   QUEUED: 'QUEUED',
   RUNNING: 'RUNNING',
+  WAITING: 'WAITING',
   SUCCEEDED: 'SUCCEEDED',
   FAILED: 'FAILED',
   SKIPPED: 'SKIPPED',

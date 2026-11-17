@@ -28,10 +28,12 @@ export type AggregateAutomation = {
 
 export type AutomationAvgAggregateOutputType = {
   cooldownMinutes: number | null
+  graphVersion: number | null
 }
 
 export type AutomationSumAggregateOutputType = {
   cooldownMinutes: number | null
+  graphVersion: number | null
 }
 
 export type AutomationMinAggregateOutputType = {
@@ -45,6 +47,8 @@ export type AutomationMinAggregateOutputType = {
   createdBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  graphVersion: number | null
+  activeVersionId: string | null
 }
 
 export type AutomationMaxAggregateOutputType = {
@@ -58,6 +62,8 @@ export type AutomationMaxAggregateOutputType = {
   createdBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  graphVersion: number | null
+  activeVersionId: string | null
 }
 
 export type AutomationCountAggregateOutputType = {
@@ -74,16 +80,21 @@ export type AutomationCountAggregateOutputType = {
   createdBy: number
   createdAt: number
   updatedAt: number
+  graph: number
+  graphVersion: number
+  activeVersionId: number
   _all: number
 }
 
 
 export type AutomationAvgAggregateInputType = {
   cooldownMinutes?: true
+  graphVersion?: true
 }
 
 export type AutomationSumAggregateInputType = {
   cooldownMinutes?: true
+  graphVersion?: true
 }
 
 export type AutomationMinAggregateInputType = {
@@ -97,6 +108,8 @@ export type AutomationMinAggregateInputType = {
   createdBy?: true
   createdAt?: true
   updatedAt?: true
+  graphVersion?: true
+  activeVersionId?: true
 }
 
 export type AutomationMaxAggregateInputType = {
@@ -110,6 +123,8 @@ export type AutomationMaxAggregateInputType = {
   createdBy?: true
   createdAt?: true
   updatedAt?: true
+  graphVersion?: true
+  activeVersionId?: true
 }
 
 export type AutomationCountAggregateInputType = {
@@ -126,6 +141,9 @@ export type AutomationCountAggregateInputType = {
   createdBy?: true
   createdAt?: true
   updatedAt?: true
+  graph?: true
+  graphVersion?: true
+  activeVersionId?: true
   _all?: true
 }
 
@@ -229,6 +247,9 @@ export type AutomationGroupByOutputType = {
   createdBy: string | null
   createdAt: Date
   updatedAt: Date
+  graph: runtime.JsonValue | null
+  graphVersion: number
+  activeVersionId: string | null
   _count: AutomationCountAggregateOutputType | null
   _avg: AutomationAvgAggregateOutputType | null
   _sum: AutomationSumAggregateOutputType | null
@@ -268,7 +289,11 @@ export type AutomationWhereInput = {
   createdBy?: Prisma.UuidNullableFilter<"Automation"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Automation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Automation"> | Date | string
+  graph?: Prisma.JsonNullableFilter<"Automation">
+  graphVersion?: Prisma.IntFilter<"Automation"> | number
+  activeVersionId?: Prisma.UuidNullableFilter<"Automation"> | string | null
   runs?: Prisma.AutomationRunListRelationFilter
+  versions?: Prisma.AutomationVersionListRelationFilter
 }
 
 export type AutomationOrderByWithRelationInput = {
@@ -285,7 +310,11 @@ export type AutomationOrderByWithRelationInput = {
   createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  graph?: Prisma.SortOrderInput | Prisma.SortOrder
+  graphVersion?: Prisma.SortOrder
+  activeVersionId?: Prisma.SortOrderInput | Prisma.SortOrder
   runs?: Prisma.AutomationRunOrderByRelationAggregateInput
+  versions?: Prisma.AutomationVersionOrderByRelationAggregateInput
 }
 
 export type AutomationWhereUniqueInput = Prisma.AtLeast<{
@@ -305,7 +334,11 @@ export type AutomationWhereUniqueInput = Prisma.AtLeast<{
   createdBy?: Prisma.UuidNullableFilter<"Automation"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Automation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Automation"> | Date | string
+  graph?: Prisma.JsonNullableFilter<"Automation">
+  graphVersion?: Prisma.IntFilter<"Automation"> | number
+  activeVersionId?: Prisma.UuidNullableFilter<"Automation"> | string | null
   runs?: Prisma.AutomationRunListRelationFilter
+  versions?: Prisma.AutomationVersionListRelationFilter
 }, "id">
 
 export type AutomationOrderByWithAggregationInput = {
@@ -322,6 +355,9 @@ export type AutomationOrderByWithAggregationInput = {
   createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  graph?: Prisma.SortOrderInput | Prisma.SortOrder
+  graphVersion?: Prisma.SortOrder
+  activeVersionId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AutomationCountOrderByAggregateInput
   _avg?: Prisma.AutomationAvgOrderByAggregateInput
   _max?: Prisma.AutomationMaxOrderByAggregateInput
@@ -346,6 +382,9 @@ export type AutomationScalarWhereWithAggregatesInput = {
   createdBy?: Prisma.UuidNullableWithAggregatesFilter<"Automation"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Automation"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Automation"> | Date | string
+  graph?: Prisma.JsonNullableWithAggregatesFilter<"Automation">
+  graphVersion?: Prisma.IntWithAggregatesFilter<"Automation"> | number
+  activeVersionId?: Prisma.UuidNullableWithAggregatesFilter<"Automation"> | string | null
 }
 
 export type AutomationCreateInput = {
@@ -362,7 +401,11 @@ export type AutomationCreateInput = {
   createdBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: number
+  activeVersionId?: string | null
   runs?: Prisma.AutomationRunCreateNestedManyWithoutAutomationInput
+  versions?: Prisma.AutomationVersionCreateNestedManyWithoutAutomationInput
 }
 
 export type AutomationUncheckedCreateInput = {
@@ -379,7 +422,11 @@ export type AutomationUncheckedCreateInput = {
   createdBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: number
+  activeVersionId?: string | null
   runs?: Prisma.AutomationRunUncheckedCreateNestedManyWithoutAutomationInput
+  versions?: Prisma.AutomationVersionUncheckedCreateNestedManyWithoutAutomationInput
 }
 
 export type AutomationUpdateInput = {
@@ -396,7 +443,11 @@ export type AutomationUpdateInput = {
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  activeVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runs?: Prisma.AutomationRunUpdateManyWithoutAutomationNestedInput
+  versions?: Prisma.AutomationVersionUpdateManyWithoutAutomationNestedInput
 }
 
 export type AutomationUncheckedUpdateInput = {
@@ -413,7 +464,11 @@ export type AutomationUncheckedUpdateInput = {
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  activeVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runs?: Prisma.AutomationRunUncheckedUpdateManyWithoutAutomationNestedInput
+  versions?: Prisma.AutomationVersionUncheckedUpdateManyWithoutAutomationNestedInput
 }
 
 export type AutomationCreateManyInput = {
@@ -430,6 +485,9 @@ export type AutomationCreateManyInput = {
   createdBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: number
+  activeVersionId?: string | null
 }
 
 export type AutomationUpdateManyMutationInput = {
@@ -446,6 +504,9 @@ export type AutomationUpdateManyMutationInput = {
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  activeVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AutomationUncheckedUpdateManyInput = {
@@ -462,6 +523,9 @@ export type AutomationUncheckedUpdateManyInput = {
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  activeVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AutomationCountOrderByAggregateInput = {
@@ -478,10 +542,14 @@ export type AutomationCountOrderByAggregateInput = {
   createdBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  graph?: Prisma.SortOrder
+  graphVersion?: Prisma.SortOrder
+  activeVersionId?: Prisma.SortOrder
 }
 
 export type AutomationAvgOrderByAggregateInput = {
   cooldownMinutes?: Prisma.SortOrder
+  graphVersion?: Prisma.SortOrder
 }
 
 export type AutomationMaxOrderByAggregateInput = {
@@ -495,6 +563,8 @@ export type AutomationMaxOrderByAggregateInput = {
   createdBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  graphVersion?: Prisma.SortOrder
+  activeVersionId?: Prisma.SortOrder
 }
 
 export type AutomationMinOrderByAggregateInput = {
@@ -508,10 +578,13 @@ export type AutomationMinOrderByAggregateInput = {
   createdBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  graphVersion?: Prisma.SortOrder
+  activeVersionId?: Prisma.SortOrder
 }
 
 export type AutomationSumOrderByAggregateInput = {
   cooldownMinutes?: Prisma.SortOrder
+  graphVersion?: Prisma.SortOrder
 }
 
 export type AutomationScalarRelationFilter = {
@@ -533,6 +606,20 @@ export type AutomationUpdateOneRequiredWithoutRunsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.AutomationUpdateToOneWithWhereWithoutRunsInput, Prisma.AutomationUpdateWithoutRunsInput>, Prisma.AutomationUncheckedUpdateWithoutRunsInput>
 }
 
+export type AutomationCreateNestedOneWithoutVersionsInput = {
+  create?: Prisma.XOR<Prisma.AutomationCreateWithoutVersionsInput, Prisma.AutomationUncheckedCreateWithoutVersionsInput>
+  connectOrCreate?: Prisma.AutomationCreateOrConnectWithoutVersionsInput
+  connect?: Prisma.AutomationWhereUniqueInput
+}
+
+export type AutomationUpdateOneRequiredWithoutVersionsNestedInput = {
+  create?: Prisma.XOR<Prisma.AutomationCreateWithoutVersionsInput, Prisma.AutomationUncheckedCreateWithoutVersionsInput>
+  connectOrCreate?: Prisma.AutomationCreateOrConnectWithoutVersionsInput
+  upsert?: Prisma.AutomationUpsertWithoutVersionsInput
+  connect?: Prisma.AutomationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AutomationUpdateToOneWithWhereWithoutVersionsInput, Prisma.AutomationUpdateWithoutVersionsInput>, Prisma.AutomationUncheckedUpdateWithoutVersionsInput>
+}
+
 export type AutomationCreateWithoutRunsInput = {
   id?: string
   tenantId: string
@@ -547,6 +634,10 @@ export type AutomationCreateWithoutRunsInput = {
   createdBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: number
+  activeVersionId?: string | null
+  versions?: Prisma.AutomationVersionCreateNestedManyWithoutAutomationInput
 }
 
 export type AutomationUncheckedCreateWithoutRunsInput = {
@@ -563,6 +654,10 @@ export type AutomationUncheckedCreateWithoutRunsInput = {
   createdBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: number
+  activeVersionId?: string | null
+  versions?: Prisma.AutomationVersionUncheckedCreateNestedManyWithoutAutomationInput
 }
 
 export type AutomationCreateOrConnectWithoutRunsInput = {
@@ -595,6 +690,10 @@ export type AutomationUpdateWithoutRunsInput = {
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  activeVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  versions?: Prisma.AutomationVersionUpdateManyWithoutAutomationNestedInput
 }
 
 export type AutomationUncheckedUpdateWithoutRunsInput = {
@@ -611,6 +710,106 @@ export type AutomationUncheckedUpdateWithoutRunsInput = {
   createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  activeVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  versions?: Prisma.AutomationVersionUncheckedUpdateManyWithoutAutomationNestedInput
+}
+
+export type AutomationCreateWithoutVersionsInput = {
+  id?: string
+  tenantId: string
+  templateKey?: string | null
+  name: string
+  description?: string | null
+  enabled?: boolean
+  trigger: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  actions: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  cooldownMinutes?: number
+  createdBy?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: number
+  activeVersionId?: string | null
+  runs?: Prisma.AutomationRunCreateNestedManyWithoutAutomationInput
+}
+
+export type AutomationUncheckedCreateWithoutVersionsInput = {
+  id?: string
+  tenantId: string
+  templateKey?: string | null
+  name: string
+  description?: string | null
+  enabled?: boolean
+  trigger: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  actions: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  cooldownMinutes?: number
+  createdBy?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: number
+  activeVersionId?: string | null
+  runs?: Prisma.AutomationRunUncheckedCreateNestedManyWithoutAutomationInput
+}
+
+export type AutomationCreateOrConnectWithoutVersionsInput = {
+  where: Prisma.AutomationWhereUniqueInput
+  create: Prisma.XOR<Prisma.AutomationCreateWithoutVersionsInput, Prisma.AutomationUncheckedCreateWithoutVersionsInput>
+}
+
+export type AutomationUpsertWithoutVersionsInput = {
+  update: Prisma.XOR<Prisma.AutomationUpdateWithoutVersionsInput, Prisma.AutomationUncheckedUpdateWithoutVersionsInput>
+  create: Prisma.XOR<Prisma.AutomationCreateWithoutVersionsInput, Prisma.AutomationUncheckedCreateWithoutVersionsInput>
+  where?: Prisma.AutomationWhereInput
+}
+
+export type AutomationUpdateToOneWithWhereWithoutVersionsInput = {
+  where?: Prisma.AutomationWhereInput
+  data: Prisma.XOR<Prisma.AutomationUpdateWithoutVersionsInput, Prisma.AutomationUncheckedUpdateWithoutVersionsInput>
+}
+
+export type AutomationUpdateWithoutVersionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  templateKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trigger?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  actions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  cooldownMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  activeVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  runs?: Prisma.AutomationRunUpdateManyWithoutAutomationNestedInput
+}
+
+export type AutomationUncheckedUpdateWithoutVersionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  templateKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trigger?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  actions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  cooldownMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  graph?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  activeVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  runs?: Prisma.AutomationRunUncheckedUpdateManyWithoutAutomationNestedInput
 }
 
 
@@ -620,10 +819,12 @@ export type AutomationUncheckedUpdateWithoutRunsInput = {
 
 export type AutomationCountOutputType = {
   runs: number
+  versions: number
 }
 
 export type AutomationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   runs?: boolean | AutomationCountOutputTypeCountRunsArgs
+  versions?: boolean | AutomationCountOutputTypeCountVersionsArgs
 }
 
 /**
@@ -643,6 +844,13 @@ export type AutomationCountOutputTypeCountRunsArgs<ExtArgs extends runtime.Types
   where?: Prisma.AutomationRunWhereInput
 }
 
+/**
+ * AutomationCountOutputType without action
+ */
+export type AutomationCountOutputTypeCountVersionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AutomationVersionWhereInput
+}
+
 
 export type AutomationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -658,7 +866,11 @@ export type AutomationSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   createdBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  graph?: boolean
+  graphVersion?: boolean
+  activeVersionId?: boolean
   runs?: boolean | Prisma.Automation$runsArgs<ExtArgs>
+  versions?: boolean | Prisma.Automation$versionsArgs<ExtArgs>
   _count?: boolean | Prisma.AutomationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["automation"]>
 
@@ -676,6 +888,9 @@ export type AutomationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   createdBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  graph?: boolean
+  graphVersion?: boolean
+  activeVersionId?: boolean
 }, ExtArgs["result"]["automation"]>
 
 export type AutomationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -692,6 +907,9 @@ export type AutomationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   createdBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  graph?: boolean
+  graphVersion?: boolean
+  activeVersionId?: boolean
 }, ExtArgs["result"]["automation"]>
 
 export type AutomationSelectScalar = {
@@ -708,11 +926,15 @@ export type AutomationSelectScalar = {
   createdBy?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  graph?: boolean
+  graphVersion?: boolean
+  activeVersionId?: boolean
 }
 
-export type AutomationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "templateKey" | "name" | "description" | "enabled" | "trigger" | "conditions" | "actions" | "cooldownMinutes" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["automation"]>
+export type AutomationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "templateKey" | "name" | "description" | "enabled" | "trigger" | "conditions" | "actions" | "cooldownMinutes" | "createdBy" | "createdAt" | "updatedAt" | "graph" | "graphVersion" | "activeVersionId", ExtArgs["result"]["automation"]>
 export type AutomationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   runs?: boolean | Prisma.Automation$runsArgs<ExtArgs>
+  versions?: boolean | Prisma.Automation$versionsArgs<ExtArgs>
   _count?: boolean | Prisma.AutomationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type AutomationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -722,6 +944,7 @@ export type $AutomationPayload<ExtArgs extends runtime.Types.Extensions.Internal
   name: "Automation"
   objects: {
     runs: Prisma.$AutomationRunPayload<ExtArgs>[]
+    versions: Prisma.$AutomationVersionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -749,6 +972,12 @@ export type $AutomationPayload<ExtArgs extends runtime.Types.Extensions.Internal
     createdBy: string | null
     createdAt: Date
     updatedAt: Date
+    /**
+     * Graph definition (ADR-0010). Null = legacy linear row (trigger/conditions/actions are authoritative and lifted to a graph at run time).
+     */
+    graph: runtime.JsonValue | null
+    graphVersion: number
+    activeVersionId: string | null
   }, ExtArgs["result"]["automation"]>
   composites: {}
 }
@@ -1144,6 +1373,7 @@ readonly fields: AutomationFieldRefs;
 export interface Prisma__AutomationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   runs<T extends Prisma.Automation$runsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Automation$runsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AutomationRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  versions<T extends Prisma.Automation$versionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Automation$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AutomationVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1186,6 +1416,9 @@ export interface AutomationFieldRefs {
   readonly createdBy: Prisma.FieldRef<"Automation", 'String'>
   readonly createdAt: Prisma.FieldRef<"Automation", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Automation", 'DateTime'>
+  readonly graph: Prisma.FieldRef<"Automation", 'Json'>
+  readonly graphVersion: Prisma.FieldRef<"Automation", 'Int'>
+  readonly activeVersionId: Prisma.FieldRef<"Automation", 'String'>
 }
     
 
@@ -1600,6 +1833,30 @@ export type Automation$runsArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.AutomationRunScalarFieldEnum | Prisma.AutomationRunScalarFieldEnum[]
+}
+
+/**
+ * Automation.versions
+ */
+export type Automation$versionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AutomationVersion
+   */
+  select?: Prisma.AutomationVersionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AutomationVersion
+   */
+  omit?: Prisma.AutomationVersionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AutomationVersionInclude<ExtArgs> | null
+  where?: Prisma.AutomationVersionWhereInput
+  orderBy?: Prisma.AutomationVersionOrderByWithRelationInput | Prisma.AutomationVersionOrderByWithRelationInput[]
+  cursor?: Prisma.AutomationVersionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AutomationVersionScalarFieldEnum | Prisma.AutomationVersionScalarFieldEnum[]
 }
 
 /**

@@ -1,3 +1,4 @@
+import { resumeWaitingRun } from './graph-executor.js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { Prisma, TxClient } from '@leadpilot/database';
 import { DEFAULT_SLA, type AutomationTrigger, type SlaSettings } from '@leadpilot/validation';
@@ -13,7 +14,7 @@ export function readSla(settings: Prisma.JsonValue): SlaSettings {
   return { enabled: s?.enabled ?? DEFAULT_SLA.enabled, firstResponseMinutes: s?.firstResponseMinutes ?? DEFAULT_SLA.firstResponseMinutes };
 }
 
-export interface ScanReport { tenantId: string; upcoming: number; inactive: number; tasksDue: number; slaBreaches: number; slaResolved: number; aiRecovered: number; staleRunsRequeued: number; queuedRuns: string[] }
+export interface ScanReport { tenantId: string; upcoming: number; inactive: number; tasksDue: number; slaBreaches: number; slaResolved: number; aiRecovered: number; staleRunsRequeued: number; waitsResumed: number; queuedRuns: string[] }
 
 /**
  * Time-driven work. Every scanner is idempotent: it records an `event_marks` row (primary key tenant+key) in the same transaction that
@@ -39,7 +40,7 @@ export class ScannersService {
   }
 
   async scanTenant(tenantId: string, now = new Date()): Promise<ScanReport> {
-    const r: ScanReport = { tenantId, upcoming: 0, inactive: 0, tasksDue: 0, slaBreaches: 0, slaResolved: 0, aiRecovered: 0, staleRunsRequeued: 0, queuedRuns: [] };
+    const r: ScanReport = { tenantId, upcoming: 0, inactive: 0, tasksDue: 0, slaBreaches: 0, slaResolved: 0, aiRecovered: 0, staleRunsRequeued: 0, waitsResumed: 0, queuedRuns: [] };
     const aiRecover: { conversationId: string; messageId: string }[] = [];
     await this.db.tenantTx({ tenantId }, async (tx) => {
       const tenant = await tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { settings: true } });
@@ -52,6 +53,10 @@ export class ScannersService {
       if (sla.enabled) r.slaBreaches = await this.scanSla(tx, tenantId, now, sla);
       r.slaResolved = await this.resolveSla(tx, tenantId);
       aiRecover.push(...(await this.findStuckAiTurns(tx, tenantId, now)));
+      // Runs parked on a wait whose deadline has passed go back on the queue (compare-and-set: a reply racing the deadline resumes once).
+      for (const w of await tx.automationRun.findMany({ where: { tenantId, status: 'WAITING', resumeAt: { lte: now } }, select: { id: true }, orderBy: { resumeAt: 'asc' }, take: 200 })) {
+        if (await resumeWaitingRun(tx, w.id, 'timeout', now)) r.waitsResumed++;
+      }
       const stuck = await tx.automationRun.updateMany({ where: { tenantId, status: 'RUNNING', startedAt: { lt: new Date(now.getTime() - 10 * 60_000) } }, data: { status: 'QUEUED' } });
       r.staleRunsRequeued = stuck.count;
       r.queuedRuns = (await tx.automationRun.findMany({ where: { tenantId, status: 'QUEUED', createdAt: { lt: new Date(now.getTime() - 45_000) } }, select: { id: true }, take: 200 })).map((x) => x.id);

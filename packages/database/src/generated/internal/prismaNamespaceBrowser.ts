@@ -97,6 +97,7 @@ export const ModelName = {
   AppointmentEvent: 'AppointmentEvent',
   Automation: 'Automation',
   AutomationRun: 'AutomationRun',
+  AutomationVersion: 'AutomationVersion',
   Task: 'Task',
   Notification: 'Notification',
   NotificationPreference: 'NotificationPreference',
@@ -842,7 +843,10 @@ export const AutomationScalarFieldEnum = {
   cooldownMinutes: 'cooldownMinutes',
   createdBy: 'createdBy',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  graph: 'graph',
+  graphVersion: 'graphVersion',
+  activeVersionId: 'activeVersionId'
 } as const
 
 export type AutomationScalarFieldEnum = (typeof AutomationScalarFieldEnum)[keyof typeof AutomationScalarFieldEnum]
@@ -861,10 +865,28 @@ export const AutomationRunScalarFieldEnum = {
   steps: 'steps',
   createdAt: 'createdAt',
   startedAt: 'startedAt',
-  finishedAt: 'finishedAt'
+  finishedAt: 'finishedAt',
+  versionId: 'versionId',
+  resumeAt: 'resumeAt',
+  waitingNode: 'waitingNode'
 } as const
 
 export type AutomationRunScalarFieldEnum = (typeof AutomationRunScalarFieldEnum)[keyof typeof AutomationRunScalarFieldEnum]
+
+
+export const AutomationVersionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  automationId: 'automationId',
+  version: 'version',
+  source: 'source',
+  graph: 'graph',
+  cooldownMinutes: 'cooldownMinutes',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt'
+} as const
+
+export type AutomationVersionScalarFieldEnum = (typeof AutomationVersionScalarFieldEnum)[keyof typeof AutomationVersionScalarFieldEnum]
 
 
 export const TaskScalarFieldEnum = {

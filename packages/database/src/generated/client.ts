@@ -272,6 +272,11 @@ export type Automation = Prisma.AutomationModel
  */
 export type AutomationRun = Prisma.AutomationRunModel
 /**
+ * Model AutomationVersion
+ * Immutable saved definition of an automation (ADR-0010). Runs pin to a version. App role: SELECT + INSERT only.
+ */
+export type AutomationVersion = Prisma.AutomationVersionModel
+/**
  * Model Task
  * 
  */

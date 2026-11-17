@@ -127,12 +127,14 @@ export const automationInputSchema = z.object({
   conditions: z.array(conditionSchema).max(8).default([]),
   actions: z.array(actionSchema).min(1).max(6),
   cooldownMinutes: z.number().int().min(0).max(60 * 24 * 30).default(60),
+  /** Optimistic concurrency: the version the editor loaded. A newer saved version makes the update fail with 409. */
+  expectedVersion: z.number().int().min(1).optional(),
 });
 export type AutomationInput = z.infer<typeof automationInputSchema>;
 export const automationEnableSchema = z.object({ enabled: z.boolean() });
 export const automationFromTemplateSchema = z.object({ templateKey: z.string().trim().min(1).max(60) });
-export const automationDryRunSchema = z.object({ leadId: z.string().uuid(), appointmentId: z.string().uuid().optional() });
-export const automationRunsQuerySchema = z.object({ automationId: z.string().uuid().optional(), status: z.enum(['QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'SKIPPED', 'DRY_RUN']).optional(), limit: z.coerce.number().int().min(1).max(100).default(30), cursor: z.string().uuid().optional() });
+export const automationDryRunSchema = z.object({ leadId: z.string().uuid(), appointmentId: z.string().uuid().optional(), /** An unsaved draft to preview instead of the stored automation. */ graph: z.unknown().optional() });
+export const automationRunsQuerySchema = z.object({ automationId: z.string().uuid().optional(), status: z.enum(['QUEUED', 'RUNNING', 'WAITING', 'SUCCEEDED', 'FAILED', 'SKIPPED', 'DRY_RUN']).optional(), limit: z.coerce.number().int().min(1).max(100).default(30), cursor: z.string().uuid().optional() });
 
 // ----------------------------------------------------------------------------- tasks / notifications / SLA
 export const taskCreateSchema = z.object({
