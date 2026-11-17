@@ -10,7 +10,7 @@ import { evaluateConditions, render, type EvalContext } from '../src/ops/automat
 import { JobsService } from '../src/ops/jobs.service.js';
 import { OutboxRelay } from '../src/ops/outbox-relay.js';
 import { ScannersService } from '../src/ops/scanners.service.js';
-import { addMember, auth, cleanup, createTestApp, registerAccount, RUN, type Account, type TestCtx } from './helpers.js';
+import { addMember, auth, cleanup, createTestApp, foreignOutboxConsumerPresent, registerAccount, RUN, type Account, type TestCtx } from './helpers.js';
 
 let ctx: TestCtx; let owner$: pg.Pool;
 let owner: Account; let manager: Account; let agent: Account; let agent2: Account; let other: Account;
@@ -464,9 +464,7 @@ describe('real BullMQ workers', () => {
    */
   let foreignConsumer = false;
   beforeAll(async () => {
-    const ids = await Promise.all(Array.from({ length: 3 }, async () => (await q<{ id: string }>(`INSERT INTO outbox_events (id, tenant_id, type, payload) VALUES (gen_random_uuid(), $1, 'test.noop', '{}') RETURNING id`, [owner.tenantId]))[0]?.id as string));
-    for (let i = 0; i < 30 && !foreignConsumer; i++) { await sleep(100); foreignConsumer = (await q<{ n: number }>(`SELECT count(*)::int n FROM outbox_events WHERE id = ANY($1::uuid[]) AND status <> 'pending'`, [ids]))[0]!.n > 0; }
-    await q(`DELETE FROM outbox_events WHERE id = ANY($1::uuid[])`, [ids]);
+    foreignConsumer = await foreignOutboxConsumerPresent(owner$, owner.tenantId);
     if (foreignConsumer) console.warn('SKIPPING real BullMQ workers tests: another process sharing this database is consuming outbox events (stop any API/worker with WORKERS_ENABLED=true, e.g. an e2e or dev server)');
     ctx2 = await createTestApp([{ provide: ENV, useValue: { ...loadEnv(), WORKERS_ENABLED: true, QUEUE_PREFIX: `t${RUN}`, AUTOMATION_MAX_ATTEMPTS: 3, AUTOMATION_RETRY_BASE_MS: 40 } }]);
   });

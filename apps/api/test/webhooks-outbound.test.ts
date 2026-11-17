@@ -1,15 +1,18 @@
 import { createHmac } from 'node:crypto';
 import http from 'node:http';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { OutboxRelay } from '../src/ops/outbox-relay.js';
 import { WebhookDispatcher } from '../src/ops/webhook-dispatcher.js';
-import { addMember, auth, cleanup, createTestApp, registerAccount, type Account, type TestCtx } from './helpers.js';
+import { addMember, auth, cleanup, createTestApp, foreignOutboxConsumerPresent, registerAccount, type Account, type TestCtx } from './helpers.js';
 
 // Local receivers live on 127.0.0.1, which the SSRF guard refuses unless this test-only switch is on (it is rejected in production).
 Object.assign(process.env, { WEBHOOK_ALLOW_PRIVATE_TARGETS: 'true', WEBHOOK_MAX_ATTEMPTS: '3', WEBHOOK_BACKOFF_BASE_MS: '20', WEBHOOK_DISABLE_AFTER: '2', WEBHOOK_TIMEOUT_MS: '400' });
 
 let ctx: TestCtx; let relay: OutboxRelay; let disp: WebhookDispatcher; let t: Account; let other: Account;
+/** Another process on this database consumes outbox events / webhook deliveries (see foreignOutboxConsumerPresent): the dispatcher tests would race it. */
+let foreignConsumer = false;
+const FOREIGN_NOTE = 'another process sharing this database consumes outbox events and webhook deliveries (stop any API/worker started with WORKERS_ENABLED=true, e.g. an e2e or dev server)';
 const owner$ = new pg.Pool({ connectionString: process.env.DATABASE_OWNER_URL });
 interface Hit { headers: http.IncomingHttpHeaders; body: string }
 interface Receiver { url: string; hits: Hit[]; mode: { status: number; hang?: boolean; redirect?: string }; close: () => void }
@@ -31,7 +34,14 @@ async function pump(until: () => boolean | Promise<boolean>, ms = 8000) {
     // if another worker process sharing this database claims a delivery with its own, slower backoff settings.
     await owner$.query(`UPDATE webhook_deliveries SET next_attempt_at = now() WHERE status = 'PENDING' AND tenant_id = ANY($1)`, [[t.tenantId, other.tenantId]]);
     await relay.drainOnce(100); await disp.drainOnce(50); if (await until()) return; await sleep(30); }
-  throw new Error('pump timed out');
+  throw new Error(`pump timed out. ${await explainState()}`);
+}
+/** What the deliveries of the test workspaces look like when a wait times out. A "Blocked" error or more attempts than this test allows means another process drained them. */
+async function explainState(): Promise<string> {
+  const rows = (await owner$.query(`SELECT status, attempts, left(coalesce(last_error, ''), 80) AS err FROM webhook_deliveries WHERE tenant_id = ANY($1) ORDER BY created_at DESC LIMIT 8`, [[t.tenantId, other.tenantId]])).rows as { status: string; attempts: number; err: string }[];
+  const pending = (await owner$.query(`SELECT count(*)::int n FROM outbox_events WHERE tenant_id = ANY($1) AND status IN ('pending','processing')`, [[t.tenantId, other.tenantId]])).rows[0]?.n ?? 0;
+  const odd = rows.some((r) => /^Blocked/.test(r.err) || r.attempts > Number(process.env.WEBHOOK_MAX_ATTEMPTS));
+  return `outbox rows still open: ${pending}; latest deliveries: ${rows.map((r) => `${r.status}/${r.attempts}${r.err ? ` "${r.err}"` : ''}`).join(', ') || 'none'}.${odd ? ' A "Blocked" error or extra attempts means ANOTHER process sharing this database drained these deliveries with its own settings (stop any API/worker started with WORKERS_ENABLED=true, e.g. an e2e or dev server).' : ''}`;
 }
 const create = (a: Account, url: string, events: string[]) => ctx.http().post('/webhooks/endpoints').set(auth(a.accessToken)).send({ url, events });
 const verify = (h: Hit, secret: string) => { const ts = h.headers['x-leadpilot-timestamp'] as string; return h.headers['x-leadpilot-signature'] === `v1=${createHmac('sha256', secret).update(`${ts}.${h.body}`).digest('hex')}`; };
@@ -41,6 +51,8 @@ beforeAll(async () => {
   ctx = await createTestApp(); relay = ctx.app.get(OutboxRelay); disp = ctx.app.get(WebhookDispatcher);
   t = await registerAccount(ctx, 'whOwner'); other = await registerAccount(ctx, 'whOther');
   await ctx.http().post('/auth/verify-email').send({ token: ctx.mail.last('verify', t.email)?.token });
+  foreignConsumer = await foreignOutboxConsumerPresent(owner$, t.tenantId);
+  if (foreignConsumer) console.warn('SKIPPING webhook delivery tests: another process sharing this database is consuming outbox events and webhook deliveries (stop any API/worker with WORKERS_ENABLED=true, e.g. an e2e or dev server)');
 });
 afterAll(async () => { for (const r of receivers) r.close(); await owner$.end(); await ctx.close(); await cleanup(); });
 
@@ -69,6 +81,7 @@ describe('configuration', () => {
 });
 
 describe('delivery', () => {
+  beforeEach(({ skip }) => { if (foreignConsumer) skip(FOREIGN_NOTE); });
   it('sends a signed event for a real domain change, with timestamp, event headers and an id-only payload', async () => {
     const rec = await receiver(); const ep = (await create(t, rec.url, ['lead.created'])).body;
     const lead = (await mkLead(t, 'Webhook Lead')).body;
@@ -163,6 +176,7 @@ describe('delivery', () => {
 });
 
 describe('isolation and plan rules', () => {
+  beforeEach(({ skip }) => { if (foreignConsumer) skip(FOREIGN_NOTE); });
   it('never shows, changes or delivers across workspaces', async () => {
     const mine = await receiver(); const theirs = await receiver();
     const epMine = (await create(t, mine.url, ['lead.created'])).body; const epTheirs = (await create(other, theirs.url, ['lead.created'])).body;

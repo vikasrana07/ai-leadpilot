@@ -87,3 +87,20 @@ export async function cleanup(): Promise<void> {
     await pool.end();
   }
 }
+
+/**
+ * True when ANOTHER process sharing this database (an e2e server, `apps/worker`, a dev or background API started with WORKERS_ENABLED=true) is
+ * consuming outbox events. Such a process claims events of every workspace, relays them and drains webhook deliveries with ITS settings (private
+ * targets blocked, its own retry limits), so tests that drive the relay or the webhook dispatcher themselves cannot trust the outcome.
+ * Nothing in the calling test process may be draining the outbox yet: it inserts probe events for `tenantId` and any claim of them is foreign.
+ */
+export async function foreignOutboxConsumerPresent(pool: pg.Pool, tenantId: string, windowMs = 3000): Promise<boolean> {
+  const ids = (await Promise.all(Array.from({ length: 3 }, async () => (await pool.query<{ id: string }>(`INSERT INTO outbox_events (id, tenant_id, type, payload) VALUES (gen_random_uuid(), $1, 'test.noop', '{}') RETURNING id`, [tenantId])).rows[0]!.id)));
+  let foreign = false;
+  for (let waited = 0; waited < windowMs && !foreign; waited += 100) {
+    await new Promise((r) => setTimeout(r, 100));
+    foreign = ((await pool.query<{ n: number }>(`SELECT count(*)::int n FROM outbox_events WHERE id = ANY($1::uuid[]) AND status <> 'pending'`, [ids])).rows[0]?.n ?? 0) > 0;
+  }
+  await pool.query(`DELETE FROM outbox_events WHERE id = ANY($1::uuid[])`, [ids]);
+  return foreign;
+}
