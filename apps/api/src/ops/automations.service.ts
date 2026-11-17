@@ -1,14 +1,14 @@
 import { EntitlementsService } from '../billing/entitlements.service.js';
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, type TxClient } from '@leadpilot/database';
-import { actionSchema, automationInputSchema, graphErrors, linearToGraph, summarizeGraph, validateGraph, effectiveGraph, type AutomationAction, type AutomationGraph, type AutomationInput, type GraphIssue, type automationGraphInputSchema } from '@leadpilot/validation';
+import { actionSchema, automationInputSchema, graphActions, graphErrors, graphToLinear, graphTrigger, linearToGraph, summarizeGraph, validateGraph, effectiveGraph, type AutomationAction, type AutomationGraph, type AutomationInput, type GraphIssue, type automationGraphInputSchema } from '@leadpilot/validation';
 import type { z } from 'zod';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
 import type { Actor } from '../common/actor.js';
 import { DbService } from '../db/db.module.js';
 import { AutomationEngine } from './automation-engine.js';
-import { AUTOMATION_TEMPLATES } from './automation-templates.js';
+import { templatesForPack } from './automation-templates.js';
 import { endWaitingRuns, parseGraph } from './graph-executor.js';
 
 type Row = Prisma.AutomationGetPayload<object>;
@@ -17,8 +17,6 @@ export type WriteInput = AutomationInput | GraphWriteInput;
 
 /** Stable JSON (sorted keys): Postgres jsonb does not keep key order, so definitions are compared canonically. */
 const canon = (v: unknown): string => JSON.stringify(v, (_k, x: unknown) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b))) : x));
-const actionsOf = (g: AutomationGraph): AutomationAction[] => g.nodes.flatMap((n) => (n.type === 'action' ? [n.data] : []));
-const triggerOf = (g: AutomationGraph) => (g.nodes.find((n) => n.type === 'trigger') as Extract<AutomationGraph['nodes'][number], { type: 'trigger' }>).data;
 
 interface Prepared { source: 'linear' | 'graph'; graph: AutomationGraph | null; versionGraph: AutomationGraph; trigger: unknown; conditions: unknown; actions: AutomationAction[] }
 
@@ -52,7 +50,8 @@ export class AutomationsService {
   async templates(a: Actor) {
     return this.tx(a, async (tx) => {
       const installed = new Set((await tx.automation.findMany({ where: { tenantId: a.tenantId, templateKey: { not: null } }, select: { templateKey: true } })).map((r) => r.templateKey));
-      return { items: AUTOMATION_TEMPLATES.map((t) => ({ key: t.key, name: t.name, description: t.description, category: t.category, trigger: t.trigger, actions: t.actions, graph: linearToGraph(t), summary: summarizeGraph(linearToGraph(t)), requiresWhatsappTemplates: t.requiresWhatsappTemplates, installed: installed.has(t.key) })) };
+      const pack = (await tx.tenant.findUnique({ where: { id: a.tenantId }, select: { industryPackId: true } }))?.industryPackId ?? 'real_estate';
+      return { items: templatesForPack(pack).map((t) => { const graph = t.graph ?? linearToGraph(t); return { key: t.key, name: t.name, description: t.description, category: t.category, trigger: t.trigger, actions: t.actions, graph, summary: summarizeGraph(graph), branching: graph.nodes.some((n) => n.type === 'branch'), hasWaits: graph.nodes.some((n) => n.type === 'wait'), requiresWhatsappTemplates: t.requiresWhatsappTemplates, installed: installed.has(t.key) }; }) };
     });
   }
 
@@ -89,7 +88,10 @@ export class AutomationsService {
       const g = parseGraph(input.graph);
       const refs = await this.refIssues(tx, a, g);
       if (refs.length) throw new BadRequestException({ code: 'invalid_graph', message: refs[0]?.message ?? 'Invalid automation', details: [...issues, ...refs] });
-      return { source: 'graph', graph: g, versionGraph: g, trigger: triggerOf(g), conditions: [], actions: actionsOf(g) };
+      // The graph is the definition. The legacy columns are a read-only mirror kept for older readers (exports, cards): exact when the graph is
+      // a straight line, otherwise only the trigger and the flat list of every action are mirrored (conditions and wiring live in the graph).
+      const lin = graphToLinear(g);
+      return { source: 'graph', graph: g, versionGraph: g, trigger: lin?.trigger ?? graphTrigger(g), conditions: lin?.conditions ?? [], actions: lin?.actions ?? graphActions(g) };
     }
     await this.validateActions(tx, a, input.actions);
     const g = linearToGraph(input);
@@ -121,11 +123,14 @@ export class AutomationsService {
   }
 
   async fromTemplate(a: Actor, key: string) {
-    const t = AUTOMATION_TEMPLATES.find((x) => x.key === key);
+    const pack = await this.tx(a, async (tx) => (await tx.tenant.findUnique({ where: { id: a.tenantId }, select: { industryPackId: true } }))?.industryPackId ?? 'real_estate');
+    const t = templatesForPack(pack).find((x) => x.key === key);
     if (!t) throw new NotFoundException({ code: 'not_found', message: 'Unknown template' });
-    const parsed = automationInputSchema.parse({ name: t.name, description: t.description, trigger: t.trigger, conditions: t.conditions, actions: t.actions, cooldownMinutes: t.cooldownMinutes });
     const exists = await this.tx(a, (tx) => tx.automation.findFirst({ where: { tenantId: a.tenantId, templateKey: key }, select: { id: true } }));
     if (exists) throw new ConflictException({ code: 'already_installed', message: 'This template is already in your automations' });
+    // Graph templates (branches and waits) install as graph automations; the eight linear starters keep installing as linear ones, exactly as before.
+    if (t.graph) return this.create(a, { name: t.name, description: t.description, graph: t.graph, cooldownMinutes: t.cooldownMinutes }, key);
+    const parsed = automationInputSchema.parse({ name: t.name, description: t.description, trigger: t.trigger, conditions: t.conditions, actions: t.actions, cooldownMinutes: t.cooldownMinutes });
     return this.create(a, parsed, key);
   }
 
@@ -214,9 +219,23 @@ export class AutomationsService {
       const leads = await tx.lead.findMany({ where: { id: { in: page.flatMap((r) => (r.leadId ? [r.leadId] : [])) } }, select: { id: true, name: true } });
       const L = new Map(leads.map((l) => [l.id, l.name]));
       return {
-        items: page.map((r) => ({ id: r.id, automationId: r.automationId, automationName: r.automation.name, eventType: r.eventType, leadId: r.leadId, leadName: r.leadId ? L.get(r.leadId) ?? null : null, status: r.status, attempts: r.attempts, error: r.error, steps: r.steps, versionId: r.versionId, resumeAt: r.resumeAt?.toISOString() ?? null, createdAt: r.createdAt.toISOString(), finishedAt: r.finishedAt?.toISOString() ?? null })),
+        items: page.map((r) => this.runDto(r, r.leadId ? L.get(r.leadId) ?? null : null)),
         nextCursor: rows.length > q.limit ? (page[page.length - 1]?.id ?? null) : null,
       };
+    });
+  }
+
+  private runDto(r: Prisma.AutomationRunGetPayload<{ include: { automation: { select: { name: true } } } }>, leadName: string | null) {
+    return { id: r.id, automationId: r.automationId, automationName: r.automation.name, eventType: r.eventType, leadId: r.leadId, leadName, status: r.status, attempts: r.attempts, error: r.error, steps: r.steps, versionId: r.versionId, resumeAt: r.resumeAt?.toISOString() ?? null, createdAt: r.createdAt.toISOString(), finishedAt: r.finishedAt?.toISOString() ?? null };
+  }
+
+  /** One run with its recorded steps (read-only): lets the canvas highlight the path a past run took. */
+  async runById(a: Actor, id: string) {
+    return this.tx(a, async (tx) => {
+      const r = await tx.automationRun.findFirst({ where: { id, tenantId: a.tenantId }, include: { automation: { select: { name: true } } } });
+      if (!r) throw new NotFoundException({ code: 'not_found', message: 'Run not found' });
+      const lead = r.leadId ? await tx.lead.findFirst({ where: { id: r.leadId }, select: { name: true } }) : null;
+      return this.runDto(r, lead?.name ?? null);
     });
   }
 

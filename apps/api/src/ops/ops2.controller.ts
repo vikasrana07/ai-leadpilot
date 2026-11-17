@@ -22,6 +22,7 @@ export class AutomationsController {
   @Get() list(@CurrentTenant() c: TenantRequestContext) { return this.svc.list(actorFrom(c)); }
   @Get('templates') templates(@CurrentTenant() c: TenantRequestContext) { return this.svc.templates(actorFrom(c)); }
   @Get('runs') runs(@CurrentTenant() c: TenantRequestContext, @Query(new ZodPipe(automationRunsQuerySchema)) q: z.infer<typeof automationRunsQuerySchema>) { return this.svc.runs(actorFrom(c), q); }
+  @Get('runs/:id') run(@CurrentTenant() c: TenantRequestContext, @Param('id', uuid()) id: string) { return this.svc.runById(actorFrom(c), id); }
   @Post('runs/:id/retry') @HttpCode(200) retry(@CurrentTenant() c: TenantRequestContext, @Param('id', uuid()) id: string) { return this.svc.retryRun(actorFrom(c), id); }
   @Post('from-template') @HttpCode(201) fromTemplate(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(automationFromTemplateSchema)) b: { templateKey: string }) { return this.svc.fromTemplate(actorFrom(c), b.templateKey); }
   @Post('validate') @HttpCode(200) validate(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(automationValidateSchema)) b: { graph?: unknown }) { return this.svc.validate(actorFrom(c), b.graph); }

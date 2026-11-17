@@ -10,11 +10,12 @@ import { api, registerViaApi, signInViaApi, type Account } from '../helpers.ts';
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const PAGES = ['/dashboard', '/leads', '/pipeline', '/inbox', '/properties', '/appointments', '/ai-assistant', '/knowledge', '/tasks', '/automations', '/reports', '/team', '/roles', '/integrations', '/billing', '/usage', '/audit', '/settings', '/security', '/api-keys', '/webhooks'];
 
-let acct: Account; let leadId = '';
+let acct: Account; let leadId = ''; let automationId = '';
 test.beforeAll(async ({ request }) => {
   acct = await registerViaApi(request, `a11y${Date.now().toString(36)}`);
   const lead = await api<{ id: string }>(request, acct, 'post', '/leads', { name: 'Accessible Lead', phone: '+919800000777', email: 'a11y@example.test' });
   leadId = lead.body.id;
+  automationId = (await api<{ id: string }>(request, acct, 'post', '/automations/from-template', { templateKey: 'appointment_reminder_24h' })).body.id;
 });
 
 async function violations(page: Page, label: string) {
@@ -28,15 +29,43 @@ for (const scheme of ['light', 'dark'] as const) {
     const page = await ctx.newPage();
     await signInViaApi(page, acct);
     const found: string[] = [];
-    for (const p of [...PAGES, `/leads/${leadId}`]) {
+    for (const p of [...PAGES, `/leads/${leadId}`, '/automations/new', `/automations/${automationId}/edit`]) {
       await page.goto(p);
       await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
       await page.waitForLoadState('networkidle');
-      found.push(...(await violations(page, `${scheme} ${p.replace(leadId, ':id')}`)));
+      found.push(...(await violations(page, `${scheme} ${p.replace(leadId, ':id').replace(automationId, ':id')}`)));
     }
     await ctx.clearCookies();
     await page.goto('/login'); found.push(...(await violations(page, `${scheme} /login`)));
     await page.goto('/register'); found.push(...(await violations(page, `${scheme} /register`)));
+    expect(found, found.join('\n')).toEqual([]);
+    await ctx.close();
+  });
+}
+
+for (const scheme of ['light', 'dark'] as const) {
+  test(`axe: the automation editor with step settings, a condition and the test dialog open (${scheme} theme)`, async ({ browser }) => {
+    const ctx = await browser.newContext({ colorScheme: scheme, viewport: { width: 1280, height: 900 } });
+    const page = await ctx.newPage();
+    await signInViaApi(page, acct);
+    await page.goto('/automations/new');
+    await expect(page.getByRole('heading', { level: 1, name: 'New automation' })).toBeVisible();
+    const found: string[] = [];
+    // the trigger's settings, then an action's (every form field type is covered by the first-opened forms)
+    await page.getByRole('button', { name: /^Trigger/ }).click();
+    await expect(page.getByTestId('inspector')).toBeVisible();
+    found.push(...(await violations(page, `${scheme} editor: trigger settings`)));
+    await page.getByRole('button', { name: /^Step 1/ }).click();
+    found.push(...(await violations(page, `${scheme} editor: action settings`)));
+    // add a condition (if / otherwise) after the trigger and open it
+    await page.getByRole('button', { name: /Actions for the trigger/ }).click();
+    await page.getByRole('menuitem', { name: /Add a condition/ }).click();
+    await expect(page.getByTestId('inspector').getByRole('heading', { name: /Edit condition/ })).toBeVisible();
+    found.push(...(await violations(page, `${scheme} editor: condition settings`)));
+    await page.getByRole('button', { name: /Actions for the trigger/ }).click();
+    await page.getByRole('menuitem', { name: /Add a wait/ }).click();
+    await expect(page.getByTestId('inspector').getByRole('heading', { name: /Edit wait/ })).toBeVisible();
+    found.push(...(await violations(page, `${scheme} editor: wait settings`)));
     expect(found, found.join('\n')).toEqual([]);
     await ctx.close();
   });

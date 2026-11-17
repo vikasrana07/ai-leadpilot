@@ -7,17 +7,19 @@ import { cn } from '@/lib/cn';
 
 const OpenContext = createContext(false);
 
-export function Dropdown({ trigger, children, align = 'end', className }: { trigger: ReactNode; children: ReactNode; align?: 'start' | 'end'; className?: string }) {
+export function Dropdown({ trigger, children, align = 'end', className, onCloseAutoFocus }: { trigger: ReactNode; children: ReactNode; align?: 'start' | 'end'; className?: string; /** Call preventDefault() to keep focus where the caller put it instead of returning it to the trigger. */ onCloseAutoFocus?: (e: Event) => void }) {
   const [open, setOpen] = useState(false);
   const reduce = useReducedMotion();
   return (
     <OpenContext.Provider value={open}>
       <Menu.Root open={open} onOpenChange={setOpen}>
-        <Menu.Trigger asChild>{trigger}</Menu.Trigger>
+        {/* The shared Button is a motion.button: pressing Enter on it makes framer-motion fire a synthetic pointerdown, which Radix would treat as a
+            second click and toggle the menu straight back shut. Ignore pointer events the browser did not generate. */}
+        <Menu.Trigger asChild onPointerDown={(e) => { if (!e.nativeEvent.isTrusted) e.preventDefault(); }}>{trigger}</Menu.Trigger>
         <AnimatePresence>
           {open ? (
             <Menu.Portal forceMount>
-              <Menu.Content asChild forceMount align={align} sideOffset={6}>
+              <Menu.Content asChild forceMount align={align} sideOffset={6} {...(onCloseAutoFocus ? { onCloseAutoFocus } : {})}>
                 <motion.div
                   className={cn('z-50 min-w-48 rounded-lg border border-border bg-card p-1 shadow-lg', className)}
                   initial={reduce ? { opacity: 0 } : { opacity: 0, y: -4, scale: 0.98 }}

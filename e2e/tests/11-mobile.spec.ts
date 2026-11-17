@@ -4,9 +4,10 @@ import { api, registerViaApi, signInViaApi, type Account } from '../helpers.ts';
 /** Phone-sized usage (390x844): no horizontal page scroll on the main screens, the nav drawer works by touch and keyboard, tap targets are reachable. */
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-let acct: Account;
+let acct: Account; let automationId = '';
 test.beforeAll(async ({ request }) => {
   acct = await registerViaApi(request, `mobile${Date.now().toString(36)}`);
+  automationId = (await api<{ id: string }>(request, acct, 'post', '/automations/from-template', { templateKey: 'welcome_new_lead' })).body.id;
   for (const [i, name] of ['Aarav Sharma', 'Priya Nair', 'Rohan Mehta'].entries()) await api(request, acct, 'post', '/leads', { name, phone: `+91981200000${i}` });
 });
 
@@ -76,3 +77,28 @@ test('dialogs fit the phone screen', async ({ page }) => {
   const vp = page.viewportSize();
   expect(b && vp && b.x >= 0 && b.x + b.width <= vp.width && b.y >= 0 && b.y + b.height <= vp.height, 'dialog inside the viewport').toBe(true);
 });
+
+for (const width of [375, 768]) {
+  test(`automation editor fits ${width}px: no sideways scroll, step settings open as a panel, targets are tappable`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await signInViaApi(page, acct);
+    for (const p of ['/automations', '/automations/new', `/automations/${automationId}/edit`]) {
+      await page.goto(p);
+      await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+      await page.waitForLoadState('networkidle');
+      await noHorizontalScroll(page, `${p} @${width}`);
+    }
+    // open a step: the settings appear and the page still does not scroll sideways
+    const first = page.getByRole('button', { name: /^Step 1/ });
+    await expect(first).toBeVisible(); await first.click();
+    const panel = page.getByTestId('inspector-panel');
+    await expect(panel.getByRole('heading', { name: /Edit action/ })).toBeVisible();
+    await noHorizontalScroll(page, `editor with step open @${width}`);
+    const box = await panel.boundingBox(); expect(box && box.x >= 0 && box.x + box.width <= width + 1, `panel inside the ${width}px screen`).toBeTruthy();
+    // controls in the editor are at least 40px tall on touch layouts
+    if (width < 1024) {
+      const small = await page.evaluate(() => [...document.querySelectorAll('[data-testid="outline"] button, [data-testid="inspector"] select, [data-testid="inspector"] input:not([type=checkbox])')].filter((el) => { const b = el.getBoundingClientRect(); return b.width > 0 && (b.height < 40); }).map((el) => `${el.tagName} ${(el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 30)} ${Math.round(el.getBoundingClientRect().height)}`));
+      expect(small, small.join('\n')).toEqual([]);
+    }
+  });
+}

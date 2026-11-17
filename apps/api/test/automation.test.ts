@@ -99,7 +99,7 @@ describe('rule evaluation and templating (pure)', () => {
 describe('automation management API', () => {
   it('lists templates, installs one disabled, refuses duplicates, and is manager-only', async () => {
     const t = await ctx.http().get('/automations/templates').set(auth(owner.accessToken));
-    expect(t.body.items).toHaveLength(8);
+    expect(t.body.items).toHaveLength(13); // the eight linear starters plus five graph templates (branches and waits)
     const inst = await ctx.http().post('/automations/from-template').set(auth(owner.accessToken)).send({ templateKey: 'hot_lead_alert' });
     expect(inst.status).toBe(201); expect(inst.body.enabled).toBe(false);
     expect((await ctx.http().post('/automations/from-template').set(auth(owner.accessToken)).send({ templateKey: 'hot_lead_alert' })).status).toBe(409);

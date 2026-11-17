@@ -1,7 +1,7 @@
-import { resumeWaitingRun } from './graph-executor.js';
+import { resumeWaitingRun, safeTrigger } from './graph-executor.js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { Prisma, TxClient } from '@leadpilot/database';
-import { DEFAULT_SLA, type AutomationTrigger, type SlaSettings } from '@leadpilot/validation';
+import { DEFAULT_SLA, type SlaSettings } from '@leadpilot/validation';
 import { AiTrigger } from '../ai/ai-trigger.js';
 import { DbService } from '../db/db.module.js';
 import { AGENT_REMINDER_HOURS } from './event-notifier.js';
@@ -44,8 +44,9 @@ export class ScannersService {
     const aiRecover: { conversationId: string; messageId: string }[] = [];
     await this.db.tenantTx({ tenantId }, async (tx) => {
       const tenant = await tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { settings: true } });
-      const automations = await tx.automation.findMany({ where: { tenantId, enabled: true }, select: { trigger: true } });
-      const triggers = automations.map((a) => a.trigger as unknown as AutomationTrigger);
+      const automations = await tx.automation.findMany({ where: { tenantId, enabled: true }, select: { graph: true, trigger: true, conditions: true, actions: true } });
+      // The trigger comes from the graph (the definition); legacy rows are lifted from their linear columns.
+      const triggers = automations.flatMap((a) => { const t = safeTrigger(a); return t ? [t] : []; });
       r.upcoming = await this.scanUpcoming(tx, tenantId, now, [...new Set([AGENT_REMINDER_HOURS, ...triggers.flatMap((t) => (t.type === 'appointment.upcoming' && t.hoursBefore ? [t.hoursBefore] : []))])]);
       r.inactive = await this.scanInactive(tx, tenantId, now, [...new Set(triggers.flatMap((t) => (t.type === 'lead.inactive' && t.days ? [t.days] : [])))]);
       r.tasksDue = await this.scanTasks(tx, tenantId, now);

@@ -1,5 +1,5 @@
 import type { Prisma, TxClient } from '@leadpilot/database';
-import { describeConditionData, graphSchema, outEdge, type AutomationGraph, type BranchData, type EdgeLabel, type GraphNode } from '@leadpilot/validation';
+import { describeConditionData, effectiveGraph, graphSchema, graphTrigger, outEdge, type AutomationGraph, type AutomationTrigger, type BranchData, type EdgeLabel, type GraphNode } from '@leadpilot/validation';
 import { evaluateCondition, type EvalContext } from './automation-logic.js';
 
 /** One entry of `automation_runs.steps`. `i` is the visit order (for a converted linear automation: the action index), `nodeId` ties it to the graph. */
@@ -58,6 +58,14 @@ export function cursorFrom(g: AutomationGraph, steps: StepRecord[], linearSource
     }
   }
   return { kind: 'end' };
+}
+
+/**
+ * The trigger of an automation row, read from its graph (the definition). Returns null when the stored definition cannot be read, so ONE broken
+ * automation is skipped (and reported by the caller) instead of throwing for every event and every scan of the whole workspace.
+ */
+export function safeTrigger(row: { graph?: unknown; trigger: unknown; conditions: unknown; actions: unknown }): AutomationTrigger | null {
+  try { return graphTrigger(effectiveGraph(row)); } catch { return null; }
 }
 
 export const parseGraph = (json: unknown): AutomationGraph => graphSchema.parse(json);

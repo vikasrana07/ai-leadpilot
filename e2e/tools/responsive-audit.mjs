@@ -34,7 +34,7 @@ async function sweep(label, creds, loginPath, pages) {
   }
 }
 const lead = process.env.AUDIT_LEAD_ID;
-const app = ['/dashboard', '/leads', ...(lead ? [`/leads/${lead}`] : []), '/pipeline', '/inbox', '/properties', '/appointments', '/ai-assistant', '/knowledge', '/tasks', '/automations', '/reports', '/team', '/roles', '/integrations', '/billing', '/usage', '/audit', '/settings', '/security', '/api-keys', '/webhooks'];
+const app = ['/dashboard', '/leads', ...(lead ? [`/leads/${lead}`] : []), '/pipeline', '/inbox', '/properties', '/appointments', '/ai-assistant', '/knowledge', '/tasks', '/automations', '/automations/new', ...(process.env.AUDIT_AUTOMATION_ID ? [`/automations/${process.env.AUDIT_AUTOMATION_ID}/edit`] : []), '/reports', '/team', '/roles', '/integrations', '/billing', '/usage', '/audit', '/settings', '/security', '/api-keys', '/webhooks'];
 await sweep('app', { email: process.env.AUDIT_EMAIL, password: process.env.AUDIT_PASSWORD }, '/auth/login', app);
 if (process.env.AUDIT_ADMIN_EMAIL) await sweep('platform', { email: process.env.AUDIT_ADMIN_EMAIL, password: process.env.AUDIT_ADMIN_PASSWORD }, '/platform/auth/login', ['/platform', '/platform/tenants', '/platform/plans', '/platform/audit', '/platform/deletions', '/platform/security']);
 await browser.close();

@@ -186,6 +186,16 @@ export function graphToLinear(g: AutomationGraph): LinearDefinition | null {
   return { trigger: trigger.data, conditions, actions };
 }
 
+/** The trigger configuration of a graph (every valid graph has exactly one trigger node). */
+export function graphTrigger(g: AutomationGraph): AutomationTrigger {
+  const t = g.nodes.find((n) => n.type === 'trigger');
+  if (!t || t.type !== 'trigger') throw new Error('graph has no trigger');
+  return t.data;
+}
+
+/** Every action in a graph, in node order (all branches). Used for lookups that do not care about the path, e.g. required WhatsApp templates. */
+export const graphActions = (g: AutomationGraph): AutomationAction[] => g.nodes.flatMap((n) => (n.type === 'action' ? [n.data] : []));
+
 /** The graph that runs for an automation row: its stored graph, or its legacy linear definition converted. */
 export function effectiveGraph(row: { graph?: unknown; trigger: unknown; conditions: unknown; actions: unknown }): AutomationGraph {
   if (row.graph) return graphSchema.parse(row.graph);

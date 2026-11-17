@@ -1,0 +1,16 @@
+/* Canvas skin: React Flow reads these colours from the app's own tokens so light and dark follow the theme and contrast stays checked in one place. */
+.lp-flow { --xy-edge-stroke-default: var(--muted-foreground); background: var(--muted); }
+.lp-flow .react-flow__node:focus-visible > div { outline: 2px solid var(--ring); outline-offset: 3px; border-radius: 10px; }
+.lp-flow .react-flow__node:focus { outline: none; }
+.lp-flow .react-flow__handle { width: 14px; height: 14px; border: 2px solid var(--primary); background: var(--card); }
+.lp-flow .react-flow__handle:hover, .lp-flow .react-flow__handle.connectingto { background: var(--primary); }
+.lp-flow .react-flow__handle.lp-readonly { pointer-events: none; opacity: 0.6; }
+.lp-flow .react-flow__controls { box-shadow: none; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; }
+.lp-flow .react-flow__controls-button { background: var(--card); color: var(--foreground); border-bottom: 1px solid var(--border); width: 32px; height: 32px; }
+.lp-flow .react-flow__controls-button:hover { background: var(--muted); }
+.lp-flow .react-flow__controls-button svg { fill: currentColor; }
+.lp-flow .react-flow__minimap { background: var(--card); border: 1px solid var(--border-strong); border-radius: 8px; }
+.lp-flow .react-flow__attribution { background: var(--card); color: var(--muted-foreground); border-radius: 4px 0 0 0; }
+.lp-flow .react-flow__attribution a { display: inline-block; min-width: 24px; min-height: 24px; padding: 5px 6px; color: var(--muted-foreground); text-decoration: underline; }
+.lp-flow .react-flow__edge.selected .react-flow__edge-path { stroke: var(--primary); }
+@media (prefers-reduced-motion: reduce) { .lp-flow * { transition: none !important; animation: none !important; } }

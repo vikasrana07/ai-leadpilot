@@ -1,3 +1,5 @@
+import type { AutomationGraph, GraphIssue } from '@leadpilot/validation';
+
 export interface Appointment {
   id: string; leadId: string; leadName: string; leadPhone: string | null; membershipId: string; agentName: string; title: string; startsAt: string; endsAt: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED'; notes: string | null; location: string | null; source: string; cancelledReason: string | null; rescheduledFromId: string | null;
@@ -8,8 +10,13 @@ export interface SlotsResponse { timezone: string; days: { date: string; slots: 
 export interface AvailabilityView { timezone: string; membershipId: string | null; usingDefault: boolean; rules: { dayOfWeek: number; startMinute: number; endMinute: number }[]; exceptions: { id: string; date: string; startMinute: number | null; endMinute: number | null; reason: string | null }[] }
 export interface Notification { id: string; type: string; title: string; body: string | null; link: string | null; read: boolean; createdAt: string }
 export interface TaskItem { id: string; title: string; notes: string | null; status: 'OPEN' | 'DONE'; dueAt: string | null; overdue: boolean; leadId: string | null; leadName: string | null; assigneeMembershipId: string | null; assigneeName: string | null; source: string; createdAt: string; completedAt: string | null }
-export interface AutomationItem { id: string; templateKey: string | null; name: string; description: string | null; enabled: boolean; trigger: { type: string; hoursBefore?: number; days?: number }; conditions: { field: string; op: string; value: unknown }[]; actions: { type: string; [k: string]: unknown }[]; cooldownMinutes: number; missingWhatsappTemplates: string[]; last7Days: { succeeded: number; failed: number; skipped: number } }
-export interface AutomationTemplate { key: string; name: string; description: string; category: string; trigger: AutomationItem['trigger']; actions: AutomationItem['actions']; requiresWhatsappTemplates: string[]; installed: boolean }
+export interface AutomationItem { id: string; templateKey: string | null; name: string; description: string | null; enabled: boolean; trigger: { type: string; hoursBefore?: number; days?: number }; conditions: { field: string; op: string; value: unknown }[]; actions: { type: string; [k: string]: unknown }[]; cooldownMinutes: number; missingWhatsappTemplates: string[]; last7Days: { succeeded: number; failed: number; skipped: number };
+  /** Always present: legacy linear automations are lifted to a graph by the API. */
+  graph: AutomationGraph; version: number; summary: string[]; graphAuthored: boolean; updatedAt: string }
+export interface AutomationTemplate { key: string; name: string; description: string; category: string; trigger: AutomationItem['trigger']; actions: AutomationItem['actions']; requiresWhatsappTemplates: string[]; installed: boolean; graph: AutomationGraph; summary: string[] }
+export type { GraphIssue };
+export interface DryRunPathItem { nodeId: string; type: string; outcome: 'yes' | 'no' | 'would_run' | 'would_wait' | 'skipped'; detail?: string; conditions?: { text: string; pass: boolean }[]; wouldWaitMinutes?: number }
+export interface DryRunResult { runId: string; conditionsMet: boolean; steps: { i: number; type: string; status: string; detail?: string }[]; path: DryRunPathItem[]; context: { lead: string; stage: string; temperature: string } }
 export interface AutomationRun { id: string; automationId: string; automationName: string; eventType: string; leadId: string | null; leadName: string | null; status: 'QUEUED' | 'RUNNING' | 'WAITING' | 'SUCCEEDED' | 'FAILED' | 'SKIPPED' | 'DRY_RUN'; attempts: number; error: string | null; steps: { i: number; type: string; status: string; detail?: string }[]; createdAt: string; finishedAt: string | null }
 export interface UsageView {
   plan: { key: string; name: string; status: string; restricted: boolean; limits: Record<string, number | null>; features: Record<string, boolean>; meters: Record<string, number> };

@@ -2,7 +2,7 @@
 import { chromium } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 const WEB = process.env.AUDIT_WEB, API = process.env.AUDIT_API;
-const pages = ['/dashboard', '/leads', `/leads/${process.env.AUDIT_LEAD_ID}`, '/pipeline', '/inbox', '/properties', '/appointments', '/ai-assistant', '/knowledge', '/tasks', '/automations', '/reports', '/team', '/roles', '/integrations', '/billing', '/usage', '/audit', '/settings', '/security', '/api-keys', '/webhooks'];
+const pages = ['/dashboard', '/leads', `/leads/${process.env.AUDIT_LEAD_ID}`, '/pipeline', '/inbox', '/properties', '/appointments', '/ai-assistant', '/knowledge', '/tasks', '/automations', '/automations/new', ...(process.env.AUDIT_AUTOMATION_ID ? [`/automations/${process.env.AUDIT_AUTOMATION_ID}/edit`] : []), '/reports', '/team', '/roles', '/integrations', '/billing', '/usage', '/audit', '/settings', '/security', '/api-keys', '/webhooks'];
 const browser = await chromium.launch({ channel: 'chrome' });
 const totals = new Map();
 for (const scheme of ['light', 'dark']) {

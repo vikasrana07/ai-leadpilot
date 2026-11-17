@@ -8,7 +8,7 @@ import type { Actor } from '../common/actor.js';
 import { DbService } from '../db/db.module.js';
 import { LeadsService } from '../leads/leads.service.js';
 import { evaluateConditions, MAX_CHAIN_DEPTH, render, type EvalContext } from './automation-logic.js';
-import { cursorFrom, endWaitingRuns, evaluateBranch, parseGraph, resumeWaitingRun, type StepRecord } from './graph-executor.js';
+import { cursorFrom, endWaitingRuns, evaluateBranch, parseGraph, resumeWaitingRun, safeTrigger, type StepRecord } from './graph-executor.js';
 import { NotificationsService, type CreatedNotification } from './notifications.service.js';
 import { OutboxService, originOf } from './outbox.service.js';
 
@@ -108,7 +108,12 @@ export class AutomationEngine {
   /** Decide, for one event, which automations run. Every considered automation gets a run row so "why didn't it fire?" has an answer. Returns ids to execute. */
   async matchEvent(tx: TxClient, ev: DomainEvent): Promise<string[]> {
     const resumed = await this.handleWaits(tx, ev);
-    const candidates = (await tx.automation.findMany({ where: { tenantId: ev.tenantId, enabled: true } })).filter((a) => this.triggerMatches(a.trigger as unknown as AutomationTrigger, ev));
+    const enabled = await tx.automation.findMany({ where: { tenantId: ev.tenantId, enabled: true } });
+    const candidates = enabled.filter((a) => {
+      const t = safeTrigger(a);
+      if (!t) { this.log.error(`Automation ${a.id} (tenant ${ev.tenantId}) has an unreadable definition and was skipped`); return false; }
+      return this.triggerMatches(t, ev);
+    });
     if (candidates.length === 0) return resumed;
     // A lapsed workspace, or a plan without automations, does not run them (no runs are created, nothing is sent).
     const plan = await this.ent.compute(tx, ev.tenantId);

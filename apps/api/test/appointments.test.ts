@@ -35,6 +35,8 @@ describe('double booking is impossible, even under a race', () => {
     const start = at(3, 5);
     const results = await Promise.all(leads.map((leadId) => book(owner, { leadId, membershipId: agentM, startsAt: start, durationMinutes: 60 })));
     const codes = results.map((r) => r.status).sort();
+    const odd = results.filter((r) => r.status !== 201 && r.status !== 409).map((r) => `${r.status} ${JSON.stringify(r.body?.error ?? r.body).slice(0, 160)}`);
+    expect(odd, `unexpected statuses (not 201/409): ${odd.join(' | ')}`).toEqual([]);
     expect(codes.filter((c) => c === 201)).toHaveLength(1);
     expect(codes.filter((c) => c === 409)).toHaveLength(11);
     expect(results.find((r) => r.status === 409)?.body.error?.code ?? results.find((r) => r.status === 409)?.body.code).toBe('slot_taken');

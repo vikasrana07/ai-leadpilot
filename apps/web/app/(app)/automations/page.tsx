@@ -1,7 +1,9 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, FlaskConical, Play, RotateCcw, Trash2, Workflow } from 'lucide-react';
+import { AlertTriangle, FlaskConical, Network, Pencil, Play, Plus, RotateCcw, Trash2, Workflow } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/page/page-header';
@@ -64,6 +66,7 @@ function RunsPanel() {
             {open === r.id ? <div className="mt-2 space-y-1 pl-1">
               {r.steps.length === 0 ? <p className="text-helper">No steps recorded yet.</p> : r.steps.map((s, i) => <p key={i} className="flex items-start gap-2"><Badge tone={s.status in STEP_TONE ? STEP_TONE[s.status as keyof typeof STEP_TONE] : 'neutral'}>{s.type === 'gate' ? 'skipped' : s.status}</Badge><span>{s.type === 'gate' ? GATE_TEXT[s.detail ?? ''] ?? s.detail : `${ACTION_LABELS[s.type] ?? s.type}${s.detail ? `: ${s.detail}` : ''}`}</span></p>)}
               {r.error ? <p className="text-danger"><AlertTriangle className="mr-1 inline h-3.5 w-3.5" aria-hidden />{r.error}</p> : null}
+              {(r.steps as { nodeId?: string }[]).some((x) => x.nodeId) ? <Button size="sm" asChild><Link href={`/automations/${r.automationId}/edit?run=${r.id}`} aria-label={`View this ${r.automationName} run on the canvas`}><Network className="h-3.5 w-3.5" aria-hidden />View on canvas</Link></Button> : null}
               {r.status === 'FAILED' ? <Button size="sm" loading={retry.isPending} onClick={() => retry.mutate(r.id)}><RotateCcw className="h-3.5 w-3.5" aria-hidden />Retry failed steps</Button> : null}</div> : null}
           </div>))}</div>)}
     </Card>
@@ -71,22 +74,31 @@ function RunsPanel() {
 }
 
 export default function AutomationsPage() {
-  const { can } = useAuth(); const qc = useQueryClient(); const allowed = can('automation:manage');
+  const { can } = useAuth(); const qc = useQueryClient(); const router = useRouter(); const allowed = can('automation:manage');
   const [tab, setTab] = useState<'mine' | 'gallery' | 'history'>('mine'); const [dry, setDry] = useState<AutomationItem | null>(null); const [del, setDel] = useState<AutomationItem | null>(null);
   const list = useQuery({ queryKey: ['automations', 'list'], enabled: allowed, queryFn: () => api<{ items: AutomationItem[] }>('/automations') });
   const templates = useQuery({ queryKey: ['automations', 'templates'], enabled: allowed, queryFn: () => api<{ items: AutomationTemplate[] }>('/automations/templates') });
   const refresh = () => qc.invalidateQueries({ queryKey: ['automations'] });
   const toggle = useMutation({ mutationFn: (v: { id: string; enabled: boolean }) => api(`/automations/${v.id}/enable`, { method: 'POST', body: { enabled: v.enabled } }), onSuccess: refresh, onError: (e) => handleApiError(e) });
   const install = useMutation({ mutationFn: (key: string) => api('/automations/from-template', { method: 'POST', body: { templateKey: key } }), onSuccess: async () => { toast.success('Added. It is switched off until you enable it.'); await refresh(); setTab('mine'); }, onError: (e) => handleApiError(e) });
+  const customize = useMutation({
+    mutationFn: async (t: AutomationTemplate) => {
+      const existing = list.data?.items.find((a) => a.templateKey === t.key);
+      return existing ?? (await api<AutomationItem>('/automations/from-template', { method: 'POST', body: { templateKey: t.key } }));
+    },
+    onSuccess: async (a) => { await refresh(); router.push(`/automations/${a.id}/edit`); },
+    onError: (e) => handleApiError(e),
+  });
   if (!allowed) return <><PageHeader title="Automations" /><Card><EmptyState icon={Workflow} title="You do not have access" description="Ask a workspace owner or manager for the automations permission." /></Card></>;
   const tabs = [['mine', 'My automations'], ['gallery', 'Templates'], ['history', 'Run history']] as const;
   return (
     <>
-      <PageHeader title="Automations" description="Follow-ups and alerts that run on their own. Every run is recorded, retried on failure, and can be tested first." />
+      <PageHeader title="Automations" description="Follow-ups and alerts that run on their own. Every run is recorded, retried on failure, and can be tested first."
+        actions={<Button asChild variant="primary"><Link href="/automations/new"><Plus className="h-4 w-4" aria-hidden />New automation</Link></Button>} />
       <div role="tablist" aria-label="Automations" className="mb-3 flex gap-1 border-b border-border">{tabs.map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cn('-mb-px border-b-2 px-3 py-2 text-[13px] font-medium', tab === k ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}>{l}</button>)}</div>
       {tab === 'history' ? <RunsPanel /> : tab === 'gallery' ? (
         templates.isPending ? <Skeleton className="h-48" /> : <div className="grid gap-3 md:grid-cols-2">{templates.data?.items.map((t) => (
-          <Card key={t.key} className="flex flex-col p-4"><div className="flex items-start justify-between gap-2"><div><Badge>{t.category}</Badge><h3 className="text-heading mt-1.5">{t.name}</h3></div>{t.installed ? <Badge tone="success">Added</Badge> : <Button size="sm" variant="primary" loading={install.isPending && install.variables === t.key} onClick={() => install.mutate(t.key)}>Add</Button>}</div>
+          <Card key={t.key} className="flex flex-col p-4"><div className="flex items-start justify-between gap-2"><div><Badge>{t.category}</Badge><h3 className="text-heading mt-1.5">{t.name}</h3></div><div className="flex shrink-0 items-center gap-1.5">{t.installed ? <Badge tone="success">Added</Badge> : <Button size="sm" variant="primary" loading={install.isPending && install.variables === t.key} onClick={() => install.mutate(t.key)}>Add</Button>}<Button size="sm" loading={customize.isPending && customize.variables?.key === t.key} onClick={() => customize.mutate(t)} aria-label={`Customize ${t.name} in the editor`}><Pencil className="h-3.5 w-3.5" aria-hidden />Customize</Button></div></div>
             <p className="text-helper mt-1.5">{t.description}</p><p className="mt-2 text-[12px]"><span className="text-muted-foreground">When:</span> {describeTrigger(t.trigger)}</p>
             <p className="text-[12px]"><span className="text-muted-foreground">Then:</span> {t.actions.map((a) => ACTION_LABELS[a.type] ?? a.type).join(', ')}</p>
             {t.requiresWhatsappTemplates.length ? <p className="text-helper mt-1.5">Needs WhatsApp template{t.requiresWhatsappTemplates.length > 1 ? 's' : ''}: {t.requiresWhatsappTemplates.map((n) => <code key={n} className="mx-0.5 rounded bg-muted px-1">{n}</code>)}</p> : null}</Card>))}</div>
@@ -94,12 +106,12 @@ export default function AutomationsPage() {
         <Card><EmptyState icon={Workflow} title="No automations yet" description="Start from a template: welcome messages, visit reminders, hot-lead alerts and more." action={<Button variant="primary" onClick={() => setTab('gallery')}>Browse templates</Button>} /></Card>
       ) : <div className="space-y-2">{list.data?.items.map((a) => (
         <Card key={a.id} className="p-4"><div className="flex flex-wrap items-start gap-3">
-          <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="text-heading">{a.name}</h3><Badge tone={a.enabled ? 'success' : 'neutral'}>{a.enabled ? 'On' : 'Off'}</Badge></div>
+          <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="text-heading">{a.name}</h3><Badge tone={a.enabled ? 'success' : 'neutral'}>{a.enabled ? 'On' : 'Off'}</Badge>{a.graph.nodes.some((n) => n.type === 'branch' || n.type === 'wait') ? <Badge>Branches or waits</Badge> : null}</div>
             <p className="mt-1 text-[12px]"><span className="text-muted-foreground">When:</span> {describeTrigger(a.trigger)}{a.conditions.length ? ` · only if ${a.conditions.length} condition${a.conditions.length > 1 ? 's' : ''} match` : ''}</p>
             <p className="text-[12px]"><span className="text-muted-foreground">Then:</span> {a.actions.map((x) => ACTION_LABELS[x.type] ?? x.type).join(' → ')}</p>
             {a.missingWhatsappTemplates.length ? <p className="mt-1 text-[12px] text-warning"><AlertTriangle className="mr-1 inline h-3.5 w-3.5" aria-hidden />WhatsApp template not registered: {a.missingWhatsappTemplates.join(', ')}. Message steps will be skipped until you add it in Integrations.</p> : null}
             <p className="text-helper mt-1">Last 7 days: {a.last7Days.succeeded} ran · {a.last7Days.skipped} skipped · {a.last7Days.failed} failed</p></div>
-          <div className="flex items-center gap-1.5"><Button size="sm" onClick={() => setDry(a)}><FlaskConical className="h-3.5 w-3.5" aria-hidden />Test</Button><Button size="sm" variant={a.enabled ? 'secondary' : 'primary'} loading={toggle.isPending && toggle.variables?.id === a.id} onClick={() => toggle.mutate({ id: a.id, enabled: !a.enabled })}><Play className="h-3.5 w-3.5" aria-hidden />{a.enabled ? 'Turn off' : 'Turn on'}</Button><Button size="icon" variant="ghost" aria-label={`Delete ${a.name}`} onClick={() => setDel(a)}><Trash2 className="h-3.5 w-3.5" /></Button></div>
+          <div className="flex items-center gap-1.5"><Button size="sm" asChild><Link href={`/automations/${a.id}/edit`} aria-label={`Edit ${a.name}`}><Pencil className="h-3.5 w-3.5" aria-hidden />Edit</Link></Button><Button size="sm" onClick={() => setDry(a)}><FlaskConical className="h-3.5 w-3.5" aria-hidden />Test</Button><Button size="sm" variant={a.enabled ? 'secondary' : 'primary'} loading={toggle.isPending && toggle.variables?.id === a.id} onClick={() => toggle.mutate({ id: a.id, enabled: !a.enabled })}><Play className="h-3.5 w-3.5" aria-hidden />{a.enabled ? 'Turn off' : 'Turn on'}</Button><Button size="icon" variant="ghost" aria-label={`Delete ${a.name}`} onClick={() => setDel(a)}><Trash2 className="h-3.5 w-3.5" /></Button></div>
         </div></Card>))}</div>}
       {dry ? <DryRunDialog automation={dry} onClose={() => setDry(null)} /> : null}
       <ConfirmDialog open={del !== null} onOpenChange={(o) => { if (!o) setDel(null); }} danger title={`Delete “${del?.name ?? ''}”?`} description="Its run history is deleted too." confirmLabel="Delete" onConfirm={async () => { if (!del) return; try { await api(`/automations/${del.id}`, { method: 'DELETE' }); toast.success('Deleted'); await refresh(); } catch (e) { handleApiError(e); throw e; } }} />
