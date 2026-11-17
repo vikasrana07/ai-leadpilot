@@ -43,7 +43,7 @@ function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: bo
 
 export function SidebarContent({ collapsed, onToggle, onNavigate }: { collapsed: boolean; onToggle?: () => void; onNavigate?: () => void }) {
   const { can, activeWorkspace } = useAuth();
-  const modules = packForIndustry(activeWorkspace?.industryPackId ?? 'general').modules;
+  const modules = activeWorkspace?.industryChosen ? packForIndustry(activeWorkspace.industryPackId).modules : { properties: false };
   const support = useSupportSession().data?.active === true;
   const admin = ADMIN_NAV.filter((i) => (!i.permission || can(i.permission)) && !(support && BLOCKED_DURING_SUPPORT.has(i.href)));
   return (

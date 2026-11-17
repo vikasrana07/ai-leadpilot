@@ -1,6 +1,6 @@
 import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { Prisma, type TxClient } from '@leadpilot/database';
-import type { AuthContextResponse } from '@leadpilot/shared-types';
+import { industryChosen, type AuthContextResponse } from '@leadpilot/shared-types';
 import type { AcceptInviteInput, LoginInput, RegisterInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
@@ -246,15 +246,16 @@ export class AuthService {
       tx.membership.findMany({
         where: { userId, status: 'ACTIVE', tenant: { status: 'ACTIVE' } },
         orderBy: { createdAt: 'asc' },
-        select: { tenant: { select: { id: true, name: true, industryPackId: true } }, role: { select: { key: true, name: true } } },
+        select: { tenant: { select: { id: true, name: true, industryPackId: true, onboardingState: true } }, role: { select: { key: true, name: true } } },
       }),
     );
-    return rows.map((m) => ({ tenantId: m.tenant.id, name: m.tenant.name, roleKey: m.role.key, roleName: m.role.name, industryPackId: m.tenant.industryPackId }));
+    return rows.map((m) => ({ tenantId: m.tenant.id, name: m.tenant.name, roleKey: m.role.key, roleName: m.role.name, industryPackId: m.tenant.industryPackId, industryChosen: industryChosen(m.tenant.onboardingState) }));
   }
 
   /** Name and industry pack of a workspace (support sessions have no membership to read them from). */
-  async workspaceInfo(tenantId: string): Promise<{ name: string; industryPackId: string }> {
-    return this.db.tenantTx({ tenantId }, (tx) => tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { name: true, industryPackId: true } }));
+  async workspaceInfo(tenantId: string): Promise<{ name: string; industryPackId: string; industryChosen: boolean }> {
+    const t = await this.db.tenantTx({ tenantId }, (tx) => tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { name: true, industryPackId: true, onboardingState: true } }));
+    return { name: t.name, industryPackId: t.industryPackId, industryChosen: industryChosen(t.onboardingState) };
   }
 
   async buildContext(userId: string, activeTenantId: string | null): Promise<AuthContextResponse> {

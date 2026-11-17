@@ -9,6 +9,8 @@ export interface WorkspaceSummary {
   roleName: string;
   /** Industry pack the workspace was set up with; decides which optional modules (e.g. Properties) the menu shows. */
   industryPackId: string;
+  /** False while the owner has not yet picked an industry in onboarding. */
+  industryChosen: boolean;
 }
 
 export interface SessionUser {

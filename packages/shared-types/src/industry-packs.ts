@@ -75,3 +75,15 @@ const PACKS: Record<string, IndustryPack> = { real_estate: REAL_ESTATE_PACK, gen
 export function packForIndustry(industry: string): IndustryPack {
   return PACKS[industry] ?? GENERAL_PACK;
 }
+
+/**
+ * True once the owner has actually picked an industry in onboarding. Until then the workspace carries the signup default, so
+ * industry-specific modules (Properties...) stay hidden rather than assuming real estate. Workspaces with no onboarding record count as chosen.
+ */
+export function industryChosen(onboardingState: unknown): boolean {
+  const s = onboardingState as { completed?: unknown; skipped?: unknown } | null | undefined;
+  if (!s || typeof s !== 'object') return true;
+  const completed = Array.isArray(s.completed) ? s.completed : [];
+  const skipped = Array.isArray(s.skipped) ? s.skipped : [];
+  return completed.includes('industry') && !skipped.includes('industry');
+}
