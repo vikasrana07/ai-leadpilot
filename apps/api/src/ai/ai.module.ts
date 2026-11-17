@@ -18,7 +18,7 @@ import { EMBEDDING_PROVIDER, LLM_PROVIDER, MockEmbeddings, MockLlm, OpenAiLlm } 
 import { AiOrchestrator } from './orchestrator.js';
 import { ScoringModule } from './scoring/scoring.module.js';
 import { overrideSchema, scoringRulesSchema, ScoringService } from './scoring/scoring.service.js';
-import { DEFAULT_SCORING_RULES, type ScoringRules } from './scoring/scoring.js';
+import { defaultScoringRulesFor, type ScoringRules } from './scoring/scoring.js';
 import { DbService } from '../db/db.module.js';
 import { OpsModule } from '../ops/ops.module.js';
 import { ToolRunner } from './tools.js';
@@ -42,7 +42,8 @@ class AiController {
 
   @Get('scoring/rules') async rules(@CurrentTenant() c: TenantRequestContext) {
     const r = await this.db.tenantTx(c, (tx) => this.scoring.rulesFor(tx, c.tenantId));
-    return { version: r.version, rules: r.rules, defaults: DEFAULT_SCORING_RULES };
+    const t = await this.db.tenantTx(c, (tx) => tx.tenant.findUnique({ where: { id: c.tenantId }, select: { industryPackId: true } }));
+    return { version: r.version, rules: r.rules, defaults: defaultScoringRulesFor(t?.industryPackId ?? 'real_estate') };
   }
   @Put('scoring/rules') @RequirePermissions('ai:configure') saveRules(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(scoringRulesSchema)) b: ScoringRules) { return this.scoring.saveRules(actorFrom(c), b); }
 

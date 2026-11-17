@@ -79,7 +79,7 @@ describe('end to end: qualify, search the real inventory, score', () => {
     const tl = (await ctx.http().get(`/leads/${c.lead.id}/activity`).set(auth(owner.accessToken))).body.map((a: { type: string }) => a.type);
     expect(tl).toEqual(expect.arrayContaining(['ai_updated', 'scored']));
     const [run] = await runs(c.id);
-    expect(run).toMatchObject({ status: 'COMPLETED', prompt_version: 'v1.0' });
+    expect(run).toMatchObject({ status: 'COMPLETED', prompt_version: 'v1.1' });
     expect(run?.trace.tools.map((t) => t.name)).toEqual(['update_lead', 'search_properties']); expect(run?.trace.tools.every((t) => t.ok)).toBe(true);
     expect((run?.input_tokens ?? 0) + (run?.output_tokens ?? 0)).toBeGreaterThan(0);
     expect(JSON.stringify(run?.trace)).not.toMatch(/Wakad under 1\.2/); // customer text is not copied into run traces

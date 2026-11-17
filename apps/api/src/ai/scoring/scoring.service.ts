@@ -6,7 +6,7 @@ import { AuditService } from '../../audit/audit.service.js';
 import type { Actor } from '../../common/actor.js';
 import { DbService } from '../../db/db.module.js';
 import { OutboxService } from '../../ops/outbox.service.js';
-import { DEFAULT_SCORING_RULES, scoreLead, temperatureFor, type ScoringRules } from './scoring.js';
+import { defaultScoringRulesFor, scoreLead, temperatureFor, type ScoringRules } from './scoring.js';
 
 export const scoringRulesSchema = z.object({
   criteria: z.array(z.object({
@@ -27,7 +27,9 @@ export class ScoringService {
   /** The active rules for a tenant (latest version), or the documented defaults as version 0. */
   async rulesFor(tx: TxClient, tenantId: string): Promise<{ version: number; rules: ScoringRules }> {
     const row = await tx.scoringRuleSet.findFirst({ where: { tenantId }, orderBy: { version: 'desc' } });
-    return row ? { version: row.version, rules: row.rules as unknown as ScoringRules } : { version: 0, rules: DEFAULT_SCORING_RULES };
+    if (row) return { version: row.version, rules: row.rules as unknown as ScoringRules };
+    const t = await tx.tenant.findUnique({ where: { id: tenantId }, select: { industryPackId: true } });
+    return { version: 0, rules: defaultScoringRulesFor(t?.industryPackId ?? 'real_estate') };
   }
 
   private readonly bulk = new Set<Promise<void>>();

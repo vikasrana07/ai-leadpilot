@@ -63,7 +63,7 @@ function IndustryStep({ tenant, onDone }: { tenant: Tenant; onDone: () => Promis
           </button>
         ))}
       </div>
-      <p className="text-helper mt-3">Real estate has the full pipeline and scoring defaults today; other industries use the general setup until their packs ship.</p>
+      <p className="text-helper mt-3">Real estate, coaching, clinics and home services each get their own pipeline stages, fields and wording. “Something else” starts with a general setup you can change. You can still edit stages and fields later.</p>
       <Button className="mt-5" variant="primary" loading={busy} onClick={async () => { setBusy(true); try { await api('/tenant', { method: 'PATCH', body: { industry: value } }); await onDone(); } catch (e) { handleApiError(e); } finally { setBusy(false); } }}>Save and continue <ArrowRight className="h-4 w-4" aria-hidden /></Button>
     </div>
   );

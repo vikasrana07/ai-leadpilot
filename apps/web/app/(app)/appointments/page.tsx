@@ -19,6 +19,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { qs, useMembers } from '@/lib/crm';
+import { usePack, visitWords } from '@/lib/pack';
 import { handleApiError } from '@/lib/forms';
 import { DAY_NAMES, fmtDay, fmtTime, localDate, minuteLabel, parseMinute, type Appointment, type AvailabilityView, type SlotsResponse } from '@/lib/ops';
 import { cn } from '@/lib/cn';
@@ -48,6 +49,7 @@ function SlotPicker({ leadId, membershipId, duration, value, onChange, excludeAp
 }
 
 function BookDialog({ onClose, reschedule }: { onClose: () => void; reschedule?: Appointment }) {
+  const vw = visitWords(usePack());
   const qc = useQueryClient(); const { can } = useAuth(); const members = useMembers();
   const [search, setSearch] = useState(''); const q = useDebounce(search, 250);
   const [lead, setLead] = useState<{ id: string; name: string } | null>(reschedule ? { id: reschedule.leadId, name: reschedule.leadName } : null);
@@ -61,13 +63,13 @@ function BookDialog({ onClose, reschedule }: { onClose: () => void; reschedule?:
     try {
       if (reschedule) await api(`/appointments/${reschedule.id}/reschedule`, { method: 'POST', body: { startsAt, durationMinutes: duration, ...(agent && manager ? { membershipId: agent } : {}) } });
       else await api('/appointments', { method: 'POST', body: { leadId: lead.id, ...(agent ? { membershipId: agent } : {}), startsAt, durationMinutes: duration, notes: notes || null, location: location || null } });
-      toast.success(reschedule ? 'Visit rescheduled' : 'Visit booked'); await qc.invalidateQueries({ queryKey: ['appointments'] }); onClose();
+      toast.success(reschedule ? `${vw.Visit} rescheduled` : `${vw.Visit} booked`); await qc.invalidateQueries({ queryKey: ['appointments'] }); onClose();
     } catch (e) { if (e instanceof ApiError && (e.code === 'slot_taken' || e.code === 'lead_busy')) { toast.error(e.message); await qc.invalidateQueries({ queryKey: ['appointments', 'slots'] }); setStartsAt(''); } else handleApiError(e); } finally { setBusy(false); }
   }
   const eligible = (members.data ?? []).filter((m) => m.status === 'ACTIVE');
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent title={reschedule ? 'Reschedule visit' : 'Book a visit'} className="max-w-xl">
+      <DialogContent title={reschedule ? `Reschedule ${vw.visit}` : `Book ${vw.a}`} className="max-w-xl">
         <div className="grid max-h-[72vh] gap-3 overflow-y-auto pr-1">
           {reschedule ? <p className="text-[13px]">{reschedule.leadName} · now {fmtDay(reschedule.startsAt, 'Asia/Kolkata')}</p> : lead ? (
             <div className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-[13px]"><span className="font-medium">{lead.name}</span><Button size="sm" variant="ghost" onClick={() => setLead(null)}>Change</Button></div>
@@ -83,20 +85,21 @@ function BookDialog({ onClose, reschedule }: { onClose: () => void; reschedule?:
             {!reschedule ? <><Field label="Location" htmlFor="b-loc"><Input id="b-loc" placeholder="Site address or meeting link" value={location} onChange={(e) => setLocation(e.target.value)} /></Field><Field label="Notes" htmlFor="b-notes"><Textarea id="b-notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} /></Field></> : null}
           </> : null}
         </div>
-        <div className="mt-4 flex justify-end gap-2"><Button onClick={onClose}>Cancel</Button><Button variant="primary" disabled={!lead || !startsAt} loading={busy} onClick={() => void save()}>{reschedule ? 'Move visit' : 'Book visit'}</Button></div>
+        <div className="mt-4 flex justify-end gap-2"><Button onClick={onClose}>Cancel</Button><Button variant="primary" disabled={!lead || !startsAt} loading={busy} onClick={() => void save()}>{reschedule ? `Move ${vw.visit}` : `Book ${vw.visit}`}</Button></div>
       </DialogContent>
     </Dialog>
   );
 }
 
 function DetailDialog({ id, tz, onClose, onReschedule }: { id: string; tz: string; onClose: () => void; onReschedule: (a: Appointment) => void }) {
+  const vw = visitWords(usePack());
   const qc = useQueryClient(); const [reason, setReason] = useState('');
   const q = useQuery({ queryKey: ['appointments', 'detail', id], queryFn: () => api<Appointment>(`/appointments/${id}`) });
   const act = useMutation({ mutationFn: (a: { path: string; body?: unknown }) => api<Appointment>(`/appointments/${id}/${a.path}`, { method: 'POST', body: a.body ?? {} }), onSuccess: async () => { await qc.invalidateQueries({ queryKey: ['appointments'] }); toast.success('Updated'); }, onError: (e) => handleApiError(e) });
   const a = q.data; const active = a?.status === 'PENDING' || a?.status === 'CONFIRMED'; const [now] = useState(() => Date.now()); const started = a ? new Date(a.startsAt).getTime() <= now : false;
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent title={a?.title ?? 'Visit'} className="max-w-lg">
+      <DialogContent title={a?.title ?? vw.Visit} className="max-w-lg">
         {!a ? <Skeleton className="h-40" /> : <div className="space-y-3 text-[13px]">
           <div className="flex flex-wrap items-center gap-2"><Badge tone={TONE[a.status]}>{LABEL[a.status]}</Badge>{a.source === 'ai' ? <Badge tone="primary">Booked by AI</Badge> : null}</div>
           <p><Clock className="mr-1 inline h-3.5 w-3.5 text-muted-foreground" aria-hidden />{fmtDay(a.startsAt, tz)}, {fmtTime(a.startsAt, tz)} – {fmtTime(a.endsAt, tz)}</p>
@@ -116,6 +119,7 @@ function DetailDialog({ id, tz, onClose, onReschedule }: { id: string; tz: strin
 }
 
 function AvailabilityDialog({ onClose }: { onClose: () => void }) {
+  const vw = visitWords(usePack());
   const { can, ctx } = useAuth(); const qc = useQueryClient(); const members = useMembers();
   const admin = can('settings:manage');
   const myMember = (members.data ?? []).find((m) => m.user.id === ctx.user.id);
@@ -140,7 +144,7 @@ function AvailabilityDialog({ onClose }: { onClose: () => void }) {
   async function delEx(id: string) { try { await api(`/appointments/availability/exceptions/${id}`, { method: 'DELETE' }); await qc.invalidateQueries({ queryKey: ['appointments', 'availability'] }); } catch (e) { handleApiError(e); } }
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent title="Working hours" description="When visits can be booked" className="max-w-xl">
+      <DialogContent title="Working hours" description={`When ${vw.visits} can be booked`} className="max-w-xl">
         <div className="max-h-[72vh] space-y-3 overflow-y-auto pr-1">
           <Field label="Whose hours" htmlFor="av-who"><Select id="av-who" value={effective} onChange={(e) => { setTarget(e.target.value); setDraft(null); }}>{admin ? <option value="default">Everyone (workspace default)</option> : null}{(admin ? members.data ?? [] : myMember ? [myMember] : []).map((m) => <option key={m.id} value={m.id}>{m.user.name}</option>)}</Select></Field>
           {view.data ? <p className="text-helper">{view.data.usingDefault ? (effective === 'default' ? 'Nothing saved yet: Monday to Saturday, 10:00 to 19:00 applies.' : 'Using the workspace hours. Saving here gives this person their own.') : 'Custom hours.'} Times are in {view.data.timezone}.</p> : null}
@@ -158,6 +162,7 @@ function AvailabilityDialog({ onClose }: { onClose: () => void }) {
 }
 
 export default function AppointmentsPage() {
+  const vw = visitWords(usePack());
   const { can } = useAuth(); const manager = can('appointment:read:all'); const write = can('appointment:write');
   const tzGuess = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [view, setView] = useState<'week' | 'list'>('week'); const [weekStart, setWeekStart] = useState(() => mondayOf(localDate(new Date(), tzGuess)));
@@ -173,7 +178,7 @@ export default function AppointmentsPage() {
 
   return (
     <>
-      <PageHeader title="Appointments" description="Site visits and meetings. Double booking is impossible: the database refuses overlaps." actions={<>{write ? <Button onClick={() => setHours(true)}><Settings2 className="h-4 w-4" aria-hidden />Working hours</Button> : null}{write ? <Button variant="primary" onClick={() => setBook(true)}><Plus className="h-4 w-4" aria-hidden />Book visit</Button> : null}</>} />
+      <PageHeader title="Appointments" description={`${vw.visit === 'meeting' ? 'Meetings' : `${vw.Visits} and meetings`}. Double booking is impossible: the database refuses overlaps.`} actions={<>{write ? <Button onClick={() => setHours(true)}><Settings2 className="h-4 w-4" aria-hidden />Working hours</Button> : null}{write ? <Button variant="primary" onClick={() => setBook(true)}><Plus className="h-4 w-4" aria-hidden />Book {vw.visit}</Button> : null}</>} />
       <Card className="overflow-hidden">
         <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
           <div className="flex rounded-md border border-border p-0.5" role="group" aria-label="View"><Button size="sm" variant={view === 'week' ? 'primary' : 'ghost'} onClick={() => setView('week')}><CalendarDays className="h-3.5 w-3.5" aria-hidden />Week</Button><Button size="sm" variant={view === 'list' ? 'primary' : 'ghost'} onClick={() => setView('list')}><List className="h-3.5 w-3.5" aria-hidden />Upcoming</Button></div>
@@ -189,7 +194,7 @@ export default function AppointmentsPage() {
                   <span className="num font-medium">{fmtTime(a.startsAt, tz)}</span> <Badge tone={TONE[a.status]} className="ml-1 !px-1 !py-0 text-[10px]">{a.status === 'PENDING' ? 'Confirm' : LABEL[a.status]}</Badge>
                   <span className="block truncate">{a.leadName}</span>{manager ? <span className="text-helper block truncate">{a.agentName}</span> : null}</button>))}</div>
             </div>))}</div></div>
-        ) : list.data.items.length === 0 ? <EmptyState icon={CalendarDays} title="No upcoming visits" description="Book a visit from a lead, or let the AI assistant arrange them from chat." action={write ? <Button variant="primary" onClick={() => setBook(true)}>Book visit</Button> : undefined} /> : (
+        ) : list.data.items.length === 0 ? <EmptyState icon={CalendarDays} title={`No upcoming ${vw.visits}`} description={`Book ${vw.a} from a lead, or let the AI assistant arrange them from chat.`} action={write ? <Button variant="primary" onClick={() => setBook(true)}>Book {vw.visit}</Button> : undefined} /> : (
           <div className="divide-y divide-border">{list.data.items.map((a) => (
             <button key={a.id} onClick={() => setOpen(a.id)} className="flex w-full flex-wrap items-center gap-3 px-4 py-3 text-left text-[13px] hover:bg-muted/40"><span className="num w-44 shrink-0 font-medium">{fmtDay(a.startsAt, tz)}, {fmtTime(a.startsAt, tz)}</span><span className="min-w-0 flex-1 truncate">{a.leadName}{manager ? <span className="text-helper"> · {a.agentName}</span> : null}</span>{a.source === 'ai' ? <Badge tone="primary">AI</Badge> : null}<Badge tone={TONE[a.status]}>{LABEL[a.status]}</Badge></button>))}</div>
         )}

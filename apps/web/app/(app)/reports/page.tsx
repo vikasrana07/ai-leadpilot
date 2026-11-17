@@ -28,7 +28,7 @@ const CHARTS: Record<ReportKey, ChartSpec[]> = {
   funnel: [{ kind: 'bar', data: 'funnel', x: 'stage', keys: [{ key: 'reached', label: 'Reached' }, { key: 'currentlyHere', label: 'Currently here' }], layout: 'vertical', title: 'Leads reaching each stage' }],
   agents: [{ kind: 'bar', data: 'agents', x: 'agent', keys: [{ key: 'leads', label: 'Leads' }, { key: 'won', label: 'Won' }], title: 'Leads and wins by person' }],
   response: [{ kind: 'area', data: 'trend', x: 'date', keys: [{ key: 'medianMinutes', label: 'Median minutes to first reply' }], title: 'Median first-response time' }],
-  appointments: [{ kind: 'bar', data: 'trend', x: 'date', keys: [{ key: 'booked', label: 'Scheduled' }, { key: 'completed', label: 'Completed' }], title: 'Visits per day' }],
+  appointments: [{ kind: 'bar', data: 'trend', x: 'date', keys: [{ key: 'booked', label: 'Scheduled' }, { key: 'completed', label: 'Completed' }], title: 'Appointments per day' }],
   ai: [{ kind: 'area', data: 'trend', x: 'date', keys: [{ key: 'runs', label: 'AI turns' }], title: 'AI turns per day' }, { kind: 'bar', data: 'outcomes', x: 'outcome', keys: [{ key: 'count', label: 'Turns' }], layout: 'vertical', title: 'Turn outcomes' }],
   automations: [{ kind: 'bar', data: 'trend', x: 'date', keys: [{ key: 'succeeded', label: 'Succeeded' }, { key: 'failed', label: 'Failed' }], title: 'Automation runs per day' }],
 };

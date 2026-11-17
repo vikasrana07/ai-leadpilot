@@ -20,7 +20,7 @@ export const WORKSPACE_NAV: NavItem[] = [
   { href: '/inbox', label: 'Inbox', icon: Inbox, phase: 3, permission: 'conversation:read:own', description: 'WhatsApp and website chat in one place.' },
   { href: '/pipeline', label: 'Sales Pipeline', icon: KanbanSquare, phase: 2, description: 'Move leads from first contact to closed.' },
   { href: '/properties', label: 'Properties', icon: Building2, phase: 2, permission: 'property:read', module: 'properties' },
-  { href: '/appointments', label: 'Appointments', icon: CalendarDays, phase: 5, description: 'Site visits and meetings without double booking.' },
+  { href: '/appointments', label: 'Appointments', icon: CalendarDays, phase: 5, description: 'Appointments and meetings without double booking.' },
   { href: '/ai-assistant', label: 'AI Assistant', icon: Sparkles, phase: 4, permission: 'ai:configure', description: 'Configure how your assistant talks and qualifies.' },
   { href: '/knowledge', label: 'Knowledge Base', icon: BookOpen, phase: 4, permission: 'knowledge:manage', description: 'Documents your assistant answers from.' },
   { href: '/tasks', label: 'Tasks', icon: ListChecks, phase: 5, description: 'Follow-ups from you, your team and automations.' },

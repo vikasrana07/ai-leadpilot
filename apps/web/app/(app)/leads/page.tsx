@@ -25,6 +25,7 @@ import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { qs, useLeadMeta, useMembers, useStages } from '@/lib/crm';
 import { formatBudget, timeAgo } from '@/lib/format';
+import { usePack } from '@/lib/pack';
 import { t } from '@/lib/i18n';
 
 type SortKey = 'createdAt' | 'name' | 'score' | 'nextFollowUpAt';
@@ -32,6 +33,7 @@ type BulkBody = { action: 'assign'; assignedMembershipId: string | null } | { ac
 
 export default function LeadsPage() {
   const { can } = useAuth();
+  const lf = usePack().leadFields;
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const q = useDebounce(search, 300);
@@ -121,7 +123,7 @@ export default function LeadsPage() {
                     <Link href={`/leads/${l.id}`} className="min-w-0 flex-1">
                       <span className="flex items-center justify-between gap-2"><span className="truncate text-[14px] font-medium">{l.name}</span><TemperatureBadge value={l.temperature} /></span>
                       <span className="text-helper block truncate">{l.phone ?? l.email}{l.location ? ` · ${l.location}` : ''}</span>
-                      <span className="mt-2 flex flex-wrap items-center gap-2"><StageBadge name={l.stage.name} kind={l.stage.kind} /><span className="num text-[12px] text-muted-foreground">{formatBudget(l.budgetMin, l.budgetMax)}</span></span>
+                      <span className="mt-2 flex flex-wrap items-center gap-2"><StageBadge name={l.stage.name} kind={l.stage.kind} />{lf.budget ? <span className="num text-[12px] text-muted-foreground">{formatBudget(l.budgetMin, l.budgetMax)}</span> : null}</span>
                       <span className="text-helper mt-1.5 block">{l.assignee ? l.assignee.name : 'Unassigned'} · added {timeAgo(l.createdAt)}{l.nextFollowUpAt && l.stage.kind === 'OPEN' ? ` · follow-up ${timeAgo(l.nextFollowUpAt)}` : ''}</span>
                     </Link>
                   </div>
@@ -133,7 +135,7 @@ export default function LeadsPage() {
               <thead className="bg-muted/50 text-label text-muted-foreground">
                 <tr>
                   <th scope="col" className="w-10 px-3 py-2.5"><input type="checkbox" aria-label="Select all on this page" checked={allOnPage} onChange={(e) => setSelected((s) => { const n = new Set(s); items.forEach((l) => (e.target.checked ? n.add(l.id) : n.delete(l.id))); return n; })} /></th>
-                  {th('Lead', 'name')}{th('Stage')}{th('Temp.')}{th('Budget')}{th('Assigned')}{th('Score', 'score', 'text-right')}{th('Follow-up', 'nextFollowUpAt')}{th('Added', 'createdAt')}
+                  {th('Lead', 'name')}{th('Stage')}{th('Temp.')}{lf.budget ? th(lf.budget.label) : null}{th('Assigned')}{th('Score', 'score', 'text-right')}{th('Follow-up', 'nextFollowUpAt')}{th('Added', 'createdAt')}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -145,7 +147,7 @@ export default function LeadsPage() {
                       <td className="px-3 py-2"><Link href={`/leads/${l.id}`} className="block"><span className="font-medium hover:text-primary">{l.name}</span><span className="text-helper block">{l.phone ?? l.email}{l.location ? ` · ${l.location}` : ''}</span></Link></td>
                       <td className="px-3 py-2"><StageBadge name={l.stage.name} kind={l.stage.kind} /></td>
                       <td className="px-3 py-2"><TemperatureBadge value={l.temperature} /></td>
-                      <td className="num whitespace-nowrap px-3 py-2">{formatBudget(l.budgetMin, l.budgetMax)}</td>
+                      {lf.budget ? <td className="num whitespace-nowrap px-3 py-2">{formatBudget(l.budgetMin, l.budgetMax)}</td> : null}
                       <td className="px-3 py-2">{l.assignee ? <span className="flex items-center gap-2"><Avatar name={l.assignee.name} size={22} /><span className="truncate">{l.assignee.name}</span></span> : <span className="text-muted-foreground">Unassigned</span>}</td>
                       <td className="num px-3 py-2 text-right">{l.score ?? <span className="text-muted-foreground">—</span>}</td>
                       <td className={cn('num whitespace-nowrap px-3 py-2', overdue && 'font-medium text-danger')}>{l.nextFollowUpAt ? timeAgo(l.nextFollowUpAt) : <span className="text-muted-foreground">—</span>}</td>
@@ -162,7 +164,7 @@ export default function LeadsPage() {
       </Card>
 
       <LeadFormDialog open={addOpen} onOpenChange={setAddOpen} />
-      <ImportDialog open={importOpen} onOpenChange={setImportOpen} endpoint="/leads/import" title="Import leads" hint="CSV with a header row. Columns: name, phone, email, budget, location, source, tags… Amounts like 85 L or 1.2 Cr work." invalidate={[['leads'], ['pipeline'], ['analytics']]} />
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} endpoint="/leads/import" title="Import leads" hint={lf.budget ? 'CSV with a header row. Columns: name, phone, email, budget, location, source, tags… Amounts like 85 L or 1.2 Cr work.' : 'CSV with a header row. Columns: name, phone, email, location, source, tags…'} invalidate={[['leads'], ['pipeline'], ['analytics']]} />
       <ConfirmDialog open={deleteOpen} onOpenChange={setDeleteOpen} danger title={`Delete ${selected.size} lead${selected.size === 1 ? '' : 's'}?`} description="They disappear from lists and reports. This is recorded in the audit log." confirmLabel="Delete" onConfirm={async () => { await bulk.mutateAsync({ action: 'delete' }); }} />
     </>
   );

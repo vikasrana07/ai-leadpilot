@@ -3,9 +3,9 @@ import { API_URL } from './api';
 export const REPORTS = [
   { key: 'acquisition', label: 'Lead acquisition', blurb: 'Where leads come from and how many convert.' },
   { key: 'funnel', label: 'Funnel', blurb: 'How far this period\'s leads got through your pipeline.' },
-  { key: 'agents', label: 'Agent performance', blurb: 'Leads, wins and visits per team member.', managerOnly: true },
+  { key: 'agents', label: 'Agent performance', blurb: 'Leads, wins and appointments per team member.', managerOnly: true },
   { key: 'response', label: 'Response time', blurb: 'How quickly customers get a first reply.' },
-  { key: 'appointments', label: 'Appointments', blurb: 'Visits booked, completed, missed and cancelled.' },
+  { key: 'appointments', label: 'Appointments', blurb: 'Appointments booked, completed, missed and cancelled.' },
   { key: 'ai', label: 'AI assistant', blurb: 'Turns, handovers, tokens and latency.', managerOnly: true },
   { key: 'automations', label: 'Automations', blurb: 'What ran, what failed and why.', managerOnly: true },
 ] as const;

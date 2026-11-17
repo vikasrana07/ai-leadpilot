@@ -1,3 +1,4 @@
+import { packForIndustry } from '@leadpilot/shared-types';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import type { Prisma, TxClient } from '@leadpilot/database';
 import { APPOINTMENT_TRANSITIONS, type AppointmentCreateInput, type AppointmentListQuery, type SlotsQuery } from '@leadpilot/validation';
@@ -159,9 +160,10 @@ export class AppointmentsService {
       try {
         const id = await this.tx(a, async (tx) => {
           const status = opts.status ?? (opts.source === 'manual' ? 'CONFIRMED' : 'PENDING');
+          const visitNoun = packForIndustry((await tx.tenant.findUnique({ where: { id: a.tenantId }, select: { industryPackId: true } }))?.industryPackId ?? 'real_estate').terminology.visit;
           const created = await tx.appointment.create({ data: {
             id: uuidv7(), tenantId: a.tenantId, leadId: input.leadId, membershipId, propertyId: input.propertyId ?? null,
-            title: input.title ?? `Site visit: ${plan.lead.name}`, startsAt, endsAt, status, notes: input.notes ?? null, location: input.location ?? null, source: opts.source, createdByUserId: a.userId,
+            title: input.title ?? `${visitNoun}: ${plan.lead.name}`, startsAt, endsAt, status, notes: input.notes ?? null, location: input.location ?? null, source: opts.source, createdByUserId: a.userId,
           } });
           await this.afterBooked(tx, a, created, 'booked');
           return created.id;

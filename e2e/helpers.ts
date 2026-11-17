@@ -14,9 +14,9 @@ export const emailFor = (label: string) => `e2e-${RUN}-${label}@example.test`.to
 export const bearer = (a: Account) => ({ Authorization: `Bearer ${a.accessToken}` });
 
 /** Fast path: register a workspace through the API (the UI registration journey has its own test). */
-export async function registerViaApi(request: APIRequestContext, label: string): Promise<Account> {
+export async function registerViaApi(request: APIRequestContext, label: string, industry = 'real_estate'): Promise<Account> {
   const email = emailFor(label); const name = `E2E ${label}`; const businessName = `E2E Biz ${label} ${RUN}`;
-  const res = await request.post(`${API}/auth/register`, { headers: { 'x-token-delivery': 'body' }, data: { name, email, password: PASSWORD, businessName, industry: 'real_estate' } });
+  const res = await request.post(`${API}/auth/register`, { headers: { 'x-token-delivery': 'body' }, data: { name, email, password: PASSWORD, businessName, industry } });
   expect(res.status(), await res.text()).toBe(201);
   const b = await res.json();
   return { email, password: PASSWORD, name, businessName, accessToken: b.accessToken, tenantId: b.activeTenantId, userId: b.user.id };

@@ -2,6 +2,7 @@ import { series } from '../common/series.js';
 import { EntitlementsService } from '../billing/entitlements.service.js';
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { Prisma } from '@leadpilot/database';
+import { packForIndustry } from '@leadpilot/shared-types';
 import { v7 as uuidv7 } from 'uuid';
 import type { Actor } from '../common/actor.js';
 import { ENV } from '../common/tokens.js';
@@ -125,7 +126,7 @@ export class AiOrchestrator implements OnModuleInit {
       await this.db.tenantTx({ tenantId: t }, (tx) => tx.aiRun.update({ where: { id: runId }, data: { status, model, inputTokens: inTok, outputTokens: outTok, latencyMs: Date.now() - started, error: error ?? null, trace: trace as unknown as Prisma.InputJsonValue, completedAt: new Date() } }));
     };
     const toolCtx: ToolContext = {
-      tenantId: t, conversationId: convo.id, leadId: lead.id, runId, allowed: new Set(assistant.allowedTools),
+      tenantId: t, conversationId: convo.id, leadId: lead.id, runId, allowed: new Set(packForIndustry(tenant.industryPackId).modules.properties ? assistant.allowedTools : assistant.allowedTools.filter((n) => n !== 'search_properties')), // no inventory outside real estate
       assistant: { workingHours: (assistant.workingHours as unknown as WorkingHours) ?? null, name: assistant.name, businessIdentity: assistant.businessIdentity, businessDescription: assistant.businessDescription, languages: assistant.languages },
       tenant: { name: tenant.name, email: tenant.email, phone: tenant.phone, website: tenant.website, address: tenant.address, timezone: tenant.timezone, currency: tenant.currency },
     };
@@ -152,13 +153,17 @@ export class AiOrchestrator implements OnModuleInit {
       try { hits = await this.knowledge.search(t, customerText.slice(-500), 4); } catch (err) { this.log.warn(`knowledge search failed: ${err instanceof Error ? err.message : String(err)}`); }
       trace.chunkIds = hits.map((h) => h.chunkId);
       const known: string[] = []; const missing: string[] = [];
-      (lead.budgetMinMinor !== null || lead.budgetMaxMinor !== null ? known : missing).push(lead.budgetMinMinor !== null || lead.budgetMaxMinor !== null ? `budget ₹${Number(lead.budgetMinMinor ?? lead.budgetMaxMinor) / 100}${lead.budgetMaxMinor !== null && lead.budgetMinMinor !== null ? `–${Number(lead.budgetMaxMinor) / 100}` : ''}` : 'budget');
-      (lead.location ? known : missing).push(lead.location ? `area ${lead.location}` : 'preferred area');
-      (lead.buyingTimeline !== 'UNKNOWN' ? known : missing).push(lead.buyingTimeline !== 'UNKNOWN' ? `timeline ${lead.buyingTimeline}` : 'buying timeline');
-      (lead.propertyType ? known : missing).push(lead.propertyType ? `looking for ${lead.propertyType}` : 'property type');
+      const ph = packForIndustry(tenant.industryPackId).ai.phrases;
+      if (ph.budget) {
+        const hasBudget = lead.budgetMinMinor !== null || lead.budgetMaxMinor !== null;
+        (hasBudget ? known : missing).push(hasBudget ? `${ph.budget.known} ₹${Number(lead.budgetMinMinor ?? lead.budgetMaxMinor) / 100}${lead.budgetMaxMinor !== null && lead.budgetMinMinor !== null ? `–${Number(lead.budgetMaxMinor) / 100}` : ''}` : ph.budget.ask);
+      }
+      (lead.location ? known : missing).push(lead.location ? `${ph.location.known} ${lead.location}` : ph.location.ask);
+      if (ph.timeline) (lead.buyingTimeline !== 'UNKNOWN' ? known : missing).push(lead.buyingTimeline !== 'UNKNOWN' ? `${ph.timeline.known} ${lead.buyingTimeline}` : ph.timeline.ask);
+      if (ph.interest) (lead.propertyType ? known : missing).push(lead.propertyType ? `${ph.interest.known} ${lead.propertyType}` : ph.interest.ask);
       const toolDefs = modelTools(toolCtx.allowed);
       const system = buildSystemPrompt({
-        assistant: { ...assistant, workingHours: toolCtx.assistant.workingHours }, tenant: { name: tenant.name, timezone: tenant.timezone, industry: tenant.industry },
+        assistant: { ...assistant, workingHours: toolCtx.assistant.workingHours }, tenant: { name: tenant.name, timezone: tenant.timezone, industry: tenant.industry, industryPackId: tenant.industryPackId },
         lead: { name: lead.name, known, missing }, firstReply: ctx.aiCount === 0, nowIso: new Date().toISOString(), toolNames: toolDefs.map((d) => d.name),
       });
       // Unanswered customer messages go LAST even if our own reply was stored after them, so the model always sees what it must answer.

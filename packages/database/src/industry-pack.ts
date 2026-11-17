@@ -39,6 +39,7 @@ export async function switchIndustryPack(tx: TxClient, tenantId: string, industr
   await tx.pipelineStage.deleteMany({ where: { tenantId } });
   await tx.lostReason.deleteMany({ where: { tenantId } });
   await tx.customFieldDefinition.deleteMany({ where: { tenantId, entity: 'lead' } });
+  await tx.leadSource.deleteMany({ where: { tenantId, isSystem: true } }); // pack sources only; sources the tenant added itself stay
   await applyIndustryPack(tx, tenantId, industry, newId);
   await tx.tenant.update({ where: { id: tenantId }, data: { industryPackId: pack.id } });
   return true;

@@ -1,4 +1,5 @@
 import type { BuyingTimeline } from '@leadpilot/database';
+import { packForIndustry } from '@leadpilot/shared-types';
 
 export type CriterionKey = 'budget_known' | 'location_known' | 'timeline_30_days' | 'requirements_clear' | 'site_visit_requested';
 
@@ -20,6 +21,28 @@ export const DEFAULT_SCORING_RULES: ScoringRules = {
   hotMin: 70,
   warmMin: 40,
 };
+
+/**
+ * Defaults for a workspace's industry pack. Real estate (and anything with a budget field) gets the original rules unchanged. A pack without a
+ * budget field turns the budget criterion off and moves its 15 points to location (+5) and requirements (+10), so a lead can still reach 100.
+ */
+export function defaultScoringRulesFor(packId: string): ScoringRules {
+  const pack = packForIndustry(packId);
+  const lf = pack.leadFields;
+  const noBudget = lf.budget === null;
+  return {
+    hotMin: DEFAULT_SCORING_RULES.hotMin, warmMin: DEFAULT_SCORING_RULES.warmMin,
+    criteria: DEFAULT_SCORING_RULES.criteria.map((c) => {
+      switch (c.key) {
+        case 'budget_known': return { ...c, enabled: !noBudget };
+        case 'location_known': return { ...c, label: `${lf.location.label} known`, points: noBudget ? 20 : c.points };
+        case 'timeline_30_days': return { ...c, label: lf.timeline?.soon ?? c.label };
+        case 'requirements_clear': return { ...c, points: noBudget ? 25 : c.points };
+        case 'site_visit_requested': return { ...c, label: `${pack.terminology.visit} requested` };
+      }
+    }),
+  };
+}
 
 export interface ScorableLead {
   budgetMinMinor: bigint | null; budgetMaxMinor: bigint | null; location: string | null; propertyType: string | null;
@@ -43,9 +66,9 @@ export function scoreLead(lead: ScorableLead, rules: ScoringRules = DEFAULT_SCOR
       case 'location_known': return lead.location?.trim() ? { state: 'met', note: lead.location.trim() } : { state: 'unknown', note: 'Not shared yet' };
       case 'timeline_30_days':
         if (lead.buyingTimeline === 'UNKNOWN') return { state: 'unknown', note: 'Timeline not shared yet' };
-        return lead.buyingTimeline === 'IMMEDIATE' || lead.buyingTimeline === 'WITHIN_30_DAYS' ? { state: 'met', note: 'Plans to buy within 30 days' } : { state: 'not_met', note: 'Plans to buy later than 30 days' };
-      case 'requirements_clear': return lead.propertyType?.trim() && (lead.requirements?.trim().length ?? 0) >= 10 ? { state: 'met', note: lead.propertyType.trim() } : { state: 'unknown', note: 'Property type or requirements still vague' };
-      case 'site_visit_requested': return lead.siteVisitRequested ? { state: 'met', note: 'Asked to visit' } : { state: 'unknown', note: 'Has not asked yet' };
+        return lead.buyingTimeline === 'IMMEDIATE' || lead.buyingTimeline === 'WITHIN_30_DAYS' ? { state: 'met', note: 'Within 30 days' } : { state: 'not_met', note: 'Later than 30 days' };
+      case 'requirements_clear': return lead.propertyType?.trim() && (lead.requirements?.trim().length ?? 0) >= 10 ? { state: 'met', note: lead.propertyType.trim() } : { state: 'unknown', note: 'Interest or requirements still vague' };
+      case 'site_visit_requested': return lead.siteVisitRequested ? { state: 'met', note: 'Asked for a visit or appointment' } : { state: 'unknown', note: 'Has not asked yet' };
     }
   };
   const breakdown: ScoreBreakdownItem[] = rules.criteria.filter((c) => c.enabled).map((c) => {

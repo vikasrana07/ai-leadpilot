@@ -23,11 +23,13 @@ import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { qs, useMembers, useStages } from '@/lib/crm';
 import { formatBudget } from '@/lib/format';
+import { usePack } from '@/lib/pack';
 
 interface Column { stage: { id: string; key: string; name: string; kind: 'OPEN' | 'WON' | 'LOST'; position: number }; total: number; leads: LeadDto[] }
 
 export default function PipelinePage() {
   const { can } = useAuth();
+  const lf = usePack().leadFields;
   const qc = useQueryClient();
   const stages = useStages(); const members = useMembers();
   const [filters, setFilters] = useState({ assigned: '', temperature: '' });
@@ -91,7 +93,7 @@ export default function PipelinePage() {
                         {stages.data?.stages.filter((s) => s.id !== l.stage.id).map((s) => <DropdownItem key={s.id} onSelect={() => request(l, s.id)}>Move to {s.name}</DropdownItem>)}
                       </Dropdown>
                     </div>
-                    <p className="num text-helper mt-0.5">{formatBudget(l.budgetMin, l.budgetMax)}{l.location ? ` · ${l.location}` : ''}</p>
+                    <p className="num text-helper mt-0.5">{lf.budget ? formatBudget(l.budgetMin, l.budgetMax) : null}{lf.budget && l.location ? ' · ' : ''}{l.location ?? ''}</p>
                     <div className="mt-2.5 flex items-center justify-between">
                       {l.assignee ? <span className="flex items-center gap-1.5"><Avatar name={l.assignee.name} size={20} /><span className="text-helper truncate">{l.assignee.name.split(' ')[0]}</span></span> : <span className="text-helper">Unassigned</span>}
                       <TemperatureBadge value={l.temperature} />

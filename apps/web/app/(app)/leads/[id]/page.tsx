@@ -31,6 +31,8 @@ import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { useLeadMeta, useMembers, useStages } from '@/lib/crm';
 import { formatBudget, TIMELINE_LABELS, timeAgo } from '@/lib/format';
+import { usePack } from '@/lib/pack';
+import { CustomFieldInputs } from '@/components/crm/custom-field-inputs';
 import { handleApiError } from '@/lib/forms';
 
 interface Note { id: string; body: string; author: string; createdAt: string }
@@ -38,6 +40,7 @@ interface Note { id: string; body: string; author: string; createdAt: string }
 function EditDialog({ lead, open, onOpenChange }: { lead: LeadDto; open: boolean; onOpenChange: (o: boolean) => void }) {
   const qc = useQueryClient();
   const meta = useLeadMeta();
+  const lf = usePack().leadFields;
   const [f, setF] = useState({ name: lead.name, phone: lead.phone ?? '', email: lead.email ?? '', budgetMin: lead.budgetMin?.toString() ?? '', budgetMax: lead.budgetMax?.toString() ?? '', location: lead.location ?? '', propertyType: lead.propertyType ?? '', requirements: lead.requirements ?? '', buyingTimeline: lead.buyingTimeline, nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.slice(0, 16) : '' });
   const [cf, setCf] = useState<Record<string, string | number | boolean>>(lead.customFields);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -60,20 +63,16 @@ function EditDialog({ lead, open, onOpenChange }: { lead: LeadDto; open: boolean
           <Field label="Name" htmlFor="e-name" error={errors.name} className="sm:col-span-2"><Input id="e-name" value={f.name} onChange={set('name')} /></Field>
           <Field label="Phone" htmlFor="e-phone" error={errors.phone}><Input id="e-phone" value={f.phone} onChange={set('phone')} /></Field>
           <Field label="Email" htmlFor="e-email" error={errors.email}><Input id="e-email" type="email" value={f.email} onChange={set('email')} /></Field>
-          <Field label="Budget min (₹)" htmlFor="e-bmin" error={errors.budgetMin}><Input id="e-bmin" inputMode="numeric" value={f.budgetMin} onChange={set('budgetMin')} /></Field>
-          <Field label="Budget max (₹)" htmlFor="e-bmax"><Input id="e-bmax" inputMode="numeric" value={f.budgetMax} onChange={set('budgetMax')} /></Field>
-          <Field label="Location" htmlFor="e-loc"><Input id="e-loc" value={f.location} onChange={set('location')} /></Field>
-          <Field label="Property type" htmlFor="e-type"><Input id="e-type" value={f.propertyType} onChange={set('propertyType')} /></Field>
-          <Field label="Buying timeline" htmlFor="e-tl"><Select id="e-tl" value={f.buyingTimeline} onChange={set('buyingTimeline')}>{TIMELINES.map((t) => <option key={t} value={t}>{TIMELINE_LABELS[t]}</option>)}</Select></Field>
+          {lf.budget ? <>
+            <Field label={`${lf.budget.label} min (₹)`} htmlFor="e-bmin" error={errors.budgetMin}><Input id="e-bmin" inputMode="numeric" value={f.budgetMin} onChange={set('budgetMin')} /></Field>
+            <Field label={`${lf.budget.label} max (₹)`} htmlFor="e-bmax"><Input id="e-bmax" inputMode="numeric" value={f.budgetMax} onChange={set('budgetMax')} /></Field>
+          </> : null}
+          <Field label={lf.location.label} htmlFor="e-loc"><Input id="e-loc" value={f.location} onChange={set('location')} /></Field>
+          {lf.interest ? <Field label={lf.interest.label} htmlFor="e-type"><Input id="e-type" value={f.propertyType} onChange={set('propertyType')} /></Field> : null}
+          {lf.timeline ? <Field label={lf.timeline.label} htmlFor="e-tl"><Select id="e-tl" value={f.buyingTimeline} onChange={set('buyingTimeline')}>{TIMELINES.map((t) => <option key={t} value={t}>{TIMELINE_LABELS[t]}</option>)}</Select></Field> : null}
           <Field label="Next follow-up" htmlFor="e-fu" className="sm:col-span-2"><Input id="e-fu" type="datetime-local" value={f.nextFollowUpAt} onChange={set('nextFollowUpAt')} /></Field>
-          <Field label="Requirements" htmlFor="e-req" className="sm:col-span-2"><Textarea id="e-req" value={f.requirements} onChange={set('requirements')} /></Field>
-          {meta.data?.customFields.map((d) => (
-            <Field key={d.key} label={d.label} htmlFor={`cf-${d.key}`} error={errors[`customFields.${d.key}`]}>
-              {d.type === 'select' ? <Select id={`cf-${d.key}`} value={String(cf[d.key] ?? '')} onChange={(e) => setCf((s) => ({ ...s, [d.key]: e.target.value }))}><option value="">—</option>{d.options.map((o) => <option key={o} value={o}>{o}</option>)}</Select>
-                : d.type === 'boolean' ? <Select id={`cf-${d.key}`} value={cf[d.key] === undefined ? '' : String(cf[d.key])} onChange={(e) => setCf((s) => ({ ...s, [d.key]: e.target.value === 'true' }))}><option value="">—</option><option value="true">Yes</option><option value="false">No</option></Select>
-                : <Input id={`cf-${d.key}`} type={d.type === 'number' ? 'number' : d.type === 'date' ? 'date' : 'text'} value={String(cf[d.key] ?? '')} onChange={(e) => setCf((s) => ({ ...s, [d.key]: d.type === 'number' ? Number(e.target.value) : e.target.value }))} />}
-            </Field>
-          ))}
+          <Field label={lf.requirements.label} htmlFor="e-req" className="sm:col-span-2"><Textarea id="e-req" value={f.requirements} onChange={set('requirements')} /></Field>
+          <CustomFieldInputs defs={meta.data?.customFields ?? []} values={cf} onChange={setCf} errors={errors} />
         </div>
         <div className="mt-4 flex justify-end gap-2"><Button onClick={() => onOpenChange(false)}>Cancel</Button><Button variant="primary" loading={busy} onClick={() => void save()}>Save changes</Button></div>
       </DialogContent>
@@ -85,6 +84,7 @@ export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const qc = useQueryClient();
+  const lf = usePack().leadFields;
   const { can } = useAuth();
   const stages = useStages(); const members = useMembers();
   const [tab, setTab] = useState<'activity' | 'notes'>('activity');
@@ -192,7 +192,7 @@ export default function LeadDetailPage() {
             <CardHeader><CardTitle>Qualification</CardTitle></CardHeader>
             <CardBody>
               <dl className="space-y-2.5 text-[13px]">
-                {[['Budget', formatBudget(l.budgetMin, l.budgetMax)], ['Property', l.propertyType ?? '—'], ['Timeline', TIMELINE_LABELS[l.buyingTimeline]], ['Last contacted', l.lastContactedAt ? timeAgo(l.lastContactedAt) : 'never']].map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-muted-foreground">{k}</dt><dd className="num text-right font-medium">{v}</dd></div>)}
+                {[...(lf.budget ? [[lf.budget.label, formatBudget(l.budgetMin, l.budgetMax)]] : []), ...(lf.interest ? [[lf.interest.label, l.propertyType ?? '—']] : []), ...(lf.timeline ? [[lf.timeline.label, TIMELINE_LABELS[l.buyingTimeline] ?? '—']] : []), ['Last contacted', l.lastContactedAt ? timeAgo(l.lastContactedAt) : 'never']].map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-muted-foreground">{k}</dt><dd className="num text-right font-medium">{v}</dd></div>)}
                 {Object.entries(l.customFields).map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-muted-foreground">{k.replace(/_/g, ' ')}</dt><dd className="text-right font-medium">{typeof v === 'boolean' ? (v ? 'Yes' : 'No') : String(v)}</dd></div>)}
               </dl>
               {l.requirements ? <p className="mt-3 border-t border-border pt-3 text-[13px] text-muted-foreground">{l.requirements}</p> : null}

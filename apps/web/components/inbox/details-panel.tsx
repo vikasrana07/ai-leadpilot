@@ -14,6 +14,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useMembers } from '@/lib/crm';
 import { formatBudget, TIMELINE_LABELS, timeAgo } from '@/lib/format';
+import { usePack } from '@/lib/pack';
 import { handleApiError } from '@/lib/forms';
 import type { ConversationDetail } from '@/lib/inbox';
 
@@ -22,6 +23,7 @@ interface Note { id: string; body: string; author: string; createdAt: string }
 /** Right-hand context: who this is, qualification, ownership, internal notes (never sent to the customer). */
 export function DetailsPanel({ convo }: { convo: ConversationDetail }) {
   const { can } = useAuth();
+  const lf = usePack().leadFields;
   const qc = useQueryClient();
   const members = useMembers();
   const [note, setNote] = useState('');
@@ -40,7 +42,7 @@ export function DetailsPanel({ convo }: { convo: ConversationDetail }) {
             <div className="min-w-0 flex-1"><p className="truncate text-heading">{l.name}</p><div className="mt-0.5 flex flex-wrap gap-1.5"><TemperatureBadge value={l.temperature as 'HOT'} />{l.score !== null ? <Badge tone="primary" className="num">Score {l.score}</Badge> : null}</div></div>
           </div>
           <dl className="space-y-2.5 text-[13px]">
-            {[['Phone', l.phone ?? '—'], ['Email', l.email ?? '—'], ['Stage', l.stage.name], ['Source', l.source ?? '—'], ['Budget', formatBudget(l.budgetMin, l.budgetMax)], ['Location', l.location ?? '—'], ['Property', l.propertyType ?? '—'], ['Timeline', TIMELINE_LABELS[l.buyingTimeline] ?? '—']].map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-muted-foreground">{k}</dt><dd className="num truncate text-right font-medium">{v}</dd></div>)}
+            {[['Phone', l.phone ?? '—'], ['Email', l.email ?? '—'], ['Stage', l.stage.name], ['Source', l.source ?? '—'], ...(lf.budget ? [[lf.budget.label, formatBudget(l.budgetMin, l.budgetMax)]] : []), [lf.location.label, l.location ?? '—'], ...(lf.interest ? [[lf.interest.label, l.propertyType ?? '—']] : []), ...(lf.timeline ? [[lf.timeline.label, TIMELINE_LABELS[l.buyingTimeline] ?? '—']] : [])].map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-muted-foreground">{k}</dt><dd className="num truncate text-right font-medium">{v}</dd></div>)}
           </dl>
           <Button asChild variant="secondary" size="sm" className="w-full"><Link href={`/leads/${l.id}`}><ExternalLink className="h-3.5 w-3.5" aria-hidden />Open lead</Link></Button>
         </>

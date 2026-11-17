@@ -5,7 +5,7 @@ import { Logo } from '@/components/logo';
 const POINTS = [
   { icon: Clock, title: 'Reply in seconds', text: 'Every enquiry is answered the moment it lands, day or night.' },
   { icon: CheckCircle2, title: 'Know who is serious', text: 'Leads are scored from what they actually tell you.' },
-  { icon: MessageCircle, title: 'Nothing slips', text: 'Follow-ups and site visits are scheduled, not remembered.' },
+  { icon: MessageCircle, title: 'Nothing slips', text: 'Follow-ups and appointments are scheduled, not remembered.' },
 ];
 
 export function AuthLayout({ title, subtitle, children, footer }: { title: string; subtitle?: string; children: ReactNode; footer?: ReactNode }) {
