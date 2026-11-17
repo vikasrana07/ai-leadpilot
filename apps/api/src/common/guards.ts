@@ -1,4 +1,5 @@
 import { type CanActivate, type ExecutionContext, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { addLogContext } from '../observability/request-context.js';
 import { Reflector } from '@nestjs/core';
 import type { PermissionKey } from '@leadpilot/shared-types';
 import { ACCESS_COOKIE } from './middleware.js';
@@ -42,7 +43,7 @@ export class AuthGuard implements CanActivate {
         select: { userId: true, revokedAt: true, expiresAt: true, user: { select: { status: true } } },
       });
       const valid = session && session.userId === claims.userId && !session.revokedAt && session.expiresAt > new Date() && session.user.status === 'ACTIVE';
-      if (valid) req.auth = { userId: claims.userId, sessionId: claims.sessionId, activeTenantId: claims.tenantId };
+      if (valid) { req.auth = { userId: claims.userId, sessionId: claims.sessionId, activeTenantId: claims.tenantId }; addLogContext({ userId: claims.userId }); }
     }
     if (isPublic) return true;
     if (!req.auth) throw new UnauthorizedException({ code: 'unauthenticated', message: 'Authentication required' });
@@ -94,6 +95,7 @@ export class TenantGuard implements CanActivate {
       requestId: req.requestId,
       ip: req.ip,
     };
+    addLogContext({ tenantId: auth.activeTenantId, userId: auth.userId });
     return true;
   }
 }

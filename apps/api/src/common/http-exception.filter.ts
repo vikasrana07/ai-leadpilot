@@ -1,5 +1,6 @@
 import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import type { Response } from 'express';
+import { fingerprintError } from '../observability/logger.js';
 import type { AppRequest } from './request-context.js';
 
 interface ErrorBody { code?: string; message?: string; details?: unknown }
@@ -29,7 +30,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     } else {
       // Never leak internals; log the real error with the request id for correlation.
-      this.logger.error(JSON.stringify({ requestId: req.requestId, err: exception instanceof Error ? exception.stack : String(exception) }));
+      // Ids come from the request context (requestId, tenantId, userId); the logger redacts personal data and secrets in the text.
+      const err = exception instanceof Error ? exception : new Error(String(exception));
+      this.logger.error({ msg: `Unhandled exception: ${err.name}: ${err.message}`, route: `${req.method} ${(req.route as { path?: string } | undefined)?.path ?? 'unmatched'}`, fingerprint: fingerprintError(err), stack: err.stack });
     }
     res.status(status).json({ error: { ...body, requestId: req.requestId } });
   }

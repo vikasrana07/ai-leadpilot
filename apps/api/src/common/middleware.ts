@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
+import { runWithLogContext } from '../observability/request-context.js';
 import type { AppRequest } from './request-context.js';
 
 export const ACCESS_COOKIE = 'lp_at';
@@ -11,7 +12,8 @@ export function requestIdMiddleware(req: Request, res: Response, next: NextFunct
   const id = incoming && /^[A-Za-z0-9._-]{8,64}$/.test(incoming) ? incoming : randomUUID();
   (req as AppRequest).requestId = id;
   res.setHeader('x-request-id', id);
-  next();
+  // Everything this request does (guards, services, logs) runs inside this context, so log lines carry the request id.
+  runWithLogContext({ requestId: id }, () => next());
 }
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);

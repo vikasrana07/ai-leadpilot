@@ -21,7 +21,8 @@ export class MailService {
     try {
       await this.transport.sendMail({ from: this.env.MAIL_FROM, to, subject, text });
     } catch (err) {
-      this.log.error(`Failed to send "${subject}": ${err instanceof Error ? err.message : String(err)}`);
+      // The subject can carry a person's or a business name, so it is not logged; only the failure reason (the logger redacts addresses).
+      this.log.error(`Failed to send an email: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 

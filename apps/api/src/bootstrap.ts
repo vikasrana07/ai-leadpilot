@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { loadEnv } from './config/env.js';
+import { createLogger, type JsonLogger } from './observability/logger.js';
 
 /** HTTP-level configuration shared by the real server and the integration tests, so tests exercise the same CORS/headers. */
 export function configureApp(app: NestExpressApplication, env: ReturnType<typeof loadEnv>): void {
@@ -21,9 +22,9 @@ export function configureApp(app: NestExpressApplication, env: ReturnType<typeof
   app.enableShutdownHooks();
 }
 
-export async function createApp(): Promise<NestExpressApplication> {
+export async function createApp(logger: JsonLogger = createLogger()): Promise<NestExpressApplication> {
   const env = loadEnv();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: false, rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: false, rawBody: true, logger });
   configureApp(app, env);
   return app;
 }

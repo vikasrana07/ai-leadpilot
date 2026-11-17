@@ -8,12 +8,14 @@ export class ApiError extends Error {
     readonly code: string,
     message: string,
     readonly details?: { path: string; message: string }[],
+    /** Server request id (x-request-id), shown on error screens so a support request can be traced in the logs. */
+    readonly requestId?: string,
   ) {
     super(message);
   }
 }
 
-interface ErrorEnvelope { error?: { code?: string; message?: string; details?: { path: string; message: string }[] } }
+interface ErrorEnvelope { error?: { code?: string; message?: string; details?: { path: string; message: string }[]; requestId?: string } }
 
 let refreshing: Promise<boolean> | null = null;
 
@@ -32,7 +34,7 @@ async function parse<T>(res: Response): Promise<T> {
   if (res.status === 402 && typeof window !== 'undefined') window.dispatchEvent(new Event('lp:billing'));
   if (!res.ok) {
     const env = (json ?? {}) as ErrorEnvelope;
-    throw new ApiError(res.status, env.error?.code ?? 'error', env.error?.message ?? 'Request failed', env.error?.details);
+    throw new ApiError(res.status, env.error?.code ?? 'error', env.error?.message ?? 'Request failed', env.error?.details, env.error?.requestId);
   }
   return json as T;
 }

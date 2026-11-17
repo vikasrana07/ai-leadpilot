@@ -42,6 +42,18 @@ const schema = z.object({
   SMTP_PASS: z.string().optional(),
   MAIL_FROM: z.string().default('LeadPilot <no-reply@leadpilot.local>'),
   ENABLE_SWAGGER: bool,
+  /** Application log format: `json` (one object per line; default in production) or `pretty` (readable; default elsewhere). */
+  LOG_FORMAT: z.enum(['json', 'pretty']).optional(),
+  /** Minimum level written: verbose < debug < log < warn < error. */
+  LOG_LEVEL: z.enum(['verbose', 'debug', 'log', 'warn', 'error']).default('log'),
+  /** Emit CloudWatch Embedded Metric Format lines once a minute (milestone 2). Default: on in production, off elsewhere. */
+  METRICS_EMF: z.enum(['true', 'false']).optional().transform((v) => (v === undefined ? undefined : v === 'true')),
+  /** Evaluate the alert rules and email platform admins (milestone 3). */
+  ALERTS_ENABLED: bool,
+  /** Comma-separated recipients for alert emails; empty means every active platform admin. */
+  ALERT_EMAIL_TO: z.string().optional(),
+  /** Re-send a still-firing Sev 1-2 alert every this many hours. */
+  ALERT_REPEAT_HOURS: z.coerce.number().positive().max(168).default(6),
   /** One JSON access-log line per request on stdout. Default: on in production, off elsewhere. */
   ACCESS_LOG: z.enum(['true', 'false']).optional().transform((v) => (v === undefined ? undefined : v === 'true')),
   /** Run the outbox relay, BullMQ workers and scanners in this process. The API process normally leaves this off and `apps/worker` turns it on. */

@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
 import { Queue, Worker, type ConnectionOptions, type Job } from 'bullmq';
 import { ENV } from '../common/tokens.js';
+import { runWithLogContext } from '../observability/request-context.js';
 import type { Env } from '../config/env.js';
 import { AutomationEngine } from './automation-engine.js';
 import { LifecycleJobs } from './lifecycle-jobs.js';
@@ -59,7 +60,7 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
 
     this.workers.push(new Worker(RUNS_QUEUE, async (job: Job<{ tenantId: string; runId: string }>) => {
       const maxAttempts = job.opts.attempts ?? 1;
-      await this.engine.execute(job.data.tenantId, job.data.runId, job.attemptsMade + 1 >= maxAttempts);
+      await runWithLogContext({ jobId: String(job.id ?? job.data.runId), tenantId: job.data.tenantId }, () => this.engine.execute(job.data.tenantId, job.data.runId, job.attemptsMade + 1 >= maxAttempts));
     }, { connection, prefix, concurrency: 5 }));
     this.workers.push(new Worker(MAINTENANCE_QUEUE, async () => { await this.maintenance(); }, { connection, prefix, concurrency: 1 }));
     for (const w of this.workers) w.on('error', (e) => this.log.error(`worker: ${e.message}`));

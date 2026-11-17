@@ -204,3 +204,14 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 - **Verified locally:** lint, build, `pnpm test` (564 API, 39 web, 11 validation, 19 DB), `scripts/e2e.sh` 43/43.
 - **Not verified:** retention on large data; the deadlock retry under real production concurrency; wording with real operators; the pipeline screenshots were not reviewed.
 
+## webhooks-outbound flake resolved (2026-11-17)
+- **Root cause:** another process on the shared DB with `WORKERS_ENABLED=true` (an e2e API, `apps/worker`, a forgotten background API) drains webhook deliveries of every workspace with its own settings (private targets blocked, other retry limits), so the test's localhost deliveries end "Blocked" or with wrong attempt counts and its wait times out. Reproduced: 5 of 8 runs failed with such an API running next to the test; 0 of 10 quiet and 0 of 15 CPU-loaded runs failed. Not the cause: CPU load, test order, the 400 ms receiver timeout, overlapping files (`fileParallelism` is off).
+- **Fix (tests only):** shared `foreignOutboxConsumerPresent()` in `apps/api/test/helpers.ts` (also used by the BullMQ test in `automation.test.ts`); the webhook delivery tests skip with a reason when a foreign consumer is present (8 of 8 runs with a foreign API: 0 failures); the wait timeout message names the cause; runbook note added.
+- **Not verified:** a foreign consumer that starts after the 3 s probe; with one present 11 of 14 tests are skipped, so coverage is reduced.
+
+## Monitoring, milestone 1: logging and error pages (2026-11-17)
+- **Built:** structured JSON logger for API and worker (`LOG_FORMAT`/`LOG_LEVEL`), request context (requestId, tenantId, userId, jobId) on every line, `redact()` for emails/phones/ids/tokens/secrets on messages, fields and stacks, mail subjects no longer logged, 500 logging with a stable error fingerprint, crash handlers (log, flush, exit 1), web `error.tsx`/`global-error.tsx`/`not-found.tsx` with a reference id (`ApiError` carries the request id), dev-only `/dev-error` (404 in production), env vars for milestones 2-3 reserved, `docs/monitoring.md`.
+- **Verified locally (combined tree):** lint, build, `pnpm test` (584 API, 44 web, 19 DB, 11 validation), `scripts/e2e.sh` 54/54 (spec 16 error pages 4/4), real API run with JSON logs.
+- **Not verified:** a real log collector/CloudWatch; the error boundary end to end (render test only); the request id is not carried into background jobs; no client error beacon.
+- **Next:** milestone 2 (metrics, `ops_health_snapshot()`, worker heartbeat, EMF output), milestone 3 (alert rules, `ops_alerts`, email, Ops Status page), milestone 4 (IaC example, docs).
+
