@@ -14,7 +14,7 @@ const planBody = (key: string, seats = 4) => ({
   key, name: `Test ${key}`, description: 'test', priceMinor: 123400, trialDays: 7, isPublic: false, active: true, sortOrder: 500,
   entitlements: [
     ...['seats', 'ai_tokens_monthly', 'whatsapp_messages_monthly', 'active_automations', 'knowledge_mb'].map((k) => ({ key: k, enabled: true, limit: k === 'seats' ? seats : 1000 })),
-    ...['ai_assistant', 'automations', 'web_widget', 'csv_export', 'api_access'].map((k) => ({ key: k, enabled: true, limit: null })),
+    ...['ai_assistant', 'automations', 'web_widget', 'csv_export', 'api_access', 'lead_portal'].map((k) => ({ key: k, enabled: true, limit: null })),
   ],
 });
 

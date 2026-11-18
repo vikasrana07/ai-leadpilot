@@ -116,5 +116,5 @@ export class EntitlementsService {
 }
 
 function labelOf(k: FeatureKey): string {
-  return ({ ai_assistant: 'The AI assistant', automations: 'Automations', web_widget: 'The website chat widget', csv_export: 'CSV export', api_access: 'The public API and webhooks' } as const)[k];
+  return ({ ai_assistant: 'The AI assistant', automations: 'Automations', web_widget: 'The website chat widget', csv_export: 'CSV export', api_access: 'The public API and webhooks', lead_portal: 'The customer portal' } as const)[k];
 }

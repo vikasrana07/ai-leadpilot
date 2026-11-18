@@ -10,7 +10,7 @@ import { configureApp } from '../src/bootstrap.js';
 import { loadEnv } from '../src/config/env.js';
 import { MailService } from '../src/mail/mail.module.js';
 
-export interface SentMail { to: string; kind: 'verify' | 'reset' | 'invite' | 'exists' | 'billing' | 'mfa_reset' | 'alert'; token?: string; subject?: string; text?: string }
+export interface SentMail { to: string; kind: 'verify' | 'reset' | 'invite' | 'exists' | 'billing' | 'mfa_reset' | 'alert' | 'portal_code'; token?: string; subject?: string; text?: string }
 
 export class FakeMail {
   sent: SentMail[] = [];
@@ -18,6 +18,7 @@ export class FakeMail {
   sendPasswordReset = async (to: string, token: string) => void this.sent.push({ to, kind: 'reset', token });
   sendInvitation = async (to: string, token: string) => void this.sent.push({ to, kind: 'invite', token });
   sendBilling = async (to: string, subject: string) => void this.sent.push({ to, kind: 'billing', subject });
+  sendPortalCode = async (to: string, code: string) => void this.sent.push({ to, kind: 'portal_code', token: code });
   sendMfaReset = async (to: string) => void this.sent.push({ to, kind: 'mfa_reset' });
   sendAlert = async (to: string, subject: string, text?: string) => void this.sent.push({ to, kind: 'alert', subject, ...(text !== undefined ? { text } : {}) });
   sendAccountExists = async (to: string) => void this.sent.push({ to, kind: 'exists' });

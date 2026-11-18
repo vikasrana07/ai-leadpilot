@@ -13,6 +13,7 @@ export const EXPORT_INCLUDED: Record<string, readonly string[]> = {
   memberships: [], messages: [], notification_preferences: [], notifications: [], payments: [], pipeline_stages: [], properties: [],
   role_permissions: [], roles: [], scoring_rule_sets: [], sla_breaches: [], stage_transitions: [], subscriptions: [], tags: [], tasks: [],
   whatsapp_templates: [], widget_configs: [],
+  portal_configs: ['public_key'], // the customer-portal settings are exported; the address key is not (it is re-created when the portal is set up again)
 };
 
 export const EXPORT_EXCLUDED: Record<string, string> = {
@@ -22,4 +23,5 @@ export const EXPORT_EXCLUDED: Record<string, string> = {
   data_exports: 'export bookkeeping', tenant_deletion_requests: 'deletion bookkeeping',
   idempotency_keys: 'internal request de-duplication', webhook_endpoints: 'contains signing secrets; re-create after migrating', webhook_deliveries: 'delivery logs for outbound webhooks',
   support_access_sessions: 'platform support access records (platform-owned)',
+  portal_login_codes: 'short-lived sign-in security records of the customer portal', portal_sessions: 'short-lived sign-in sessions of the customer portal',
 };

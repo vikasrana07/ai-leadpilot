@@ -42,6 +42,10 @@ export class MailService {
   sendBilling(to: string, subject: string, text: string): Promise<void> { return this.send(to, subject, `${text}\n\nManage billing: ${this.env.WEB_ORIGIN}/billing`); }
   /** Platform monitoring alert (plain text built by ops/alert-rules.ts: rule text and numbers only). */
   sendAlert(to: string, subject: string, text: string): Promise<void> { return this.send(to, subject, text); }
+  /** The one-time sign-in code of the customer portal. Short, no links (so it cannot be turned into a phishing link), and it says who asked. */
+  sendPortalCode(to: string, code: string, businessName: string): Promise<void> {
+    return this.send(to, `Your sign-in code for ${businessName}`, `Your code is ${code}\n\nIt expires in 10 minutes and works once. If you did not ask for it, ignore this message: nobody can sign in without it.`);
+  }
   sendMfaReset(to: string): Promise<void> {
     return this.send(to, 'Your two-step verification was reset', `A workspace administrator reset two-step verification on your LeadPilot account, and you were signed out. Sign in with your password and set it up again: ${this.env.WEB_ORIGIN}/login\n\nIf you did not expect this, change your password and contact your workspace owner.`);
   }

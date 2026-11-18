@@ -1488,3 +1488,52 @@ model TenantDeletionRequest {
   @@index([tenantId])
   @@map("tenant_deletion_requests")
 }
+
+// ----------------------------------------------------------------------------- lead-facing customer portal (ADR 0013)
+model PortalConfig {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String   @unique @map("tenant_id") @db.Uuid
+  /// Unguessable, rotatable key in the portal address (/p/<key>): says which business, grants nothing by itself
+  publicKey         String   @unique @map("public_key")
+  enabled           Boolean  @default(false)
+  allowConfirm      Boolean  @default(true) @map("allow_confirm")
+  allowCancel       Boolean  @default(true) @map("allow_cancel")
+  allowReschedule   Boolean  @default(true) @map("allow_reschedule")
+  cancelCutoffHours Int      @default(4) @map("cancel_cutoff_hours")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("portal_configs")
+}
+
+/// One-time sign-in codes: only an HMAC of the code is stored, single use, expiring, attempt-limited
+model PortalLoginCode {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String    @map("tenant_id") @db.Uuid
+  leadId       String    @map("lead_id") @db.Uuid
+  /// Hash of the phone/email typed (never the value): per-identity throttling and lockout
+  identityHash String    @map("identity_hash")
+  channel      String
+  codeHash     String    @map("code_hash")
+  attempts     Int       @default(0)
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(3)
+  consumedAt   DateTime? @map("consumed_at") @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([tenantId, identityHash, createdAt(sort: Desc)])
+  @@map("portal_login_codes")
+}
+
+model PortalSession {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String    @map("tenant_id") @db.Uuid
+  leadId     String    @map("lead_id") @db.Uuid
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+
+  @@index([tenantId, leadId])
+  @@map("portal_sessions")
+}
+

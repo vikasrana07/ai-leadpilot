@@ -7,6 +7,7 @@ import type { AppRequest } from './request-context.js';
 export const ACCESS_COOKIE = 'lp_at';
 export const PLATFORM_COOKIE = 'lp_platform';
 export const REFRESH_COOKIE = 'lp_rt';
+export const PORTAL_SESSION_COOKIE = 'lp_portal'; // customer-portal session (same name as portal/portal-auth.ts PORTAL_COOKIE)
 
 export function requestIdMiddleware(req: Request, res: Response, next: NextFunction): void {
   const incoming = req.header('x-request-id');
@@ -28,7 +29,7 @@ export function csrfOriginMiddleware(allowedOrigins: readonly string[]) {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (SAFE_METHODS.has(req.method)) return next();
     const cookies = req.cookies as Record<string, string> | undefined;
-    const usesCookies = Boolean(cookies?.[ACCESS_COOKIE] ?? cookies?.[REFRESH_COOKIE] ?? cookies?.[PLATFORM_COOKIE]);
+    const usesCookies = Boolean(cookies?.[ACCESS_COOKIE] ?? cookies?.[REFRESH_COOKIE] ?? cookies?.[PLATFORM_COOKIE] ?? cookies?.[PORTAL_SESSION_COOKIE]);
     if (!usesCookies || req.header('authorization')) return next();
     const origin = req.header('origin') ?? safeOrigin(req.header('referer'));
     if (origin && allowed.has(origin)) return next();

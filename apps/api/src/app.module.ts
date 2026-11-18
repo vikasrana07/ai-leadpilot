@@ -38,6 +38,7 @@ import { PipelineModule } from './pipeline/pipeline.module.js';
 import { PropertiesModule } from './properties/properties.module.js';
 import { RealtimeModule } from './realtime/realtime.module.js';
 import { RolesModule } from './roles/roles.module.js';
+import { PortalModule } from './portal/portal.module.js';
 import { WidgetModule } from './widget/widget.module.js';
 import { TeamModule } from './team/team.module.js';
 import { TenantsModule } from './tenants/tenants.module.js';
@@ -65,7 +66,7 @@ class IntegrationsCoreModule {}
       // Redis-backed so limits hold across API instances (tests keep the in-memory store: counters would otherwise leak between runs).
       useFactory: (env: Env) => ({ throttlers: [{ name: 'default', ttl: 60_000, limit: env.THROTTLE_GLOBAL_LIMIT }], ...(env.NODE_ENV === 'test' ? {} : { storage: new RedisThrottlerStorage(env.REDIS_URL, env.QUEUE_PREFIX) }) }),
     }),
-    DbModule, MailModule, AuditModule, AuthModule, MfaModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, AiModule, OpsModule, BillingModule, PlatformModule, V1Module, WebhooksModule, ReportsModule, SupportModule, PrivacyModule, LifecycleModule, UsageModule, TeamModule, RolesModule, HealthModule,
+    DbModule, MailModule, AuditModule, AuthModule, MfaModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, PortalModule, AiModule, OpsModule, BillingModule, PlatformModule, V1Module, WebhooksModule, ReportsModule, SupportModule, PrivacyModule, LifecycleModule, UsageModule, TeamModule, RolesModule, HealthModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
