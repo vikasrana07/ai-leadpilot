@@ -40,6 +40,8 @@ export class MailService {
   }
   /** Plain billing/dunning notice. Callers pass the subject and body; no card or invoice-number data beyond what the caller chooses to include. */
   sendBilling(to: string, subject: string, text: string): Promise<void> { return this.send(to, subject, `${text}\n\nManage billing: ${this.env.WEB_ORIGIN}/billing`); }
+  /** Platform monitoring alert (plain text built by ops/alert-rules.ts: rule text and numbers only). */
+  sendAlert(to: string, subject: string, text: string): Promise<void> { return this.send(to, subject, text); }
   sendMfaReset(to: string): Promise<void> {
     return this.send(to, 'Your two-step verification was reset', `A workspace administrator reset two-step verification on your LeadPilot account, and you were signed out. Sign in with your password and set it up again: ${this.env.WEB_ORIGIN}/login\n\nIf you did not expect this, change your password and contact your workspace owner.`);
   }

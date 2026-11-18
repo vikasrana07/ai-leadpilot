@@ -328,6 +328,11 @@ export type PlatformAdmin = Prisma.PlatformAdminModel
  */
 export type PlatformAuditLog = Prisma.PlatformAuditLogModel
 /**
+ * Model OpsAlert
+ * Platform monitoring: one row per alert rule that has ever breached (monitoring milestone 3). Platform-only, RLS: visible with no tenant in scope.
+ */
+export type OpsAlert = Prisma.OpsAlertModel
+/**
  * Model IdempotencyKey
  * 
  */

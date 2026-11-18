@@ -1,5 +1,7 @@
 # Webhooks (WhatsApp, Razorpay)
 
+> **Alerts that point here:** `whatsapp_unprocessed` (received WhatsApp events not processed for over 5 minutes), `outbound_messages_failing`, `webhook_deliveries_failing` (customer endpoints; check the delivery log before assuming a platform fault).
+
 Both endpoints are public and authenticate by HMAC over the **raw request body**. Anything that alters the bytes in front of the API (a proxy that re-serialises JSON, a WAF that rewrites bodies) breaks signatures.
 
 ## WhatsApp (Meta): `POST /webhooks/whatsapp/:key`, handshake `GET /webhooks/whatsapp/:key`

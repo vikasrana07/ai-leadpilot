@@ -3,6 +3,7 @@ import { Queue, Worker, type ConnectionOptions, type Job } from 'bullmq';
 import { ENV } from '../common/tokens.js';
 import { metrics } from '../observability/metrics.js';
 import { runWithLogContext } from '../observability/request-context.js';
+import { AlertsService } from './alerts.service.js';
 import { HealthSnapshotService } from './health-snapshot.service.js';
 import { WorkerHeartbeat } from './worker-heartbeat.js';
 import type { Env } from '../config/env.js';
@@ -44,6 +45,7 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     @Inject(LifecycleJobs) private readonly lifecycle: LifecycleJobs,
     @Inject(WorkerHeartbeat) private readonly heartbeat: WorkerHeartbeat,
     @Inject(HealthSnapshotService) private readonly snapshot: HealthSnapshotService,
+    @Inject(AlertsService) private readonly alerts: AlertsService,
   ) {}
 
   get running(): boolean { return this.runsQueue !== null; }
@@ -99,6 +101,8 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     try { await this.maintenanceBody(); } catch (e) { ok = false; throw e; } finally { metrics.scannerTick(Date.now() - started, ok); }
     // Health snapshot -> gauges, Redis copy for the Ops page and alert rules. Must never fail the maintenance job.
     await this.publishSnapshot().catch((e: unknown) => this.log.error(`snapshot: ${e instanceof Error ? e.message : String(e)}`));
+    // Alert rules run right after the snapshot (at most once a minute across all processes; see AlertsService.runLocked). Never fails the job.
+    await this.alerts.runLocked().catch((e: unknown) => this.log.error(`alerts: ${e instanceof Error ? e.message : String(e)}`));
   }
 
   private async publishSnapshot(): Promise<void> {

@@ -1,5 +1,7 @@
 # Worker and queues
 
+> **Alerts that point here:** `snapshot_stale`, `worker_not_running`, `outbox_lag`, `outbox_failed`, `automation_runs_stuck`, `automation_waits_overdue` (see `docs/monitoring.md`). Check the console's **Ops status** page first: it shows the heartbeats, queue depth and the numbers behind each alert.
+
 Background work (outbox relay, BullMQ `automation-runs` queue, 60-second `maintenance` scanner) runs only where `WORKERS_ENABLED=true`: the `node dist/worker.js` process (or an API with the flag on). **If no worker runs, nothing time-based or event-driven happens**: no reminders, automations, notifications from events, SLA breaches, trial/dunning notices, quota alerts. Inbound messages and HTTP actions still work.
 
 Safe to run several workers: outbox rows are claimed with `FOR UPDATE SKIP LOCKED` (2-minute lease), automation runs with a compare-and-set, scanners with `event_marks` (exactly once).

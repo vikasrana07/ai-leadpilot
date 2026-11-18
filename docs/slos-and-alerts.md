@@ -1,6 +1,6 @@
 # SLOs and alerts
 
-**Status: proposed.** Targets are tied to the performance budgets in the master prompt (B4). Only some SLIs are measurable today. Nothing below pages anyone yet: metrics exist (milestone 2) but **alert rules and delivery are milestone 3, and no Sentry/OpenTelemetry is built** (see "Gaps"). Load-test results against these budgets belong in `PROGRESS.md` (Phase 7 verification), not here.
+**Status: proposed.** Targets are tied to the performance budgets in the master prompt (B4). Only some SLIs are measurable today. Alert rules and **email delivery are implemented** for everything the health snapshot can measure (monitoring milestone 3, see the "Implemented in the app" table and `docs/monitoring.md`); the rest needs an external probe or CloudWatch. **No Sentry/OpenTelemetry is built.** Load-test results against these budgets belong in `PROGRESS.md` (Phase 7 verification), not here.
 
 ## SLOs
 | # | SLI | Objective | Measurable today? |
@@ -38,6 +38,22 @@ SELECT count(*) FROM webhook_events WHERE status='received' AND created_at < now
 SELECT count(*) FROM messages WHERE direction='OUTBOUND' AND status='FAILED' AND created_at > now() - interval '1 hour';
 ```
 Queue depth (Redis): `redis-cli ZCARD leadpilot:automation-runs:failed` and `LLEN leadpilot:automation-runs:wait` (key prefix = `QUEUE_PREFIX`).
+
+## Implemented in the app (milestone 3)
+Evaluated once a minute against `ops_health_snapshot()` and the worker heartbeats, with email to platform admins (`ALERTS_ENABLED=true`). Thresholds in `apps/api/src/ops/alert-rules.ts`; live state on the console's **Ops status** page.
+
+| Proposed alert below | Rule key |
+|---|---|
+| Worker not running | `worker_not_running` (no heartbeat, 3 min) and `outbox_lag` (oldest pending over 120 s, 5 min); `snapshot_stale` when the maintenance job itself stops |
+| Outbox failures | `outbox_failed` |
+| Automation stuck | `automation_runs_stuck` |
+| Waits overdue | `automation_waits_overdue` |
+| Billing webhook failing | `billing_events_attention` |
+| WhatsApp deliveries unprocessed | `whatsapp_unprocessed` |
+| AI error rate | `ai_failure_rate` (needs at least 10 runs in 15 min) |
+| (new) | `outbound_messages_failing`, `webhook_deliveries_failing` |
+
+**Still external (not in the app):** API down (probe `/health/ready` from outside; an app that is down cannot email), Database and Redis resource alarms (CloudWatch), Backups, AI cost spike (needs a 7-day baseline), Auth abuse (audit log).
 
 ## Proposed alerts
 | Alert | Condition | Severity | Who |

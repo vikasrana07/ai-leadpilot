@@ -1,5 +1,7 @@
 # Billing incidents
 
+> **Alert that points here:** `billing_events_attention` (a billing event failed or unprocessed for over 15 minutes). Start with the `billing_events` query below.
+
 Source of truth for state is the webhook from Razorpay; the app never activates a plan from the browser. Tables: `subscriptions` (per tenant), `invoices`, `payments`, `billing_events`, `invoice_counters`. Statuses: TRIALING, ACTIVE, PAST_DUE (grace), CANCELED (access to period end), EXPIRED (read-only).
 
 ## Customer paid but plan not active

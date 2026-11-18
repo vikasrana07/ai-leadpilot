@@ -67,8 +67,9 @@ Replaced with a marker: JWTs, `Bearer`/`Basic` credentials, API keys (`lp_`, `sk
 | `JobOutcome` | counter | `Job` x `Outcome` ok/failed/skipped | no | Log field only. Webhook `skipped` = a failed attempt that will be retried. |
 | `ScannerTick`, `AiRunLatency` | histogram | none | no | Count/Sum/Max fields. |
 | 22 snapshot gauges (below) | gauge | none | 11 billable | Published by the once-a-minute tick. |
+| 4 alert gauges (`AlertsFiring`, `AlertsFiringSev1/2/3`) | gauge | none | 1 billable (`AlertsFiring`) | Number of firing alerts (milestone 3). |
 
-**Billable series today: 23** (3 + 3 + 6 + 11). AWS gives the first 10 custom metrics free; at list price (about $0.30 per metric per month, **not verified for your region**) the rest are a few dollars a month. Total series written, billable or not, is roughly 45-60. Turn everything off with `METRICS_EMF=false`.
+**Billable series today: 24** (3 + 3 + 6 + 11 + 1 for `AlertsFiring`). AWS gives the first 10 custom metrics free; at list price (about $0.30 per metric per month, **not verified for your region**) the rest are a few dollars a month. Total series written, billable or not, is roughly 45-60. Turn everything off with `METRICS_EMF=false`.
 
 **Gauges** (from `ops_health_snapshot()` once a minute, plus queue depth and heartbeats): `OutboxPending`, `OutboxOldestPendingSeconds`\*, `OutboxFailed`\*, `RunsStuckRunning`\*, `RunsQueuedOld`\*, `RunsWaitingOverdue`\*, `RunsFailedLastHour`, `BillingEventsNeedingAttention`\*, `WebhookEventsUnprocessed`\*, `OutboundMessagesFailedLastHour`, `WebhookDeliveriesOverdue`, `WebhookDeliveriesFailedLastHour`, `WebhookEndpointsDisabled`, `AiRunsLast15Min`, `AiFailedLast15Min`\*, `AiLatencyP95Ms24h`\*, `QueueRunsWaiting`, `QueueRunsActive`, `QueueRunsDelayed`, `QueueRunsFailed`\*, `WorkersAlive`\*, `WorkerHeartbeatAgeSeconds` (\* = billable).
 
@@ -91,4 +92,45 @@ Each background process (the worker, or the API with `WORKERS_ENABLED=true`) wri
 - In-process metrics are per instance; aggregation and percentiles across instances happen in CloudWatch (p95 is an estimate from fixed buckets).
 - Webhook "skipped" outcome means a failed attempt that will be retried; the delivery table has the final result.
 - The snapshot counts stay global: there is no per-workspace breakdown by design.
+
+## Alerts and the Ops Status page (milestone 3)
+
+**What it does.** Once a minute the alert rules (`apps/api/src/ops/alert-rules.ts`) are evaluated against the latest health snapshot and the live worker heartbeats. A rule that is breached for its number of minutes in a row **fires**; a firing rule that is fine for 2 evaluations in a row **resolves**. State changes and repeats send a plain-text email (`MailService.sendAlert`) and write a structured log line (`alert firing ...` at ERROR level, `alert resolved ...` at INFO, so a CloudWatch log filter can catch them). State lives in the platform-only table `ops_alerts` (RLS: invisible inside any tenant context; the app role cannot delete rows). Nothing evaluates or emails unless `ALERTS_ENABLED=true`; the Ops page still shows live rule state without it.
+
+**Who evaluates.** The worker's maintenance job (right after the snapshot is published) **and** every API process on its own timer, guarded by a Redis lock (`<QUEUE_PREFIX>:ops:alerts:lock`, 50 s) so it runs about once a minute overall. The API timer matters: if the worker is dead nobody else would notice. Every state change is a compare-and-set in the database, so a failed lock (Redis down) or two racing evaluators still send each email once. If the snapshot is older than 3 minutes the database rules are "unknown" (their state is left alone) and the `snapshot_stale` rule fires instead.
+
+**Recipients.** `ALERT_EMAIL_TO` (comma separated) if set, otherwise every ACTIVE platform admin. If there is nobody to tell, one warning is logged and nothing is claimed, so the email goes out as soon as a recipient exists. Mail failures are logged and never break evaluation. Email text holds the rule title, severity, start time, numbers, the runbook path and the Ops page link: no workspace names, emails or message content.
+
+**Damping.** At least 15 minutes between two emails about the same alert (`EMAIL_DAMPING_MINUTES`). A firing email held back by the window is sent on a later evaluation if the alert is still firing; a "resolved" email is held until the window has passed (so an alert that fires and clears within 15 minutes sends the firing email now and the resolved email at the 15-minute mark). Sev 1-2 alerts that stay firing repeat every `ALERT_REPEAT_HOURS` (default 6); Sev 3 never repeats.
+
+| Rule key | Sev | Fires when | For | Runbook |
+|---|---|---|---|---|
+| `snapshot_stale` | 2 | no snapshot, or older than 180 s (the maintenance job is not running) | 2 min | worker-and-queues |
+| `worker_not_running` | 2 | no live worker heartbeat in Redis | 3 min | worker-and-queues |
+| `outbox_lag` | 2 | oldest pending outbox event older than 120 s | 5 min | worker-and-queues |
+| `outbox_failed` | 3 | any failed outbox row | 1 min | worker-and-queues |
+| `automation_runs_stuck` | 3 | RUNNING over 15 min or QUEUED over 10 min | 1 min | worker-and-queues |
+| `automation_waits_overdue` | 2 | a WAITING run more than 15 min past its resume time | 1 min | worker-and-queues |
+| `billing_events_attention` | 2 | a billing event failed or unprocessed over 15 min | 1 min | billing-incident |
+| `whatsapp_unprocessed` | 2 | WhatsApp webhook events unprocessed over 5 min | 1 min | webhooks |
+| `ai_failure_rate` | 2 | at least 10 AI runs in 15 min and over 20% failed | 1 min | ai-incident |
+| `outbound_messages_failing` | 3 | 10 or more outbound messages failed in the last hour | 1 min | webhooks |
+| `webhook_deliveries_failing` | 3 | customer webhook deliveries overdue, 20+ failed in the last hour, or an endpoint auto-disabled | 1 min | webhooks |
+
+All thresholds are in one constant table (`THRESHOLDS`). **Not measured by the app** (they need something outside it): API availability (an external probe of `/health/ready`), RDS and Redis resource alarms, backups, AI cost spikes, login-abuse spikes. See `infrastructure/monitoring/` (milestone 4) and `docs/slos-and-alerts.md`.
+
+**An app that is down cannot email.** If every API and worker process is dead, no alert is sent. Run an external probe of `/health/ready` (a free uptime monitor, or a CloudWatch alarm on the load balancer's healthy-host count) and send it to a different channel than this email.
+
+**Ops Status page.** Platform console, **Ops status** (`GET /platform/ops`, platform session only, read-only): firing alerts with hint and runbook, all rules with their live state, the health numbers, queue depth, worker heartbeats, the SLO table (4-7 show current values; 1-3 and 8 say where they are measured), and "Recently resolved". It refreshes every 30 seconds and warns when the snapshot is stale.
+
+### Try it locally
+1. Start the API with `ALERTS_ENABLED=true ALERT_EMAIL_TO=you@example.test WORKERS_ENABLED=true` (your own `QUEUE_PREFIX` keeps the queues separate). Mailpit's web UI is at http://localhost:8026 in this repository's compose file.
+2. Make a real condition. Fastest: insert a failed outbox row (`status='failed'`, `attempts=10`), which fires `outbox_failed` after one evaluation (about 1-2 minutes). Or stop the worker (and use a separate API with workers off) to see `worker_not_running` after 3 minutes.
+3. Watch the firing email arrive, open **Platform console > Ops status**, then fix the condition. After 2 fine evaluations the alert resolves; the resolved email follows once the 15-minute damping window has passed (to see it sooner, set `last_notified_at` back by 20 minutes in `ops_alerts`).
+4. Automated: `apps/api/test/alert-rules.test.ts` (every threshold edge, recipients, email text) and `apps/api/test/alerts.test.ts` (state machine with a fake clock, hysteresis, damping, repeat, two racing evaluators, disabled gate, mail failure, RLS, `/platform/ops` access), and `e2e/tests/17-ops-status.spec.ts` (page, axe in both themes, 375 px).
+
+### Limits (milestone 3)
+- Real inbox delivery and real CloudWatch log filters are not verified; the local test used Mailpit.
+- Two evaluators racing each count as a fine or failing minute, so a rule can fire or resolve one minute early; the Redis lock makes this rare and the database prevents duplicate emails either way.
+- Alerts are per platform, not per workspace; there is no acknowledge, mute or on-call routing (the email list is the routing).
 

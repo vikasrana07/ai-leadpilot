@@ -1322,6 +1322,28 @@ model PlatformAuditLog {
   @@map("platform_audit_logs")
 }
 
+/// Platform monitoring: one row per alert rule that has ever breached (monitoring milestone 3). Platform-only, RLS: visible with no tenant in scope.
+model OpsAlert {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key              String    @unique
+  severity         Int
+  status           String    @default("resolved")
+  title            String
+  streakFailing    Int       @default(0) @map("streak_failing")
+  streakOk         Int       @default(0) @map("streak_ok")
+  since            DateTime? @db.Timestamptz(3)
+  resolvedAt       DateTime? @map("resolved_at") @db.Timestamptz(3)
+  lastNotifiedAt   DateTime? @map("last_notified_at") @db.Timestamptz(3)
+  notifyCount      Int       @default(0) @map("notify_count")
+  resolveNotifyDue Boolean   @default(false) @map("resolve_notify_due")
+  lastValue        Json      @default("{}") @map("last_value")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([status, severity])
+  @@map("ops_alerts")
+}
+
 // ======================================================================= Phase 8: public API, outbound webhooks, support access
 model IdempotencyKey {
   tenantId    String   @map("tenant_id") @db.Uuid

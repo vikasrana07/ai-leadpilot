@@ -459,6 +459,7 @@ export const ModelName = {
   InvoiceCounter: 'InvoiceCounter',
   PlatformAdmin: 'PlatformAdmin',
   PlatformAuditLog: 'PlatformAuditLog',
+  OpsAlert: 'OpsAlert',
   IdempotencyKey: 'IdempotencyKey',
   WebhookEndpoint: 'WebhookEndpoint',
   WebhookDelivery: 'WebhookDelivery',
@@ -482,7 +483,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest"
+    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "opsAlert" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5074,6 +5075,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    OpsAlert: {
+      payload: Prisma.$OpsAlertPayload<ExtArgs>
+      fields: Prisma.OpsAlertFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OpsAlertFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OpsAlertFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload>
+        }
+        findFirst: {
+          args: Prisma.OpsAlertFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OpsAlertFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload>
+        }
+        findMany: {
+          args: Prisma.OpsAlertFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload>[]
+        }
+        create: {
+          args: Prisma.OpsAlertCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload>
+        }
+        createMany: {
+          args: Prisma.OpsAlertCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OpsAlertCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload>[]
+        }
+        delete: {
+          args: Prisma.OpsAlertDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload>
+        }
+        update: {
+          args: Prisma.OpsAlertUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload>
+        }
+        deleteMany: {
+          args: Prisma.OpsAlertDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OpsAlertUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OpsAlertUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload>[]
+        }
+        upsert: {
+          args: Prisma.OpsAlertUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OpsAlertPayload>
+        }
+        aggregate: {
+          args: Prisma.OpsAlertAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOpsAlert>
+        }
+        groupBy: {
+          args: Prisma.OpsAlertGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OpsAlertGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OpsAlertCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OpsAlertCountAggregateOutputType> | number
+        }
+      }
+    }
     IdempotencyKey: {
       payload: Prisma.$IdempotencyKeyPayload<ExtArgs>
       fields: Prisma.IdempotencyKeyFieldRefs
@@ -6680,6 +6755,27 @@ export const PlatformAuditLogScalarFieldEnum = {
 export type PlatformAuditLogScalarFieldEnum = (typeof PlatformAuditLogScalarFieldEnum)[keyof typeof PlatformAuditLogScalarFieldEnum]
 
 
+export const OpsAlertScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  severity: 'severity',
+  status: 'status',
+  title: 'title',
+  streakFailing: 'streakFailing',
+  streakOk: 'streakOk',
+  since: 'since',
+  resolvedAt: 'resolvedAt',
+  lastNotifiedAt: 'lastNotifiedAt',
+  notifyCount: 'notifyCount',
+  resolveNotifyDue: 'resolveNotifyDue',
+  lastValue: 'lastValue',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OpsAlertScalarFieldEnum = (typeof OpsAlertScalarFieldEnum)[keyof typeof OpsAlertScalarFieldEnum]
+
+
 export const IdempotencyKeyScalarFieldEnum = {
   tenantId: 'tenantId',
   key: 'key',
@@ -7488,6 +7584,7 @@ export type GlobalOmitConfig = {
   invoiceCounter?: Prisma.InvoiceCounterOmit
   platformAdmin?: Prisma.PlatformAdminOmit
   platformAuditLog?: Prisma.PlatformAuditLogOmit
+  opsAlert?: Prisma.OpsAlertOmit
   idempotencyKey?: Prisma.IdempotencyKeyOmit
   webhookEndpoint?: Prisma.WebhookEndpointOmit
   webhookDelivery?: Prisma.WebhookDeliveryOmit

@@ -1,5 +1,7 @@
 # AI incidents
 
+> **Alert that points here:** `ai_failure_rate` (over 20% of at least 10 AI runs failed in 15 minutes). Check the provider status, then consider the kill switch below.
+
 Controls that exist today: platform kill switch (`AI_KILL_SWITCH`), per-tenant monthly token cap (the lower of the owner's cap and the plan allowance; hard stop then hand-over), per-tenant assistant on/off, deterministic output guards (prices, links, phone numbers, times, prompt-leak canary), 5-iteration tool-loop limit, handover to a human.
 
 ## Kill switch (all tenants)

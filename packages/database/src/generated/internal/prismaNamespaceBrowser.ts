@@ -113,6 +113,7 @@ export const ModelName = {
   InvoiceCounter: 'InvoiceCounter',
   PlatformAdmin: 'PlatformAdmin',
   PlatformAuditLog: 'PlatformAuditLog',
+  OpsAlert: 'OpsAlert',
   IdempotencyKey: 'IdempotencyKey',
   WebhookEndpoint: 'WebhookEndpoint',
   WebhookDelivery: 'WebhookDelivery',
@@ -1112,6 +1113,27 @@ export const PlatformAuditLogScalarFieldEnum = {
 } as const
 
 export type PlatformAuditLogScalarFieldEnum = (typeof PlatformAuditLogScalarFieldEnum)[keyof typeof PlatformAuditLogScalarFieldEnum]
+
+
+export const OpsAlertScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  severity: 'severity',
+  status: 'status',
+  title: 'title',
+  streakFailing: 'streakFailing',
+  streakOk: 'streakOk',
+  since: 'since',
+  resolvedAt: 'resolvedAt',
+  lastNotifiedAt: 'lastNotifiedAt',
+  notifyCount: 'notifyCount',
+  resolveNotifyDue: 'resolveNotifyDue',
+  lastValue: 'lastValue',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OpsAlertScalarFieldEnum = (typeof OpsAlertScalarFieldEnum)[keyof typeof OpsAlertScalarFieldEnum]
 
 
 export const IdempotencyKeyScalarFieldEnum = {

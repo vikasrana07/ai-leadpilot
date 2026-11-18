@@ -128,3 +128,15 @@ Closed in Phases 7-8 (locally verified only): platform-console MFA and user MFA;
 | SSRF or code execution via automations | none: the vocabulary is closed (ADR-0029); no step fetches a URL, runs code or takes a template language | design |
 | Cross-tenant access to graphs, versions or runs | tenant derived from the session; RLS on `automations`, `automation_versions`, `automation_runs`; every lookup also filters by tenant | isolation tests |
 **Accepted/known:** a crash between an action and its saved step can repeat a task or notification (not a send); the dry-run endpoint writes a `DRY_RUN` row per call and relies on the global rate limit; clinics must keep automation text free of health details (the clinic templates are written that way and a test checks them).
+
+## Monitoring (Phase 9)
+| Threat | Mitigation | Evidence |
+|---|---|---|
+| Personal data leaking through logs or error text | `redact()` on messages, fields and stacks (emails, phones, PAN/Aadhaar-style numbers, tokens, long digit runs); mail subjects not logged; labels in metrics are fixed lists (no ids) | `observability.test.ts`, `metrics.test.ts` |
+| Alert emails exposing customer data | email text is rule title, severity, time, numbers, runbook path and a link: no workspace names, emails or message content | `alerts.test.ts` ("records numbers only") |
+| Tenant code reading or writing alert state | `ops_alerts` has RLS: visible only with no tenant in scope; the app role cannot delete rows | `alerts.test.ts` ("platform-only") |
+| Cross-tenant leakage through the health snapshot | `ops_health_snapshot()` returns counts and ages only, no identifiers | `ops-health.test.ts` |
+| Unauthorised access to operational data | `GET /platform/ops` needs a platform session (separate audience and secret); tenant tokens get 401; read-only | `alerts.test.ts`, `security-matrix.test.ts` |
+| Alert storms or duplicate pages | hysteresis (resolve after 2 fine evaluations), 15-minute damping per alert, Sev 3 never repeats, compare-and-set state changes | `alerts.test.ts` |
+| Silent outage (nobody is told) | stale-snapshot and worker-heartbeat rules; an external probe of `/health/ready` is required because a fully dead app cannot email | `docs/monitoring.md` |
+

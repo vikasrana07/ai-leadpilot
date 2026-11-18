@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
 import { platformApi } from '@/lib/platform';
 
-const NAV = [{ href: '/platform', label: 'Overview' }, { href: '/platform/tenants', label: 'Tenants' }, { href: '/platform/plans', label: 'Plans' }, { href: '/platform/deletions', label: 'Deletion requests' }, { href: '/platform/audit', label: 'Audit log' }, { href: '/platform/security', label: 'Security' }];
+const NAV = [{ href: '/platform', label: 'Overview' }, { href: '/platform/tenants', label: 'Tenants' }, { href: '/platform/plans', label: 'Plans' }, { href: '/platform/deletions', label: 'Deletion requests' }, { href: '/platform/ops', label: 'Ops status' }, { href: '/platform/audit', label: 'Audit log' }, { href: '/platform/security', label: 'Security' }];
 
 export default function PlatformLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();

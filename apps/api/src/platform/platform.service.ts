@@ -8,6 +8,7 @@ import { PasswordService } from '../auth/password.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import { EntitlementsService } from '../billing/entitlements.service.js';
 import { DbService } from '../db/db.module.js';
+import { AlertsService } from '../ops/alerts.service.js';
 import { type PlatformAdminCtx, PlatformTokens } from './platform-auth.js';
 import { planUpdateSchema, platformAssignPlanSchema, platformTenantsQuerySchema } from '@leadpilot/validation';
 
@@ -23,8 +24,11 @@ export class PlatformService {
   constructor(
     @Inject(DbService) private readonly db: DbService, @Inject(PasswordService) private readonly passwords: PasswordService, @Inject(PlatformTokens) private readonly tokens: PlatformTokens,
     @Inject(AuditService) private readonly audit: AuditService, @Inject(EntitlementsService) private readonly ent: EntitlementsService,
-    @Inject(MfaService) readonly mfa: MfaService,
+    @Inject(MfaService) readonly mfa: MfaService, @Inject(AlertsService) private readonly alerts: AlertsService,
   ) {}
+
+  /** Read-only monitoring view for the console's Ops page: live rule state, stored alerts, snapshot, queues, workers, SLOs. */
+  ops() { return this.alerts.view(); }
 
   /** Append-only record of everything a platform admin does. */
   private log(admin: PlatformAdminCtx | null, meta: Meta, e: { action: string; targetType?: string; targetId?: string; tenantId?: string; reason?: string; metadata?: Prisma.InputJsonObject }) {

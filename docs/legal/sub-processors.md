@@ -11,6 +11,6 @@ Status reflects the code as of Phase 7. **"Not yet live" means the integration i
 | Razorpay ({{RAZORPAY_ENTITY}}) | Subscription payments | Billing contact, GSTIN, payment status (card/UPI data handled by Razorpay) | India | **Not yet live** (mock-verified only) |
 | Amazon Web Services | Hosting: compute, managed Postgres, Redis, object storage | All service data | {{AWS_REGION}} (reference: ap-south-1) | Reference deployment, **not yet deployed** |
 | Email delivery provider ({{EMAIL_PROVIDER_TBD}}) | Verification, invitations, billing notices | Email addresses, message text | {{EMAIL_REGION}} | **Provider not chosen** (SMTP interface; Mailpit in development) |
-| Error/observability provider ({{MONITORING_PROVIDER_TBD}}) | Monitoring | Logs/errors (should exclude message content) | {{MONITORING_REGION}} | **Not built** (Sentry/OpenTelemetry planned) |
+| Monitoring (built in; no separate provider) | Logs, metrics and alert emails | Structured logs with personal data redacted (ids only, no message content), numeric metrics, alert emails with numbers only | Stays with the hosting provider (CloudWatch, in the AWS region above) and the mail provider already listed for transactional email | **Built, not yet live** (no third-party error tracker such as Sentry is used; adding one would need a new row here and a transfer review) |
 
 Change notice process: see DPA section 5.

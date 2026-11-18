@@ -139,6 +139,7 @@ export const GAUGES: readonly { name: string; unit: Unit; billable: boolean }[] 
   { name: 'AiRunsLast15Min', unit: 'Count', billable: false }, { name: 'AiFailedLast15Min', unit: 'Count', billable: true }, { name: 'AiLatencyP95Ms24h', unit: 'Milliseconds', billable: true },
   { name: 'QueueRunsWaiting', unit: 'Count', billable: false }, { name: 'QueueRunsActive', unit: 'Count', billable: false }, { name: 'QueueRunsDelayed', unit: 'Count', billable: false }, { name: 'QueueRunsFailed', unit: 'Count', billable: true },
   { name: 'WorkersAlive', unit: 'Count', billable: true }, { name: 'WorkerHeartbeatAgeSeconds', unit: 'Seconds', billable: false },
+  { name: 'AlertsFiring', unit: 'Count', billable: true }, { name: 'AlertsFiringSev1', unit: 'Count', billable: false }, { name: 'AlertsFiringSev2', unit: 'Count', billable: false }, { name: 'AlertsFiringSev3', unit: 'Count', billable: false },
 ];
 
 export function routeGroup(route: string): (typeof ROUTE_GROUPS)[number] {

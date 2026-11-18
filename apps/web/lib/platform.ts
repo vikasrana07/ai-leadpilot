@@ -31,3 +31,22 @@ export interface PlatformTenantDetail {
 }
 export interface PlatformPlan { key: string; name: string; description: string; priceMinor: number; priceWithGstMinor: number; trialDays: number; isPublic: boolean; active: boolean; sortOrder: number; tenants: number; entitlements: { key: string; enabled: boolean; limit: number | null }[] }
 export interface PlatformAuditRow { id: string; action: string; admin: string | null; targetType: string | null; targetId: string | null; tenantId: string | null; reason: string | null; createdAt: string }
+
+// ------------------------------------------------------------------ Ops status (monitoring milestone 3)
+export interface OpsAlert { key: string; title: string; severity: number; status: 'firing' | 'resolved'; since: string | null; resolvedAt: string | null; lastNotifiedAt: string | null; notifyCount: number; values: Record<string, number>; hint: string; runbook: string }
+export interface OpsRule { key: string; title: string; severity: number; forMinutes: number; state: 'ok' | 'breached' | 'unknown'; values: Record<string, number> }
+export interface OpsHealth {
+  outbox: { pending: number; oldest_pending_seconds: number; failed: number };
+  automation_runs: { stuck_running: number; queued_old: number; waiting_overdue: number; failed_last_hour: number };
+  billing_events_needing_attention: number; webhook_events_unprocessed: number; outbound_messages_failed_last_hour: number;
+  webhook_deliveries: { overdue: number; failed_last_hour: number }; webhook_endpoints_disabled: number;
+  ai: { runs_last_15_min: number; failed_last_15_min: number; p95_latency_ms_24h: number | null };
+}
+export interface OpsView {
+  now: string; alertsEnabled: boolean;
+  snapshot: { generatedAt: string | null; ageSeconds: number | null; stale: boolean };
+  firing: OpsAlert[]; recent: OpsAlert[]; rules: OpsRule[];
+  health: OpsHealth | null; queues: { waiting: number; active: number; delayed: number; failed: number } | null;
+  workers: { alive: number | null; instances: { instanceId: string; startedAt: string; lastBeat: string; version: string | null; ageSeconds: number }[] };
+  slos: { id: number; name: string; objective: string; source: 'snapshot' | 'metrics' | 'external'; current: { value: string; ok: boolean | null } | null }[];
+}

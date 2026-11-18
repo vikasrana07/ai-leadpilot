@@ -69,6 +69,15 @@ export class WorkerHeartbeat implements OnApplicationShutdown {
     }
   }
 
+  /** Like list(), but null when Redis cannot be read (so "no workers" can be told apart from "cannot tell"). */
+  async listOrNull(): Promise<Heartbeat[] | null> {
+    try {
+      const r = this.client();
+      if (r.status === 'wait' || r.status === 'end') await r.connect();
+      return await readHeartbeats(r, this.env.QUEUE_PREFIX);
+    } catch { return null; }
+  }
+
   async list(): Promise<Heartbeat[]> {
     try {
       const r = this.client();

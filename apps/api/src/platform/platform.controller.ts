@@ -56,6 +56,7 @@ export class PlatformController {
 
   @UseGuards(PlatformGuard) @Get('me') me(@Req() req: PlatformRequest) { return { admin: admin(req) }; }
   @UseGuards(PlatformGuard) @Get('metrics') metrics() { return this.svc.metrics(); }
+  @UseGuards(PlatformGuard) @Get('ops') ops() { return this.svc.ops(); }
   @UseGuards(PlatformGuard) @Get('tenants') tenants(@Query(new ZodPipe(platformTenantsQuerySchema)) q: z.infer<typeof platformTenantsQuerySchema>) { return this.svc.tenants(q); }
   @UseGuards(PlatformGuard) @Get('tenants/:id') tenant(@Param('id', uuid()) id: string) { return this.svc.tenant(id); }
   @UseGuards(PlatformGuard) @Post('tenants/:id/suspend') @HttpCode(200) suspend(@Req() r: PlatformRequest, @Param('id', uuid()) id: string, @Body(new ZodPipe(platformReasonSchema)) b: { reason: string }) { return this.svc.setTenantStatus(admin(r), meta(r), id, 'SUSPENDED', b.reason); }
