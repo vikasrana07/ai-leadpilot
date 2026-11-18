@@ -53,6 +53,20 @@ describe('ops_health_snapshot()', () => {
     expect(Object.keys(after).sort()).toEqual(['ai', 'automation_runs', 'billing_events_needing_attention', 'generated_at', 'outbound_messages_failed_last_hour', 'outbox', 'webhook_deliveries', 'webhook_endpoints_disabled', 'webhook_events_unprocessed']);
   });
 
+  it('counts only webhook endpoints the dispatcher switched off automatically, not ones a team member switched off', async () => {
+    const before = (await snap()).db.webhook_endpoints_disabled;
+    const ins = (reason: string | null, enabled: boolean, tag: string) => owner$.query(
+      "INSERT INTO webhook_endpoints (tenant_id, url, events, enabled, disabled_reason, secret_prefix, secret_ciphertext, secret_wrapped_key, secret_key_id, updated_at) VALUES ($1, $2, '{}', $3, $4, 'whsec_x', 'x', 'x', 'x', now())",
+      [a.tenantId, `https://ops-${RUN}-${tag}.example.test/hook`, enabled, reason]);
+    try {
+      await ins('Switched off by a team member', false, 'manual');
+      await ins(null, true, 'enabled');
+      expect((await snap()).db.webhook_endpoints_disabled - before).toBe(0); // deliberate or enabled: not a fault
+      await ins('Switched off automatically after 10 consecutive failed deliveries', false, 'auto');
+      expect((await snap()).db.webhook_endpoints_disabled - before).toBe(1); // only the automatic one counts
+    } finally { await owner$.query("DELETE FROM webhook_endpoints WHERE url LIKE $1", [`https://ops-${RUN}-%`]); }
+  });
+
   it('the app role can execute it, PUBLIC cannot, and RLS on the underlying tables is unchanged', async () => {
     const pool = app$();
     try {
