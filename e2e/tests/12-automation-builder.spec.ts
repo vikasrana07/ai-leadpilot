@@ -192,3 +192,49 @@ test('screenshots: phone width with step settings open, and dark theme', async (
   await page.screenshot({ path: `${SHOTS}/07-phone-dark-settings.png`, fullPage: false });
   await ctx.close();
 });
+
+/**
+ * Regression for an intermittent keyboard-focus loss. "Add action" asks for focus on the new step and re-checks it ~260 ms later (a menu that
+ * just closed may hand focus back to its trigger). If the user opens another step with Enter in between, focus moves to that step's settings;
+ * the old re-check then pulled focus back to the new step. It only showed on a slow page, so this test controls the page's timers
+ * (page.clock) and fires the stale timer at the worst moment, every time.
+ */
+test('a late "focus the new step" request never steals focus from the settings the user just opened', async ({ page }) => {
+  await signInViaApi(page, acct);
+  await page.clock.install();
+  await page.goto('/automations/new');
+  const outline = page.getByTestId('outline');
+  await expect(outline.getByRole('button', { name: /^Trigger/ })).toBeVisible();
+  await page.clock.pauseAt(new Date(Date.now() + 60_000));          // from here no page timer fires unless the test advances the clock
+
+  // 1) add an action: the editor schedules "focus the new step now" and "check again in 260 ms"
+  const add = outline.getByRole('button', { name: /^Add action after/ }).last();
+  await add.focus(); await page.keyboard.press('Enter');
+  await expect(outline.locator('button[data-step]')).toHaveCount(3);
+  // 2) before any timer fires, open the first action with Enter: its settings should get focus
+  const first = outline.locator('button[data-step]').nth(1);
+  await first.focus(); await page.keyboard.press('Enter');
+  // 3) let the page's timers run: first the "now" attempt and the next animation frame, then the stale 260 ms re-check
+  await page.clock.runFor(20);
+  await page.clock.runFor(400);
+  await expect(page.getByTestId('inspector').getByRole('heading', { name: /Edit action/ })).toBeFocused();
+});
+
+/** Same family: the FIRST attempt of an "Add" request must not take focus if the user already focused another control (Enter would then press the wrong button). */
+test('the first "focus the new step" attempt does not take focus from a control the user already moved to', async ({ page }) => {
+  await signInViaApi(page, acct);
+  await page.clock.install();
+  await page.goto('/automations/new');
+  const outline = page.getByTestId('outline');
+  await expect(outline.getByRole('button', { name: /^Trigger/ })).toBeVisible();
+  await page.clock.pauseAt(new Date(Date.now() + 60_000));
+
+  const addAction = outline.getByRole('button', { name: /^Add action after/ }).last();
+  await addAction.focus(); await page.keyboard.press('Enter');         // the request is now pending (its timers have not fired)
+  await expect(outline.locator('button[data-step]')).toHaveCount(3);
+  const addWait = outline.getByRole('button', { name: /^Add wait after/ }).last();
+  await addWait.focus();                                                // the user moves on to the next control right away
+  await page.clock.runFor(20);
+  await page.clock.runFor(400);
+  await expect(addWait).toBeFocused();                                  // the stale request must not have taken focus
+});

@@ -13,6 +13,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { nodeById, nodeTitle, validTargets, type Slot } from '@/lib/automation-graph-state';
 import { layoutGraph, type Positions } from '@/lib/automation-layout';
+import { browserTimers, scheduleStepFocus, snapshotFocus } from '@/lib/focus-request';
 import { useTheme } from '@/lib/theme';
 import { addSlotFor, neighborOf } from './canvas-nav';
 import { nodeAriaLabel, nodeTypes, type FlowNode, type FlowNodeData } from './canvas-nodes';
@@ -93,10 +94,11 @@ function CanvasInner(p: CanvasProps) {
   const { focus, onFocused } = p;
   useEffect(() => {
     if (!focus) return;
-    const find = () => host.current?.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(focus)}"]`) ?? null;
-    const t1 = window.setTimeout(() => find()?.focus(), 60);
-    const t2 = window.setTimeout(() => { const el = find(); if (el && document.activeElement !== el) el.focus(); onFocused(); }, 320);
-    return () => { window.clearTimeout(t1); window.clearTimeout(t2); };
+    const origin = document.activeElement;   // where focus is when the request is made: if the user moves it elsewhere, the request is stale
+    return scheduleStepFocus({
+      find: () => host.current?.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(focus)}"]`) ?? null,
+      snapshot: (target) => snapshotFocus(target, origin), focus: (el) => el.focus(), done: onFocused, timers: browserTimers, firstMs: 60, lateMs: 320,
+    });
   }, [focus, onFocused]);
 
   // ---- show everything once, and again after Tidy or when the shape changes a lot

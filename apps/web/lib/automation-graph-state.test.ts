@@ -21,6 +21,17 @@ describe('editor reducer', () => {
     expect(s.focus).toBe('mid'); expect(s.selected).toBe('mid'); expect(s.notice).toMatch(/^Added step/);
   });
 
+  it('opening a step supersedes a pending "focus this step" request from an earlier edit, but closing it (select null) does not', () => {
+    const added = run(start(), { type: 'insert', parentId: 't', slot: 'next', node: action('mid') });
+    expect(added.focus).toBe('mid');                                  // "Add action" asked for focus on the new step
+    const opened = run(added, { type: 'select', id: 'a1' });          // the user then opened another step with Enter
+    expect(opened.focus).toBeNull(); expect(opened.selected).toBe('a1');
+    const reselect = run(added, { type: 'select', id: 'mid' });       // even re-opening the same step claims focus
+    expect(reselect.focus).toBeNull();
+    const closing = run({ ...added, focus: 'a1' }, { type: 'select', id: null });
+    expect(closing.focus).toBe('a1');                                 // Done: select(null) then focusStep must keep the new request
+  });
+
   it('inserting a branch keeps the old child on the "If" side and leaves "Otherwise" open', () => {
     const s = run(start(), { type: 'insert', parentId: 't', slot: 'next', node: defaultNode('branch', 'b') });
     expect(slotEdge(s.graph, 'b', 'yes')?.to).toBe('a1'); expect(slotEdge(s.graph, 'b', 'no')).toBeUndefined();

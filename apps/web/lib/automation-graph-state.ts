@@ -233,7 +233,8 @@ export function editorReducer(s: EditorState, a: EditorAction): EditorState {
   switch (a.type) {
     case 'load': return initialState(a.graph);
     case 'markSaved': return { ...s, baseline: canonical(s.graph), lastKey: null };
-    case 'select': return { ...s, selected: a.id, lastKey: null };
+    // Opening a step is the user's own choice of where to be: it supersedes any pending "focus this step" request from an earlier edit.
+    case 'select': return { ...s, selected: a.id, focus: a.id === null ? s.focus : null, lastKey: null };
     case 'focusStep': return { ...s, focus: a.id };
     case 'replace': return commit(s, { graph: a.graph, notice: 'Restored your unsaved draft', selected: null });
     case 'clearFocus': return s.focus === null ? s : { ...s, focus: null };

@@ -6,6 +6,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropdown';
 import { cn } from '@/lib/cn';
+import { browserTimers, scheduleStepFocus, snapshotFocus } from '@/lib/focus-request';
 import { nodeTitle, slotEdge, slotLabel, slotsOf, triggerOf, type Slot } from '@/lib/automation-graph-state';
 import type { DryRunPathItem } from '@/lib/ops';
 
@@ -55,13 +56,15 @@ export function Outline(p: OutlineProps) {
   const root = useRef<HTMLOListElement>(null);
   const { focus, onFocused } = p;
 
-  // Move focus to a step after an edit. Menus hand focus back to their trigger on close, so try again once they are gone.
+  // Move focus to a step after an edit. Menus hand focus back to their trigger on close, so check once more after they are gone;
+  // the late check only undoes that hand-back and never takes focus from anything the user chose meanwhile (lib/focus-request.ts).
   useEffect(() => {
     if (!focus) return;
-    const find = () => root.current?.querySelector<HTMLElement>(`[data-step="${CSS.escape(focus)}"]`) ?? null;
-    const t1 = window.setTimeout(() => find()?.focus(), 0);
-    const t2 = window.setTimeout(() => { const el = find(); if (el && document.activeElement !== el) el.focus(); onFocused(); }, 260);
-    return () => { window.clearTimeout(t1); window.clearTimeout(t2); };
+    const origin = document.activeElement;   // where focus is when the request is made: if the user moves it elsewhere, the request is stale
+    return scheduleStepFocus({
+      find: () => root.current?.querySelector<HTMLElement>(`[data-step="${CSS.escape(focus)}"]`) ?? null,
+      snapshot: (target) => snapshotFocus(target, origin), focus: (el) => el.focus(), done: onFocused, timers: browserTimers, firstMs: 0, lateMs: 260,
+    });
   }, [focus, onFocused]);
 
   const byId = new Map(p.graph.nodes.map((n) => [n.id, n]));
