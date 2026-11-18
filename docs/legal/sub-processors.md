@@ -7,7 +7,7 @@ Status reflects the code as of Phase 7. **"Not yet live" means the integration i
 | Sub-processor | Purpose | Data | Location | Status |
 |---|---|---|---|---|
 | OpenAI ({{OPENAI_ENTITY}}) | AI replies, extraction, embeddings (knowledge base) | Message text, lead fields needed for context, knowledge document text | {{OPENAI_REGION}} (likely outside India) | **Not yet live** (client written, never run against the real API; mock used in development) |
-| Meta Platforms / WhatsApp Business Platform | WhatsApp messaging | Phone numbers, message content, templates | {{META_REGION}} | **Not yet live** (live client never run against Meta; each tenant connects its own WhatsApp Business account) |
+| Meta Platforms / WhatsApp Business Platform | WhatsApp messaging | Phone numbers, message content, templates | {{META_REGION}} | **Not yet live** (live client never run against Meta). Today each tenant connects its own WhatsApp Business account with its own Meta app; with WhatsApp Embedded Signup {{COMPANY_NAME}} becomes the Meta app owner (Tech Provider): see `docs/meta-registration/legal-wording.md` for the replacement wording before that goes live |
 | Razorpay ({{RAZORPAY_ENTITY}}) | Subscription payments | Billing contact, GSTIN, payment status (card/UPI data handled by Razorpay) | India | **Not yet live** (mock-verified only) |
 | Amazon Web Services | Hosting: compute, managed Postgres, Redis, object storage | All service data | {{AWS_REGION}} (reference: ap-south-1) | Reference deployment, **not yet deployed** |
 | Email delivery provider ({{EMAIL_PROVIDER_TBD}}) | Verification, invitations, billing notices | Email addresses, message text | {{EMAIL_REGION}} | **Provider not chosen** (SMTP interface; Mailpit in development) |
