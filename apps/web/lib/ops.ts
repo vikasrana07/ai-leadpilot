@@ -36,6 +36,7 @@ const an = (w: string) => `${/^[aeiou]/i.test(w) ? 'an' : 'a'} ${w}`;
 /** In-app alert preference labels in the workspace's own words (real estate keeps "lead" and "visit"). */
 export function notificationLabels(w: Words = REAL_ESTATE_WORDS): Record<string, string> {
   return {
+    new_message: 'A customer writes in a chat',
     lead_assigned: `${cap(an(w.lead))} is assigned to me`, hot_lead: `${cap(an(w.lead))} turns hot`, handover: 'The AI hands a chat to a person', appointment_booked: `${cap(an(w.event))} is booked for me`,
     appointment_changed: `${cap(an(w.event))} is cancelled, moved or missed`, appointment_reminder: `An hour before ${an(w.event)}`, task_due: 'A task is due', sla_breach: 'A customer is waiting too long', automation_failed: 'An automation fails', lead_inactive: `${cap(an(w.lead))} goes quiet`, billing: 'Billing and subscription notices', quota: 'A plan limit is almost used up', integration: 'A webhook endpoint is switched off after repeated failures', security: 'LeadPilot support opens or closes a read-only support session', privacy: 'A data export is ready or a deletion is scheduled',
   };

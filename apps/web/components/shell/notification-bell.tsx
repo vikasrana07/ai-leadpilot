@@ -3,15 +3,33 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell, BellOff, CheckCheck } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Dropdown } from '@/components/ui/dropdown';
 import { api } from '@/lib/api';
+import { desktopState, enableDesktop, withUnreadTitle, type DesktopState } from '@/lib/alerts';
 import { handleApiError } from '@/lib/forms';
 import { timeAgo } from '@/lib/format';
 import { notificationLabels, type Notification } from '@/lib/ops';
 import { useTerms } from '@/lib/pack';
+
+/** Desktop alerts need the browser's permission, which can only be asked from a click. */
+function DesktopAlerts() {
+  // Rendered only inside the settings dialog, which opens on a click (never during server rendering), so the browser state can be read directly.
+  const [state, setState] = useState<DesktopState>(() => desktopState());
+  if (state === 'unsupported') return null;
+  return (
+    <div className="mb-3 rounded-md border border-border p-3 text-[13px]">
+      <p className="font-medium">Desktop alerts</p>
+      <p className="text-helper mt-0.5">Get a system notification when something arrives while LeadPilot is in the background.</p>
+      {state === 'granted' ? <p className="mt-2 text-success">On for this browser.</p>
+        : state === 'denied' ? <p className="mt-2 text-helper">Blocked in your browser settings. Allow notifications for this site there, then reload.</p>
+        : <Button size="sm" className="mt-2" onClick={() => void enableDesktop().then(setState)}>Turn on desktop alerts</Button>}
+    </div>
+  );
+}
 
 function Preferences({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
@@ -22,6 +40,7 @@ function Preferences({ onClose }: { onClose: () => void }) {
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent title="Notification settings" description="Choose what appears in your bell">
+        <DesktopAlerts />
         <p className="text-helper mb-3">Tell me when…</p>
         <ul className="space-y-2">{(prefs.data?.preferences ?? []).map((p) => (
           <li key={p.type}><label className="flex items-center gap-2.5 text-[13px]"><input type="checkbox" checked={p.inApp} onChange={(e) => save.mutate({ type: p.type, inApp: e.target.checked })} />{labels[p.type] ?? p.type}</label></li>))}</ul>
@@ -38,6 +57,12 @@ export function NotificationBell() {
   const read = useMutation({ mutationFn: (id: string) => api(`/notifications/${id}/read`, { method: 'POST' }), onSuccess: refresh });
   const readAll = useMutation({ mutationFn: () => api('/notifications/read-all', { method: 'POST' }), onSuccess: refresh });
   const unread = q.data?.unread ?? 0;
+  // Show the count in the browser tab ("(2) Inbox"), so it is visible from another tab. Re-applied on navigation because pages set their own title.
+  const pathname = usePathname();
+  useEffect(() => {
+    const t = setTimeout(() => { document.title = withUnreadTitle(document.title, unread); }, 50);
+    return () => clearTimeout(t);
+  }, [unread, pathname]);
   return (
     <>
       <Dropdown className="w-80 p-0" trigger={<Button variant="ghost" size="icon" className="relative" aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}><Bell className="h-4 w-4" />{unread ? <span className="num absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-white">{unread > 9 ? '9+' : unread}</span> : null}</Button>}>

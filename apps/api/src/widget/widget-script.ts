@@ -140,8 +140,12 @@ export const WIDGET_JS = String.raw`(function () {
         e.preventDefault(); var text = input.value.trim(); if (!text) return; input.value = ''; send.disabled = true;
         req('/widget/messages', { method: 'POST', body: { text: text } }).then(poll).catch(function (x) { input.value = text; msgs.appendChild(el('div', { class: 'err', text: x.message })); }).then(function () { send.disabled = false; input.focus(); });
       });
-      poll(); if (state.timer) clearInterval(state.timer);
-      state.timer = setInterval(function () { if (!document.hidden) poll(); }, 3000);
+      poll(); if (state.timer) clearTimeout(state.timer);
+      // Keep checking even when this tab is in the background (a team member often replies from another tab): every 2 s when the tab is in
+      // front, every 8 s when it is not, and straight away when the visitor comes back to the tab.
+      function next() { state.timer = setTimeout(function () { poll(); next(); }, document.hidden ? 8000 : 2000); }
+      next();
+      if (!state.wired) { state.wired = true; document.addEventListener('visibilitychange', function () { if (!document.hidden && state.token) poll(); }); window.addEventListener('focus', function () { if (state.token) poll(); }); }
       input.focus();
     }
   }

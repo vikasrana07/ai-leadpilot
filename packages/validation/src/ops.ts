@@ -153,7 +153,7 @@ export const taskUpdateSchema = z.object({
 });
 export const taskListQuerySchema = z.object({ status: z.enum(['OPEN', 'DONE']).optional(), leadId: z.string().uuid().optional(), mine: z.enum(['true', 'false']).optional(), limit: z.coerce.number().int().min(1).max(200).default(50) });
 
-export const NOTIFICATION_TYPES = ['lead_assigned', 'hot_lead', 'handover', 'appointment_booked', 'appointment_changed', 'appointment_reminder', 'task_due', 'sla_breach', 'automation_failed', 'lead_inactive', 'billing', 'quota', 'privacy', 'integration', 'security'] as const;
+export const NOTIFICATION_TYPES = ['lead_assigned', 'hot_lead', 'handover', 'appointment_booked', 'appointment_changed', 'appointment_reminder', 'task_due', 'sla_breach', 'automation_failed', 'lead_inactive', 'billing', 'quota', 'privacy', 'integration', 'security', 'new_message'] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const notificationListQuerySchema = z.object({ unread: z.enum(['true', 'false']).optional(), limit: z.coerce.number().int().min(1).max(100).default(30), before: z.string().datetime().optional() });
 export const notificationPreferencesSchema = z.object({ preferences: z.array(z.object({ type: z.enum(NOTIFICATION_TYPES), inApp: z.boolean() })).max(NOTIFICATION_TYPES.length) });

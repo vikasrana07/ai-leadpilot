@@ -29,6 +29,25 @@ export class EventNotifier {
         // Meta told us the business removed LeadPilot (see WhatsappWebhookProcessor.handleAccountNotice): owners and managers need to reconnect.
         return this.notifications.create(tx, { tenantId: t, membershipIds: await this.managers(tx, t), type: 'integration', title: 'WhatsApp needs to be connected again', body: 'The connection to your WhatsApp number was removed, so messages cannot be sent or received. Open Integrations and choose Reconnect with Facebook.', link: '/integrations' });
       }
+      case 'message.inbound': {
+        // A customer wrote (WhatsApp or the website chat). Notify the person who owns the chat, or the managers if nobody does.
+        const cid = str('conversationId'); const mid = str('messageId');
+        if (!lead || !cid || !mid) return [];
+        const convo = await tx.conversation.findFirst({ where: { id: cid }, select: { mode: true, assignedMembershipId: true } });
+        const msg = await tx.message.findFirst({ where: { id: mid }, select: { type: true, body: true } });
+        if (!convo || !msg) return [];
+        const first = (await tx.message.count({ where: { conversationId: cid, direction: 'INBOUND' } })) <= 1;
+        if (convo.mode === 'AI' && !first) return []; // the AI assistant is handling this chat: only the first message interrupts a person (a handover has its own notice)
+        const targets = convo.assignedMembershipId ? [convo.assignedMembershipId] : await this.managers(tx, t);
+        // A burst of messages in one chat is one notice: skip it when this person already has an UNREAD notice for the chat from the last minute.
+        // Older unread notices do not block a new one, so a chat that goes quiet and then writes again is announced again.
+        const open = await tx.notification.findMany({ where: { tenantId: t, membershipId: { in: targets }, type: 'new_message', readAt: null, createdAt: { gt: new Date(Date.now() - 60_000) }, data: { path: ['conversationId'], equals: cid } }, select: { membershipId: true } });
+        const have = new Set(open.map((o) => o.membershipId));
+        const who = targets.filter((m) => !have.has(m));
+        if (who.length === 0) return [];
+        const preview = msg.type === 'TEXT' ? (msg.body ?? '').slice(0, 120) : `[${msg.type.toLowerCase()}]`;
+        return this.notifications.create(tx, { tenantId: t, membershipIds: who, type: 'new_message', title: first ? `New chat from ${lead.name}` : `New message from ${lead.name}`, body: preview, link: `/inbox?c=${cid}`, data: { conversationId: cid } });
+      }
       case 'lead.assigned': {
         const to = str('membershipId');
         if (!lead || !to || (await this.skipSelf(tx, to, p.byUserId))) return [];
@@ -43,7 +62,7 @@ export class EventNotifier {
         const cid = str('conversationId');
         if (!lead || !cid) return [];
         const targets = lead.assignedMembershipId ? [lead.assignedMembershipId] : await this.managers(tx, t);
-        return this.notifications.create(tx, { tenantId: t, membershipIds: targets, type: 'handover', title: `AI handed over: ${lead.name}`, body: str('reason') ?? undefined, link: `/conversations?c=${cid}` });
+        return this.notifications.create(tx, { tenantId: t, membershipIds: targets, type: 'handover', title: `AI handed over: ${lead.name}`, body: str('reason') ?? undefined, link: `/inbox?c=${cid}` });
       }
       case 'appointment.booked': {
         const m = str('membershipId'); const aid = str('appointmentId');

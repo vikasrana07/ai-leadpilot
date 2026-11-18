@@ -344,6 +344,8 @@ describe('website widget', () => {
     expect(js.status).toBe(200); expect(js.headers['content-type']).toContain('javascript');
     for (const secret of [process.env.JWT_ACCESS_SECRET as string, APP_SECRET, 'accessToken']) expect(js.text).not.toContain(secret);
     expect(js.text).not.toContain('innerHTML = m'); // visitor text is rendered with textContent only
+    // replies must reach a visitor whose chat tab is in the background: polling never stops while hidden, and resumes at once on return
+    expect(js.text).toContain('visibilitychange'); expect(js.text).not.toMatch(/if \(!document\.hidden\) poll\(\)/); expect(js.text).toContain('document.hidden ? 8000 : 2000');
   });
   it('serves config only to allow-listed origins', async () => {
     expect((await w('get', `/widget/config?key=${pk}`)).body).toMatchObject({ enabled: true, title: 'Chat with Skyline', color: '#3f55e8' });

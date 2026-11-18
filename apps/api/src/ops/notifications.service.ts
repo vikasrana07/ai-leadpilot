@@ -7,7 +7,7 @@ import { DbService } from '../db/db.module.js';
 import { RealtimeService } from '../realtime/realtime.module.js';
 
 export interface NotifyInput { tenantId: string; membershipIds: string[]; type: NotificationType; title: string; body?: string | undefined; link?: string | undefined; data?: Prisma.InputJsonObject }
-export interface CreatedNotification { id: string; membershipId: string; type: string; title: string }
+export interface CreatedNotification { id: string; membershipId: string; type: string; title: string; body?: string | null; link?: string | null }
 
 @Injectable()
 export class NotificationsService {
@@ -24,11 +24,11 @@ export class NotificationsService {
     const muted = new Set(prefs.filter((p) => !p.inApp).map((p) => p.membershipId));
     const rows = active.filter((m) => !muted.has(m.id)).map((m) => ({ id: uuidv7(), tenantId: n.tenantId, membershipId: m.id, type: n.type, title: n.title.slice(0, 200), body: n.body?.slice(0, 500) ?? null, link: n.link ?? null, data: n.data ?? {} }));
     if (rows.length) await tx.notification.createMany({ data: rows });
-    return rows.map((r) => ({ id: r.id, membershipId: r.membershipId, type: r.type, title: r.title }));
+    return rows.map((r) => ({ id: r.id, membershipId: r.membershipId, type: r.type, title: r.title, body: r.body, link: r.link }));
   }
 
   publish(tenantId: string, created: CreatedNotification[]): void {
-    for (const c of created) this.rt.publish(tenantId, { type: 'notification.created', conversationId: '', assignedMembershipId: null, membershipId: c.membershipId, data: { id: c.id, type: c.type, title: c.title } });
+    for (const c of created) this.rt.publish(tenantId, { type: 'notification.created', conversationId: '', assignedMembershipId: null, membershipId: c.membershipId, data: { id: c.id, type: c.type, title: c.title, body: c.body ?? null, link: c.link ?? null } });
   }
 
   private tx<T>(a: Actor, fn: (tx: TxClient) => Promise<T>): Promise<T> { return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, fn); }
