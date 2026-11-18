@@ -9,25 +9,44 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Dropdown } from '@/components/ui/dropdown';
 import { api } from '@/lib/api';
-import { desktopState, enableDesktop, withUnreadTitle, type DesktopState } from '@/lib/alerts';
+import { audioReady, desktopState, enableDesktop, playBeep, unlockAudio, withUnreadTitle, type DesktopState } from '@/lib/alerts';
+import { useAlertSettings } from '@/hooks/use-alert-settings';
 import { handleApiError } from '@/lib/forms';
 import { timeAgo } from '@/lib/format';
 import { notificationLabels, type Notification } from '@/lib/ops';
 import { useTerms } from '@/lib/pack';
 
-/** Desktop alerts need the browser's permission, which can only be asked from a click. */
-function DesktopAlerts() {
+/** Sound and desktop alerts. The choices are saved on the account; the browser permission is per browser and can only be asked from a click. */
+function SoundAndAlerts() {
+  const { settings, loaded, update } = useAlertSettings();
   // Rendered only inside the settings dialog, which opens on a click (never during server rendering), so the browser state can be read directly.
   const [state, setState] = useState<DesktopState>(() => desktopState());
-  if (state === 'unsupported') return null;
+  const [ready, setReady] = useState(() => audioReady());
+  const test = () => { unlockAudio(); setReady(audioReady()); playBeep(settings.soundVolume); };
   return (
-    <div className="mb-3 rounded-md border border-border p-3 text-[13px]">
-      <p className="font-medium">Desktop alerts</p>
-      <p className="text-helper mt-0.5">Get a system notification when something arrives while LeadPilot is in the background.</p>
-      {state === 'granted' ? <p className="mt-2 text-success">On for this browser.</p>
-        : state === 'denied' ? <p className="mt-2 text-helper">Blocked in your browser settings. Allow notifications for this site there, then reload.</p>
-        : <Button size="sm" className="mt-2" onClick={() => void enableDesktop().then(setState)}>Turn on desktop alerts</Button>}
-    </div>
+    <fieldset className="mb-3 space-y-3 rounded-md border border-border p-3 text-[13px]" disabled={!loaded}>
+      <legend className="px-1 font-medium">Sound and alerts</legend>
+      <div>
+        <label className="flex items-center gap-2.5"><input type="checkbox" checked={settings.soundEnabled} onChange={(e) => update({ soundEnabled: e.target.checked })} />Play a sound for new notifications</label>
+        <div className="mt-2 flex items-center gap-3">
+          <label htmlFor="alert-volume" className="shrink-0">Volume</label>
+          <input id="alert-volume" type="range" min={0} max={100} step={5} className="min-w-0 flex-1" value={settings.soundVolume} disabled={!settings.soundEnabled} onChange={(e) => update({ soundVolume: Number(e.target.value) })} />
+          <span className="w-9 text-right tabular-nums" aria-hidden>{settings.soundVolume}%</span>
+          <Button size="sm" variant="secondary" onClick={test}>Test sound</Button>
+        </div>
+        {!ready && <p className="text-helper mt-1">Click anywhere on the page once to allow sound in this browser.</p>}
+      </div>
+      {state !== 'unsupported' && (
+        <div>
+          <label className="flex items-center gap-2.5"><input type="checkbox" checked={settings.desktopEnabled} onChange={(e) => update({ desktopEnabled: e.target.checked })} />Show desktop alerts when I am in another window or application</label>
+          <p className="text-helper mt-0.5">Works while LeadPilot is open in a browser tab.</p>
+          {settings.desktopEnabled && (state === 'granted' ? <p className="mt-1 text-success">Allowed in this browser.</p>
+            : state === 'denied' ? <p className="text-helper mt-1">Blocked in your browser settings. Allow notifications for this site there, then reload.</p>
+            : <Button size="sm" className="mt-2" onClick={() => void enableDesktop().then(setState)}>Turn on in this browser</Button>)}
+        </div>
+      )}
+      {state === 'unsupported' && <p className="text-helper">Desktop alerts are not supported in this browser.</p>}
+    </fieldset>
   );
 }
 
@@ -40,7 +59,7 @@ function Preferences({ onClose }: { onClose: () => void }) {
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent title="Notification settings" description="Choose what appears in your bell">
-        <DesktopAlerts />
+        <SoundAndAlerts />
         <p className="text-helper mb-3">Tell me when…</p>
         <ul className="space-y-2">{(prefs.data?.preferences ?? []).map((p) => (
           <li key={p.type}><label className="flex items-center gap-2.5 text-[13px]"><input type="checkbox" checked={p.inApp} onChange={(e) => save.mutate({ type: p.type, inApp: e.target.checked })} />{labels[p.type] ?? p.type}</label></li>))}</ul>

@@ -121,7 +121,11 @@ export const ModelName = {
   MfaCredential: 'MfaCredential',
   MfaRecoveryCode: 'MfaRecoveryCode',
   DataExport: 'DataExport',
-  TenantDeletionRequest: 'TenantDeletionRequest'
+  TenantDeletionRequest: 'TenantDeletionRequest',
+  PortalConfig: 'PortalConfig',
+  PortalLoginCode: 'PortalLoginCode',
+  PortalSession: 'PortalSession',
+  UserAlertSettings: 'UserAlertSettings'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1266,6 +1270,62 @@ export const TenantDeletionRequestScalarFieldEnum = {
 } as const
 
 export type TenantDeletionRequestScalarFieldEnum = (typeof TenantDeletionRequestScalarFieldEnum)[keyof typeof TenantDeletionRequestScalarFieldEnum]
+
+
+export const PortalConfigScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  publicKey: 'publicKey',
+  enabled: 'enabled',
+  allowConfirm: 'allowConfirm',
+  allowCancel: 'allowCancel',
+  allowReschedule: 'allowReschedule',
+  cancelCutoffHours: 'cancelCutoffHours',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PortalConfigScalarFieldEnum = (typeof PortalConfigScalarFieldEnum)[keyof typeof PortalConfigScalarFieldEnum]
+
+
+export const PortalLoginCodeScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  identityHash: 'identityHash',
+  channel: 'channel',
+  codeHash: 'codeHash',
+  attempts: 'attempts',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PortalLoginCodeScalarFieldEnum = (typeof PortalLoginCodeScalarFieldEnum)[keyof typeof PortalLoginCodeScalarFieldEnum]
+
+
+export const PortalSessionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt',
+  lastSeenAt: 'lastSeenAt'
+} as const
+
+export type PortalSessionScalarFieldEnum = (typeof PortalSessionScalarFieldEnum)[keyof typeof PortalSessionScalarFieldEnum]
+
+
+export const UserAlertSettingsScalarFieldEnum = {
+  userId: 'userId',
+  soundEnabled: 'soundEnabled',
+  soundVolume: 'soundVolume',
+  desktopEnabled: 'desktopEnabled',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserAlertSettingsScalarFieldEnum = (typeof UserAlertSettingsScalarFieldEnum)[keyof typeof UserAlertSettingsScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -467,7 +467,11 @@ export const ModelName = {
   MfaCredential: 'MfaCredential',
   MfaRecoveryCode: 'MfaRecoveryCode',
   DataExport: 'DataExport',
-  TenantDeletionRequest: 'TenantDeletionRequest'
+  TenantDeletionRequest: 'TenantDeletionRequest',
+  PortalConfig: 'PortalConfig',
+  PortalLoginCode: 'PortalLoginCode',
+  PortalSession: 'PortalSession',
+  UserAlertSettings: 'UserAlertSettings'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -483,7 +487,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "opsAlert" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest"
+    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "opsAlert" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest" | "portalConfig" | "portalLoginCode" | "portalSession" | "userAlertSettings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5741,6 +5745,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PortalConfig: {
+      payload: Prisma.$PortalConfigPayload<ExtArgs>
+      fields: Prisma.PortalConfigFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PortalConfigFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PortalConfigFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload>
+        }
+        findFirst: {
+          args: Prisma.PortalConfigFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PortalConfigFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload>
+        }
+        findMany: {
+          args: Prisma.PortalConfigFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload>[]
+        }
+        create: {
+          args: Prisma.PortalConfigCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload>
+        }
+        createMany: {
+          args: Prisma.PortalConfigCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PortalConfigCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload>[]
+        }
+        delete: {
+          args: Prisma.PortalConfigDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload>
+        }
+        update: {
+          args: Prisma.PortalConfigUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload>
+        }
+        deleteMany: {
+          args: Prisma.PortalConfigDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PortalConfigUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PortalConfigUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload>[]
+        }
+        upsert: {
+          args: Prisma.PortalConfigUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalConfigPayload>
+        }
+        aggregate: {
+          args: Prisma.PortalConfigAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePortalConfig>
+        }
+        groupBy: {
+          args: Prisma.PortalConfigGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PortalConfigGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PortalConfigCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PortalConfigCountAggregateOutputType> | number
+        }
+      }
+    }
+    PortalLoginCode: {
+      payload: Prisma.$PortalLoginCodePayload<ExtArgs>
+      fields: Prisma.PortalLoginCodeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PortalLoginCodeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PortalLoginCodeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload>
+        }
+        findFirst: {
+          args: Prisma.PortalLoginCodeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PortalLoginCodeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload>
+        }
+        findMany: {
+          args: Prisma.PortalLoginCodeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload>[]
+        }
+        create: {
+          args: Prisma.PortalLoginCodeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload>
+        }
+        createMany: {
+          args: Prisma.PortalLoginCodeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PortalLoginCodeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload>[]
+        }
+        delete: {
+          args: Prisma.PortalLoginCodeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload>
+        }
+        update: {
+          args: Prisma.PortalLoginCodeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload>
+        }
+        deleteMany: {
+          args: Prisma.PortalLoginCodeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PortalLoginCodeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PortalLoginCodeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload>[]
+        }
+        upsert: {
+          args: Prisma.PortalLoginCodeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalLoginCodePayload>
+        }
+        aggregate: {
+          args: Prisma.PortalLoginCodeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePortalLoginCode>
+        }
+        groupBy: {
+          args: Prisma.PortalLoginCodeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PortalLoginCodeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PortalLoginCodeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PortalLoginCodeCountAggregateOutputType> | number
+        }
+      }
+    }
+    PortalSession: {
+      payload: Prisma.$PortalSessionPayload<ExtArgs>
+      fields: Prisma.PortalSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PortalSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PortalSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.PortalSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PortalSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload>
+        }
+        findMany: {
+          args: Prisma.PortalSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload>[]
+        }
+        create: {
+          args: Prisma.PortalSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload>
+        }
+        createMany: {
+          args: Prisma.PortalSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PortalSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.PortalSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload>
+        }
+        update: {
+          args: Prisma.PortalSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.PortalSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PortalSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PortalSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.PortalSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PortalSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.PortalSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePortalSession>
+        }
+        groupBy: {
+          args: Prisma.PortalSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PortalSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PortalSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PortalSessionCountAggregateOutputType> | number
+        }
+      }
+    }
+    UserAlertSettings: {
+      payload: Prisma.$UserAlertSettingsPayload<ExtArgs>
+      fields: Prisma.UserAlertSettingsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserAlertSettingsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserAlertSettingsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload>
+        }
+        findFirst: {
+          args: Prisma.UserAlertSettingsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserAlertSettingsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload>
+        }
+        findMany: {
+          args: Prisma.UserAlertSettingsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload>[]
+        }
+        create: {
+          args: Prisma.UserAlertSettingsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload>
+        }
+        createMany: {
+          args: Prisma.UserAlertSettingsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserAlertSettingsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload>[]
+        }
+        delete: {
+          args: Prisma.UserAlertSettingsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload>
+        }
+        update: {
+          args: Prisma.UserAlertSettingsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserAlertSettingsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserAlertSettingsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserAlertSettingsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserAlertSettingsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserAlertSettingsPayload>
+        }
+        aggregate: {
+          args: Prisma.UserAlertSettingsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserAlertSettings>
+        }
+        groupBy: {
+          args: Prisma.UserAlertSettingsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserAlertSettingsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserAlertSettingsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserAlertSettingsCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -6908,6 +7208,62 @@ export const TenantDeletionRequestScalarFieldEnum = {
 export type TenantDeletionRequestScalarFieldEnum = (typeof TenantDeletionRequestScalarFieldEnum)[keyof typeof TenantDeletionRequestScalarFieldEnum]
 
 
+export const PortalConfigScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  publicKey: 'publicKey',
+  enabled: 'enabled',
+  allowConfirm: 'allowConfirm',
+  allowCancel: 'allowCancel',
+  allowReschedule: 'allowReschedule',
+  cancelCutoffHours: 'cancelCutoffHours',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PortalConfigScalarFieldEnum = (typeof PortalConfigScalarFieldEnum)[keyof typeof PortalConfigScalarFieldEnum]
+
+
+export const PortalLoginCodeScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  identityHash: 'identityHash',
+  channel: 'channel',
+  codeHash: 'codeHash',
+  attempts: 'attempts',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PortalLoginCodeScalarFieldEnum = (typeof PortalLoginCodeScalarFieldEnum)[keyof typeof PortalLoginCodeScalarFieldEnum]
+
+
+export const PortalSessionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt',
+  lastSeenAt: 'lastSeenAt'
+} as const
+
+export type PortalSessionScalarFieldEnum = (typeof PortalSessionScalarFieldEnum)[keyof typeof PortalSessionScalarFieldEnum]
+
+
+export const UserAlertSettingsScalarFieldEnum = {
+  userId: 'userId',
+  soundEnabled: 'soundEnabled',
+  soundVolume: 'soundVolume',
+  desktopEnabled: 'desktopEnabled',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserAlertSettingsScalarFieldEnum = (typeof UserAlertSettingsScalarFieldEnum)[keyof typeof UserAlertSettingsScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -7596,6 +7952,10 @@ export type GlobalOmitConfig = {
   mfaRecoveryCode?: Prisma.MfaRecoveryCodeOmit
   dataExport?: Prisma.DataExportOmit
   tenantDeletionRequest?: Prisma.TenantDeletionRequestOmit
+  portalConfig?: Prisma.PortalConfigOmit
+  portalLoginCode?: Prisma.PortalLoginCodeOmit
+  portalSession?: Prisma.PortalSessionOmit
+  userAlertSettings?: Prisma.UserAlertSettingsOmit
 }
 
 /* Types for Logging */

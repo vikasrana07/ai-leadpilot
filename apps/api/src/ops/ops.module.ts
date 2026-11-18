@@ -12,6 +12,7 @@ import { AutomationEngine } from './automation-engine.js';
 import { AutomationsService } from './automations.service.js';
 import { EventNotifier } from './event-notifier.js';
 import { JobsService } from './jobs.service.js';
+import { AlertSettingsController } from './alert-settings.js';
 import { AlertsService } from './alerts.service.js';
 import { HealthSnapshotService } from './health-snapshot.service.js';
 import { WorkerHeartbeat } from './worker-heartbeat.js';
@@ -31,7 +32,7 @@ export class OutboxModule {}
 
 @Module({
   imports: [LeadsModule, ConversationsModule, ChannelsModule],
-  controllers: [AppointmentsController, NotificationsController, AutomationsController, TasksController, SlaController],
+  controllers: [AppointmentsController, NotificationsController, AlertSettingsController, AutomationsController, TasksController, SlaController],
   providers: [ChannelHealth, WebhookDispatcher, LifecycleJobs, BillingNotifier, BillingLifecycle, NotificationsService, AppointmentsService, AutomationEngine, AutomationsService, EventNotifier, OutboxRelay, ScannersService, SlaService, TasksService, JobsService, WorkerHeartbeat, HealthSnapshotService, AlertsService],
   exports: [ChannelHealth, WebhookDispatcher, LifecycleJobs, BillingNotifier, AppointmentsService, NotificationsService, OutboxRelay, ScannersService, JobsService, AutomationEngine, WorkerHeartbeat, HealthSnapshotService, AlertsService],
 })

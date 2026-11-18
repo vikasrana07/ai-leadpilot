@@ -156,6 +156,11 @@ export const taskListQuerySchema = z.object({ status: z.enum(['OPEN', 'DONE']).o
 export const NOTIFICATION_TYPES = ['lead_assigned', 'hot_lead', 'handover', 'appointment_booked', 'appointment_changed', 'appointment_reminder', 'task_due', 'sla_breach', 'automation_failed', 'lead_inactive', 'billing', 'quota', 'privacy', 'integration', 'security', 'new_message'] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const notificationListQuerySchema = z.object({ unread: z.enum(['true', 'false']).optional(), limit: z.coerce.number().int().min(1).max(100).default(30), before: z.string().datetime().optional() });
+/** Sound and desktop alerts for new notifications: personal to the signed-in user (synced across their devices). */
+export const alertSettingsSchema = z.object({ soundEnabled: z.boolean(), soundVolume: z.number().int().min(0).max(100), desktopEnabled: z.boolean() });
+export type AlertSettings = z.infer<typeof alertSettingsSchema>;
+export const DEFAULT_ALERT_SETTINGS: AlertSettings = { soundEnabled: true, soundVolume: 50, desktopEnabled: true };
+
 export const notificationPreferencesSchema = z.object({ preferences: z.array(z.object({ type: z.enum(NOTIFICATION_TYPES), inApp: z.boolean() })).max(NOTIFICATION_TYPES.length) });
 
 export const slaSettingsSchema = z.object({ enabled: z.boolean(), firstResponseMinutes: z.number().int().min(1).max(24 * 60) });

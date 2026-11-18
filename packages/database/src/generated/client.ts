@@ -396,3 +396,23 @@ export type DataExport = Prisma.DataExportModel
  * 
  */
 export type TenantDeletionRequest = Prisma.TenantDeletionRequestModel
+/**
+ * Model PortalConfig
+ * 
+ */
+export type PortalConfig = Prisma.PortalConfigModel
+/**
+ * Model PortalLoginCode
+ * One-time sign-in codes: only an HMAC of the code is stored, single use, expiring, attempt-limited
+ */
+export type PortalLoginCode = Prisma.PortalLoginCodeModel
+/**
+ * Model PortalSession
+ * 
+ */
+export type PortalSession = Prisma.PortalSessionModel
+/**
+ * Model UserAlertSettings
+ * Per-person alert settings (sound and desktop alerts). No tenant: personal to the user. Missing row = defaults.
+ */
+export type UserAlertSettings = Prisma.UserAlertSettingsModel

@@ -6,13 +6,14 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { API_URL, api } from '@/lib/api';
 import type { Notification } from '@/lib/ops';
-import { parseLive, shouldToast, showDesktop } from '@/lib/alerts';
+import { audioReady, parseLive, shouldToast, showDesktop, soundForNotification, unlockAudio, type LiveNotification } from '@/lib/alerts';
+import { fetchAlertSettings, readAlertSettings, ALERT_SETTINGS_KEY } from './use-alert-settings';
 
 /**
  * Subscribes to the server-sent event stream and invalidates the affected queries. Events carry only ids; the data is
  * refetched through the normal (permission-checked) API. Reconnects with backoff; the browser also retries on its own.
- * A notification that arrives live also pops up (and, if the person allowed it and the tab is in the background, becomes a desktop alert),
- * so something that happens while they are on another page or tab is not missed.
+ * A notification that arrives live is announced (see `announce`): a pop-up, a beep if the person wants one, and a desktop alert when they are
+ * away from LeadPilot (another tab or another application), so something that happens while they are elsewhere is not missed.
  */
 export function useRealtime(enabled: boolean): void {
   const qc = useQueryClient();
@@ -28,6 +29,17 @@ export function useRealtime(enabled: boolean): void {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let lostAt: number | null = null; // when the live connection dropped, so what arrived meanwhile can be announced after it comes back
     const announced = new Set<string>(); // notification ids already shown, so a pop-up never repeats
+    const open = (link: string | null) => { if (link) where.current.router.push(link); };
+    // One place for every way of telling the person: used for live events and for the ones recovered after a dropped connection.
+    const announce = (n: LiveNotification) => {
+      if (shouldToast(n, where.current.pathname, document.hidden)) toast(n.title ?? '', { ...(n.body ? { description: n.body } : {}), ...(n.link ? { action: { label: 'Open', onClick: () => open(n.link ?? null) } } : {}), duration: 8000 });
+      const settings = readAlertSettings(qc); // null while loading: stay quiet rather than beep someone who turned it off
+      if (settings) { soundForNotification(settings); showDesktop(n, open, settings); }
+    };
+    void qc.prefetchQuery({ queryKey: ALERT_SETTINGS_KEY, queryFn: fetchAlertSettings, staleTime: 5 * 60_000 });
+    // Browsers allow sound only after the person has clicked or pressed a key on the page: wake the audio on the first such event.
+    const unlock = () => { unlockAudio(); if (audioReady()) { window.removeEventListener('pointerdown', unlock); window.removeEventListener('keydown', unlock); } };
+    window.addEventListener('pointerdown', unlock); window.addEventListener('keydown', unlock);
 
     const refresh = (conversationId?: string) => {
       void qc.invalidateQueries({ queryKey: ['conversations', 'list'] });
@@ -49,9 +61,7 @@ export function useRealtime(enabled: boolean): void {
           for (const x of r.items) {
             if (x.read || announced.has(x.id) || new Date(x.createdAt).getTime() < since - 5000) continue;
             announced.add(x.id);
-            const n = { id: x.id, type: x.type, title: x.title, body: x.body, link: x.link };
-            if (shouldToast(n, where.current.pathname, document.hidden)) toast(n.title, { ...(n.body ? { description: n.body } : {}), ...(n.link ? { action: { label: 'Open', onClick: () => { if (n.link) where.current.router.push(n.link); } } } : {}), duration: 8000 });
-            showDesktop(n, (link) => { if (link) where.current.router.push(link); });
+            announce({ id: x.id, type: x.type, title: x.title, body: x.body, link: x.link });
           }
         }).catch(() => undefined);
       };
@@ -60,9 +70,7 @@ export function useRealtime(enabled: boolean): void {
         const n = parseLive((e as MessageEvent<string>).data);
         if (!n) return;
         if (n.id) { if (announced.has(n.id)) return; announced.add(n.id); }
-        const open = (link: string | null) => { if (link) where.current.router.push(link); };
-        if (shouldToast(n, where.current.pathname, document.hidden)) toast(n.title, { ...(n.body ? { description: n.body } : {}), ...(n.link ? { action: { label: 'Open', onClick: () => open(n.link ?? null) } } : {}), duration: 8000 });
-        showDesktop(n, open);
+        announce(n);
       });
       for (const type of ['message.created', 'message.status', 'conversation.updated']) {
         es.addEventListener(type, (e) => { try { refresh((JSON.parse((e as MessageEvent<string>).data) as { conversationId?: string }).conversationId); } catch { refresh(); } });
@@ -76,6 +84,6 @@ export function useRealtime(enabled: boolean): void {
       };
     };
     connect();
-    return () => { closed = true; es?.close(); if (timer) clearTimeout(timer); };
+    return () => { closed = true; es?.close(); if (timer) clearTimeout(timer); window.removeEventListener('pointerdown', unlock); window.removeEventListener('keydown', unlock); };
   }, [enabled, qc]);
 }

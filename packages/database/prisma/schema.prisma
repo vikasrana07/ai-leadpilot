@@ -1537,3 +1537,14 @@ model PortalSession {
   @@map("portal_sessions")
 }
 
+/// Per-person alert settings (sound and desktop alerts). No tenant: personal to the user. Missing row = defaults.
+model UserAlertSettings {
+  userId         String   @id @map("user_id") @db.Uuid
+  soundEnabled   Boolean  @default(true) @map("sound_enabled")
+  soundVolume    Int      @default(50) @map("sound_volume")
+  desktopEnabled Boolean  @default(true) @map("desktop_enabled")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("user_alert_settings")
+}
+
