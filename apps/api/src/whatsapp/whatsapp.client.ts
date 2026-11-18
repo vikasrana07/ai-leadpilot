@@ -7,6 +7,9 @@ export interface WaCredentials { accessToken: string; appSecret: string }
 export interface WaSendResult { messageId: string }
 export interface WaPhoneInfo { displayPhoneNumber: string; verifiedName: string | null; qualityRating: string | null }
 
+/** A message template as Meta reports it. `bodyText` is the BODY component's text (may contain {{1}}, {{2}} placeholders). */
+export interface WaTemplateInfo { name: string; language: string; category: string; status: string; bodyText: string }
+
 /** Result of exchanging the one-time Embedded Signup code. `expiresInSec` is null when Meta does not say the token expires. */
 export interface WaTokenResult { accessToken: string; expiresInSec: number | null }
 
@@ -32,6 +35,8 @@ export interface WhatsAppClient {
   /** Subscribes the platform app to the WABA so its webhooks are delivered to the platform webhook. */
   subscribeApp(wabaId: string, accessToken: string): Promise<void>;
   unsubscribeApp(wabaId: string, accessToken: string): Promise<void>;
+  /** Lists the message templates of the WABA with their approval status (read only; creating templates is out of scope). */
+  listTemplates(wabaId: string, accessToken: string): Promise<WaTemplateInfo[]>;
 }
 export const WHATSAPP_CLIENT = Symbol('WHATSAPP_CLIENT');
 
@@ -111,6 +116,18 @@ export class LiveWhatsAppClient implements WhatsAppClient {
   async unsubscribeApp(wabaId: string, accessToken: string): Promise<void> {
     await this.call(`/${encodeURIComponent(wabaId)}/subscribed_apps`, { accessToken, appSecret: '' }, { method: 'DELETE' });
   }
+  async listTemplates(wabaId: string, accessToken: string): Promise<WaTemplateInfo[]> {
+    const c = { accessToken, appSecret: '' }; const out: WaTemplateInfo[] = [];
+    type Page = { data?: { name: string; language: string; category?: string; status?: string; components?: { type: string; text?: string }[] }[]; paging?: { next?: string; cursors?: { after?: string } } };
+    let after: string | undefined;
+    for (let page = 0; page < 10; page++) { // at most 1000 templates: far above Meta's per-account limits
+      const r = await this.call<Page>(`/${encodeURIComponent(wabaId)}/message_templates?fields=name,language,category,status,components&limit=100${after ? `&after=${encodeURIComponent(after)}` : ''}`, c);
+      for (const t of r.data ?? []) out.push({ name: t.name, language: t.language, category: t.category ?? 'UTILITY', status: t.status ?? 'UNKNOWN', bodyText: t.components?.find((x) => x.type === 'BODY')?.text ?? '' });
+      after = r.paging?.next ? r.paging.cursors?.after : undefined;
+      if (!after) break;
+    }
+    return out;
+  }
   async getMedia(c: WaCredentials, mediaId: string): Promise<{ url: string; mime: string }> {
     return this.call<{ url: string; mime_type: string }>(`/${encodeURIComponent(mediaId)}`, c).then((r) => ({ url: r.url, mime: r.mime_type }));
   }
@@ -162,6 +179,9 @@ export class MockWhatsAppClient implements WhatsAppClient {
   strictWabas = new Set<string>();
   phonesInWaba = new Map<string, string[]>();
   failSubscribe: WhatsAppApiError | null = null;
+  /** Templates the mock reports per WABA id, for the sync tests. */
+  templates = new Map<string, WaTemplateInfo[]>();
+  failListTemplates: WhatsAppApiError | null = null;
   async exchangeCode(code: string): Promise<WaTokenResult> {
     this.exchanged.push(code);
     if (!code.startsWith('mock-ok')) throw new WhatsAppApiError('Invalid verification code', false, 100);
@@ -173,6 +193,14 @@ export class MockWhatsAppClient implements WhatsAppClient {
   }
   async subscribeApp(wabaId: string): Promise<void> { const f = this.failSubscribe; if (f) { this.failSubscribe = null; throw f; } this.subscribed.add(wabaId); }
   async unsubscribeApp(wabaId: string): Promise<void> { this.unsubscribed.push(wabaId); this.subscribed.delete(wabaId); }
+  /** Two demo templates (one approved, one pending) for any account that was not given an explicit list, so development and E2E can see sync work. */
+  async listTemplates(wabaId: string): Promise<WaTemplateInfo[]> {
+    const f = this.failListTemplates; if (f) { this.failListTemplates = null; throw f; }
+    return this.templates.get(wabaId) ?? [
+      { name: 'welcome_message', language: 'en', category: 'UTILITY', status: 'APPROVED', bodyText: 'Hi {{1}}, thanks for contacting us.' },
+      { name: 'offer_update', language: 'en', category: 'MARKETING', status: 'PENDING', bodyText: 'New offer for you, {{1}}.' },
+    ];
+  }
   async getMedia(_c: WaCredentials, mediaId: string): Promise<{ url: string; mime: string }> { return { url: `https://lookaside.fbsbx.com/mock/${mediaId}`, mime: 'image/jpeg' }; }
   async downloadMedia(): Promise<{ data: Buffer; mime: string }> { return { data: Buffer.from('mock-image-bytes'), mime: 'image/jpeg' }; }
 }

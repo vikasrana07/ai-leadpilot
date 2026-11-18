@@ -1,6 +1,7 @@
+import { createHmac } from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, request as pwRequest, test, type Page } from '@playwright/test';
-import { API, api, registerViaApi, signInViaApi, waSignature, type Account } from '../helpers.ts';
+import { API, api, ownerPool, registerViaApi, signInViaApi, waSignature, type Account } from '../helpers.ts';
 
 /** WhatsApp Embedded Signup in mock mode (ADR 0012): no Facebook, but the page, the server call and the platform webhook are the real ones. */
 const PLATFORM_SECRET = 'e2e-platform-meta-app-secret-0123456789'; // playwright.config.ts sets META_APP_SECRET to the same value for the API
@@ -77,6 +78,35 @@ test('a number that another workspace already uses is refused with a plain messa
   await other.dispose();
 });
 
+test('templates are pulled from WhatsApp with their approval status, and Sync refreshes them', async ({ page, request }) => {
+  const acct = await registerViaApi(request, 'estpl');
+  await openIntegrations(page, acct);
+  await connectWithMockFacebook(page);
+  const list = page.getByRole('list').filter({ hasText: 'welcome_message' });
+  await expect(list).toContainText('welcome_message'); await expect(list).toContainText('Approved');
+  await expect(list).toContainText('offer_update'); await expect(list).toContainText('Pending');
+  await page.getByRole('button', { name: 'Sync from WhatsApp' }).click();
+  await expect(page.getByText(/Templates synced: 0 added, 2 updated/)).toBeVisible();
+});
+
+test('a revoked connection shows "Reconnect needed" with a clear way back, and reconnecting fixes it', async ({ page, request }) => {
+  const acct = await registerViaApi(request, 'esrevoked');
+  await openIntegrations(page, acct);
+  const { phoneNumberId, wabaId } = await connectWithMockFacebook(page);
+  const pool = ownerPool();
+  try { await pool.query("UPDATE channels SET status = 'NEEDS_RECONNECT' WHERE tenant_id = $1 AND external_id = $2", [acct.tenantId, phoneNumberId]); } finally { await pool.end(); }
+  await page.reload();
+  await expect(page.getByText('Reconnect needed', { exact: true })).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'revoked or has expired' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Test connection' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Reconnect with Facebook' }).click();
+  const dialog = page.getByRole('dialog', { name: /Facebook sign-in/ });
+  await dialog.getByLabel('Phone number ID').fill(phoneNumberId); await dialog.getByLabel('WhatsApp Business Account ID').fill(wabaId);
+  await dialog.getByRole('button', { name: 'Continue as Facebook user' }).click();
+  await expect(page.getByText('Connected', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('Reconnect needed', { exact: true })).toHaveCount(0);
+});
+
 for (const scheme of ['light', 'dark'] as const) {
   test(`integrations with Facebook-connected WhatsApp and the stand-in dialog: no WCAG A/AA violations (${scheme} theme)`, async ({ browser, request }) => {
     const acct = await registerViaApi(request, `esaxe${scheme}`);
@@ -93,6 +123,10 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.getByRole('dialog').getByRole('button', { name: 'Continue as Facebook user' }).click();
     await expect(page.getByText('Connected with Facebook.')).toBeVisible();
     await run(); // connected
+    const pool = ownerPool();
+    try { await pool.query("UPDATE channels SET status = 'NEEDS_RECONNECT' WHERE tenant_id = $1", [acct.tenantId]); } finally { await pool.end(); }
+    await page.reload(); await expect(page.getByText('Reconnect needed', { exact: true })).toBeVisible();
+    await run(); // reconnect needed
     await ctx.close();
   });
 }
@@ -109,3 +143,45 @@ test('the WhatsApp card fits a 375 px phone without horizontal scrolling, before
   expect(await overflow()).toBeLessThanOrEqual(1);
   await ctx.close();
 });
+
+// ---------------------------------------------------------------------------- Meta's data-deletion callback and its public status page
+const b64 = (v: string | Buffer) => Buffer.from(v).toString('base64url');
+const signedRequest = (userId: string) => { const p = b64(JSON.stringify({ algorithm: 'HMAC-SHA256', user_id: userId, issued_at: Math.floor(Date.now() / 1000) })); return `${b64(createHmac('sha256', PLATFORM_SECRET).update(p).digest())}.${p}`; };
+
+test('a Facebook data-deletion request gets a confirmation code, and its public status page says what LeadPilot holds', async ({ page }) => {
+  const meta = await pwRequest.newContext(); // Meta calls without cookies
+  const user = String(Math.floor(Math.random() * 9e12) + 1e12);
+  const forged = await meta.post(`${API}/webhooks/meta/data-deletion`, { form: { signed_request: 'not.valid' } }); expect(forged.status()).toBe(400);
+  const res = await meta.post(`${API}/webhooks/meta/data-deletion`, { form: { signed_request: signedRequest(user) } });
+  expect(res.status()).toBe(200);
+  const { url, confirmation_code: code } = (await res.json()) as { url: string; confirmation_code: string };
+  expect(url).toContain(`/data-deletion?code=${code}`);
+  await meta.dispose();
+
+  await page.goto(`/data-deletion?code=${code}`); // no sign-in needed
+  await expect(page.getByRole('heading', { level: 1, name: 'Data deletion request' })).toBeVisible();
+  await expect(page.getByText('Received', { exact: true })).toBeVisible();
+  await expect(page.getByText(/does not store your Facebook profile/)).toBeVisible();
+  await expect(page.getByText(code)).toBeVisible();
+  await page.goto('/data-deletion?code=' + 'z'.repeat(24));
+  await expect(page.locator('#main').getByRole('alert')).toContainText('could not find a request'); // scoped: Next adds its own route announcer with the same role
+  await page.goto('/data-deletion');
+  await expect(page.locator('#main').getByRole('alert')).toContainText('needs the confirmation code');
+});
+
+for (const scheme of ['light', 'dark'] as const) {
+  test(`the data-deletion status page: no WCAG A/AA violations and fits a phone (${scheme} theme)`, async ({ browser }) => {
+    const meta = await pwRequest.newContext();
+    const res = await meta.post(`${API}/webhooks/meta/data-deletion`, { form: { signed_request: signedRequest(String(Math.floor(Math.random() * 9e12) + 1e12)) } });
+    const code = ((await res.json()) as { confirmation_code: string }).confirmation_code; await meta.dispose();
+    const ctx = await browser.newContext({ colorScheme: scheme, viewport: { width: 375, height: 800 } });
+    const page = await ctx.newPage();
+    await page.goto(`/data-deletion?code=${code}`);
+    await expect(page.getByText('Received', { exact: true })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth); expect(overflow).toBeLessThanOrEqual(1);
+    await page.waitForLoadState('networkidle');
+    const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
+    expect(r.violations.map((v) => `${v.id} [${v.impact}] ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' ; ')}`)).toEqual([]);
+    await ctx.close();
+  });
+}

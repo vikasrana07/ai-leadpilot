@@ -72,6 +72,26 @@ describe('LiveWhatsAppClient: Embedded Signup calls (unverified against Meta; ch
   });
 });
 
+describe('LiveWhatsAppClient: template listing (unverified against Meta; checks the request shape and paging)', () => {
+  it('reads every page, takes the BODY text, and defaults missing fields', async () => {
+    const calls = stub(
+      json({ data: [{ name: 'visit_reminder', language: 'en', category: 'UTILITY', status: 'APPROVED', components: [{ type: 'HEADER', text: 'Header' }, { type: 'BODY', text: 'Hi {{1}}' }] }], paging: { next: 'https://graph.facebook.com/next', cursors: { after: 'CURSOR1' } } }),
+      json({ data: [{ name: 'bare', language: 'hi' }] }),
+    );
+    const out = await new LiveWhatsAppClient(env).listTemplates('999888', 'EAAB-token');
+    expect(out).toEqual([{ name: 'visit_reminder', language: 'en', category: 'UTILITY', status: 'APPROVED', bodyText: 'Hi {{1}}' }, { name: 'bare', language: 'hi', category: 'UTILITY', status: 'UNKNOWN', bodyText: '' }]);
+    expect(calls).toHaveLength(2);
+    expect(calls[0]!.url).toContain('/999888/message_templates?fields=name,language,category,status,components&limit=100'); expect(calls[0]!.url).not.toContain('after=');
+    expect(calls[1]!.url).toContain('after=CURSOR1'); expect((calls[0]!.init.headers as Record<string, string>).authorization).toBe('Bearer EAAB-token');
+  });
+  it('stops at the page cap even if Meta keeps sending a next page', async () => {
+    const page = () => json({ data: [], paging: { next: 'x', cursors: { after: 'C' } } });
+    const calls = stub(...Array.from({ length: 20 }, page));
+    await new LiveWhatsAppClient(env).listTemplates('999888', 'EAAB-token');
+    expect(calls).toHaveLength(10);
+  });
+});
+
 describe('MockWhatsAppClient: Embedded Signup stand-in', () => {
   it('accepts mock-ok codes, rejects others, tracks subscriptions, and can model a phone that is not in the WABA', async () => {
     const m = new MockWhatsAppClient();

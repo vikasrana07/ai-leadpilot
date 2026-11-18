@@ -3,6 +3,7 @@ import { Queue, Worker, type ConnectionOptions, type Job } from 'bullmq';
 import { ENV } from '../common/tokens.js';
 import { metrics } from '../observability/metrics.js';
 import { runWithLogContext } from '../observability/request-context.js';
+import { ChannelHealth } from './channel-health.js';
 import { AlertsService } from './alerts.service.js';
 import { HealthSnapshotService } from './health-snapshot.service.js';
 import { WorkerHeartbeat } from './worker-heartbeat.js';
@@ -46,6 +47,7 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     @Inject(WorkerHeartbeat) private readonly heartbeat: WorkerHeartbeat,
     @Inject(HealthSnapshotService) private readonly snapshot: HealthSnapshotService,
     @Inject(AlertsService) private readonly alerts: AlertsService,
+    @Inject(ChannelHealth) private readonly channelHealth: ChannelHealth,
   ) {}
 
   get running(): boolean { return this.runsQueue !== null; }
@@ -114,6 +116,8 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     const reports = await this.scanners.scanAll();
     // data lifecycle: queued workspace exports, expired export files, workspaces past their deletion cooling-off period
     await this.lifecycle.processExports().catch((e: unknown) => this.log.error(`exports: ${e instanceof Error ? e.message : String(e)}`));
+    // once a day: test the token of every Facebook-connected WhatsApp number (revoked token -> NEEDS_RECONNECT, owners told once)
+    await this.channelHealth.runDaily().catch((e: unknown) => this.log.error(`channel health: ${e instanceof Error ? e.message : String(e)}`));
     await this.lifecycle.purgeDueTenants().catch((e: unknown) => this.log.error(`tenant purge: ${e instanceof Error ? e.message : String(e)}`));
     // Orphaned QUEUED runs (job lost, manual retry, stale RUNNING reset) are re-enqueued with a per-minute generation so BullMQ does not drop
     // them as duplicates. Double delivery is harmless: the engine claims a run with a compare-and-set.

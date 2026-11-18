@@ -86,7 +86,8 @@ export type ChannelType = (typeof ChannelType)[keyof typeof ChannelType]
 export const ChannelStatus = {
   ACTIVE: 'ACTIVE',
   DISABLED: 'DISABLED',
-  ERROR: 'ERROR'
+  ERROR: 'ERROR',
+  NEEDS_RECONNECT: 'NEEDS_RECONNECT'
 } as const
 
 export type ChannelStatus = (typeof ChannelStatus)[keyof typeof ChannelStatus]

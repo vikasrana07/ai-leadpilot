@@ -1,4 +1,5 @@
 import { Global, Module } from '@nestjs/common';
+import { ChannelsModule } from '../channels/channels.module.js';
 import { ConversationsModule } from '../conversations/conversations.module.js';
 import { LeadsModule } from '../leads/leads.module.js';
 import { AppointmentsService } from './appointments.service.js';
@@ -6,6 +7,7 @@ import { LifecycleJobs } from './lifecycle-jobs.js';
 import { WebhookDispatcher } from './webhook-dispatcher.js';
 import { BillingLifecycle } from './billing-lifecycle.js';
 import { BillingNotifier } from './billing-notify.js';
+import { ChannelHealth } from './channel-health.js';
 import { AutomationEngine } from './automation-engine.js';
 import { AutomationsService } from './automations.service.js';
 import { EventNotifier } from './event-notifier.js';
@@ -28,9 +30,9 @@ import { TasksService } from './tasks.service.js';
 export class OutboxModule {}
 
 @Module({
-  imports: [LeadsModule, ConversationsModule],
+  imports: [LeadsModule, ConversationsModule, ChannelsModule],
   controllers: [AppointmentsController, NotificationsController, AutomationsController, TasksController, SlaController],
-  providers: [WebhookDispatcher, LifecycleJobs, BillingNotifier, BillingLifecycle, NotificationsService, AppointmentsService, AutomationEngine, AutomationsService, EventNotifier, OutboxRelay, ScannersService, SlaService, TasksService, JobsService, WorkerHeartbeat, HealthSnapshotService, AlertsService],
-  exports: [WebhookDispatcher, LifecycleJobs, BillingNotifier, AppointmentsService, NotificationsService, OutboxRelay, ScannersService, JobsService, AutomationEngine, WorkerHeartbeat, HealthSnapshotService, AlertsService],
+  providers: [ChannelHealth, WebhookDispatcher, LifecycleJobs, BillingNotifier, BillingLifecycle, NotificationsService, AppointmentsService, AutomationEngine, AutomationsService, EventNotifier, OutboxRelay, ScannersService, SlaService, TasksService, JobsService, WorkerHeartbeat, HealthSnapshotService, AlertsService],
+  exports: [ChannelHealth, WebhookDispatcher, LifecycleJobs, BillingNotifier, AppointmentsService, NotificationsService, OutboxRelay, ScannersService, JobsService, AutomationEngine, WorkerHeartbeat, HealthSnapshotService, AlertsService],
 })
 export class OpsModule {}

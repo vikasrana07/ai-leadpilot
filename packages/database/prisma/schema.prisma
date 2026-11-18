@@ -514,6 +514,8 @@ enum ChannelStatus {
   ACTIVE
   DISABLED
   ERROR
+  /// connected with Facebook and the token was revoked or expired: connect again
+  NEEDS_RECONNECT
 }
 
 enum ConversationStatus {
@@ -714,6 +716,11 @@ model WhatsappTemplate {
   category     String   @default("UTILITY")
   bodyPreview  String   @map("body_preview")
   variableCount Int     @default(0) @map("variable_count")
+  /// 'manual' (typed in by the workspace) or 'meta' (synced from the WhatsApp Business Account)
+  source       String   @default("manual")
+  /// Meta's status for synced rows (APPROVED, PENDING, REJECTED, PAUSED...); null for manual rows
+  approvalStatus String? @map("approval_status")
+  syncedAt     DateTime? @map("synced_at") @db.Timestamptz(3)
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   @@unique([tenantId, name, language])

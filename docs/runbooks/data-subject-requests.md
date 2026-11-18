@@ -2,6 +2,9 @@
 
 Roles: LeadPilot is the **processor**; the workspace owner is the **fiduciary** for their leads' data. A person asking to see or erase their data should be directed to the business that holds it; LeadPilot staff act only on the owner's instruction.
 
+## Meta (Facebook) data-deletion and deauthorize requests
+LeadPilot's WhatsApp Embedded Signup app must answer Meta's callbacks (ADR 0012). Requests are recorded in `meta_data_requests` (platform-only; the Facebook user id is stored only as a SHA-256 hash). LeadPilot holds no Facebook profile data and nothing keyed to a Facebook user, so there is normally nothing to delete: review the pending rows (`SELECT kind, confirmation_code, status, received_at FROM meta_data_requests WHERE status = 'received' ORDER BY received_at`), check whether the person is a workspace owner who connected a number (they can disconnect it, or delete the workspace under Settings → Data), and when done run `UPDATE meta_data_requests SET status = 'completed', completed_at = now(), note = '...' WHERE confirmation_code = '...'`. The person sees the status at `/data-deletion?code=<code>`. Answer within the time Meta expects (check Meta's current requirement).
+
 ## A customer asks a business to export or erase their data (single lead)
 1. Owner/manager opens the lead, **Privacy → Export data** (JSON) to answer an access request.
 2. Owner opens **Privacy → Erase permanently**, records the request reference as the reason, types ERASE. Everything about the person is deleted (conversations, messages, notes, activity, appointments, tasks, consents, scores, provider payloads mentioning their phone; merged duplicates too). Only an audit entry (`privacy.lead_erased`, counts and reason) remains. **Irreversible.** Backups keep the data until they age out.

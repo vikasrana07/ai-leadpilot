@@ -19,7 +19,7 @@ export interface ChatMessage {
   body: string | null; media: { id: string; mime?: string; filename?: string; caption?: string } | null; status: 'QUEUED' | 'SENT' | 'DELIVERED' | 'READ' | 'FAILED';
   error: { message?: string; retryable?: boolean } | null; createdAt: string;
 }
-export interface WaTemplate { id: string; name: string; language: string; bodyPreview: string; variableCount: number }
+export interface WaTemplate { id: string; name: string; language: string; bodyPreview: string; variableCount: number; source?: 'manual' | 'meta'; approvalStatus?: string | null }
 
 export const useUnreadCount = (enabled: boolean) => useQuery({
   queryKey: ['conversations', 'unread'], enabled, staleTime: 15_000,

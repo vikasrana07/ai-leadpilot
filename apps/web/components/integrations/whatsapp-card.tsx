@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { channelWhatsappSchema, templateSchema } from '@leadpilot/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, CircleAlert, Copy, MessageCircle, Plus, Trash2 } from 'lucide-react';
+import { Check, CircleAlert, Copy, MessageCircle, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -22,7 +22,7 @@ import type { WaTemplate } from '@/lib/inbox';
 import { useTerms } from '@/lib/pack';
 import { EmbeddedSignupButton, type EmbeddedConfig } from './embedded-signup-button';
 
-interface Channel { id: string; name: string; status: 'ACTIVE' | 'DISABLED' | 'ERROR'; mode: 'manual' | 'platform'; phoneNumberId: string; displayPhone: string | null; webhookUrl: string | null; verifyToken: string | null; lastVerifiedAt: string | null }
+interface Channel { id: string; name: string; status: 'ACTIVE' | 'DISABLED' | 'ERROR' | 'NEEDS_RECONNECT'; mode: 'manual' | 'platform'; phoneNumberId: string; displayPhone: string | null; webhookUrl: string | null; verifyToken: string | null; lastVerifiedAt: string | null }
 type ConnectForm = z.infer<typeof channelWhatsappSchema>;
 type TemplateForm = z.input<typeof templateSchema>;
 
@@ -59,16 +59,28 @@ function ConnectDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o
   );
 }
 
-function Templates() {
+function Templates({ canSync }: { canSync: boolean }) {
   const terms = useTerms();
   const qc = useQueryClient();
+  const sync = useMutation({
+    mutationFn: () => api<{ added: number; updated: number; removed: number; clashes: string[]; total: number }>('/whatsapp/templates/sync', { method: 'POST' }),
+    onSuccess: async (r) => {
+      toast.success(`Templates synced: ${r.added} added, ${r.updated} updated${r.removed ? `, ${r.removed} removed` : ''}.`);
+      if (r.clashes.length) toast.message(`Kept your own version of: ${r.clashes.join(', ')}`);
+      await qc.invalidateQueries({ queryKey: ['whatsapp', 'templates'] });
+    },
+    onError: (e) => handleApiError(e),
+  });
   const list = useQuery({ queryKey: ['whatsapp', 'templates'], queryFn: () => api<WaTemplate[]>('/whatsapp/templates') });
   const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting } } = useForm<TemplateForm, unknown, z.infer<typeof templateSchema>>({ resolver: zodResolver(templateSchema), defaultValues: { language: 'en', category: 'UTILITY' } });
   const remove = useMutation({ mutationFn: (id: string) => api(`/whatsapp/templates/${id}`, { method: 'DELETE' }), onSuccess: () => qc.invalidateQueries({ queryKey: ['whatsapp', 'templates'] }), onError: (e) => handleApiError(e) });
   return (
     <div className="space-y-3">
-      <div><p className="text-label">Message templates</p><p className="text-helper">After 24 hours of silence WhatsApp only allows approved templates. Register the exact names of templates you have already had approved in Meta.</p></div>
-      {list.data?.length ? <ul className="divide-y divide-border rounded-lg border border-border">{list.data.map((t) => <li key={t.id} className="flex items-center gap-3 px-3 py-2 text-[13px]"><div className="min-w-0 flex-1"><p className="font-medium">{t.name} <span className="text-helper">({t.language})</span></p><p className="text-helper truncate">{t.bodyPreview}</p></div><Button variant="ghost" size="icon" aria-label={`Remove ${t.name}`} onClick={() => remove.mutate(t.id)}><Trash2 className="h-3.5 w-3.5" /></Button></li>)}</ul> : <p className="text-helper">No templates registered.</p>}
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-[14rem] flex-1"><p className="text-label">Message templates</p><p className="text-helper">After 24 hours of silence WhatsApp only allows approved templates. {canSync ? 'Sync pulls your templates and their approval status from WhatsApp; only approved ones can be sent.' : 'Register the exact names of templates you have already had approved in Meta.'}</p></div>
+        {canSync ? <Button size="sm" loading={sync.isPending} onClick={() => sync.mutate()}><RefreshCw className="h-3.5 w-3.5" aria-hidden />Sync from WhatsApp</Button> : null}
+      </div>
+      {list.data?.length ? <ul className="divide-y divide-border rounded-lg border border-border">{list.data.map((t) => <li key={t.id} className="flex items-center gap-3 px-3 py-2 text-[13px]"><div className="min-w-0 flex-1"><p className="font-medium">{t.name} <span className="text-helper">({t.language})</span>{t.approvalStatus ? <Badge className="ml-2" tone={t.approvalStatus === 'APPROVED' ? 'success' : t.approvalStatus === 'PENDING' || t.approvalStatus === 'IN_APPEAL' ? 'warning' : 'danger'}>{t.approvalStatus === 'APPROVED' ? 'Approved' : t.approvalStatus.charAt(0) + t.approvalStatus.slice(1).toLowerCase().replace('_', ' ')}</Badge> : null}</p><p className="text-helper truncate">{t.bodyPreview}</p></div><Button variant="ghost" size="icon" aria-label={`Remove ${t.name}`} onClick={() => remove.mutate(t.id)}><Trash2 className="h-3.5 w-3.5" /></Button></li>)}</ul> : <p className="text-helper">No templates registered.</p>}
       <form className="grid gap-2 sm:grid-cols-[1fr_5rem_1.5fr_auto] sm:items-start" noValidate onSubmit={handleSubmit(async (v) => { try { await api('/whatsapp/templates', { method: 'POST', body: v }); reset(); await qc.invalidateQueries({ queryKey: ['whatsapp', 'templates'] }); } catch (e) { handleApiError(e, setError); } })}>
         <Field label="Name" htmlFor="tpl-name" error={errors.name?.message}><Input id="tpl-name" placeholder="appointment_reminder" {...register('name')} /></Field>
         <Field label="Language" htmlFor="tpl-lang" error={errors.language?.message}><Input id="tpl-lang" {...register('language')} /></Field>
@@ -105,12 +117,13 @@ export function WhatsappCard() {
           <>
             <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3">
               <div className="min-w-[12rem] flex-1"><p className="text-[13px] font-medium">{ch.name}</p><p className="text-helper num">{ch.displayPhone ?? ch.phoneNumberId} · verified {timeAgo(ch.lastVerifiedAt)}</p></div>
-              <Badge tone={ch.status === 'ACTIVE' ? 'success' : ch.status === 'ERROR' ? 'danger' : 'neutral'}>{ch.status === 'ACTIVE' ? 'Connected' : ch.status === 'ERROR' ? 'Connection problem' : 'Disabled'}</Badge>
+              <Badge tone={ch.status === 'ACTIVE' ? 'success' : ch.status === 'ERROR' ? 'danger' : ch.status === 'NEEDS_RECONNECT' ? 'warning' : 'neutral'}>{ch.status === 'ACTIVE' ? 'Connected' : ch.status === 'ERROR' ? 'Connection problem' : ch.status === 'NEEDS_RECONNECT' ? 'Reconnect needed' : 'Disabled'}</Badge>
               {viaFacebook && ch.status !== 'ACTIVE' && es
                 ? <EmbeddedSignupButton config={es} label="Reconnect with Facebook" variant="secondary" />
                 : <Button size="sm" loading={test.isPending} onClick={() => test.mutate(ch.id)}>{ch.status === 'DISABLED' ? 'Reconnect' : 'Test connection'}</Button>}
               {ch.status !== 'DISABLED' ? <Button size="sm" variant="ghost" onClick={() => disable.mutate(ch.id)}>Disable</Button> : null}
             </div>
+            {ch.status === 'NEEDS_RECONNECT' ? <p role="alert" className="flex items-start gap-2 rounded-md bg-warning-soft p-3 text-[13px] text-foreground"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />Your WhatsApp connection was revoked or has expired, so messages cannot be sent or received. Choose Reconnect with Facebook to fix it. Nothing is lost.</p> : null}
             {ch.status === 'ERROR' ? <p className="flex items-start gap-2 rounded-md bg-danger-soft p-3 text-[13px] text-danger"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />WhatsApp rejected the last check. {viaFacebook ? 'The connection to Facebook may have expired or been revoked. Reconnect with Facebook.' : 'The access token may have expired or been revoked. Reconnect with a new token.'}</p> : null}
 
             {viaFacebook ? (
@@ -123,7 +136,7 @@ export function WhatsappCard() {
               <p className="text-helper">Meta can only reach a public HTTPS address. For local testing use a tunnel to your API.</p>
             </div>
             ) : null}
-            <Templates />
+            <Templates canSync={viaFacebook} />
           </>
         )}
       </CardBody>

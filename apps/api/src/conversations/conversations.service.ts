@@ -245,6 +245,7 @@ export class ConversationsService {
           if (!consent) throw new UnprocessableEntityException({ code: 'consent_required', message: 'There is no record of this customer opting in to WhatsApp messages.' });
           const t = await tx.whatsappTemplate.findFirst({ where: { tenantId: a.tenantId, name: input.template.name, language: input.template.language } });
           if (!t) throw new UnprocessableEntityException({ code: 'unknown_template', message: 'That template is not registered for this workspace.' });
+          if (t.approvalStatus && t.approvalStatus !== 'APPROVED') throw new UnprocessableEntityException({ code: 'template_not_approved', message: `WhatsApp has not approved this template (status: ${t.approvalStatus.toLowerCase()}), so it cannot be sent yet.` });
           if (input.template.params.length !== t.variableCount) throw new UnprocessableEntityException({ code: 'template_params', message: `This template needs ${t.variableCount} value${t.variableCount === 1 ? '' : 's'}.` });
           template = input.template;
         }

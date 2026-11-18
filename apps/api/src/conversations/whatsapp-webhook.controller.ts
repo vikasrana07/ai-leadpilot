@@ -5,6 +5,8 @@ import type { Response } from 'express';
 import { z } from 'zod';
 import { Public } from '../common/decorators.js';
 import type { AppRequest } from '../common/request-context.js';
+import { AuditService } from '../audit/audit.service.js';
+import { OutboxService } from '../ops/outbox.service.js';
 import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
 import { DbService } from '../db/db.module.js';
@@ -27,6 +29,9 @@ const waPayload = z.object({
   object: z.literal('whatsapp_business_account'),
   entry: z.array(z.object({ changes: z.array(z.object({ field: z.string(), value: z.object({
     metadata: z.object({ phone_number_id: z.string() }).optional(),
+    /** account_update notices (Embedded Signup): which account and what happened */
+    event: z.string().optional(),
+    waba_info: z.object({ waba_id: z.string().optional() }).optional(),
     contacts: z.array(z.object({ wa_id: z.string(), profile: z.object({ name: z.string().optional() }).optional() })).optional(),
     messages: z.array(waMessage).optional(),
     statuses: z.array(waStatus).optional(),
@@ -66,10 +71,35 @@ export interface WaChannelRef { id: string; tenant_id: string; external_id: stri
  * processing failure deletes the stored row and rethrows so Meta retries. `stored` is what is kept in webhook_events: for the platform
  * webhook it is only THIS channel's part of the request, never another workspace's messages.
  */
+/** Meta account notices that mean the business no longer lets LeadPilot act for it. Names follow Meta's documentation at planning time (UNVERIFIED). */
+export const REVOKING_ACCOUNT_EVENTS = /PARTNER_(APP_)?(REMOVED|UNINSTALLED)|DEAUTH|DISCONNECT|REVOKED/i;
+
 @Injectable()
 export class WhatsappWebhookProcessor {
   private readonly log = new Logger('WhatsAppWebhook');
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(InboundService) private readonly inbound: InboundService) {}
+  constructor(@Inject(DbService) private readonly db: DbService, @Inject(InboundService) private readonly inbound: InboundService, @Inject(AuditService) private readonly audit: AuditService, @Inject(OutboxService) private readonly outbox: OutboxService) {}
+
+  /**
+   * An account notice from Meta saying LeadPilot was removed from a WhatsApp Business Account: the Facebook-connected channels of that account
+   * can no longer send or receive, so they are flagged NEEDS_RECONNECT now instead of at the next daily check, and the owners are notified
+   * (through the outbox, once per channel: an already-flagged channel is left alone). Returns how many channels were flagged.
+   */
+  async handleAccountNotice(wabaId: string, event: string): Promise<number> {
+    if (!REVOKING_ACCOUNT_EVENTS.test(event)) return 0;
+    const rows = await this.db.userTx(null, (tx) => tx.$queryRaw<{ id: string; tenant_id: string; status: string }[]>`SELECT * FROM find_platform_channels_by_waba(${wabaId})`);
+    let flagged = 0;
+    for (const r of rows) {
+      if (r.status !== 'ACTIVE' && r.status !== 'ERROR') continue; // disabled by the owner, or already flagged
+      await this.db.tenantTx({ tenantId: r.tenant_id }, async (tx) => {
+        const u = await tx.channel.updateMany({ where: { id: r.id, status: { in: ['ACTIVE', 'ERROR'] } }, data: { status: 'NEEDS_RECONNECT' } });
+        if (u.count !== 1) return; // another delivery or the daily check got there first
+        await this.audit.record(tx, { tenantId: r.tenant_id, actorUserId: null, action: 'integration.whatsapp_needs_reconnect', resourceType: 'channel', resourceId: r.id, metadata: { source: 'meta_account_notice' } });
+        await this.outbox.emit(tx, r.tenant_id, 'integration.channel_needs_reconnect', { channelId: r.id });
+        flagged++;
+      });
+    }
+    return flagged;
+  }
 
   async handle(ch: WaChannelRef, payload: WaPayload, payloadHash: string, stored: object): Promise<{ status: string }> {
     const fresh = await this.db.tenantTx({ tenantId: ch.tenant_id }, (tx) => tx.webhookEvent.createMany({ data: [{ id: uuidv7(), tenantId: ch.tenant_id, channelId: ch.id, provider: 'whatsapp', payloadHash, payload: stored }], skipDuplicates: true }));
@@ -191,8 +221,13 @@ export class PlatformWhatsappWebhookController {
 
     // Group the changes by the phone number they are addressed to; a change without one cannot be routed.
     const byPhone = new Map<string, WaPayload['entry'][number]['changes']>();
-    let ignored = 0;
+    let ignored = 0; let flagged = 0;
     for (const entry of parsed.data.entry) for (const change of entry.changes) {
+      if (change.field === 'account_update') { // an account notice names a WABA, not a phone number
+        const waba = change.value.waba_info?.waba_id; const ev = change.value.event;
+        if (waba && ev) flagged += await this.processor.handleAccountNotice(waba, ev); else ignored++;
+        continue;
+      }
       const phone = change.value.metadata?.phone_number_id;
       if (!phone) { ignored++; continue; }
       byPhone.set(phone, [...(byPhone.get(phone) ?? []), change]);
@@ -208,6 +243,6 @@ export class PlatformWhatsappWebhookController {
       if (r.status === 'duplicate') duplicates++; else processed++;
     }
     if (ignored > 0) this.log.warn(`Platform webhook: ${ignored} change(s) were not for an active Facebook-connected channel and were ignored`);
-    return { status: processed > 0 ? 'ok' : duplicates > 0 ? 'duplicate' : 'ignored', processed, ignored };
+    return { status: processed > 0 || flagged > 0 ? 'ok' : duplicates > 0 ? 'duplicate' : 'ignored', processed, ignored };
   }
 }

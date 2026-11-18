@@ -42,6 +42,9 @@ export type WhatsappTemplateMinAggregateOutputType = {
   category: string | null
   bodyPreview: string | null
   variableCount: number | null
+  source: string | null
+  approvalStatus: string | null
+  syncedAt: Date | null
   createdAt: Date | null
 }
 
@@ -53,6 +56,9 @@ export type WhatsappTemplateMaxAggregateOutputType = {
   category: string | null
   bodyPreview: string | null
   variableCount: number | null
+  source: string | null
+  approvalStatus: string | null
+  syncedAt: Date | null
   createdAt: Date | null
 }
 
@@ -64,6 +70,9 @@ export type WhatsappTemplateCountAggregateOutputType = {
   category: number
   bodyPreview: number
   variableCount: number
+  source: number
+  approvalStatus: number
+  syncedAt: number
   createdAt: number
   _all: number
 }
@@ -85,6 +94,9 @@ export type WhatsappTemplateMinAggregateInputType = {
   category?: true
   bodyPreview?: true
   variableCount?: true
+  source?: true
+  approvalStatus?: true
+  syncedAt?: true
   createdAt?: true
 }
 
@@ -96,6 +108,9 @@ export type WhatsappTemplateMaxAggregateInputType = {
   category?: true
   bodyPreview?: true
   variableCount?: true
+  source?: true
+  approvalStatus?: true
+  syncedAt?: true
   createdAt?: true
 }
 
@@ -107,6 +122,9 @@ export type WhatsappTemplateCountAggregateInputType = {
   category?: true
   bodyPreview?: true
   variableCount?: true
+  source?: true
+  approvalStatus?: true
+  syncedAt?: true
   createdAt?: true
   _all?: true
 }
@@ -205,6 +223,9 @@ export type WhatsappTemplateGroupByOutputType = {
   category: string
   bodyPreview: string
   variableCount: number
+  source: string
+  approvalStatus: string | null
+  syncedAt: Date | null
   createdAt: Date
   _count: WhatsappTemplateCountAggregateOutputType | null
   _avg: WhatsappTemplateAvgAggregateOutputType | null
@@ -239,6 +260,9 @@ export type WhatsappTemplateWhereInput = {
   category?: Prisma.StringFilter<"WhatsappTemplate"> | string
   bodyPreview?: Prisma.StringFilter<"WhatsappTemplate"> | string
   variableCount?: Prisma.IntFilter<"WhatsappTemplate"> | number
+  source?: Prisma.StringFilter<"WhatsappTemplate"> | string
+  approvalStatus?: Prisma.StringNullableFilter<"WhatsappTemplate"> | string | null
+  syncedAt?: Prisma.DateTimeNullableFilter<"WhatsappTemplate"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WhatsappTemplate"> | Date | string
 }
 
@@ -250,6 +274,9 @@ export type WhatsappTemplateOrderByWithRelationInput = {
   category?: Prisma.SortOrder
   bodyPreview?: Prisma.SortOrder
   variableCount?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  approvalStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -265,6 +292,9 @@ export type WhatsappTemplateWhereUniqueInput = Prisma.AtLeast<{
   category?: Prisma.StringFilter<"WhatsappTemplate"> | string
   bodyPreview?: Prisma.StringFilter<"WhatsappTemplate"> | string
   variableCount?: Prisma.IntFilter<"WhatsappTemplate"> | number
+  source?: Prisma.StringFilter<"WhatsappTemplate"> | string
+  approvalStatus?: Prisma.StringNullableFilter<"WhatsappTemplate"> | string | null
+  syncedAt?: Prisma.DateTimeNullableFilter<"WhatsappTemplate"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WhatsappTemplate"> | Date | string
 }, "id" | "tenantId_name_language">
 
@@ -276,6 +306,9 @@ export type WhatsappTemplateOrderByWithAggregationInput = {
   category?: Prisma.SortOrder
   bodyPreview?: Prisma.SortOrder
   variableCount?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  approvalStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  syncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.WhatsappTemplateCountOrderByAggregateInput
   _avg?: Prisma.WhatsappTemplateAvgOrderByAggregateInput
@@ -295,6 +328,9 @@ export type WhatsappTemplateScalarWhereWithAggregatesInput = {
   category?: Prisma.StringWithAggregatesFilter<"WhatsappTemplate"> | string
   bodyPreview?: Prisma.StringWithAggregatesFilter<"WhatsappTemplate"> | string
   variableCount?: Prisma.IntWithAggregatesFilter<"WhatsappTemplate"> | number
+  source?: Prisma.StringWithAggregatesFilter<"WhatsappTemplate"> | string
+  approvalStatus?: Prisma.StringNullableWithAggregatesFilter<"WhatsappTemplate"> | string | null
+  syncedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"WhatsappTemplate"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"WhatsappTemplate"> | Date | string
 }
 
@@ -306,6 +342,9 @@ export type WhatsappTemplateCreateInput = {
   category?: string
   bodyPreview: string
   variableCount?: number
+  source?: string
+  approvalStatus?: string | null
+  syncedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -317,6 +356,9 @@ export type WhatsappTemplateUncheckedCreateInput = {
   category?: string
   bodyPreview: string
   variableCount?: number
+  source?: string
+  approvalStatus?: string | null
+  syncedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -328,6 +370,9 @@ export type WhatsappTemplateUpdateInput = {
   category?: Prisma.StringFieldUpdateOperationsInput | string
   bodyPreview?: Prisma.StringFieldUpdateOperationsInput | string
   variableCount?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -339,6 +384,9 @@ export type WhatsappTemplateUncheckedUpdateInput = {
   category?: Prisma.StringFieldUpdateOperationsInput | string
   bodyPreview?: Prisma.StringFieldUpdateOperationsInput | string
   variableCount?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -350,6 +398,9 @@ export type WhatsappTemplateCreateManyInput = {
   category?: string
   bodyPreview: string
   variableCount?: number
+  source?: string
+  approvalStatus?: string | null
+  syncedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -361,6 +412,9 @@ export type WhatsappTemplateUpdateManyMutationInput = {
   category?: Prisma.StringFieldUpdateOperationsInput | string
   bodyPreview?: Prisma.StringFieldUpdateOperationsInput | string
   variableCount?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -372,6 +426,9 @@ export type WhatsappTemplateUncheckedUpdateManyInput = {
   category?: Prisma.StringFieldUpdateOperationsInput | string
   bodyPreview?: Prisma.StringFieldUpdateOperationsInput | string
   variableCount?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -389,6 +446,9 @@ export type WhatsappTemplateCountOrderByAggregateInput = {
   category?: Prisma.SortOrder
   bodyPreview?: Prisma.SortOrder
   variableCount?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  approvalStatus?: Prisma.SortOrder
+  syncedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -404,6 +464,9 @@ export type WhatsappTemplateMaxOrderByAggregateInput = {
   category?: Prisma.SortOrder
   bodyPreview?: Prisma.SortOrder
   variableCount?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  approvalStatus?: Prisma.SortOrder
+  syncedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -415,6 +478,9 @@ export type WhatsappTemplateMinOrderByAggregateInput = {
   category?: Prisma.SortOrder
   bodyPreview?: Prisma.SortOrder
   variableCount?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  approvalStatus?: Prisma.SortOrder
+  syncedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -432,6 +498,9 @@ export type WhatsappTemplateSelect<ExtArgs extends runtime.Types.Extensions.Inte
   category?: boolean
   bodyPreview?: boolean
   variableCount?: boolean
+  source?: boolean
+  approvalStatus?: boolean
+  syncedAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["whatsappTemplate"]>
 
@@ -443,6 +512,9 @@ export type WhatsappTemplateSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   category?: boolean
   bodyPreview?: boolean
   variableCount?: boolean
+  source?: boolean
+  approvalStatus?: boolean
+  syncedAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["whatsappTemplate"]>
 
@@ -454,6 +526,9 @@ export type WhatsappTemplateSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   category?: boolean
   bodyPreview?: boolean
   variableCount?: boolean
+  source?: boolean
+  approvalStatus?: boolean
+  syncedAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["whatsappTemplate"]>
 
@@ -465,10 +540,13 @@ export type WhatsappTemplateSelectScalar = {
   category?: boolean
   bodyPreview?: boolean
   variableCount?: boolean
+  source?: boolean
+  approvalStatus?: boolean
+  syncedAt?: boolean
   createdAt?: boolean
 }
 
-export type WhatsappTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "language" | "category" | "bodyPreview" | "variableCount" | "createdAt", ExtArgs["result"]["whatsappTemplate"]>
+export type WhatsappTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "language" | "category" | "bodyPreview" | "variableCount" | "source" | "approvalStatus" | "syncedAt" | "createdAt", ExtArgs["result"]["whatsappTemplate"]>
 
 export type $WhatsappTemplatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "WhatsappTemplate"
@@ -481,6 +559,15 @@ export type $WhatsappTemplatePayload<ExtArgs extends runtime.Types.Extensions.In
     category: string
     bodyPreview: string
     variableCount: number
+    /**
+     * 'manual' (typed in by the workspace) or 'meta' (synced from the WhatsApp Business Account)
+     */
+    source: string
+    /**
+     * Meta's status for synced rows (APPROVED, PENDING, REJECTED, PAUSED...); null for manual rows
+     */
+    approvalStatus: string | null
+    syncedAt: Date | null
     createdAt: Date
   }, ExtArgs["result"]["whatsappTemplate"]>
   composites: {}
@@ -912,6 +999,9 @@ export interface WhatsappTemplateFieldRefs {
   readonly category: Prisma.FieldRef<"WhatsappTemplate", 'String'>
   readonly bodyPreview: Prisma.FieldRef<"WhatsappTemplate", 'String'>
   readonly variableCount: Prisma.FieldRef<"WhatsappTemplate", 'Int'>
+  readonly source: Prisma.FieldRef<"WhatsappTemplate", 'String'>
+  readonly approvalStatus: Prisma.FieldRef<"WhatsappTemplate", 'String'>
+  readonly syncedAt: Prisma.FieldRef<"WhatsappTemplate", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"WhatsappTemplate", 'DateTime'>
 }
     

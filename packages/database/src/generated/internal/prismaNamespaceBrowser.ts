@@ -623,6 +623,9 @@ export const WhatsappTemplateScalarFieldEnum = {
   category: 'category',
   bodyPreview: 'bodyPreview',
   variableCount: 'variableCount',
+  source: 'source',
+  approvalStatus: 'approvalStatus',
+  syncedAt: 'syncedAt',
   createdAt: 'createdAt'
 } as const
 

@@ -400,6 +400,7 @@ export class AutomationEngine {
         if (!channel) return mk('Would be skipped: no connected WhatsApp number', 'skipped');
         const t = await tx.whatsappTemplate.findFirst({ where: { tenantId, name: action.template, language: action.language } });
         if (!t) return mk(`Would be skipped: template "${action.template}" (${action.language}) is not registered`, 'skipped');
+        if (t.approvalStatus && t.approvalStatus !== 'APPROVED') return mk(`Would be skipped: WhatsApp has not approved template "${action.template}" (status: ${t.approvalStatus.toLowerCase()})`, 'skipped');
         if (params.length !== t.variableCount) return mk(`Would be skipped: template needs ${t.variableCount} value(s), this automation gives ${params.length}`, 'skipped');
         const consent = await tx.consent.findFirst({ where: { leadId: ctx.lead.id, channel: 'whatsapp' }, orderBy: { createdAt: 'desc' } });
         if (!consent) return mk('Would be skipped: no record of the customer opting in to WhatsApp', 'skipped');

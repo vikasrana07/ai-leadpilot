@@ -34,6 +34,7 @@ Honest go/no-go. `[x]` = done **and verified**; `[ ]` = not done or not verified
 - [ ] Message templates (`welcome_lead`, `appointment_confirmation`, `appointment_reminder`, `no_show_followup`) submitted and approved per tenant (tenant task; onboarding must explain)
 - [ ] Live client verified against Meta (send, receive, statuses, media): **never run**
 - [ ] Embedded Signup: Meta Tech Provider registration, business verification and app review done; platform app id, secret, Embedded Signup config id and webhook verify token in the secret manager; platform webhook URL (`/webhooks/whatsapp`) configured in the Meta app; `EMBEDDED_SIGNUP_MODE=live` verified with a real test business (see `docs/live-verification.md`)
+- [ ] In the Meta app settings: webhook callback URL `<PUBLIC_API_URL>/webhooks/whatsapp` with the verify token, subscribed to `messages` and `account_update`; **Deauthorize callback URL** `<PUBLIC_API_URL>/webhooks/meta/deauthorize`; **Data deletion request URL** `<PUBLIC_API_URL>/webhooks/meta/data-deletion`; a person can see the status page at `<WEB_ORIGIN>/data-deletion`
 - [ ] Privacy policy, DPA and sub-processor list reworded for LeadPilot as Tech Provider (Meta as sub-processor for the Facebook-connected flow)
 - [ ] Webhook URL + verify token handshake tested with a real number
 - [ ] Tenants understand they pay Meta directly (onboarding copy)

@@ -25,6 +25,10 @@ export class EventNotifier {
     const lead = leadId ? await tx.lead.findFirst({ where: { id: leadId }, select: { id: true, name: true, assignedMembershipId: true } }) : null;
     const t = ev.tenantId;
     switch (ev.type) {
+      case 'integration.channel_needs_reconnect': {
+        // Meta told us the business removed LeadPilot (see WhatsappWebhookProcessor.handleAccountNotice): owners and managers need to reconnect.
+        return this.notifications.create(tx, { tenantId: t, membershipIds: await this.managers(tx, t), type: 'integration', title: 'WhatsApp needs to be connected again', body: 'The connection to your WhatsApp number was removed, so messages cannot be sent or received. Open Integrations and choose Reconnect with Facebook.', link: '/integrations' });
+      }
       case 'lead.assigned': {
         const to = str('membershipId');
         if (!lead || !to || (await this.skipSelf(tx, to, p.byUserId))) return [];

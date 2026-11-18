@@ -12,6 +12,7 @@ One URL for every Facebook-connected number; 404 while `EMBEDDED_SIGNUP_MODE=off
 | Handshake 403 | `META_WEBHOOK_VERIFY_TOKEN` differs from the token configured in the Meta app. |
 | `ignored` with `processed: 0` | The number is unknown, its channel is disabled, or it belongs to a manually connected channel (those use their own URL and secret). Log line: "Platform webhook: N change(s) were not for an active Facebook-connected channel". |
 | One workspace silent, others fine | Check its channel in Integrations (status, mode `platform`) and that the app is still subscribed to its WABA. Reconnect with Facebook. |
+Account notices (`account_update` with a removal or uninstall event) arrive on this same endpoint: the channels of that WABA become `NEEDS_RECONNECT` and the owners are notified. A channel that keeps showing "Reconnect needed" after the owner reconnected means the Embedded Signup run failed: check the connect call's error and `audit_logs` (`integration.whatsapp_connected_embedded`, `integration.whatsapp_needs_reconnect`, `integration.whatsapp_recovered`). The daily health check log lines are under `ChannelHealth`.
 To tell the modes apart: `SELECT config->>'mode' FROM channels WHERE id = ...` (`platform` or empty/`manual`).
 
 ## WhatsApp (Meta), manual connection: `POST /webhooks/whatsapp/:key`, handshake `GET /webhooks/whatsapp/:key`

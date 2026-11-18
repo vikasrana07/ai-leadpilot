@@ -3,6 +3,7 @@ import { BadRequestException, Body, ConflictException, Controller, Delete, Get, 
 import { randomBytes } from 'node:crypto';
 import { channelEmbeddedSchema, channelWhatsappSchema, templateSchema, widgetConfigSchema } from '@leadpilot/validation';
 import { Throttle } from '@nestjs/throttler';
+import { MetaCallbacksController } from './meta-callbacks.js';
 import type { z } from 'zod';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
@@ -91,6 +92,13 @@ export class ChannelsService {
    * workspace may own the number. Nothing is stored until all of that succeeded. The live provider calls are UNVERIFIED against Meta.
    */
   async connectEmbedded(ctx: TenantRequestContext, input: EmbeddedInput) {
+    const channel = await this.connectEmbeddedCore(ctx, input);
+    // Pull the account's templates right away so the owner can use approved ones at once; a failure here never undoes the connection.
+    await this.syncTemplates(ctx).catch((e: unknown) => new Logger('Channels').warn(`Template sync after connecting failed: ${e instanceof Error ? e.message : 'unknown error'}`));
+    return channel;
+  }
+
+  private async connectEmbeddedCore(ctx: TenantRequestContext, input: EmbeddedInput) {
     if (this.env.EMBEDDED_SIGNUP_MODE === 'off') throw new NotFoundException({ code: 'embedded_signup_disabled', message: 'Connecting with Facebook is not available yet' });
     const fail = (e: unknown, what: string) => new BadRequestException({ code: 'embedded_signup_failed', message: e instanceof WhatsAppApiError ? `${what}: ${e.message}` : `Could not reach WhatsApp to ${what.toLowerCase()}` });
 
@@ -192,6 +200,40 @@ export class ChannelsService {
 
   // ---- WhatsApp templates (names of templates already approved in Meta; a sync/manager UI is V1.1)
   listTemplates(ctx: TenantRequestContext) { return this.db.tenantTx(ctx, (tx) => tx.whatsappTemplate.findMany({ where: { tenantId: ctx.tenantId }, orderBy: { name: 'asc' } })); }
+
+  /**
+   * Read-only sync of the message templates of the workspace's Facebook-connected WhatsApp account(s) (ADR 0012). Templates typed in by hand are
+   * never overwritten (a name clash is reported); synced ones are updated with Meta's approval status; synced ones Meta no longer lists are
+   * removed. Only APPROVED synced templates can be sent. UNVERIFIED against Meta (`GET /{waba}/message_templates`).
+   */
+  async syncTemplates(ctx: TenantRequestContext) {
+    const channels = await this.db.tenantTx(ctx, (tx) => tx.channel.findMany({ where: { tenantId: ctx.tenantId, type: 'WHATSAPP', status: 'ACTIVE' }, select: { id: true, config: true } }));
+    const byWaba = new Map<string, string>(); // waba id -> a channel id whose token can read it
+    for (const c of channels) { const cfg = (c.config ?? {}) as { mode?: string; wabaId?: string }; if (cfg.mode === 'platform' && cfg.wabaId && !byWaba.has(cfg.wabaId)) byWaba.set(cfg.wabaId, c.id); }
+    if (byWaba.size === 0) throw new BadRequestException({ code: 'no_platform_channel', message: 'Template sync works for WhatsApp numbers connected with Facebook. Connect one first, or add templates by hand.' });
+    const fetched: import('../whatsapp/whatsapp.client.js').WaTemplateInfo[] = [];
+    for (const [waba, channelId] of byWaba) {
+      const { creds } = await this.credentialsFor(ctx.tenantId, channelId, ctx.userId);
+      try { fetched.push(...(await this.wa.listTemplates(waba, creds.accessToken))); }
+      catch (e) { throw new BadRequestException({ code: 'template_sync_failed', message: e instanceof WhatsAppApiError ? `WhatsApp could not list your templates: ${e.message}` : 'Could not reach WhatsApp to list your templates' }); }
+    }
+    return this.db.tenantTx(ctx, async (tx) => {
+      const existing = await tx.whatsappTemplate.findMany({ where: { tenantId: ctx.tenantId } });
+      const key = (n: string, l: string) => `${n}\u0000${l}`; const have = new Map(existing.map((t) => [key(t.name, t.language), t]));
+      const seen = new Set<string>(); const now = new Date(); const clashes: string[] = []; let added = 0; let updated = 0;
+      for (const t of fetched) {
+        const k = key(t.name, t.language); seen.add(k); const row = have.get(k);
+        const data = { category: t.category, bodyPreview: t.bodyText || '(no text)', variableCount: (t.bodyText.match(/\{\{\d+\}\}/g) ?? []).length, approvalStatus: t.status, syncedAt: now };
+        if (!row) { await tx.whatsappTemplate.create({ data: { id: uuidv7(), tenantId: ctx.tenantId, name: t.name, language: t.language, source: 'meta', ...data } }); added++; }
+        else if (row.source !== 'meta') clashes.push(`${t.name} (${t.language})`); // typed in by the workspace: theirs wins
+        else { await tx.whatsappTemplate.update({ where: { id: row.id }, data }); updated++; }
+      }
+      const gone = existing.filter((t) => t.source === 'meta' && !seen.has(key(t.name, t.language))).map((t) => t.id);
+      if (gone.length) await tx.whatsappTemplate.deleteMany({ where: { id: { in: gone }, tenantId: ctx.tenantId } });
+      await this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'integration.whatsapp_templates_synced', resourceType: 'channel', resourceId: [...byWaba.values()][0] as string, metadata: { added, updated, removed: gone.length, clashes: clashes.length }, requestId: ctx.requestId, ip: ctx.ip });
+      return { accounts: byWaba.size, added, updated, removed: gone.length, clashes, total: fetched.length };
+    });
+  }
   addTemplate(ctx: TenantRequestContext, i: z.infer<typeof templateSchema>) {
     return this.db.tenantTx(ctx, async (tx) => {
       try { return await tx.whatsappTemplate.create({ data: { id: uuidv7(), tenantId: ctx.tenantId, name: i.name, language: i.language, category: i.category, bodyPreview: i.bodyPreview, variableCount: (i.bodyPreview.match(/\{\{\d+\}\}/g) ?? []).length } }); }
@@ -256,6 +298,7 @@ class ChannelsController {
   disable(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.disable(c, id); }
 
   @Get('whatsapp/templates') @RequirePermissions('conversation:reply') templates(@CurrentTenant() c: TenantRequestContext) { return this.svc.listTemplates(c); }
+  @Post('whatsapp/templates/sync') @HttpCode(200) @RequirePermissions('integration:manage') syncTemplates(@CurrentTenant() c: TenantRequestContext) { return this.svc.syncTemplates(c); }
   @Post('whatsapp/templates') @HttpCode(201) @RequirePermissions('integration:manage') addTemplate(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(templateSchema)) b: z.infer<typeof templateSchema>) { return this.svc.addTemplate(c, b); }
   @Delete('whatsapp/templates/:id') @HttpCode(204) @RequirePermissions('integration:manage') rmTemplate(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.removeTemplate(c, id); }
 
@@ -264,5 +307,5 @@ class ChannelsController {
   @Post('widget-config/rotate-key') @HttpCode(200) @RequireFeature('web_widget') @RequirePermissions('integration:manage') rotate(@CurrentTenant() c: TenantRequestContext) { return this.svc.rotateWidgetKey(c); }
 }
 
-@Module({ controllers: [ChannelsController], providers: [ChannelsService], exports: [ChannelsService] })
+@Module({ controllers: [ChannelsController, MetaCallbacksController], providers: [ChannelsService], exports: [ChannelsService] })
 export class ChannelsModule {}
