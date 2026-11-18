@@ -15,7 +15,7 @@ docker build -f infrastructure/docker/Dockerfile.web --build-arg NEXT_PUBLIC_API
 ```
 `NEXT_PUBLIC_API_URL` is compiled into the browser bundle: build a web image per environment. No secrets are baked into either image; everything is runtime environment.
 The images use `pnpm deploy --legacy --prod` to produce a self-contained tree. The web image runs `next start` (no standalone output). Optional size reduction: set `output: 'standalone'` in `apps/web/next.config.ts` (and `outputFileTracingRoot` to the repo root for the monorepo) and copy `.next/standalone`; this was **not** done or tested.
-Example compose: `infrastructure/docker/docker-compose.prod.example.yml`. ECS notes: `infrastructure/ecs-fargate-reference.md`.
+Example compose: `infrastructure/docker/docker-compose.prod.example.yml`. ECS notes: `infrastructure/ecs-fargate-reference.md` (including logging and monitoring settings). Monitoring: `docs/monitoring.md`, example alarms in `infrastructure/monitoring/cloudwatch-alarms.example.yml`, and the required external probe `docs/runbooks/external-uptime-probe.md`.
 
 ## 2. Topology (unverified)
 - **ALB** (TLS via ACM) with two target groups: `api` (health check path `/health/ready`) and `web` (`/`). Host-based rules: `app.<domain>` to web, `api.<domain>` to api. Exactly **one proxy hop** in front of the API (the API sets `trust proxy` to 1; more hops or none breaks client IP detection and rate limits).
@@ -55,6 +55,7 @@ Required in production (the API refuses to start otherwise: `loadEnv` validation
 | `WORKERS_ENABLED` | `false` on api tasks; the worker command forces `true` |
 | `QUEUE_PREFIX`, `AUTOMATION_MAX_ATTEMPTS`, `AUTOMATION_RETRY_BASE_MS` | defaults are fine |
 | `AI_KILL_SWITCH`, `AI_DEFAULT_MONTHLY_TOKEN_CAP` | operational switches |
+| `LOG_FORMAT=json`, `LOG_LEVEL`, `ACCESS_LOG`, `METRICS_EMF=true`, `METRICS_INTERVAL_SECONDS`, `ALERTS_ENABLED=true`, `ALERT_EMAIL_TO`, `ALERT_REPEAT_HOURS` | logging, metrics and alerting (optional with defaults, but set them explicitly in production): `docs/monitoring.md` |
 | `THROTTLE_AUTH_LIMIT`, `THROTTLE_GLOBAL_LIMIT` | rate limits per minute per client |
 Web image: only `NEXT_PUBLIC_API_URL` (build arg). Reference list: `.env.example`.
 
@@ -93,4 +94,4 @@ Worker deploys: shutdown hooks drain gracefully; interrupted runs are recovered 
 Fixed monthly floor is dominated by RDS Multi-AZ, ElastiCache, 3 Fargate service groups, ClamAV memory, ALB and NAT. Variable: OpenAI tokens (see `docs/unit-economics.md`; prices unverified), S3, data transfer. WhatsApp conversation fees are paid by tenants to Meta, not by us. Get real numbers from the AWS Pricing Calculator for your region before pricing plans.
 
 ## 10. Not verified
-Everything AWS-side; the compose example as a whole; the web image talking to a real API from a browser; TLS/ALB behaviour and `trust proxy` in a real deployment; S3 via task role; multi-instance realtime; sizing/pool numbers; real Meta/OpenAI/Razorpay connectivity; SMTP authentication (see env table).
+Everything AWS-side (including the monitoring template, log shipping, EMF metrics in CloudWatch and the alarms); the compose example as a whole; the web image talking to a real API from a browser; TLS/ALB behaviour and `trust proxy` in a real deployment; S3 via task role; multi-instance realtime; sizing/pool numbers; real Meta/OpenAI/Razorpay connectivity; SMTP authentication (see env table).

@@ -22,3 +22,41 @@ ClamAV: run `clamav/clamav:stable` as its own ECS service (needs ~3 GB RAM for s
 Secrets: put each secret as a Secrets Manager entry and reference it in the task definition `secrets` block. Never bake values into images or task-definition `environment`.
 
 Task role: S3 access scoped to the bucket. The S3 client only passes explicit credentials when both `S3_ACCESS_KEY` and `S3_SECRET_KEY` are set; otherwise it uses the AWS default credential chain, so a task role should work (by code reading, unverified). Leave `S3_ENDPOINT` unset for AWS S3. The code does not request server-side encryption itself: enable default bucket encryption (SSE-S3 or SSE-KMS) on the bucket, and pre-create the bucket (the API tries `CreateBucket` at boot if `HeadBucket` fails, which needs permissions you may not want to grant).
+
+## Logging, health and monitoring (UNVERIFIED example settings)
+Alarm and log-group definitions: `infrastructure/monitoring/cloudwatch-alarms.example.yml` (the log group names below match its defaults). Application behaviour: `docs/monitoring.md`.
+
+**Logs.** Each container writes JSON lines to stdout; the awslogs driver ships them. Create the log groups through the template (so retention is set) and tell the driver not to create them:
+```json
+"logConfiguration": {
+  "logDriver": "awslogs",
+  "options": {
+    "awslogs-group": "/leadpilot/api",
+    "awslogs-region": "ap-south-1",
+    "awslogs-stream-prefix": "api",
+    "awslogs-create-group": "false"
+  }
+}
+```
+Use `/leadpilot/worker` with prefix `worker` for the worker and `/leadpilot/web` with prefix `web` for the web service. The task execution role needs `logs:CreateLogStream` and `logs:PutLogEvents` on these groups. Retention is the `LogRetentionDays` template parameter (default 30); it must match the {{LOG_RETENTION}} statement in `docs/legal/privacy-policy.md`.
+
+**Metrics.** The same stdout stream carries CloudWatch Embedded Metric Format lines (`"_aws"` objects, every `METRICS_INTERVAL_SECONDS`); CloudWatch Logs turns them into custom metrics in the `LeadPilot` namespace with no agent or SDK. Nothing extra to deploy.
+
+**Environment variables for monitoring.** Set them explicitly in production (the defaults are only safe guesses):
+| Variable | Production value |
+|---|---|
+| `LOG_FORMAT` | `json` |
+| `LOG_LEVEL` | `log` (use `warn` to cut log volume and cost) |
+| `ACCESS_LOG` | `true` |
+| `METRICS_EMF` | `true` |
+| `METRICS_INTERVAL_SECONDS` | `60` |
+| `ALERTS_ENABLED` | `true` |
+| `ALERT_EMAIL_TO` | on-call address list (comma separated); empty means every active platform admin |
+| `ALERT_REPEAT_HOURS` | `6` |
+
+**Worker health.** The worker has no HTTP port, so there is no container health check for it. Its liveness is a heartbeat key in Redis (every 30 s, 90 s lifetime): the in-app alert `worker_not_running` and the `WorkersAlive` alarm watch it, and the platform console's **Ops status** page shows the live heartbeats. ECS only restarts a worker whose process exits (the crash handlers exit with code 1 on an uncaught error).
+
+**Load balancer health checks.** API target group: `GET /health/ready` (database and Redis; returns 503 if the database is down). Web target group: `GET /`. Container-level check for the API image: `GET /health` (liveness only).
+
+**External probe.** An app that is down cannot email. Add an outside probe of `/health/ready`: `docs/runbooks/external-uptime-probe.md`.
+

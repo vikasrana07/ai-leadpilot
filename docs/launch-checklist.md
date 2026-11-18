@@ -46,9 +46,16 @@ Honest go/no-go. `[x]` = done **and verified**; `[ ]` = not done or not verified
 
 ## Operations
 - [ ] api + worker + web deployed from the images in `infrastructure/docker`; worker running (nothing time-based works without it)
-- [ ] `/health/ready` wired to the load balancer; uptime probe configured
-- [ ] Alerts from `docs/slos-and-alerts.md` implemented (metrics/alerting layer **not built**)
-- [ ] Log aggregation and retention; Sentry/OpenTelemetry (not built)
+- [ ] `/health/ready` wired to the load balancer
+- [ ] **External uptime probe configured** (`docs/runbooks/external-uptime-probe.md`, `scripts/probe-health.mjs`): probes `/health/ready` and the web `/` every minute, alerts after 3 consecutive failures on a channel other than the in-app email, and a rehearsal (stop the API, receive the alert) was done
+- [ ] In-app alerting on: `ALERTS_ENABLED=true`, `ALERT_EMAIL_TO` set to the on-call list, `ALERT_REPEAT_HOURS` reviewed; **a test alert received in a real inbox** (not only Mailpit) and a resolved email after it cleared; platform admins know the console's Ops status page
+- [ ] Monitoring env set explicitly in production: `LOG_FORMAT=json`, `LOG_LEVEL`, `ACCESS_LOG=true`, `METRICS_EMF=true`, `METRICS_INTERVAL_SECONDS` (`infrastructure/ecs-fargate-reference.md`)
+- [ ] CloudWatch alarm stack deployed from `infrastructure/monitoring/cloudwatch-alarms.example.yml` after review and a test in a throwaway account (it was never validated), with the parameters filled in
+- [ ] SNS topic email subscription **confirmed**, and a test alarm (set one alarm's threshold to fire) reached the on-call channel
+- [ ] EMF metrics visible in CloudWatch (`LeadPilot` namespace: `RequestCount`, `WorkersAlive`, ...) and the alarms show data, not `INSUFFICIENT_DATA`
+- [ ] Log groups `/leadpilot/api`, `/leadpilot/worker`, `/leadpilot/web` exist with retention set, and the retention equals the {{LOG_RETENTION}} statement in the privacy policy
+- [ ] CloudWatch cost checked for the real region (alarms, custom metrics, log volume) and accepted
+- [ ] Sentry/OpenTelemetry: not built (decide whether the in-app logs, metrics and alerts are enough for launch)
 - [ ] Load test against budgets passed (dashboard < 2 s at 100k leads, webhook ACK < 1 s): result recorded in `PROGRESS.md`
 - [ ] E2E suite green in CI; CI has run on a real GitHub remote (no remote yet)
 - [ ] On-call rota, escalation, status channel `{{STATUS_PAGE_OR_CHANNEL}}`

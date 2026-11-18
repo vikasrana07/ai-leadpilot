@@ -14,3 +14,5 @@ Status reflects the code as of Phase 7. **"Not yet live" means the integration i
 | Monitoring (built in; no separate provider) | Logs, metrics and alert emails | Structured logs with personal data redacted (ids only, no message content), numeric metrics, alert emails with numbers only | Stays with the hosting provider (CloudWatch, in the AWS region above) and the mail provider already listed for transactional email | **Built, not yet live** (no third-party error tracker such as Sentry is used; adding one would need a new row here and a transfer review) |
 
 Change notice process: see DPA section 5.
+
+<!-- TODO(monitoring): the log retention configured on AWS (`LogRetentionDays` in infrastructure/monitoring/cloudwatch-alarms.example.yml, default 30 days) must equal the {{LOG_RETENTION}} statement in privacy-policy.md once it is filled in. CloudWatch is part of AWS, already listed above: monitoring adds no new processor. A third-party error tracker or APM would need a new row and a transfer review. -->

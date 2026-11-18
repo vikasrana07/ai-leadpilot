@@ -1,6 +1,6 @@
 # SLOs and alerts
 
-**Status: proposed.** Targets are tied to the performance budgets in the master prompt (B4). Only some SLIs are measurable today. Alert rules and **email delivery are implemented** for everything the health snapshot can measure (monitoring milestone 3, see the "Implemented in the app" table and `docs/monitoring.md`); the rest needs an external probe or CloudWatch. **No Sentry/OpenTelemetry is built.** Load-test results against these budgets belong in `PROGRESS.md` (Phase 7 verification), not here.
+**Status: proposed targets, measurement and alerting built (monitoring milestones 1-4).** Targets are tied to the performance budgets in the master prompt (B4). Alert rules and email delivery run inside the app for everything the health snapshot can measure (see "Implemented in the app" and `docs/monitoring.md`); the AWS-side alarms and the external probe are **examples and recipes only, never deployed** (`infrastructure/monitoring/`, `docs/runbooks/external-uptime-probe.md`). **No Sentry/OpenTelemetry is built.** Load-test results against these budgets belong in `PROGRESS.md` (Phase 7 verification), not here.
 
 ## SLOs
 | # | SLI | Objective | Measurable today? |
@@ -13,6 +13,20 @@
 | 6 | Automation run success (not counting intended skips) | > 99% of runs end SUCCEEDED/SKIPPED, none stuck | Yes: counters `JobOutcome` (automation) and gauges `RunsStuckRunning`, `RunsQueuedOld`, `RunsWaitingOverdue` |
 | 7 | Billing webhook health: failed/unprocessed `billing_events` | 0 older than 15 min | Yes: gauge `BillingEventsNeedingAttention` |
 | 8 | Server errors | 5xx < 0.5% of requests | Yes: `RequestCount` by `StatusClass` (5xx / total) from the EMF lines; in CloudWatch via a metric-math expression |
+
+## Where each SLO is measured today
+| # | SLI | In-app metric (EMF lines) | In-app alert | AWS alarm (example template) | Needs the external probe |
+|---|---|---|---|---|---|
+| 1 | Availability | none (a dead app cannot report) | none | `*-alb-api-no-healthy-hosts` (partial) | **Yes: the only real measure** |
+| 2 | Dashboard p95 < 2 s | `RequestDurationP95Ms` (`RouteGroup=analytics`) | none | `*-analytics-p95` | no |
+| 3 | Webhook ACK p95 < 1 s | `RequestDurationP95Ms` (`RouteGroup=webhook`) | none | `*-webhook-ack-p95` | no |
+| 4 | AI turn p95 < 8 s | gauge `AiLatencyP95Ms24h` | `ai_failure_rate` (failures, not latency) | none | no (never measured against a real model) |
+| 5 | Outbox lag < 60 s | gauge `OutboxOldestPendingSeconds` | `outbox_lag` (> 120 s for 5 min) | none | no |
+| 6 | Automation success > 99%, none stuck | `JobOutcome`, `RunsStuckRunning`, `RunsQueuedOld`, `RunsWaitingOverdue` | `automation_runs_stuck`, `automation_waits_overdue` | `*-automation-job-failures` | no |
+| 7 | Billing events healthy | gauge `BillingEventsNeedingAttention` | `billing_events_attention` | `*-billing-job-failures` | no |
+| 8 | 5xx < 0.5% | `RequestCount` by `StatusClass` | none | `*-api-5xx-rate`, `*-alb-api-target-5xx` | no |
+
+Notes: the 99.5% availability objective needs one minute-by-minute record, which only the probe provides. p95 values are per-instance estimates from fixed buckets (CloudWatch cannot merge them), so the example alarms use the worst instance. The SLO table on the console's Ops status page shows current values for 4 to 7 and says where 1 to 3 and 8 are measured.
 
 ## Queries (run as owner; schedule them in whatever cron/monitor you use)
 ```sql
@@ -76,8 +90,11 @@ Evaluated once a minute against `ops_health_snapshot()` and the worker heartbeat
 Availability budget at 99.5% = about 3.6 hours/month. If more than 50% is burned in a month, freeze feature releases except fixes until the cause has a corrective action; if 100% burned, only reliability work until the next month. Every Sev 1/2 gets a written review.
 
 ## Gaps (honest list)
-- Metrics exist now (milestone 2, see `docs/monitoring.md`): request count and duration, job outcomes and a once-a-minute health snapshot are written as CloudWatch EMF lines. They have not been read by a real CloudWatch yet, and nothing evaluates them into alerts until milestone 3.
-- No Sentry, no log aggregation, no alert routing. The API writes a JSON access log (`ACCESS_LOG`) with `route` and `durationMs`, but nothing aggregates it yet; `x-request-id` is on every response and in error logs.
-- `/health/ready` checks both the database and Redis (Phase 7). It is still only useful once an external probe calls it.
-- AI latency (SLO 4) has never been measured against a real model.
-- Customer-visible AI latency (inbound webhook to outbound send) is not recorded as one number.
+- **Never run against AWS.** The CloudWatch template is an example that was not deployed or validated by `cfn-lint`/AWS; real CloudWatch has not read the EMF lines; costs were not priced for any region.
+- **Availability (SLO 1) is unmeasured until an external probe exists.** `docs/runbooks/external-uptime-probe.md` and `scripts/probe-health.mjs` are ready; no probe is configured because there is nothing deployed.
+- **An app that is down cannot email.** In-app alerts cover a partly broken system; the probe and the AWS alarms cover a dead one.
+- **Not covered at all:** AI cost spikes (needs a 7-day baseline), login-abuse spikes (audit log), backups age and restore-drill age, per-workspace health. Sentry, OpenTelemetry and log search beyond CloudWatch Logs Insights are not built.
+- **Latency SLOs use per-instance p95 estimates**, not exact percentiles across instances.
+- AI latency (SLO 4) has never been measured against a real model, and customer-visible AI latency (inbound webhook to outbound send) is not recorded as one number.
+- Real inbox delivery of alert email and `worker_not_running` with a real stopped worker are unverified (`docs/monitoring.md`, "what is verified and what is not").
+- `/health/ready` checks both the database and Redis (Phase 7); it is only useful with the external probe calling it.

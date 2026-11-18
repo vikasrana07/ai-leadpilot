@@ -1,0 +1,478 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  EXAMPLE ONLY - UNTESTED. LeadPilot monitoring on AWS: log groups, log-based metric filters, CloudWatch alarms and an SNS topic.
+  It has never been deployed and was NOT validated by cfn-lint or by AWS (only parsed as YAML and reviewed by hand).
+  Read infrastructure/monitoring/README.md and docs/monitoring.md first, then adjust names, thresholds and parameters before use.
+
+# What this template covers (and what it deliberately does not):
+#  * The application already evaluates its own alert rules once a minute and emails platform admins (docs/monitoring.md). These alarms are a
+#    SECOND, independent channel for the things that must reach a person even if the app's own email path is broken, plus the AWS resources
+#    the app cannot see (RDS, ElastiCache, the load balancer).
+#  * An external uptime probe of /health/ready is NOT part of this template: see docs/runbooks/external-uptime-probe.md.
+#  * Metric names, dimensions and units come from apps/api/src/observability/metrics.ts and emf.ts (namespace LeadPilot, dimension Service=api|worker).
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label: { default: General }
+        Parameters: [NamePrefix, AlarmEmail, LogRetentionDays]
+      - Label: { default: Log groups (must match the awslogs settings in infrastructure/ecs-fargate-reference.md) }
+        Parameters: [ApiLogGroupName, WorkerLogGroupName, WebLogGroupName]
+      - Label: { default: Load balancer }
+        Parameters: [AlbFullName, ApiTargetGroupFullName]
+      - Label: { default: RDS }
+        Parameters: [RdsInstanceId, RdsFreeStorageBytesThreshold, RdsConnectionsThreshold]
+      - Label: { default: ElastiCache }
+        Parameters: [RedisCacheClusterId]
+      - Label: { default: ECS (optional) }
+        Parameters: [EnableContainerInsightsAlarms, EcsClusterName, WorkerServiceName, WorkerDesiredCount]
+
+Parameters:
+  NamePrefix:
+    Type: String
+    Default: leadpilot
+    Description: Prefix for alarm and topic names.
+  AlarmEmail:
+    Type: String
+    Description: Address that receives alarm emails. AWS sends a confirmation message; the subscription does nothing until it is confirmed.
+  LogRetentionDays:
+    Type: Number
+    Default: 30
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653]
+    Description: >-
+      Retention of the three log groups. Logs hold personal data in redacted form only (ids, no message content), but this value must match
+      the {{LOG_RETENTION}} statement in docs/legal/privacy-policy.md. Longer retention costs more.
+  ApiLogGroupName:
+    Type: String
+    Default: /leadpilot/api
+  WorkerLogGroupName:
+    Type: String
+    Default: /leadpilot/worker
+  WebLogGroupName:
+    Type: String
+    Default: /leadpilot/web
+  AlbFullName:
+    Type: String
+    Description: LoadBalancer dimension value, for example app/leadpilot-alb/50dc6c495c0c9188 (the part of the ALB ARN after "loadbalancer/").
+  ApiTargetGroupFullName:
+    Type: String
+    Description: TargetGroup dimension value, for example targetgroup/leadpilot-api/73e2d6bc24d8a067 (the part of the ARN after ":").
+  RdsInstanceId:
+    Type: String
+    Description: DB instance identifier of the RDS PostgreSQL instance.
+  RdsFreeStorageBytesThreshold:
+    Type: Number
+    Default: 10737418240
+    Description: Alarm when FreeStorageSpace drops below this many BYTES. Set it to about 20 percent of the allocated storage (10737418240 = 10 GiB, i.e. 20 percent of a 50 GiB volume).
+  RdsConnectionsThreshold:
+    Type: Number
+    Default: 80
+    Description: Alarm when DatabaseConnections exceeds this number. Set it to about 80 percent of max_connections for your instance class.
+  RedisCacheClusterId:
+    Type: String
+    Description: ElastiCache CacheClusterId (for a replication group use the primary node id, for example leadpilot-redis-001).
+  EnableContainerInsightsAlarms:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Create the worker task-count alarm. Needs ECS Container Insights enabled on the cluster (an extra cost).
+  EcsClusterName:
+    Type: String
+    Default: leadpilot
+  WorkerServiceName:
+    Type: String
+    Default: leadpilot-worker
+  WorkerDesiredCount:
+    Type: Number
+    Default: 1
+
+Conditions:
+  UseContainerInsights: !Equals [!Ref EnableContainerInsightsAlarms, "true"]
+
+Resources:
+  # ------------------------------------------------------------------ notification channel
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${NamePrefix}-alarms"
+  AlarmEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref AlarmTopic
+      Protocol: email
+      Endpoint: !Ref AlarmEmail
+
+  # ------------------------------------------------------------------ log groups (the ECS task definitions write here)
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref ApiLogGroupName
+      RetentionInDays: !Ref LogRetentionDays
+  WorkerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref WorkerLogGroupName
+      RetentionInDays: !Ref LogRetentionDays
+  WebLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref WebLogGroupName
+      RetentionInDays: !Ref LogRetentionDays
+
+  # ------------------------------------------------------------------ log-based metrics (two custom metrics in total: both api and worker feed the same names)
+  # The in-app alert evaluator logs "alert firing key=... severity=..." at ERROR level (apps/api/src/ops/alerts.service.ts).
+  # All severities match: Sev 3 alerts also reach the SNS topic through this filter.
+  AlertFiringFilterApi:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLogGroup
+      FilterPattern: '{ ($.level = "error") && ($.context = "Alerts") && ($.msg = "alert firing*") }'
+      MetricTransformations:
+        - { MetricNamespace: LeadPilot/Logs, MetricName: AlertFiringLines, MetricValue: "1", DefaultValue: 0 }
+  AlertFiringFilterWorker:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref WorkerLogGroup
+      FilterPattern: '{ ($.level = "error") && ($.context = "Alerts") && ($.msg = "alert firing*") }'
+      MetricTransformations:
+        - { MetricNamespace: LeadPilot/Logs, MetricName: AlertFiringLines, MetricValue: "1", DefaultValue: 0 }
+  # The crash handler (apps/api/src/observability/process-handlers.ts) writes one level=fatal line, flushes and exits 1.
+  ProcessFatalFilterApi:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLogGroup
+      FilterPattern: '{ $.level = "fatal" }'
+      MetricTransformations:
+        - { MetricNamespace: LeadPilot/Logs, MetricName: ProcessFatalLines, MetricValue: "1", DefaultValue: 0 }
+  ProcessFatalFilterWorker:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref WorkerLogGroup
+      FilterPattern: '{ $.level = "fatal" }'
+      MetricTransformations:
+        - { MetricNamespace: LeadPilot/Logs, MetricName: ProcessFatalLines, MetricValue: "1", DefaultValue: 0 }
+
+  # ------------------------------------------------------------------ application alarms (metrics written by the app as EMF lines)
+  # Counters and histograms are written only for intervals that had activity. TreatMissingData=notBreaching therefore means "no traffic".
+  Api5xxRate:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-api-5xx-rate"
+      AlarmDescription: SLO 8 - more than 0.5 percent of API requests ended in a 5xx for 15 minutes (ignored below 20 requests per 5 minutes). Look at the error fingerprint in the api log group.
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0.5
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+      Metrics:
+        - Id: rate
+          Label: 5xx percent
+          ReturnData: true
+          Expression: "IF((FILL(s5,0)+FILL(s4,0)+FILL(s2,0)) > 20, 100 * FILL(s5,0) / (FILL(s5,0)+FILL(s4,0)+FILL(s2,0)), 0)"
+        - Id: s5
+          ReturnData: false
+          MetricStat:
+            Metric: { Namespace: LeadPilot, MetricName: RequestCount, Dimensions: [{ Name: Service, Value: api }, { Name: StatusClass, Value: 5xx }] }
+            Period: 300
+            Stat: Sum
+        - Id: s4
+          ReturnData: false
+          MetricStat:
+            Metric: { Namespace: LeadPilot, MetricName: RequestCount, Dimensions: [{ Name: Service, Value: api }, { Name: StatusClass, Value: 4xx }] }
+            Period: 300
+            Stat: Sum
+        - Id: s2
+          ReturnData: false
+          MetricStat:
+            Metric: { Namespace: LeadPilot, MetricName: RequestCount, Dimensions: [{ Name: Service, Value: api }, { Name: StatusClass, Value: 2xx }] }
+            Period: 300
+            Stat: Sum
+
+  AnalyticsLatencyP95:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-analytics-p95"
+      AlarmDescription: SLO 2 - the worst instance's estimated p95 for /analytics/* was above 2 seconds for 15 minutes. The p95 is estimated per instance from fixed buckets (docs/monitoring.md).
+      Namespace: LeadPilot
+      MetricName: RequestDurationP95Ms
+      Dimensions: [{ Name: Service, Value: api }, { Name: RouteGroup, Value: analytics }]
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 2000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  WebhookAckLatencyP95:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-webhook-ack-p95"
+      AlarmDescription: SLO 3 - the worst instance's estimated p95 for webhook endpoints was above 1 second for 15 minutes. Slow acknowledgements make Meta and Razorpay retry.
+      Namespace: LeadPilot
+      MetricName: RequestDurationP95Ms
+      Dimensions: [{ Name: Service, Value: api }, { Name: RouteGroup, Value: webhook }]
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  AutomationJobFailures:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-automation-job-failures"
+      AlarmDescription: Five or more automation runs ended FAILED in 15 minutes (a run is counted once, after its retries are used up; the metric comes from the worker). Runbook docs/runbooks/worker-and-queues.md.
+      Namespace: LeadPilot
+      MetricName: JobFailures
+      Dimensions: [{ Name: Service, Value: worker }, { Name: Job, Value: automation }]
+      Statistic: Sum
+      Period: 900
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  BillingJobFailures:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-billing-job-failures"
+      AlarmDescription: A billing webhook event failed to process in the last 5 minutes (the metric comes from the api process). Customers may have paid without getting access. Runbook docs/runbooks/billing-incident.md.
+      Namespace: LeadPilot
+      MetricName: JobFailures
+      Dimensions: [{ Name: Service, Value: api }, { Name: Job, Value: billing }]
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  WorkersAlive:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-worker-not-running"
+      AlarmDescription: >-
+        No worker heartbeat (the WorkersAlive gauge is 0) or no gauge at all for 10 minutes (the worker is down, or METRICS_EMF is off).
+        Nothing time-based works without a worker. Runbook docs/runbooks/worker-and-queues.md. The in-app rule worker_not_running covers the same fault.
+      Namespace: LeadPilot
+      MetricName: WorkersAlive
+      Dimensions: [{ Name: Service, Value: worker }]
+      Statistic: Minimum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  InAppAlertFiringLines:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-in-app-alert-firing"
+      AlarmDescription: >-
+        The application logged "alert firing" for one of its own rules (all severities). This is the second channel for in-app alerts: it still reaches
+        you if SMTP is broken. Open the console's Ops status page for which rule.
+      Namespace: LeadPilot/Logs
+      MetricName: AlertFiringLines
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+
+  ProcessFatalLines:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-process-fatal"
+      AlarmDescription: An api or worker process hit an uncaught exception or unhandled rejection and exited (ECS restarts the task). Search the log group for level fatal, then the fingerprint.
+      Namespace: LeadPilot/Logs
+      MetricName: ProcessFatalLines
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+
+  # ------------------------------------------------------------------ load balancer (AWS/ApplicationELB)
+  AlbApi5xx:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-alb-api-target-5xx"
+      AlarmDescription: At least 10 5xx responses from the api targets in 5 minutes, counted by the load balancer (catches failures the app could not count, such as crashes mid-request).
+      Namespace: AWS/ApplicationELB
+      MetricName: HTTPCode_Target_5XX_Count
+      Dimensions: [{ Name: LoadBalancer, Value: !Ref AlbFullName }, { Name: TargetGroup, Value: !Ref ApiTargetGroupFullName }]
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  AlbApiHealthyHosts:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-alb-api-no-healthy-hosts"
+      AlarmDescription: >-
+        The api target group has no healthy target for 3 minutes (health check GET /health/ready). This is the AWS-side version of the external probe:
+        keep the separate external probe as well, because it also covers DNS, certificates and the load balancer itself.
+      Namespace: AWS/ApplicationELB
+      MetricName: HealthyHostCount
+      Dimensions: [{ Name: LoadBalancer, Value: !Ref AlbFullName }, { Name: TargetGroup, Value: !Ref ApiTargetGroupFullName }]
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 3
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  # ------------------------------------------------------------------ RDS (AWS/RDS)
+  RdsCpuHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-rds-cpu-high"
+      AlarmDescription: RDS CPU above 80 percent for 10 minutes.
+      Namespace: AWS/RDS
+      MetricName: CPUUtilization
+      Dimensions: [{ Name: DBInstanceIdentifier, Value: !Ref RdsInstanceId }]
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 80
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: missing
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  RdsFreeStorageLow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-rds-free-storage-low"
+      AlarmDescription: RDS free storage below the threshold parameter (about 20 percent of the volume). A full volume stops the database.
+      Namespace: AWS/RDS
+      MetricName: FreeStorageSpace
+      Dimensions: [{ Name: DBInstanceIdentifier, Value: !Ref RdsInstanceId }]
+      Statistic: Minimum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref RdsFreeStorageBytesThreshold
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: missing
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  RdsConnectionsHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-rds-connections-high"
+      AlarmDescription: Database connections above the threshold parameter (about 80 percent of max_connections) for 10 minutes. Each api and worker task opens a pool (docs/deployment.md section 3).
+      Namespace: AWS/RDS
+      MetricName: DatabaseConnections
+      Dimensions: [{ Name: DBInstanceIdentifier, Value: !Ref RdsInstanceId }]
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: !Ref RdsConnectionsThreshold
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: missing
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  # ------------------------------------------------------------------ ElastiCache (AWS/ElastiCache, Redis)
+  RedisMemoryHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-redis-memory-high"
+      AlarmDescription: Redis memory use above 80 percent for 10 minutes. Queues and rate-limit counters live here; at 100 percent writes fail.
+      Namespace: AWS/ElastiCache
+      MetricName: DatabaseMemoryUsagePercentage
+      Dimensions: [{ Name: CacheClusterId, Value: !Ref RedisCacheClusterId }]
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 80
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  RedisEvictions:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-redis-evictions"
+      AlarmDescription: Redis is evicting keys (memory pressure). Queue entries and heartbeats can be lost.
+      Namespace: AWS/ElastiCache
+      MetricName: Evictions
+      Dimensions: [{ Name: CacheClusterId, Value: !Ref RedisCacheClusterId }]
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+  # ------------------------------------------------------------------ ECS (optional; needs Container Insights, which has its own cost)
+  WorkerTaskCountLow:
+    Type: AWS::CloudWatch::Alarm
+    Condition: UseContainerInsights
+    Properties:
+      AlarmName: !Sub "${NamePrefix}-worker-task-count-low"
+      AlarmDescription: Fewer worker tasks running than desired for 5 minutes.
+      Namespace: ECS/ContainerInsights
+      MetricName: RunningTaskCount
+      Dimensions: [{ Name: ClusterName, Value: !Ref EcsClusterName }, { Name: ServiceName, Value: !Ref WorkerServiceName }]
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 5
+      Threshold: !Ref WorkerDesiredCount
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+
+Outputs:
+  AlarmTopicArn:
+    Description: SNS topic that receives every alarm. Add other subscribers (a chat webhook, an on-call tool) here.
+    Value: !Ref AlarmTopic
+  ApiLogGroup:
+    Value: !Ref ApiLogGroup
+  WorkerLogGroup:
+    Value: !Ref WorkerLogGroup
+  WebLogGroup:
+    Value: !Ref WebLogGroup
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+# COST NOTES (prices NOT checked for ap-south-1 or any region: verify on the AWS pricing pages before you rely on these numbers)
+#  * Alarms: 15 alarms are always created (16 with EnableContainerInsightsAlarms=true). One of them (Api5xxRate) uses metric math with
+#    several metrics: check how AWS bills multi-metric alarms. AWS has a free tier of standard alarms (verify the current number); beyond it each
+#    alarm costs cents per month.
+#  * Custom metrics: the app's EMF output declares 24 billable series (docs/monitoring.md), and the two log metric filters above add 2 more
+#    (LeadPilot/Logs). AWS gives the first 10 custom metrics free; the rest are billed per metric per month. METRICS_EMF=false removes the app's series.
+#  * Logs: CloudWatch Logs is billed per GB ingested and per GB stored. The access log, one line per request, is the biggest part. Lower
+#    LogRetentionDays, set LOG_LEVEL=warn or ACCESS_LOG=false to reduce volume.
+#  * SNS email notifications: very low volume, effectively free; Container Insights (optional) bills per metric and per log GB.
+# ---------------------------------------------------------------------------------------------------------------------------------

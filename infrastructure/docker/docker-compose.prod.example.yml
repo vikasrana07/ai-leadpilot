@@ -45,6 +45,15 @@ x-app-env: &app-env
   SMTP_HOST: ${SMTP_HOST:?}
   SMTP_PORT: ${SMTP_PORT:-587}
   MAIL_FROM: ${MAIL_FROM:?}
+  # --- logging, metrics and alerting (docs/monitoring.md). Safe defaults: structured logs on, metrics written as CloudWatch EMF lines on stdout. ---
+  LOG_FORMAT: ${LOG_FORMAT:-json}
+  LOG_LEVEL: ${LOG_LEVEL:-log}
+  ACCESS_LOG: ${ACCESS_LOG:-true}
+  METRICS_EMF: ${METRICS_EMF:-true}
+  METRICS_INTERVAL_SECONDS: ${METRICS_INTERVAL_SECONDS:-60}
+  ALERTS_ENABLED: ${ALERTS_ENABLED:-true}
+  ALERT_EMAIL_TO: ${ALERT_EMAIL_TO:-}              # empty = every active platform admin
+  ALERT_REPEAT_HOURS: ${ALERT_REPEAT_HOURS:-6}
 
 services:
   api:

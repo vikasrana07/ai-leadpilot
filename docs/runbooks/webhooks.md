@@ -1,8 +1,8 @@
-# Webhooks (WhatsApp, Razorpay)
+# Webhooks (WhatsApp, Razorpay, customer webhooks, outbound messages)
 
 > **Alerts that point here:** `whatsapp_unprocessed` (received WhatsApp events not processed for over 5 minutes), `outbound_messages_failing`, `webhook_deliveries_failing` (customer endpoints; check the delivery log before assuming a platform fault).
 
-Both endpoints are public and authenticate by HMAC over the **raw request body**. Anything that alters the bytes in front of the API (a proxy that re-serialises JSON, a WAF that rewrites bodies) breaks signatures.
+The first two (WhatsApp and Razorpay) are public inbound endpoints and authenticate by HMAC over the **raw request body**. Anything that alters the bytes in front of the API (a proxy that re-serialises JSON, a WAF that rewrites bodies) breaks signatures.
 
 ## WhatsApp (Meta): `POST /webhooks/whatsapp/:key`, handshake `GET /webhooks/whatsapp/:key`
 The `:key` is a per-channel unguessable key (shown in Integrations). Signature header `X-Hub-Signature-256: sha256=<hex>`, HMAC-SHA256 with that channel's **app secret**.
@@ -37,3 +37,34 @@ SELECT * FROM billing_events WHERE status IN ('failed','received') AND received_
 - `ignored` with `unknown subscription` / `stale subscription`: event for a subscription we do not hold (or an older one). Usually harmless; investigate only if a customer reports payment without activation ([billing-incident.md](billing-incident.md)).
 - 401s: secret mismatch between Dashboard and `RAZORPAY_WEBHOOK_SECRET`.
 - Webhook URL to register: `<PUBLIC_API_URL>/webhooks/razorpay`, events `subscription.*` and `payment.failed`.
+
+## Outbound WhatsApp messages failing (alert `outbound_messages_failing`)
+Ten or more outbound messages ended `FAILED` in the last hour (`messages.direction='OUTBOUND'`, `status='FAILED'`; the error is in `messages.error`).
+```sql
+-- Which workspaces and why (error is JSON; look at its code/message)
+SELECT tenant_id, count(*) AS failed, max(created_at) AS latest, (array_agg(error ORDER BY created_at DESC))[1] AS latest_error
+FROM messages WHERE direction='OUTBOUND' AND status='FAILED' AND created_at > now() - interval '1 hour'
+GROUP BY tenant_id ORDER BY failed DESC;
+```
+- **One workspace, the rest fine:** that workspace's channel credentials (expired or revoked token), a template that is not approved, an opted-out customer, or the 24-hour window. Tell the workspace owner; nothing is wrong with the platform.
+- **Many workspaces at once:** the WhatsApp provider is failing or rate-limiting. Check the provider's status page, then the API log for the send errors (`Failed to send`). Sends from the inbox can be retried by hand once the provider recovers; automation sends are retried by their run.
+- The live WhatsApp client has never run against Meta (see `docs/launch-checklist.md`), so treat real provider error shapes as unverified.
+
+## Customer webhooks (the product's outbound signed webhooks) (alert `webhook_deliveries_failing`)
+Delivery is DB-driven: the dispatcher claims `webhook_deliveries` rows (`PENDING`, `next_attempt_at` due) and posts them to the customer's URL with exponential backoff. A delivery ends `DELIVERED` or `FAILED` (after `WEBHOOK_MAX_ATTEMPTS`). After `WEBHOOK_DISABLE_AFTER` consecutive failed deliveries the endpoint is switched off automatically and the workspace owners are notified (title "A webhook endpoint was switched off"). The alert fires when **any** of these is true: a `PENDING` delivery is more than 10 minutes past its next attempt (the dispatcher is not running), 20 or more deliveries failed in the last hour, or any endpoint is disabled.
+```sql
+-- Dispatcher stalled? PENDING deliveries long past due (should be none)
+SELECT count(*), min(next_attempt_at) FROM webhook_deliveries WHERE status='PENDING' AND next_attempt_at < now() - interval '10 minutes';
+-- Which endpoints are failing (counts per endpoint, last hour)
+SELECT e.tenant_id, e.id AS endpoint_id, split_part(e.url,'/',3) AS host, e.enabled, e.disabled_reason, e.consecutive_failures,
+       count(*) FILTER (WHERE d.status='FAILED') AS failed_last_hour, (array_agg(d.last_error ORDER BY d.created_at DESC))[1] AS latest_error
+FROM webhook_endpoints e LEFT JOIN webhook_deliveries d ON d.endpoint_id = e.id AND d.created_at > now() - interval '1 hour'
+GROUP BY e.id ORDER BY failed_last_hour DESC LIMIT 20;
+-- Disabled endpoints and why
+SELECT tenant_id, split_part(url,'/',3) AS host, disabled_reason, updated_at FROM webhook_endpoints WHERE enabled = false ORDER BY updated_at DESC;
+```
+- **Pending deliveries past due:** the dispatcher is not running. This is a worker problem: follow [worker-and-queues.md](worker-and-queues.md).
+- **Failures concentrated on one endpoint:** a customer receiver problem (the usual cause). The `last_error` says whether it was a timeout, a non-2xx status or a blocked address (the sender refuses private and internal addresses by design). Nothing to fix on the platform; the workspace owner was notified and can re-enable the endpoint under Webhooks after fixing the receiver.
+- **Failures across many endpoints at once:** suspect the platform (outbound network or DNS from the worker, a deploy that changed signing). Check the worker's outbound connectivity and recent releases.
+- The alert counts only endpoints the dispatcher switched off **automatically** (`disabled_reason` starts with `Switched off automatically after N consecutive failed deliveries`). An endpoint a team member switched off on purpose (`Switched off by a team member`) does not count and does not keep the alert firing (fixed in migration `20261118100000_ops_snapshot_auto_disabled_only`).
+
