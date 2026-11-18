@@ -8,14 +8,17 @@ const apiOrigin = (() => { try { return new URL(process.env.NEXT_PUBLIC_API_URL 
  * policy needs dynamic rendering for every page: a later hardening step). The rest is tight: no framing, no foreign form targets,
  * connections only to our API (+ Razorpay), no plugins. 'unsafe-eval' is development-only (React refresh).
  */
+// Facebook hosts are for WhatsApp Embedded Signup (ADR 0012): the SDK script, its Graph/login calls and the login frame. The list follows
+// Meta's documentation at planning time and has NOT been confirmed in a real run: if the pop-up misbehaves, check the browser console for
+// blocked requests and adjust here. The pop-up window itself is not governed by frame-src; COOP below already allows popups.
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://checkout.razorpay.com https://challenges.cloudflare.com`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://checkout.razorpay.com https://challenges.cloudflare.com https://connect.facebook.net`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self' ${apiOrigin} https://api.razorpay.com https://lumberjack.razorpay.com${isDev ? ' ws: wss:' : ''}`,
-  'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com',
+  `connect-src 'self' ${apiOrigin} https://api.razorpay.com https://lumberjack.razorpay.com https://graph.facebook.com https://www.facebook.com https://web.facebook.com${isDev ? ' ws: wss:' : ''}`,
+  'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com https://www.facebook.com https://web.facebook.com',
   "frame-ancestors 'none'",
   "object-src 'none'",
   "base-uri 'self'",

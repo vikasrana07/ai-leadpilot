@@ -38,6 +38,8 @@ export default defineConfig({
         API_PORT: String(API_PORT), WEB_ORIGIN: `http://localhost:${WEB_PORT}`, PUBLIC_API_URL: `http://localhost:${API_PORT}`,
         NODE_ENV: 'development', SIGNUP_PLAN: 'growth', WORKERS_ENABLED: 'true', THROTTLE_GLOBAL_LIMIT: '100000', THROTTLE_AUTH_LIMIT: '1000',
         QUEUE_PREFIX: 'e2e', AI_PROVIDER: 'mock', RAZORPAY_MODE: 'mock', WHATSAPP_MODE: 'mock', VIRUS_SCAN_MODE: 'mock',
+        // Embedded Signup stand-in (ADR 0012): no Facebook; the page shows a small test dialog and the platform webhook is signed with this secret.
+        EMBEDDED_SIGNUP_MODE: 'mock', META_APP_SECRET: 'e2e-platform-meta-app-secret-0123456789',
         PLATFORM_JWT_SECRET: 'e2e-platform-secret-at-least-32-characters-long', AI_KILL_SWITCH: 'false',
       },
     },

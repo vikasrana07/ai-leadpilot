@@ -56,6 +56,15 @@ export class ChannelsService {
     });
   }
 
+  /**
+   * What the browser needs to open Meta's Embedded Signup pop-up. The app id and configuration id are public by design (the pop-up
+   * shows them to anyone); the app SECRET is never included. `mode` tells the page whether to use Facebook, the offline stand-in or hide the option.
+   */
+  embeddedConfig() {
+    const mode = this.env.EMBEDDED_SIGNUP_MODE;
+    return { mode, appId: mode === 'live' ? (this.env.META_APP_ID ?? null) : null, configId: mode === 'live' ? (this.env.META_ES_CONFIG_ID ?? null) : null, graphVersion: this.env.WHATSAPP_GRAPH_VERSION };
+  }
+
   /** Validates the credentials against the provider BEFORE anything is stored. */
   async connectWhatsapp(ctx: TenantRequestContext, input: WhatsappInput) {
     const creds: WaCredentials = { accessToken: input.accessToken, appSecret: input.appSecret };
@@ -236,6 +245,7 @@ class ChannelsController {
   @Get('channels') @RequirePermissions('integration:manage') list(@CurrentTenant() c: TenantRequestContext) { return this.svc.list(c); }
   @Post('channels/whatsapp') @HttpCode(201) @RequirePermissions('integration:manage')
   connect(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(channelWhatsappSchema)) b: WhatsappInput) { return this.svc.connectWhatsapp(c, b); }
+  @Get('channels/embedded-signup') @RequirePermissions('integration:manage') embeddedConfig() { return this.svc.embeddedConfig(); }
   @Post('channels/whatsapp/embedded') @HttpCode(201) @Throttle(EMBEDDED_THROTTLE) @RequirePermissions('integration:manage')
   connectEmbedded(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(channelEmbeddedSchema)) b: EmbeddedInput) { return this.svc.connectEmbedded(c, b); }
   @Post('channels/:id/test') @HttpCode(200) @RequirePermissions('integration:manage')

@@ -20,8 +20,9 @@ import { timeAgo } from '@/lib/format';
 import { handleApiError } from '@/lib/forms';
 import type { WaTemplate } from '@/lib/inbox';
 import { useTerms } from '@/lib/pack';
+import { EmbeddedSignupButton, type EmbeddedConfig } from './embedded-signup-button';
 
-interface Channel { id: string; name: string; status: 'ACTIVE' | 'DISABLED' | 'ERROR'; phoneNumberId: string; displayPhone: string | null; webhookUrl: string; verifyToken: string; lastVerifiedAt: string | null }
+interface Channel { id: string; name: string; status: 'ACTIVE' | 'DISABLED' | 'ERROR'; mode: 'manual' | 'platform'; phoneNumberId: string; displayPhone: string | null; webhookUrl: string | null; verifyToken: string | null; lastVerifiedAt: string | null }
 type ConnectForm = z.infer<typeof channelWhatsappSchema>;
 type TemplateForm = z.input<typeof templateSchema>;
 
@@ -84,30 +85,44 @@ export function WhatsappCard() {
   const channels = useQuery({ queryKey: ['channels'], queryFn: () => api<Channel[]>('/channels') });
   const test = useMutation({ mutationFn: (id: string) => api<{ ok: boolean; error?: string }>(`/channels/${id}/test`, { method: 'POST' }), onSuccess: async (r) => { if (r.ok) toast.success('Connection works'); else toast.error(r.error ?? 'Connection failed'); await qc.invalidateQueries({ queryKey: ['channels'] }); }, onError: (e) => handleApiError(e) });
   const disable = useMutation({ mutationFn: (id: string) => api(`/channels/${id}`, { method: 'DELETE' }), onSuccess: async () => { toast.success('Channel disabled'); await qc.invalidateQueries({ queryKey: ['channels'] }); }, onError: (e) => handleApiError(e) });
+  // Connecting with Facebook (Embedded Signup) is offered when the platform has it switched on; otherwise only the manual form exists.
+  const embedded = useQuery({ queryKey: ['channels', 'embedded-config'], queryFn: () => api<EmbeddedConfig>('/channels/embedded-signup'), retry: false });
+  const es = embedded.data && embedded.data.mode !== 'off' ? embedded.data : null;
   const ch = channels.data?.[0];
+  const viaFacebook = ch?.mode === 'platform';
 
   return (
     <Card>
-      <CardHeader><div><CardTitle><MessageCircle className="mr-1.5 inline h-4 w-4" aria-hidden />WhatsApp</CardTitle><p className="text-helper mt-0.5">Official WhatsApp Business Cloud API. Customers message your number; replies are sent from the inbox.</p></div>{!ch ? <Button variant="primary" onClick={() => setOpen(true)}>Connect WhatsApp</Button> : null}</CardHeader>
+      <CardHeader><div><CardTitle><MessageCircle className="mr-1.5 inline h-4 w-4" aria-hidden />WhatsApp</CardTitle><p className="text-helper mt-0.5">Official WhatsApp Business Cloud API. Customers message your number; replies are sent from the inbox.</p></div>{!ch ? (es ? <EmbeddedSignupButton config={es} /> : <Button variant="primary" onClick={() => setOpen(true)}>Connect WhatsApp</Button>) : null}</CardHeader>
       <CardBody className="space-y-5">
         {channels.isPending ? <Skeleton className="h-16" /> : !ch ? (
-          <div className="space-y-2 text-[13px] text-muted-foreground"><p>You will need a Meta developer app with the WhatsApp product, a phone number, and a permanent access token.</p><p>Each customer needs to have contacted you, or opted in, before you can message them. WhatsApp only allows free-form replies for 24 hours after their last message.</p></div>
+          <div className="space-y-2 text-[13px] text-muted-foreground">
+            {es ? <p>Click <strong>Connect WhatsApp</strong>, sign in with Facebook and choose or create your WhatsApp Business number. There is nothing to copy or paste.</p> : <p>You will need a Meta developer app with the WhatsApp product, a phone number, and a permanent access token.</p>}
+            <p>Each customer needs to have contacted you, or opted in, before you can message them. WhatsApp only allows free-form replies for 24 hours after their last message.</p>
+            {es ? <p><button type="button" className="text-primary underline underline-offset-2 hover:no-underline" onClick={() => setOpen(true)}>Advanced: use my own Meta app</button></p> : null}
+          </div>
         ) : (
           <>
             <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3">
               <div className="min-w-[12rem] flex-1"><p className="text-[13px] font-medium">{ch.name}</p><p className="text-helper num">{ch.displayPhone ?? ch.phoneNumberId} · verified {timeAgo(ch.lastVerifiedAt)}</p></div>
               <Badge tone={ch.status === 'ACTIVE' ? 'success' : ch.status === 'ERROR' ? 'danger' : 'neutral'}>{ch.status === 'ACTIVE' ? 'Connected' : ch.status === 'ERROR' ? 'Connection problem' : 'Disabled'}</Badge>
-              <Button size="sm" loading={test.isPending} onClick={() => test.mutate(ch.id)}>{ch.status === 'DISABLED' ? 'Reconnect' : 'Test connection'}</Button>
+              {viaFacebook && ch.status !== 'ACTIVE' && es
+                ? <EmbeddedSignupButton config={es} label="Reconnect with Facebook" variant="secondary" />
+                : <Button size="sm" loading={test.isPending} onClick={() => test.mutate(ch.id)}>{ch.status === 'DISABLED' ? 'Reconnect' : 'Test connection'}</Button>}
               {ch.status !== 'DISABLED' ? <Button size="sm" variant="ghost" onClick={() => disable.mutate(ch.id)}>Disable</Button> : null}
             </div>
-            {ch.status === 'ERROR' ? <p className="flex items-start gap-2 rounded-md bg-danger-soft p-3 text-[13px] text-danger"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />WhatsApp rejected the last check. The access token may have expired or been revoked. Reconnect with a new token.</p> : null}
+            {ch.status === 'ERROR' ? <p className="flex items-start gap-2 rounded-md bg-danger-soft p-3 text-[13px] text-danger"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />WhatsApp rejected the last check. {viaFacebook ? 'The connection to Facebook may have expired or been revoked. Reconnect with Facebook.' : 'The access token may have expired or been revoked. Reconnect with a new token.'}</p> : null}
 
+            {viaFacebook ? (
+              <p className="rounded-lg bg-muted/60 p-4 text-[13px] text-muted-foreground">Connected with Facebook. Messages reach your Inbox automatically: there is nothing to set up in Meta. Send a message to your number from a phone to see it arrive.</p>
+            ) : ch.webhookUrl && ch.verifyToken ? (
             <div className="space-y-3 rounded-lg bg-muted/60 p-4">
               <p className="text-[13px] font-medium">Finish setup in Meta</p>
               <ol className="list-decimal space-y-1 pl-5 text-[13px] text-muted-foreground"><li>In your Meta app open <strong>WhatsApp → Configuration</strong>.</li><li>Under Webhook, paste the callback URL and verify token below, then click <strong>Verify and save</strong>.</li><li>Subscribe to the <strong>messages</strong> field.</li><li>Send a message to your number from a phone: it should appear in the Inbox within seconds.</li></ol>
               <CopyField label="Callback URL" value={ch.webhookUrl} /><CopyField label="Verify token" value={ch.verifyToken} />
               <p className="text-helper">Meta can only reach a public HTTPS address. For local testing use a tunnel to your API.</p>
             </div>
+            ) : null}
             <Templates />
           </>
         )}

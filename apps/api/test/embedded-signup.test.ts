@@ -101,6 +101,27 @@ describe('POST /channels/whatsapp/embedded', () => {
   });
 });
 
+describe('GET /channels/embedded-signup (what the page needs)', () => {
+  it('tells the page the mode, never the app secret, and needs the integration permission', async () => {
+    const r = await ctx.http().get('/channels/embedded-signup').set(auth(a.accessToken));
+    expect(r.status).toBe(200); expect(r.body).toEqual({ mode: 'mock', appId: null, configId: null, graphVersion: 'v21.0' }); // mock mode: nothing to show Facebook
+    expect(JSON.stringify(r.body)).not.toContain(APP_SECRET);
+    expect((await off.http().get('/channels/embedded-signup').set(auth((await registerAccount(off, 'esCfgOff')).accessToken))).body.mode).toBe('off');
+    expect((await ctx.http().get('/channels/embedded-signup')).status).toBe(401);
+    const owner = await registerAccount(ctx, 'esCfgPerm');
+    await ctx.http().post('/auth/verify-email').send({ token: ctx.mail.last('verify', owner.email)?.token });
+    const agent = await addMember(ctx, owner, 'esCfgAgent', 'agent');
+    expect((await ctx.http().get('/channels/embedded-signup').set(auth(agent.accessToken))).status).toBe(403);
+  });
+  it('in live mode exposes only the public app id and configuration id', async () => {
+    const env = { ...loadEnv(), EMBEDDED_SIGNUP_MODE: 'live' as const, WHATSAPP_MODE: 'live' as const, META_APP_ID: '1234567890', META_APP_SECRET: APP_SECRET, META_ES_CONFIG_ID: '9988776655', META_WEBHOOK_VERIFY_TOKEN: VERIFY };
+    const { ChannelsService } = await import('../src/channels/channels.module.js');
+    const cfg = new (ChannelsService as unknown as new (...a: unknown[]) => { embeddedConfig(): unknown })(null, null, null, null, env).embeddedConfig();
+    expect(cfg).toEqual({ mode: 'live', appId: '1234567890', configId: '9988776655', graphVersion: 'v21.0' });
+    expect(JSON.stringify(cfg)).not.toContain(APP_SECRET);
+  });
+});
+
 describe('platform channels: credentials, rotation and disconnect', () => {
   it('uses the platform secret (not a stored one), refuses manual rotation, and tests the connection', async () => {
     const o = body(); const c = await connect(a, o); expect(c.status).toBe(201);
