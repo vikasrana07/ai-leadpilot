@@ -1,7 +1,8 @@
 import { RequireFeature } from '../common/billing-meta.js';
-import { BadRequestException, Body, ConflictException, Controller, Delete, Get, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Delete, Get, HttpCode, Inject, Injectable, Logger, Module, NotFoundException, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import { channelWhatsappSchema, templateSchema, widgetConfigSchema } from '@leadpilot/validation';
+import { channelEmbeddedSchema, channelWhatsappSchema, templateSchema, widgetConfigSchema } from '@leadpilot/validation';
+import { Throttle } from '@nestjs/throttler';
 import type { z } from 'zod';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
@@ -15,6 +16,8 @@ import { DbService } from '../db/db.module.js';
 import { WHATSAPP_CLIENT, WhatsAppApiError, type WaCredentials, type WhatsAppClient } from '../whatsapp/whatsapp.client.js';
 
 type WhatsappInput = z.infer<typeof channelWhatsappSchema>;
+type EmbeddedInput = z.infer<typeof channelEmbeddedSchema>;
+const EMBEDDED_THROTTLE = { default: { limit: () => Number(process.env.THROTTLE_AUTH_LIMIT ?? 10), ttl: 60_000 } };
 
 @Injectable()
 export class ChannelsService {
@@ -36,9 +39,11 @@ export class ChannelsService {
   /** Public, secret-free view. Secrets are never returned after they are saved. */
   private view(c: { id: string; type: string; name: string; status: string; externalId: string | null; webhookKey: string | null; config: unknown; credentialId: string | null; createdAt: Date }, cred?: { lastVerifiedAt: Date | null } | null) {
     const cfg = (c.config ?? {}) as Record<string, string>;
+    const platform = cfg.mode === 'platform';
     return {
-      id: c.id, type: c.type, name: c.name, status: c.status, phoneNumberId: c.externalId, displayPhone: cfg.displayPhone ?? null, wabaId: cfg.wabaId ?? null,
-      webhookUrl: c.webhookKey ? `${this.apiBase()}/webhooks/whatsapp/${c.webhookKey}` : null, verifyToken: cfg.verifyToken ?? null,
+      id: c.id, type: c.type, name: c.name, status: c.status, mode: platform ? 'platform' : 'manual', phoneNumberId: c.externalId, displayPhone: cfg.displayPhone ?? null, wabaId: cfg.wabaId ?? null,
+      // Platform (Embedded Signup) channels are served by the one platform webhook: there is no per-channel URL or verify token to show.
+      webhookUrl: !platform && c.webhookKey ? `${this.apiBase()}/webhooks/whatsapp/${c.webhookKey}` : null, verifyToken: !platform ? (cfg.verifyToken ?? null) : null,
       credentialsSaved: c.credentialId !== null, lastVerifiedAt: cred?.lastVerifiedAt?.toISOString() ?? null, createdAt: c.createdAt.toISOString(),
     };
   }
@@ -71,6 +76,51 @@ export class ChannelsService {
     });
   }
 
+  /**
+   * Embedded Signup (ADR-0012). The browser only hands us the one-time code and the ids Meta reported; everything that matters is
+   * proven server-side: the code is exchanged for a token, that token must see the phone number inside the WABA, and no other
+   * workspace may own the number. Nothing is stored until all of that succeeded. The live provider calls are UNVERIFIED against Meta.
+   */
+  async connectEmbedded(ctx: TenantRequestContext, input: EmbeddedInput) {
+    if (this.env.EMBEDDED_SIGNUP_MODE === 'off') throw new NotFoundException({ code: 'embedded_signup_disabled', message: 'Connecting with Facebook is not available yet' });
+    const fail = (e: unknown, what: string) => new BadRequestException({ code: 'embedded_signup_failed', message: e instanceof WhatsAppApiError ? `${what}: ${e.message}` : `Could not reach WhatsApp to ${what.toLowerCase()}` });
+
+    // Who owns this number already? (SECURITY DEFINER lookup: it sees every workspace, returns ids only.)
+    const owner = (await this.db.prisma.$queryRaw<{ id: string; tenant_id: string; mode: string }[]>`SELECT id, tenant_id, mode FROM find_channel_by_phone_number_id(${input.phoneNumberId})`)[0];
+    if (owner && owner.tenant_id !== ctx.tenantId) throw new ConflictException({ code: 'already_connected', message: 'This WhatsApp number is already connected to another LeadPilot workspace' });
+    if (owner && owner.mode !== 'platform') throw new ConflictException({ code: 'already_connected_manually', message: 'This number is connected with your own Meta app. Disconnect it first, then connect it with Facebook.' });
+
+    let token;
+    try { token = await this.wa.exchangeCode(input.code); } catch (e) { throw fail(e, 'Meta did not accept the sign-in'); }
+    let info;
+    try { info = await this.wa.verifyPhoneInWaba(input.wabaId, input.phoneNumberId, token.accessToken); } catch (e) { throw fail(e, 'Could not confirm the phone number'); }
+    try { await this.wa.subscribeApp(input.wabaId, token.accessToken); } catch (e) { throw fail(e, 'Could not turn on message delivery'); }
+
+    const sealed = await this.box.seal({ accessToken: token.accessToken, mode: 'platform' }, this.aad(ctx.tenantId, 'whatsapp'));
+    const config = { mode: 'platform', displayPhone: info.displayPhoneNumber, wabaId: input.wabaId, verifiedName: info.verifiedName ?? '', ...(token.expiresInSec ? { tokenExpiresAt: new Date(Date.now() + token.expiresInSec * 1000).toISOString() } : {}) };
+    try {
+      return await this.db.tenantTx(ctx, async (tx) => {
+        const existing = owner ? await tx.channel.findFirst({ where: { id: owner.id, tenantId: ctx.tenantId, type: 'WHATSAPP' } }) : null;
+        if (existing?.credentialId) {
+          // Same workspace connecting the same number again (re-run after a problem): refresh the token, keep the channel.
+          await tx.integrationCredential.update({ where: { id: existing.credentialId }, data: { ...sealed, lastVerifiedAt: new Date(), status: 'active' } });
+          const channel = await tx.channel.update({ where: { id: existing.id }, data: { status: 'ACTIVE', name: input.name, config } });
+          await this.rec(ctx, tx, 'integration.whatsapp_connected_embedded', channel.id, { phoneNumberId: input.phoneNumberId, wabaId: input.wabaId, reconnect: true });
+          return this.view(channel, { lastVerifiedAt: new Date() });
+        }
+        const credId = uuidv7();
+        await tx.integrationCredential.create({ data: { id: credId, tenantId: ctx.tenantId, provider: 'whatsapp', ...sealed, lastVerifiedAt: new Date() } });
+        const channel = await tx.channel.create({ data: { id: uuidv7(), tenantId: ctx.tenantId, type: 'WHATSAPP', name: input.name, externalId: input.phoneNumberId, webhookKey: randomBytes(24).toString('base64url'), credentialId: credId, config } });
+        await this.rec(ctx, tx, 'integration.whatsapp_connected_embedded', channel.id, { phoneNumberId: input.phoneNumberId, wabaId: input.wabaId });
+        return this.view(channel, { lastVerifiedAt: new Date() });
+      });
+    } catch (e) {
+      // A concurrent connect of the same number by another workspace: the database-level unique index decides.
+      if (typeof e === 'object' && e !== null && (e as { code?: string }).code === 'P2002') throw new ConflictException({ code: 'already_connected', message: 'This WhatsApp number is already connected to another LeadPilot workspace' });
+      throw e;
+    }
+  }
+
   async test(ctx: TenantRequestContext, id: string) {
     const { channel, creds } = await this.credentialsFor(ctx.tenantId, id, ctx.userId);
     try {
@@ -89,6 +139,7 @@ export class ChannelsService {
   /** Rotates the access token / app secret. The webhook URL stays the same. */
   async updateCredentials(ctx: TenantRequestContext, id: string, input: { accessToken: string; appSecret: string }) {
     const { channel } = await this.credentialsFor(ctx.tenantId, id, ctx.userId);
+    if ((channel.config as { mode?: string } | null)?.mode === 'platform') throw new BadRequestException({ code: 'platform_channel', message: 'This number was connected with Facebook. To change it, connect it again with Facebook.' });
     try { await this.wa.getPhoneNumber(channel.externalId ?? '', input); } catch (e) { throw new BadRequestException({ code: 'whatsapp_verification_failed', message: e instanceof WhatsAppApiError ? `WhatsApp rejected these details: ${e.message}` : 'Could not verify' }); }
     await this.db.tenantTx(ctx, async (tx) => {
       const sealed = await this.box.seal(input, this.aad(ctx.tenantId, 'whatsapp'));
@@ -99,11 +150,22 @@ export class ChannelsService {
   }
 
   async disable(ctx: TenantRequestContext, id: string) {
-    await this.db.tenantTx(ctx, async (tx) => {
-      const r = await tx.channel.updateMany({ where: { id, tenantId: ctx.tenantId, type: 'WHATSAPP' }, data: { status: 'DISABLED' } });
-      if (r.count !== 1) throw new NotFoundException({ code: 'not_found', message: 'Channel not found' });
+    const toUnsubscribe = await this.db.tenantTx(ctx, async (tx) => {
+      const ch = await tx.channel.findFirst({ where: { id, tenantId: ctx.tenantId, type: 'WHATSAPP' } });
+      if (!ch) throw new NotFoundException({ code: 'not_found', message: 'Channel not found' });
+      await tx.channel.update({ where: { id }, data: { status: 'DISABLED' } });
       await this.rec(ctx, tx, 'integration.whatsapp_disabled', id);
+      const cfg = (ch.config ?? {}) as { mode?: string; wabaId?: string };
+      if (cfg.mode !== 'platform' || !cfg.wabaId) return null;
+      // A WABA can hold several numbers; only stop delivery for it when no other active Facebook-connected number of this workspace uses it.
+      const others = (await tx.channel.findMany({ where: { tenantId: ctx.tenantId, type: 'WHATSAPP', status: 'ACTIVE', id: { not: id } }, select: { config: true } })).filter((o) => { const c = (o.config ?? {}) as { mode?: string; wabaId?: string }; return c.mode === 'platform' && c.wabaId === cfg.wabaId; });
+      return others.length === 0 ? cfg.wabaId : null;
     });
+    if (toUnsubscribe) {
+      // Best effort: a failure here (token already revoked, Meta down) must never stop the disconnect.
+      try { const { creds } = await this.credentialsFor(ctx.tenantId, id, ctx.userId); await this.wa.unsubscribeApp(toUnsubscribe, creds.accessToken); }
+      catch (e) { new Logger('Channels').warn(`Could not unsubscribe the app from a WhatsApp account on disconnect: ${e instanceof Error ? e.message : 'unknown error'}`); }
+    }
   }
 
   /** Decrypts credentials for server-side use. Callers must never log or return the result. */
@@ -113,7 +175,9 @@ export class ChannelsService {
       if (!channel?.credentialId) throw new NotFoundException({ code: 'not_found', message: 'Channel not found' });
       const c = await tx.integrationCredential.findUniqueOrThrow({ where: { id: channel.credentialId } });
       const secret = await this.box.open({ ciphertext: c.ciphertext, wrappedKey: c.wrappedKey, keyId: c.keyId }, this.aad(tenantId, 'whatsapp'));
-      return { channel, creds: { accessToken: secret.accessToken as string, appSecret: secret.appSecret as string } };
+      // Platform (Embedded Signup) channels carry only a token; the app secret is the platform's own and lives in the environment.
+      const platform = (channel.config as { mode?: string } | null)?.mode === 'platform';
+      return { channel, creds: { accessToken: secret.accessToken as string, appSecret: platform ? (this.env.META_APP_SECRET ?? '') : (secret.appSecret as string) } };
     });
   }
 
@@ -172,6 +236,8 @@ class ChannelsController {
   @Get('channels') @RequirePermissions('integration:manage') list(@CurrentTenant() c: TenantRequestContext) { return this.svc.list(c); }
   @Post('channels/whatsapp') @HttpCode(201) @RequirePermissions('integration:manage')
   connect(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(channelWhatsappSchema)) b: WhatsappInput) { return this.svc.connectWhatsapp(c, b); }
+  @Post('channels/whatsapp/embedded') @HttpCode(201) @Throttle(EMBEDDED_THROTTLE) @RequirePermissions('integration:manage')
+  connectEmbedded(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(channelEmbeddedSchema)) b: EmbeddedInput) { return this.svc.connectEmbedded(c, b); }
   @Post('channels/:id/test') @HttpCode(200) @RequirePermissions('integration:manage')
   test(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.test(c, id); }
   @Put('channels/:id/credentials') @HttpCode(204) @RequirePermissions('integration:manage')

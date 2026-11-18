@@ -4,7 +4,17 @@
 
 The first two (WhatsApp and Razorpay) are public inbound endpoints and authenticate by HMAC over the **raw request body**. Anything that alters the bytes in front of the API (a proxy that re-serialises JSON, a WAF that rewrites bodies) breaks signatures.
 
-## WhatsApp (Meta): `POST /webhooks/whatsapp/:key`, handshake `GET /webhooks/whatsapp/:key`
+## WhatsApp, platform app (Embedded Signup): `POST /webhooks/whatsapp`, handshake `GET /webhooks/whatsapp` (ADR 0012)
+One URL for every Facebook-connected number; 404 while `EMBEDDED_SIGNUP_MODE=off`. Signature: HMAC-SHA256 with the **platform** `META_APP_SECRET`. Handshake token: `META_WEBHOOK_VERIFY_TOKEN`. Each change is routed to its workspace by `phone_number_id`; the response says `{status, processed, ignored}`.
+| Symptom | Meaning / action |
+|---|---|
+| 401 `invalid_signature` for every delivery | `META_APP_SECRET` in the environment is not the platform app's secret (after a rotation, or a wrong environment), or a proxy rewrote the body. This affects ALL Facebook-connected numbers at once. |
+| Handshake 403 | `META_WEBHOOK_VERIFY_TOKEN` differs from the token configured in the Meta app. |
+| `ignored` with `processed: 0` | The number is unknown, its channel is disabled, or it belongs to a manually connected channel (those use their own URL and secret). Log line: "Platform webhook: N change(s) were not for an active Facebook-connected channel". |
+| One workspace silent, others fine | Check its channel in Integrations (status, mode `platform`) and that the app is still subscribed to its WABA. Reconnect with Facebook. |
+To tell the modes apart: `SELECT config->>'mode' FROM channels WHERE id = ...` (`platform` or empty/`manual`).
+
+## WhatsApp (Meta), manual connection: `POST /webhooks/whatsapp/:key`, handshake `GET /webhooks/whatsapp/:key`
 The `:key` is a per-channel unguessable key (shown in Integrations). Signature header `X-Hub-Signature-256: sha256=<hex>`, HMAC-SHA256 with that channel's **app secret**.
 
 | Symptom | Meaning / action |

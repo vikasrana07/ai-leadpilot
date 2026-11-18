@@ -158,6 +158,14 @@ export const channelWhatsappSchema = z.object({
   appSecret: z.string().trim().min(8).max(200),
 });
 
+/** What the browser sends after the Embedded Signup pop-up finishes: the one-time code plus the ids Meta reports. The server exchanges the code; the browser never sees a token. */
+export const channelEmbeddedSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  code: z.string().trim().min(5).max(2000),
+  phoneNumberId: z.string().trim().regex(/^\d{6,25}$/, 'The phone number ID is digits only'),
+  wabaId: z.string().trim().regex(/^\d{6,25}$/, 'The WhatsApp Business Account ID is digits only'),
+});
+
 export const templateSchema = z.object({
   name: z.string().trim().regex(/^[a-z0-9_]{1,512}$/, 'Template names use lowercase letters, numbers and underscores'),
   language: z.string().trim().regex(/^[a-z]{2}(_[A-Z]{2})?$/, 'Use a code like en or en_US').default('en'),

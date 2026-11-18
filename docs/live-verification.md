@@ -17,6 +17,9 @@ Each script prints PASS/FAIL per check and a list of **manual steps that cannot 
 3. **WhatsApp**: run the script with your sandbox number, then the manual steps. Meta requires business verification and template approval for production: start that early, it takes days.
 4. **SMTP**: run the script; check SPF/DKIM/DMARC; then trigger the real verification and invite emails.
 
+## WhatsApp Embedded Signup (ADR 0012): items to verify with a real Meta test business
+Nothing here has been run. With `EMBEDDED_SIGNUP_MODE=live` and a registered Tech Provider app, verify: the code exchange (`POST /oauth/access_token`: does it need `redirect_uri`? token lifetime?), `GET /{waba}/phone_numbers` containing the connected number, `POST /{waba}/subscribed_apps` and that inbound messages and statuses then arrive at `POST /webhooks/whatsapp` signed with the platform secret, whether a phone PIN registration is required, `DELETE /{waba}/subscribed_apps` on disconnect, the Embedded Signup pop-up message shape (milestone 2), the Facebook hosts needed in the CSP, and the deauthorize and data-deletion callbacks (milestone 3). Record real payloads as test fixtures.
+
 ## What to expect to break (be suspicious here)
 - Razorpay: whether a subscription with a future `start_at` emits `activated` at authentication or at first charge; proration on `schedule_change_at: now`; the exact `subscription.pending`/`halted` semantics; whether `cancel_at_cycle_end` sends `cancelled` immediately.
 - WhatsApp: template parameter formats, the 24-hour window edge cases, status webhook ordering, media URL hosts (the SSRF allow-list covers `facebook.com`, `fbcdn.net`, `whatsapp.net`).

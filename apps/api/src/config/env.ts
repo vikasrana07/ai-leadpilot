@@ -35,6 +35,13 @@ const schema = z.object({
   AI_DEFAULT_MONTHLY_TOKEN_CAP: z.coerce.number().int().positive().default(2_000_000),
   WHATSAPP_MODE: z.enum(['mock', 'live']).default('mock'),
   WHATSAPP_GRAPH_VERSION: z.string().regex(/^v\d+\.\d+$/).default('v21.0'),
+  /** WhatsApp Embedded Signup (ADR-0012): one LeadPilot-owned Meta app connects every tenant's WhatsApp account. off = disabled (default), mock = offline stand-in (never in production), live = real Meta (needs the four META_* values). */
+  EMBEDDED_SIGNUP_MODE: z.enum(['off', 'mock', 'live']).default('off'),
+  META_APP_ID: z.string().optional(),
+  /** Platform secret: signs the platform webhook and is used in the code exchange. Never logged or returned. */
+  META_APP_SECRET: z.string().optional(),
+  META_ES_CONFIG_ID: z.string().optional(),
+  META_WEBHOOK_VERIFY_TOKEN: z.string().optional(),
   SMTP_HOST: z.string().default('localhost'),
   SMTP_PORT: z.coerce.number().int().default(1026),
   /** Optional SMTP authentication (e.g. Amazon SES SMTP credentials). Port 465 uses implicit TLS; other ports upgrade with STARTTLS. */
@@ -118,6 +125,10 @@ export type Env = z.infer<typeof schema>;
 export function loadEnv(raw: NodeJS.ProcessEnv = process.env): Env {
   const parsed = schema.superRefine((e, ctx) => {
     if (e.NODE_ENV === 'production' && e.WHATSAPP_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['WHATSAPP_MODE'], message: 'mock mode is not allowed in production' });
+    if (e.EMBEDDED_SIGNUP_MODE === 'live') for (const k of ['META_APP_ID', 'META_APP_SECRET', 'META_ES_CONFIG_ID', 'META_WEBHOOK_VERIFY_TOKEN'] as const) if (!e[k]) ctx.addIssue({ code: 'custom', path: [k], message: `${k} is required when EMBEDDED_SIGNUP_MODE=live` });
+    if (e.EMBEDDED_SIGNUP_MODE === 'mock' && !e.META_APP_SECRET) ctx.addIssue({ code: 'custom', path: ['META_APP_SECRET'], message: 'META_APP_SECRET is required when EMBEDDED_SIGNUP_MODE=mock (it signs the test webhook)' });
+    if (e.NODE_ENV === 'production' && e.EMBEDDED_SIGNUP_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['EMBEDDED_SIGNUP_MODE'], message: 'mock Embedded Signup is not allowed in production' });
+    if (e.EMBEDDED_SIGNUP_MODE !== 'off' && e.WHATSAPP_MODE === 'live' !== (e.EMBEDDED_SIGNUP_MODE === 'live')) ctx.addIssue({ code: 'custom', path: ['EMBEDDED_SIGNUP_MODE'], message: 'EMBEDDED_SIGNUP_MODE and WHATSAPP_MODE must both be live or both be mock' });
     if (e.NODE_ENV === 'production' && e.VIRUS_SCAN_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['VIRUS_SCAN_MODE'], message: 'mock virus scanning is not allowed in production' });
     if (e.AI_PROVIDER === 'mock' && e.NODE_ENV === 'production') ctx.addIssue({ code: 'custom', path: ['AI_PROVIDER'], message: 'the mock AI provider is not allowed in production' });
     if (e.KEY_PROVIDER === 'kms' && !e.KMS_KEY_ID) ctx.addIssue({ code: 'custom', path: ['KMS_KEY_ID'], message: 'KMS_KEY_ID is required when KEY_PROVIDER=kms' });

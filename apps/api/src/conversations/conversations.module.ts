@@ -4,7 +4,7 @@ import { LeadsModule } from '../leads/leads.module.js';
 import { ConversationsController } from './conversations.controller.js';
 import { ConversationsService } from './conversations.service.js';
 import { InboundService } from './inbound.service.js';
-import { WhatsappWebhookController } from './whatsapp-webhook.controller.js';
+import { PlatformWhatsappWebhookController, WhatsappWebhookController, WhatsappWebhookProcessor } from './whatsapp-webhook.controller.js';
 
-@Module({ imports: [ChannelsModule, LeadsModule], controllers: [ConversationsController, WhatsappWebhookController], providers: [ConversationsService, InboundService], exports: [InboundService, ConversationsService] })
+@Module({ imports: [ChannelsModule, LeadsModule], controllers: [ConversationsController, WhatsappWebhookController, PlatformWhatsappWebhookController], providers: [ConversationsService, InboundService, WhatsappWebhookProcessor], exports: [InboundService, ConversationsService] })
 export class ConversationsModule {}

@@ -30,6 +30,12 @@ x-app-env: &app-env
   PLATFORM_JWT_SECRET: ${PLATFORM_JWT_SECRET:?}
   # --- providers (production refuses mock modes) ---
   WHATSAPP_MODE: live
+  # Embedded Signup (optional; needs a registered Meta Tech Provider app). Set EMBEDDED_SIGNUP_MODE=live and provide the four values from your secret manager.
+  EMBEDDED_SIGNUP_MODE: ${EMBEDDED_SIGNUP_MODE:-off}
+  META_APP_ID: ${META_APP_ID:-}
+  META_APP_SECRET: ${META_APP_SECRET:-}
+  META_ES_CONFIG_ID: ${META_ES_CONFIG_ID:-}
+  META_WEBHOOK_VERIFY_TOKEN: ${META_WEBHOOK_VERIFY_TOKEN:-}
   AI_PROVIDER: openai
   OPENAI_API_KEY: ${OPENAI_API_KEY:?}
   RAZORPAY_MODE: live

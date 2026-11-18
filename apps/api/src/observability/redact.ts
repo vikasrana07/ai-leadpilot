@@ -6,8 +6,8 @@
 const RULES: [RegExp, string | ((m: string, ...g: string[]) => string)][] = [
   [/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g, '[jwt]'],
   [/\b(Bearer|Basic)\s+[A-Za-z0-9._~+/=-]{8,}/gi, '$1 [redacted]'],
-  [/\b(?:lp_[A-Za-z0-9_-]{8,}|sk-[A-Za-z0-9_-]{16,}|rzp_(?:live|test)_[A-Za-z0-9]{6,}|whsec_[A-Za-z0-9]{8,}|AKIA[A-Z0-9]{12,}|xox[abprs]-[A-Za-z0-9-]{10,})/g, '[secret]'],
-  [/\b(password|passwd|pwd|secret|token|api[_-]?key|authorization|cookie|signature)(["']?\s*[:=]\s*["']?)([^\s"',}&;]+)/gi, '$1$2[redacted]'],
+  [/\b(?:lp_[A-Za-z0-9_-]{8,}|sk-[A-Za-z0-9_-]{16,}|rzp_(?:live|test)_[A-Za-z0-9]{6,}|whsec_[A-Za-z0-9]{8,}|AKIA[A-Z0-9]{12,}|xox[abprs]-[A-Za-z0-9-]{10,}|EAA[A-Za-z0-9]{20,})/g, '[secret]'],
+  [/\b([\w-]*(?:password|passwd|pwd|secret|token|api[_-]?key|authorization|cookie|signature))(["']?\s*[:=]\s*["']?)([^\s"',}&;]+)/gi, '$1$2[redacted]'],
   [/[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g, '[email]'],
   [/\b[A-Z]{5}\d{4}[A-Z]\b/g, '[pan]'],
   [/(?<![\w-])\d{4}[ -]\d{4}[ -]\d{4}(?![\w-])/g, '[id-number]'],
