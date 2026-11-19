@@ -133,7 +133,7 @@ export default function LeadsPage() {
             </ul>
             <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[860px] text-left text-[13px]">
-              <thead className="bg-muted/50 text-label text-muted-foreground">
+              <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-label text-muted-foreground shadow-xs">
                 <tr>
                   <th scope="col" className="w-10 px-3 py-2.5"><input type="checkbox" aria-label="Select all on this page" checked={allOnPage} onChange={(e) => setSelected((s) => { const n = new Set(s); items.forEach((l) => (e.target.checked ? n.add(l.id) : n.delete(l.id))); return n; })} /></th>
                   {th(terms.Lead, 'name')}{th('Stage')}{th('Temp.')}{lf.budget ? th(lf.budget.label) : null}{th('Assigned')}{th('Score', 'score', 'text-right')}{th('Follow-up', 'nextFollowUpAt')}{th('Added', 'createdAt')}

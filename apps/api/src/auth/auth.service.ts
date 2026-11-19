@@ -13,6 +13,7 @@ import { TenantsService } from '../tenants/tenants.service.js';
 import { generateToken, hashToken } from './crypto.js';
 import { PasswordService } from './password.service.js';
 import { TokenService } from './token.service.js';
+import { SessionCacheService } from '../common/session-cache.js';
 
 const REFRESH_TTL_MS = 30 * 24 * 3600 * 1000;
 const VERIFY_TTL_MS = 24 * 3600 * 1000;
@@ -43,6 +44,7 @@ export class AuthService {
     @Inject(TenantsService) private readonly tenants: TenantsService,
     @Inject(ENV) private readonly env: Env,
     @Inject(MfaService) private readonly mfa: MfaService,
+    @Inject(SessionCacheService) private readonly sessionCache: SessionCacheService,
   ) {}
 
   // ---------------------------------------------------------------- registration & verification
@@ -193,7 +195,10 @@ export class AuthService {
 
   async logout(sessionId: string, userId: string, tenantId: string | null, meta: ClientMeta): Promise<void> {
     const s = await this.db.prisma.session.findUnique({ where: { id: sessionId } });
-    if (s) await this.db.prisma.session.updateMany({ where: { familyId: s.familyId, revokedAt: null }, data: { revokedAt: new Date() } });
+    if (s) {
+      await this.db.prisma.session.updateMany({ where: { familyId: s.familyId, revokedAt: null }, data: { revokedAt: new Date() } });
+      await this.sessionCache.invalidate(sessionId);
+    }
     if (tenantId) await this.audit.recordStandalone({ tenantId, actorUserId: userId, action: 'auth.logout', requestId: meta.requestId, ip: meta.ip });
   }
 
@@ -220,9 +225,13 @@ export class AuthService {
     const claimed = await this.db.prisma.passwordResetToken.updateMany({ where: { id: row.id, usedAt: null }, data: { usedAt: new Date() } });
     if (claimed.count !== 1) throw new BadRequestException({ code: 'invalid_token', message: 'This link is invalid or has expired' });
     const passwordHash = await this.passwords.hash(password);
-    await this.db.prisma.user.update({ where: { id: row.userId }, data: { passwordHash, failedLogins: 0, lockedUntil: null } });
-    // Every existing session dies with the old password.
-    await this.db.prisma.session.updateMany({ where: { userId: row.userId, revokedAt: null }, data: { revokedAt: new Date() } });
+    const now = new Date();
+    await this.db.prisma.$transaction([
+      this.db.prisma.user.update({ where: { id: row.userId }, data: { passwordHash, failedLogins: 0, lockedUntil: null } }),
+      // Every existing session dies with the old password.
+      this.db.prisma.session.updateMany({ where: { userId: row.userId, revokedAt: null }, data: { revokedAt: now } }),
+    ]);
+    await this.sessionCache.invalidateUser(row.userId);
     await this.audit.recordStandalone({ tenantId: null, actorUserId: row.userId, action: 'auth.password_reset', requestId: meta.requestId, ip: meta.ip });
   }
 
@@ -237,6 +246,7 @@ export class AuthService {
     const s = await this.db.prisma.session.findFirst({ where: { id: sessionId, userId } });
     if (!s) throw new NotFoundException({ code: 'not_found', message: 'Session not found' });
     await this.db.prisma.session.updateMany({ where: { familyId: s.familyId, userId, revokedAt: null }, data: { revokedAt: new Date() } });
+    await this.sessionCache.invalidate(sessionId);
     if (tenantId) await this.audit.recordStandalone({ tenantId, actorUserId: userId, action: 'auth.session_revoked', resourceType: 'session', resourceId: sessionId, requestId: meta.requestId, ip: meta.ip });
   }
 

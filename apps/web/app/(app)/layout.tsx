@@ -20,7 +20,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   if (me.isPending || unauthenticated) {
     return (
       <div className="flex h-dvh" aria-busy="true" aria-label="Loading">
-        <div className="hidden w-60 bg-sidebar lg:block" />
+        <div className="hidden shrink-0 bg-sidebar lg:block transition-none" style={{ width: 'var(--sidebar-width, 248px)' }} />
         <div className="flex-1 space-y-4 p-8"><Skeleton className="h-8 w-64" /><Skeleton className="h-40" /><Skeleton className="h-40" /></div>
       </div>
     );

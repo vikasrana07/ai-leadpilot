@@ -9,6 +9,7 @@ import { TokenService } from '../auth/token.service.js';
 import { DbService } from '../db/db.module.js';
 import { MfaService } from '../mfa/mfa.service.js';
 import { authenticateSupport, supportTenantContext } from '../support/support-access.js';
+import { SessionCacheService } from './session-cache.js';
 
 function extractToken(req: AppRequest): string | undefined {
   const h = req.header('authorization');
@@ -24,6 +25,7 @@ export class AuthGuard implements CanActivate {
     @Inject(Reflector) private readonly reflector: Reflector,
     @Inject(TokenService) private readonly tokens: TokenService,
     @Inject(DbService) private readonly db: DbService,
+    @Inject(SessionCacheService) private readonly sessionCache: SessionCacheService,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -37,12 +39,21 @@ export class AuthGuard implements CanActivate {
     if (support) { await authenticateSupport(this.db, req, support); return true; }
 
     if (claims) {
-      // A revoked/expired session or disabled user invalidates the access token immediately.
-      const session = await this.db.prisma.session.findUnique({
-        where: { id: claims.sessionId },
-        select: { userId: true, revokedAt: true, expiresAt: true, user: { select: { status: true } } },
-      });
-      const valid = session && session.userId === claims.userId && !session.revokedAt && session.expiresAt > new Date() && session.user.status === 'ACTIVE';
+      let valid = false;
+      const cachedUserId = await this.sessionCache.getValidSessionUserId(claims.sessionId);
+      if (cachedUserId) {
+        valid = cachedUserId === claims.userId;
+      } else {
+        // A revoked/expired session or disabled user invalidates the access token immediately.
+        const session = await this.db.prisma.session.findUnique({
+          where: { id: claims.sessionId },
+          select: { userId: true, revokedAt: true, expiresAt: true, user: { select: { status: true } } },
+        });
+        valid = Boolean(session && session.userId === claims.userId && !session.revokedAt && session.expiresAt > new Date() && session.user.status === 'ACTIVE');
+        if (valid) {
+          await this.sessionCache.setValidSession(claims.sessionId, claims.userId);
+        }
+      }
       if (valid) { req.auth = { userId: claims.userId, sessionId: claims.sessionId, activeTenantId: claims.tenantId }; addLogContext({ userId: claims.userId }); }
     }
     if (isPublic) return true;

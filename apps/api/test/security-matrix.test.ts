@@ -153,6 +153,8 @@ describe('transport hardening', () => {
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['x-powered-by']).toBeUndefined();
     expect(res.headers['strict-transport-security'] ?? res.headers['x-frame-options'] ?? res.headers['content-security-policy']).toBeTruthy();
+    expect(res.headers['content-security-policy']).toContain("connect-src 'self' https://api.razorpay.com wss:");
+    expect(res.headers['content-security-policy']).toContain("frame-ancestors 'none'");
   });
 
   it('CORS reflects only the configured web origin (never *), with credentials', async () => {

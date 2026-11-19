@@ -1,5 +1,8 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, CreditCard, FlaskConical, X } from 'lucide-react';
 import Link from 'next/link';
@@ -18,6 +21,7 @@ import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api, ApiError } from '@/lib/api';
 import { ENTITLEMENT_LABELS, FEATURE_KEYS, LIMIT_KEYS, STATE_CODES, STATUS_LABEL, STATUS_TONE, daysLeft, fmtDate, inr, limitText, problemList, type BillingProfile, type BillingSummary, type CheckoutInit, type Invoice, type PlanView } from '@/lib/billing';
+import { handleApiError } from '@/lib/forms';
 import { cn } from '@/lib/cn';
 
 interface RazorpayCtor { new (o: Record<string, unknown>): { open: () => void } }
@@ -40,40 +44,118 @@ function ProfileDialog({ open, onOpenChange, onSaved }: { open: boolean; onOpenC
   const q = useQuery({ queryKey: ['billing-profile'], queryFn: () => api<BillingProfile | null>('/billing/profile'), enabled: open });
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title="Billing details" description="Printed on your GST invoices. GSTIN is optional." className="max-w-lg">
+      <DialogContent title="Billing details" description="Printed on your GST invoices. GSTIN is optional." size="xl">
         {q.isPending ? <Skeleton className="h-48" /> : <ProfileForm initial={q.data ?? null} onSaved={() => { onOpenChange(false); onSaved(); }} />}
       </DialogContent>
     </Dialog>
   );
 }
 
+const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i;
+
+const billingProfileFormSchema = z
+  .object({
+    legalName: z.string().trim().min(2, 'Enter at least 2 characters').max(160),
+    gstin: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .refine((g) => !g || GSTIN_REGEX.test(g), 'Enter a valid 15-character GSTIN')
+      .optional()
+      .or(z.literal('')),
+    stateCode: z.string().length(2).refine((c) => c in STATE_CODES, 'Unknown GST state code'),
+    addressLine: z.string().trim().min(3, 'Enter at least 3 characters').max(300),
+    city: z.string().trim().max(80).optional().or(z.literal('')),
+    pincode: z
+      .string()
+      .trim()
+      .refine((p) => !p || /^\d{6}$/.test(p), 'Use a 6-digit pincode')
+      .optional()
+      .or(z.literal('')),
+  })
+  .superRefine((v, ctx) => {
+    if (v.gstin && v.gstin.slice(0, 2) !== v.stateCode) {
+      ctx.addIssue({ code: 'custom', path: ['stateCode'], message: 'State must match the first two digits of the GSTIN' });
+    }
+  });
+
+type BillingProfileFormValues = z.infer<typeof billingProfileFormSchema>;
+
 function ProfileForm({ initial, onSaved }: { initial: BillingProfile | null; onSaved: () => void }) {
-  const [v, setV] = useState<BillingProfile>(initial ?? { legalName: '', gstin: null, stateCode: '29', addressLine: '', city: '', pincode: '' });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const m = useMutation({
-    mutationFn: () => api('/billing/profile', { method: 'PUT', body: { ...v, gstin: v.gstin?.trim() ? v.gstin.trim().toUpperCase() : null } }),
-    onSuccess: () => { toast.success('Billing details saved'); onSaved(); },
-    onError: (e) => {
-      if (e instanceof ApiError && e.details?.length) setErrors(Object.fromEntries(e.details.map((d) => [d.path || 'form', d.message])));
-      else toast.error(e instanceof ApiError ? e.message : 'Could not save');
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<BillingProfileFormValues>({
+    resolver: zodResolver(billingProfileFormSchema),
+    defaultValues: {
+      legalName: initial?.legalName ?? '',
+      gstin: initial?.gstin ?? '',
+      stateCode: initial?.stateCode ?? '29',
+      addressLine: initial?.addressLine ?? '',
+      city: initial?.city ?? '',
+      pincode: initial?.pincode ?? '',
     },
   });
-  const set = (k: keyof BillingProfile, val: string) => setV((x) => ({ ...x, [k]: val }));
+
+  async function onSubmit(v: BillingProfileFormValues) {
+    try {
+      await api('/billing/profile', {
+        method: 'PUT',
+        body: {
+          legalName: v.legalName.trim(),
+          gstin: v.gstin?.trim() ? v.gstin.trim().toUpperCase() : null,
+          stateCode: v.stateCode,
+          addressLine: v.addressLine.trim(),
+          city: v.city?.trim() ?? '',
+          pincode: v.pincode?.trim() ?? '',
+        },
+      });
+      toast.success('Billing details saved');
+      onSaved();
+    } catch (e) {
+      handleApiError(e, setError);
+    }
+  }
+
   return (
-    <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); setErrors({}); m.mutate(); }}>
-      <Field label="Legal / business name" htmlFor="bp-name" error={errors.legalName}><Input id="bp-name" value={v.legalName} onChange={(e) => set('legalName', e.target.value)} required /></Field>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="GSTIN (optional)" htmlFor="bp-gstin" error={errors.gstin} hint="15 characters"><Input id="bp-gstin" value={v.gstin ?? ''} maxLength={15} onChange={(e) => setV((x) => ({ ...x, gstin: e.target.value.toUpperCase() }))} /></Field>
-        <Field label="State" htmlFor="bp-state" error={errors.stateCode}>
-          <Select id="bp-state" value={v.stateCode} onChange={(e) => set('stateCode', e.target.value)}>{Object.entries(STATE_CODES).map(([c, n]) => <option key={c} value={c}>{n} ({c})</option>)}</Select>
+    <form className="flex flex-1 flex-col justify-between" noValidate onSubmit={handleSubmit(onSubmit)}>
+      <div className="space-y-3.5">
+        <Field label="Legal / business name" htmlFor="bp-name" error={errors.legalName?.message}>
+          <Input id="bp-name" autoFocus {...register('legalName')} />
         </Field>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="GSTIN (optional)" htmlFor="bp-gstin" error={errors.gstin?.message} hint="15 characters">
+            <Input id="bp-gstin" maxLength={15} {...register('gstin')} />
+          </Field>
+          <Field label="State" htmlFor="bp-state" error={errors.stateCode?.message}>
+            <Select id="bp-state" {...register('stateCode')}>
+              {Object.entries(STATE_CODES).map(([c, n]) => (
+                <option key={c} value={c}>
+                  {n} ({c})
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+        <Field label="Address" htmlFor="bp-addr" error={errors.addressLine?.message}>
+          <Input id="bp-addr" {...register('addressLine')} />
+        </Field>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="City" htmlFor="bp-city" error={errors.city?.message}>
+            <Input id="bp-city" {...register('city')} />
+          </Field>
+          <Field label="Pincode" htmlFor="bp-pin" error={errors.pincode?.message}>
+            <Input id="bp-pin" inputMode="numeric" maxLength={6} {...register('pincode')} />
+          </Field>
+        </div>
       </div>
-      <Field label="Address" htmlFor="bp-addr" error={errors.addressLine}><Input id="bp-addr" value={v.addressLine} onChange={(e) => set('addressLine', e.target.value)} required /></Field>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="City" htmlFor="bp-city"><Input id="bp-city" value={v.city} onChange={(e) => set('city', e.target.value)} /></Field>
-        <Field label="Pincode" htmlFor="bp-pin" error={errors.pincode}><Input id="bp-pin" value={v.pincode} inputMode="numeric" maxLength={6} onChange={(e) => set('pincode', e.target.value)} /></Field>
+      <div className="mt-6 flex justify-end gap-2 border-t border-border pt-4">
+        <Button type="submit" variant="primary" loading={isSubmitting}>
+          Save details
+        </Button>
       </div>
-      <div className="flex justify-end pt-1"><Button type="submit" variant="primary" loading={m.isPending}>Save details</Button></div>
     </form>
   );
 }

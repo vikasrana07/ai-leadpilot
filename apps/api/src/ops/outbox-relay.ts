@@ -18,6 +18,8 @@ export class OutboxRelay {
   private readonly log = new Logger('OutboxRelay');
   /** Set by JobsService: how a freshly created run reaches a worker. */
   enqueueRun: (tenantId: string, runId: string) => Promise<void> = async () => undefined;
+  /** Set by JobsService: how an outgoing webhook delivery reaches BullMQ workers. */
+  enqueueWebhook: (tenantId: string, deliveryId: string) => Promise<void> = async () => undefined;
 
   constructor(
     @Inject(DbService) private readonly db: DbService,
@@ -34,14 +36,15 @@ export class OutboxRelay {
       try {
         const out = await this.db.tenantTx({ tenantId: ev.tenantId }, async (tx) => {
           const mark = await tx.eventMark.createMany({ data: [{ tenantId: ev.tenantId, key: `relay:${ev.id}` }], skipDuplicates: true });
-          if (mark.count === 0) return { created: [], runs: [] as string[] };
+          if (mark.count === 0) return { created: [], runs: [] as string[], deliveries: [] as string[] };
           const created = await this.notifier.handle(tx, ev);
           const runs = await this.engine.matchEvent(tx, ev);
-          await this.webhooks.enqueue(tx, ev); // outbound webhooks: one delivery row per subscribed endpoint, same transaction
-          return { created, runs };
+          const deliveries = await this.webhooks.enqueue(tx, ev); // outbound webhooks: returns created delivery IDs
+          return { created, runs, deliveries };
         });
         this.notifications.publish(ev.tenantId, out.created);
         for (const runId of out.runs) await this.enqueueRun(ev.tenantId, runId);
+        for (const deliveryId of out.deliveries) await this.enqueueWebhook(ev.tenantId, deliveryId);
         await this.db.prisma.$executeRaw`SELECT complete_outbox(${ev.id}::uuid)`;
         metrics.job('outbox', 'ok');
       } catch (e) {

@@ -21,6 +21,8 @@ import { AuthModule } from './auth/auth.module.js';
 import { CaptureModule } from './capture/capture.module.js';
 import { ChannelsModule } from './channels/channels.module.js';
 import { ConfigModule } from './common/config.module.js';
+import { SessionCacheModule } from './common/session-cache.module.js';
+import { DistributedLockModule } from './common/lock.module.js';
 import { AllExceptionsFilter } from './common/http-exception.filter.js';
 import { AuthGuard, PermissionsGuard, TenantGuard } from './common/guards.js';
 import { accessLogMiddleware, csrfOriginMiddleware, httpMetricsMiddleware, requestIdMiddleware } from './common/middleware.js';
@@ -60,7 +62,7 @@ class IntegrationsCoreModule {}
 
 @Module({
   imports: [
-    ConfigModule, ObservabilityModule, IntegrationsCoreModule, RealtimeModule, OutboxModule, EntitlementsModule,
+    ConfigModule, SessionCacheModule, DistributedLockModule, ObservabilityModule, IntegrationsCoreModule, RealtimeModule, OutboxModule, EntitlementsModule,
     ThrottlerModule.forRootAsync({
       inject: [ENV],
       // Redis-backed so limits hold across API instances (tests keep the in-memory store: counters would otherwise leak between runs).

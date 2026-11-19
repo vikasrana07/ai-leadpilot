@@ -4,6 +4,7 @@ import { registerViaApi, loginViaUi, WEB } from '../helpers.ts';
 test('the web app sends CSP and framing protections', async ({ request }) => {
   const res = await request.get('/login');
   const h = res.headers();
+  expect(h['content-security-policy']).toContain("connect-src 'self' https://api.razorpay.com wss:");
   expect(h['content-security-policy']).toContain("frame-ancestors 'none'");
   expect(h['content-security-policy']).toContain("object-src 'none'");
   expect(h['x-frame-options']).toBe('DENY');

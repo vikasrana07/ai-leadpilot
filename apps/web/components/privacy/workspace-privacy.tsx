@@ -1,5 +1,8 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -7,7 +10,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, FormErrorAlert } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { API_URL, api } from '@/lib/api';
@@ -97,41 +100,147 @@ function ExportCard() {
   );
 }
 
+const deleteWorkspaceSchema = z
+  .object({
+    reason: z.string().trim().min(5, 'Reason must be at least 5 characters'),
+    confirm: z.string(),
+    password: z.string().min(1, 'Password is required'),
+  })
+  .refine((val) => val.confirm === 'DELETE WORKSPACE', {
+    message: 'Type DELETE WORKSPACE to confirm',
+    path: ['confirm'],
+  });
+
+type DeleteWorkspaceFormValues = z.infer<typeof deleteWorkspaceSchema>;
+
+function DeleteWorkspaceDrawer({
+  open,
+  onOpenChange,
+  coolingOffDays,
+  onSuccess,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  coolingOffDays: number;
+  onSuccess: () => void;
+}) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<DeleteWorkspaceFormValues>({
+    resolver: zodResolver(deleteWorkspaceSchema),
+    defaultValues: { reason: '', confirm: '', password: '' },
+  });
+
+  async function onSubmit(data: DeleteWorkspaceFormValues) {
+    try {
+      await api<DeletionState>('/privacy/workspace/deletion', {
+        method: 'POST',
+        body: { reason: data.reason, confirm: 'DELETE WORKSPACE', password: data.password },
+      });
+      toast.success('Deletion scheduled. The workspace is now read-only.');
+      reset();
+      onSuccess();
+    } catch (e) {
+      handleApiError(e, setError);
+    }
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        onOpenChange(o);
+        if (!o) reset();
+      }}
+    >
+      <DialogContent
+        title="Delete this workspace?"
+        description={`The workspace becomes read-only now and is permanently deleted in ${coolingOffDays} days.`}
+      >
+        <form className="flex flex-1 flex-col justify-between" noValidate onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-3.5">
+            <FormErrorAlert errors={errors} />
+            <Field label="Why are you deleting it?" htmlFor="del-reason" error={errors.reason?.message}>
+              <Input id="del-reason" autoFocus placeholder="Reason (min 5 chars)" {...register('reason')} />
+            </Field>
+            <Field label="Type DELETE WORKSPACE to confirm" htmlFor="del-confirm" error={errors.confirm?.message}>
+              <Input id="del-confirm" autoComplete="off" placeholder="DELETE WORKSPACE" {...register('confirm')} />
+            </Field>
+            <Field label="Your password" htmlFor="del-password" error={errors.password?.message}>
+              <Input id="del-password" type="password" autoComplete="current-password" {...register('password')} />
+            </Field>
+          </div>
+          <div className="mt-6 flex justify-end gap-2 border-t border-border pt-4">
+            <Button type="button" onClick={() => { onOpenChange(false); reset(); }}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="danger" loading={isSubmitting}>
+              Schedule deletion
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function DeleteCard() {
   const terms = useTerms();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ['deletion'], queryFn: () => api<DeletionState>('/privacy/workspace/deletion') });
   const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState(''); const [confirm, setConfirm] = useState(''); const [password, setPassword] = useState('');
-  const refresh = async () => { await qc.invalidateQueries({ queryKey: ['deletion'] }); await qc.invalidateQueries({ queryKey: ['billing-summary'] }); };
-  const request = useMutation({ mutationFn: () => api<DeletionState>('/privacy/workspace/deletion', { method: 'POST', body: { reason, confirm: 'DELETE WORKSPACE', password } }), onSuccess: async () => { setOpen(false); setPassword(''); toast.success('Deletion scheduled. The workspace is now read-only.'); await refresh(); }, onError: (e) => handleApiError(e) });
-  const cancel = useMutation({ mutationFn: () => api('/privacy/workspace/deletion/cancel', { method: 'POST', body: {} }), onSuccess: async () => { toast.success('Deletion cancelled'); await refresh(); }, onError: (e) => handleApiError(e) });
+  const refresh = async () => {
+    await qc.invalidateQueries({ queryKey: ['deletion'] });
+    await qc.invalidateQueries({ queryKey: ['billing-summary'] });
+  };
+  const cancel = useMutation({
+    mutationFn: () => api('/privacy/workspace/deletion/cancel', { method: 'POST', body: {} }),
+    onSuccess: async () => {
+      toast.success('Deletion cancelled');
+      await refresh();
+    },
+    onError: (e) => handleApiError(e),
+  });
   if (!q.data) return null;
   return (
     <Card className="border-danger/40">
-      <CardHeader><CardTitle>Delete this workspace</CardTitle>{q.data.pending ? <Badge tone="danger">Scheduled</Badge> : null}</CardHeader>
+      <CardHeader>
+        <CardTitle>Delete this workspace</CardTitle>
+        {q.data.pending ? <Badge tone="danger">Scheduled</Badge> : null}
+      </CardHeader>
       <CardBody>
         {q.data.pending ? (
           <>
-            <p className="mb-3 text-[13px]">Everything in this workspace will be permanently deleted on <strong>{fmt(q.data.purgeAfter)}</strong>. Until then it is read-only. You can still export your data, and you can cancel the deletion at any time before then.</p>
-            <Button loading={cancel.isPending} onClick={() => cancel.mutate()}>Cancel deletion</Button>
+            <p className="mb-3 text-[13px]">
+              Everything in this workspace will be permanently deleted on <strong>{fmt(q.data.purgeAfter)}</strong>. Until then it is read-only. You can still export your data, and you can cancel the deletion at any time before then.
+            </p>
+            <Button loading={cancel.isPending} onClick={() => cancel.mutate()}>
+              Cancel deletion
+            </Button>
           </>
         ) : (
           <>
-            <p className="text-helper mb-3">Permanently deletes all {terms.leads}, conversations, files and team accounts that belong only to this workspace. After a {q.data.coolingOffDays}-day cooling-off period during which the workspace is read-only, this cannot be undone. Invoices are kept as required for tax records. Export your data first.</p>
-            <Button variant="danger" onClick={() => setOpen(true)}><Trash2 className="h-4 w-4" aria-hidden />Delete workspace…</Button>
+            <p className="text-helper mb-3">
+              Permanently deletes all {terms.leads}, conversations, files and team accounts that belong only to this workspace. After a {q.data.coolingOffDays}-day cooling-off period during which the workspace is read-only, this cannot be undone. Invoices are kept as required for tax records. Export your data first.
+            </p>
+            <Button variant="danger" onClick={() => setOpen(true)}>
+              <Trash2 className="h-4 w-4" aria-hidden />Delete workspace…
+            </Button>
           </>
         )}
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent title="Delete this workspace?" description={`The workspace becomes read-only now and is permanently deleted in ${q.data.coolingOffDays} days.`}>
-            <div className="space-y-3">
-              <Field label="Why are you deleting it?" htmlFor="del-reason"><Input id="del-reason" value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
-              <Field label="Type DELETE WORKSPACE to confirm" htmlFor="del-confirm"><Input id="del-confirm" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" /></Field>
-              <Field label="Your password" htmlFor="del-password"><Input id="del-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" /></Field>
-            </div>
-            <div className="mt-5 flex justify-end gap-2"><Button onClick={() => setOpen(false)}>Cancel</Button><Button variant="danger" loading={request.isPending} disabled={confirm !== 'DELETE WORKSPACE' || reason.trim().length < 5 || !password} onClick={() => request.mutate()}>Schedule deletion</Button></div>
-          </DialogContent>
-        </Dialog>
+        <DeleteWorkspaceDrawer
+          open={open}
+          onOpenChange={setOpen}
+          coolingOffDays={q.data.coolingOffDays}
+          onSuccess={() => {
+            setOpen(false);
+            void refresh();
+          }}
+        />
       </CardBody>
     </Card>
   );

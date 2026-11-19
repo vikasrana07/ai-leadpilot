@@ -1,11 +1,13 @@
 import { BadRequestException, ConflictException, HttpException, HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHash, randomBytes } from 'node:crypto';
+import { type Prisma } from '@leadpilot/database';
 import { jwtVerify, SignJWT } from 'jose';
 import { AuditService } from '../audit/audit.service.js';
 import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
 import { SecretBox } from '../crypto/secret-box.js';
 import { DbService } from '../db/db.module.js';
+import { SessionCacheService } from '../common/session-cache.js';
 import { otpauthUri, generateSecret, verifyTotp } from './totp.js';
 
 export type SubjectType = 'user' | 'platform_admin';
@@ -36,7 +38,8 @@ export class MfaService {
   private readonly userKey: Uint8Array; private readonly platformKey: Uint8Array | null;
   constructor(
     @Inject(DbService) private readonly db: DbService, @Inject(SecretBox) private readonly box: SecretBox,
-    @Inject(AuditService) private readonly audit: AuditService, @Inject(ENV) env: Env,
+    @Inject(AuditService) private readonly audit: AuditService, @Inject(SessionCacheService) private readonly sessionCache: SessionCacheService,
+    @Inject(ENV) env: Env,
   ) {
     this.userKey = new TextEncoder().encode(env.JWT_ACCESS_SECRET);
     this.platformKey = env.PLATFORM_JWT_SECRET ? new TextEncoder().encode(env.PLATFORM_JWT_SECRET) : null;
@@ -127,10 +130,18 @@ export class MfaService {
 
   async disable(s: MfaSubject, proof: MfaProof, ip: string | undefined) {
     await this.verify(s, proof, ip);
-    await this.db.prisma.$transaction([
+    const now = new Date();
+    const ops: Prisma.PrismaPromise<unknown>[] = [
       this.db.prisma.mfaRecoveryCode.deleteMany({ where: { subjectType: s.type, subjectId: s.id } }),
       this.db.prisma.mfaCredential.delete({ where: this.where(s) }),
-    ]);
+    ];
+    if (s.type === 'user') {
+      ops.push(this.db.prisma.session.updateMany({ where: { userId: s.id, revokedAt: null }, data: { revokedAt: now } }));
+    }
+    await this.db.prisma.$transaction(ops);
+    if (s.type === 'user') {
+      await this.sessionCache.invalidateUser(s.id);
+    }
     await this.log(s, 'auth.mfa_disabled', ip);
   }
 

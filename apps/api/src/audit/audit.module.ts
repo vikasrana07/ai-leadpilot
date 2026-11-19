@@ -16,12 +16,22 @@ class AuditController {
   @Get()
   @RequirePermissions('audit:read')
   async list(@CurrentTenant() ctx: TenantRequestContext, @Query(new ZodPipe(auditQuerySchema)) q: AuditQuery) {
+    let cursorObj: { id_createdAt: { id: string; createdAt: Date } } | undefined;
+    if (q.cursor) {
+      const target = await this.db.tenantTx(ctx, (tx) =>
+        tx.auditLog.findFirst({ where: { id: q.cursor }, select: { id: true, createdAt: true } }),
+      );
+      if (target) {
+        cursorObj = { id_createdAt: { id: target.id, createdAt: target.createdAt } };
+      }
+    }
+
     const rows = await this.db.tenantTx(ctx, (tx) =>
       tx.auditLog.findMany({
         where: { ...(q.action ? { action: q.action } : {}) },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: q.limit + 1,
-        ...(q.cursor ? { cursor: { id: q.cursor }, skip: 1 } : {}),
+        ...(cursorObj ? { cursor: cursorObj, skip: 1 } : {}),
       }),
     );
     const hasMore = rows.length > q.limit;

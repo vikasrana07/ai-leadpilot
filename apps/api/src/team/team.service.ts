@@ -1,4 +1,5 @@
 import { EntitlementsService } from '../billing/entitlements.service.js';
+import { SessionCacheService } from '../common/session-cache.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { SYSTEM_ROLES, type SystemRoleKey } from '@leadpilot/shared-types';
 import type { InviteInput } from '@leadpilot/validation';
@@ -18,6 +19,7 @@ export class TeamService {
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(MailService) private readonly mail: MailService,
     @Inject(EntitlementsService) private readonly ent: EntitlementsService,
+    @Inject(SessionCacheService) private readonly sessionCache: SessionCacheService,
   ) {}
 
   /** Privilege-escalation guard: you can only grant a role whose permissions you hold yourself. */
@@ -118,7 +120,10 @@ export class TeamService {
       if (!m) throw new NotFoundException({ code: 'not_found', message: 'Member not found' });
       if (m.userId === ctx.userId) throw new BadRequestException({ code: 'self_change', message: 'You cannot change your own status' });
       this.assertCanGrant(ctx, m.role.key as SystemRoleKey);
-      if (status === 'DEACTIVATED') await this.assertNotLastOwner(tx, ctx, membershipId);
+      if (status === 'DEACTIVATED') {
+        await this.assertNotLastOwner(tx, ctx, membershipId);
+        await this.sessionCache.invalidateUser(m.userId);
+      }
       await tx.membership.update({ where: { id: membershipId }, data: { status } });
       await this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'team.member_status_changed', resourceType: 'membership', resourceId: membershipId, metadata: { status }, requestId: ctx.requestId, ip: ctx.ip });
       return { id: membershipId, status };
@@ -150,6 +155,7 @@ export class TeamService {
       this.db.prisma.mfaCredential.delete({ where: { subjectType_subjectId: subject } }),
       this.db.prisma.session.updateMany({ where: { userId: target.userId, revokedAt: null }, data: { revokedAt: new Date() } }),
     ]);
+    await this.sessionCache.invalidateUser(target.userId);
     await this.db.tenantTx(ctx, (tx) => this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'team.mfa_reset', resourceType: 'membership', resourceId: membershipId, metadata: { reason }, requestId: ctx.requestId, ip: ctx.ip }));
     await this.mail.sendMfaReset(user.email);
     return { id: membershipId, mfaEnabled: false };

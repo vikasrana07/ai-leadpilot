@@ -125,6 +125,7 @@ describe('password reset', () => {
     expect((await ctx.http().post('/auth/reset-password').send({ token, password: newPw })).status).toBe(204);
     expect((await ctx.http().post('/auth/reset-password').send({ token, password: newPw })).status).toBe(400);
     expect((await ctx.http().get('/auth/me').set(auth(a.accessToken))).status).toBe(401);
+    expect((await pool.query("SELECT count(*)::int n FROM sessions WHERE user_id = $1 AND revoked_at IS NULL", [a.userId])).rows[0].n).toBe(0);
     expect((await ctx.http().post('/auth/login').send({ email: a.email, password: PASSWORD })).status).toBe(401);
     expect((await ctx.http().post('/auth/login').send({ email: a.email, password: newPw })).status).toBe(200);
   });

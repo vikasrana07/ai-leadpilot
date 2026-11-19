@@ -7,6 +7,7 @@ import { AuditService } from '../audit/audit.service.js';
 import type { Actor } from '../common/actor.js';
 import { addDays, localParts } from '../common/tz.js';
 import { DbService } from '../db/db.module.js';
+import { DistributedLockService } from '../common/lock.service.js';
 import { loadAvailability, slotsForDate, withinWorkingHours } from './availability.js';
 import { OutboxService } from './outbox.service.js';
 
@@ -59,7 +60,12 @@ async function retryOnTxConflict<T>(fn: () => Promise<T>): Promise<T> {
 
 @Injectable()
 export class AppointmentsService {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(AuditService) private readonly audit: AuditService, @Inject(OutboxService) private readonly outbox: OutboxService) {}
+  constructor(
+    @Inject(DbService) private readonly db: DbService,
+    @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(OutboxService) private readonly outbox: OutboxService,
+    @Inject(DistributedLockService) private readonly lock: DistributedLockService,
+  ) {}
 
   private tx<T>(a: Actor, fn: (tx: TxClient) => Promise<T>): Promise<T> { return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, fn); }
 
@@ -185,18 +191,66 @@ export class AppointmentsService {
     let lastKind: 'agent' | 'lead' | null = null;
     for (const membershipId of plan.ordered) {
       try {
-        const id = await retryOnTxConflict(() => this.tx(a, async (tx) => {
-          const status = opts.status ?? (opts.source === 'manual' ? 'CONFIRMED' : 'PENDING');
-          const visitNoun = packForIndustry((await tx.tenant.findUnique({ where: { id: a.tenantId }, select: { industryPackId: true } }))?.industryPackId ?? 'real_estate').terminology.visit;
-          const created = await tx.appointment.create({ data: {
-            id: uuidv7(), tenantId: a.tenantId, leadId: input.leadId, membershipId, propertyId: input.propertyId ?? null,
-            title: input.title ?? `${visitNoun}: ${plan.lead.name}`, startsAt, endsAt, status, notes: input.notes ?? null, location: input.location ?? null, source: opts.source, createdByUserId: a.userId,
-          } });
-          await this.afterBooked(tx, a, created, 'booked');
-          return created.id;
-        }));
+        const lockKey = `booking:${a.tenantId}:${membershipId}:${startsAt.getTime()}`;
+        const id = await this.lock.withLock(lockKey, 5000, async () => {
+          return retryOnTxConflict(() => this.tx(a, async (tx) => {
+            // Transaction-level advisory lock serializes concurrent bookings for the exact same agent + slot
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${a.tenantId} || ':' || ${membershipId} || ':' || ${startsAt.toISOString()}))`;
+
+            // Pessimistic check for any active overlapping appointment for this agent
+            const agentConflict = await tx.appointment.findFirst({
+              where: {
+                tenantId: a.tenantId,
+                membershipId,
+                status: { in: ['PENDING', 'CONFIRMED'] },
+                startsAt: { lt: endsAt },
+                endsAt: { gt: startsAt },
+              },
+              select: { id: true },
+            });
+            if (agentConflict) {
+              throw new ConflictException({ code: 'slot_taken', message: 'That time was just taken. Please choose another slot.' });
+            }
+
+            // Pessimistic check for any active overlapping appointment for this lead
+            const leadConflict = await tx.appointment.findFirst({
+              where: {
+                tenantId: a.tenantId,
+                leadId: input.leadId,
+                status: { in: ['PENDING', 'CONFIRMED'] },
+                startsAt: { lt: endsAt },
+                endsAt: { gt: startsAt },
+              },
+              select: { id: true },
+            });
+            if (leadConflict) {
+              throw new ConflictException({ code: 'lead_busy', message: 'This customer already has an appointment at that time' });
+            }
+
+            const status = opts.status ?? (opts.source === 'manual' ? 'CONFIRMED' : 'PENDING');
+            const visitNoun = packForIndustry((await tx.tenant.findUnique({ where: { id: a.tenantId }, select: { industryPackId: true } }))?.industryPackId ?? 'real_estate').terminology.visit;
+            const created = await tx.appointment.create({ data: {
+              id: uuidv7(), tenantId: a.tenantId, leadId: input.leadId, membershipId, propertyId: input.propertyId ?? null,
+              title: input.title ?? `${visitNoun}: ${plan.lead.name}`, startsAt, endsAt, status, notes: input.notes ?? null, location: input.location ?? null, source: opts.source, createdByUserId: a.userId,
+            } });
+            await this.afterBooked(tx, a, created, 'booked');
+            return created.id;
+          }));
+        });
         return this.get({ ...a, permissions: new Set([...a.permissions, 'appointment:read:all']) }, id);
       } catch (e) {
+        if (e instanceof Error && e.message === 'LOCK_NOT_ACQUIRED') {
+          lastKind = 'agent';
+          continue;
+        }
+        if (e instanceof ConflictException) {
+          const resp = e.getResponse() as { code?: string };
+          if (resp?.code === 'lead_busy') throw e;
+          if (resp?.code === 'slot_taken') {
+            lastKind = 'agent';
+            continue;
+          }
+        }
         const kind = overlapKind(e);
         if (!kind) throw e;
         if (kind === 'lead') throw new ConflictException({ code: 'lead_busy', message: 'This customer already has an appointment at that time' });
@@ -255,35 +309,78 @@ export class AppointmentsService {
     if (input.outsideHours && !this.canSeeAll(a)) throw new ForbiddenException({ code: 'forbidden', message: 'Only managers can book outside working hours' });
     const startsAt = new Date(input.startsAt);
     if (startsAt.getTime() < Date.now()) throw new UnprocessableEntityException({ code: 'in_the_past', message: 'That time has already passed' });
+    const lockKey = `booking:${a.tenantId}:${input.membershipId ?? 'agent'}:${startsAt.getTime()}`;
     let newId: string;
     try {
-      newId = await retryOnTxConflict(() => this.tx(a, async (tx) => {
-        const cur = await tx.appointment.findFirst({ where: { id } });
-        if (!cur) throw new NotFoundException({ code: 'not_found', message: 'Appointment not found' });
-        this.assertOwnsOrAll(a, cur.membershipId);
-        if (!(APPOINTMENT_TRANSITIONS[cur.status] as readonly string[]).includes('RESCHEDULED')) throw new ConflictException({ code: 'invalid_transition', message: 'This appointment can no longer be rescheduled' });
-        const membershipId = input.membershipId ?? cur.membershipId;
-        if (membershipId !== cur.membershipId) {
-          if (!this.canSeeAll(a)) throw new ForbiddenException({ code: 'forbidden', message: 'Only managers can move an appointment to someone else' });
-          if (!(await this.eligibleAgents(tx, a.tenantId)).includes(membershipId)) throw new BadRequestException({ code: 'invalid_agent', message: 'That team member cannot take appointments' });
-        }
-        const durationMs = input.durationMinutes ? input.durationMinutes * 60_000 : cur.endsAt.getTime() - cur.startsAt.getTime();
-        const endsAt = new Date(startsAt.getTime() + durationMs);
-        if (!input.outsideHours) {
-          const tz = await this.tenantTz(tx, a.tenantId);
-          if (!withinWorkingHours(await loadAvailability(tx, a.tenantId), membershipId, tz, startsAt, endsAt, localParts(tz, startsAt).date)) throw new UnprocessableEntityException({ code: 'outside_hours', message: 'That time is outside working hours' });
-        }
-        const res = await tx.appointment.updateMany({ where: { id, status: cur.status }, data: { status: 'RESCHEDULED' } });
-        if (res.count !== 1) throw new ConflictException({ code: 'invalid_transition', message: 'This appointment was just changed by someone else. Refresh and try again.' });
-        const created = await tx.appointment.create({ data: {
-          id: uuidv7(), tenantId: a.tenantId, leadId: cur.leadId, membershipId, propertyId: cur.propertyId, title: cur.title, startsAt, endsAt, status: cur.status === 'CONFIRMED' ? 'CONFIRMED' : 'PENDING',
-          notes: cur.notes, location: cur.location, source: cur.source, rescheduledFromId: cur.id, createdByUserId: a.userId,
-        } });
-        await tx.appointmentEvent.create({ data: { id: uuidv7(), tenantId: a.tenantId, appointmentId: cur.id, type: 'rescheduled_from', actorUserId: a.userId, data: { toAppointmentId: created.id, ...(input.reason ? { reason: input.reason } : {}) } } });
-        await this.afterBooked(tx, a, created, 'rescheduled', { fromAppointmentId: cur.id });
-        return created.id;
-      }));
+      newId = await this.lock.withLock(lockKey, 5000, async () => {
+        return retryOnTxConflict(() => this.tx(a, async (tx) => {
+          const cur = await tx.appointment.findFirst({ where: { id } });
+          if (!cur) throw new NotFoundException({ code: 'not_found', message: 'Appointment not found' });
+          this.assertOwnsOrAll(a, cur.membershipId);
+          if (!(APPOINTMENT_TRANSITIONS[cur.status] as readonly string[]).includes('RESCHEDULED')) throw new ConflictException({ code: 'invalid_transition', message: 'This appointment can no longer be rescheduled' });
+          const membershipId = input.membershipId ?? cur.membershipId;
+          if (membershipId !== cur.membershipId) {
+            if (!this.canSeeAll(a)) throw new ForbiddenException({ code: 'forbidden', message: 'Only managers can move an appointment to someone else' });
+            if (!(await this.eligibleAgents(tx, a.tenantId)).includes(membershipId)) throw new BadRequestException({ code: 'invalid_agent', message: 'That team member cannot take appointments' });
+          }
+          const durationMs = input.durationMinutes ? input.durationMinutes * 60_000 : cur.endsAt.getTime() - cur.startsAt.getTime();
+          const endsAt = new Date(startsAt.getTime() + durationMs);
+          if (!input.outsideHours) {
+            const tz = await this.tenantTz(tx, a.tenantId);
+            if (!withinWorkingHours(await loadAvailability(tx, a.tenantId), membershipId, tz, startsAt, endsAt, localParts(tz, startsAt).date)) throw new UnprocessableEntityException({ code: 'outside_hours', message: 'That time is outside working hours' });
+          }
+
+          // Postgres advisory xact lock for slot serialization
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${a.tenantId} || ':' || ${membershipId} || ':' || ${startsAt.toISOString()}))`;
+
+          // Pessimistic check for agent slot overlap (excluding the appointment being rescheduled)
+          const agentConflict = await tx.appointment.findFirst({
+            where: {
+              id: { not: cur.id },
+              tenantId: a.tenantId,
+              membershipId,
+              status: { in: ['PENDING', 'CONFIRMED'] },
+              startsAt: { lt: endsAt },
+              endsAt: { gt: startsAt },
+            },
+            select: { id: true },
+          });
+          if (agentConflict) {
+            throw new ConflictException({ code: 'slot_taken', message: 'That time was just taken. Please choose another slot.' });
+          }
+
+          // Pessimistic check for lead slot overlap (excluding the appointment being rescheduled)
+          const leadConflict = await tx.appointment.findFirst({
+            where: {
+              id: { not: cur.id },
+              tenantId: a.tenantId,
+              leadId: cur.leadId,
+              status: { in: ['PENDING', 'CONFIRMED'] },
+              startsAt: { lt: endsAt },
+              endsAt: { gt: startsAt },
+            },
+            select: { id: true },
+          });
+          if (leadConflict) {
+            throw new ConflictException({ code: 'lead_busy', message: 'This customer already has an appointment at that time' });
+          }
+
+          const res = await tx.appointment.updateMany({ where: { id, status: cur.status }, data: { status: 'RESCHEDULED' } });
+          if (res.count !== 1) throw new ConflictException({ code: 'invalid_transition', message: 'This appointment was just changed by someone else. Refresh and try again.' });
+          const created = await tx.appointment.create({ data: {
+            id: uuidv7(), tenantId: a.tenantId, leadId: cur.leadId, membershipId, propertyId: cur.propertyId, title: cur.title, startsAt, endsAt, status: cur.status === 'CONFIRMED' ? 'CONFIRMED' : 'PENDING',
+            notes: cur.notes, location: cur.location, source: cur.source, rescheduledFromId: cur.id, createdByUserId: a.userId,
+          } });
+          await tx.appointmentEvent.create({ data: { id: uuidv7(), tenantId: a.tenantId, appointmentId: cur.id, type: 'rescheduled_from', actorUserId: a.userId, data: { toAppointmentId: created.id, ...(input.reason ? { reason: input.reason } : {}) } } });
+          await this.afterBooked(tx, a, created, 'rescheduled', { fromAppointmentId: cur.id });
+          return created.id;
+        }));
+      });
     } catch (e) {
+      if (e instanceof Error && e.message === 'LOCK_NOT_ACQUIRED') {
+        throw new ConflictException({ code: 'slot_taken', message: 'That time was just taken. Please choose another slot.' });
+      }
+      if (e instanceof ConflictException) throw e;
       const kind = overlapKind(e);
       if (kind === 'lead') throw new ConflictException({ code: 'lead_busy', message: 'This customer already has an appointment at that time' });
       if (kind === 'agent') throw new ConflictException({ code: 'slot_taken', message: 'That time was just taken. Please choose another slot.' });

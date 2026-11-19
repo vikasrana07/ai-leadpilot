@@ -109,7 +109,7 @@ export default function KnowledgePage() {
 
       <ConfirmDialog open={del !== null} onOpenChange={(o) => { if (!o) setDel(null); }} danger title={`Delete ${del?.title ?? 'document'}?`} description="The file is removed and the assistant will stop using it straight away." confirmLabel="Delete" onConfirm={async () => { if (!del) return; try { await api(`/knowledge/documents/${del.id}`, { method: 'DELETE' }); toast.success('Document deleted'); await refresh(); } catch (e) { handleApiError(e); throw e; } }} />
       <Dialog open={view !== null} onOpenChange={(o) => { if (!o) setView(null); }}>
-        <DialogContent title={preview.data?.title ?? 'Document'} description="The first passages the assistant can use." className="max-h-[85vh] max-w-xl overflow-y-auto">
+        <DialogContent title={preview.data?.title ?? 'Document'} description="The first passages the assistant can use." className="max-w-xl">
           {preview.isPending ? <Skeleton className="h-32" /> : <div className="space-y-3">{preview.data?.preview.length ? preview.data.preview.map((p, i) => <p key={i} className="rounded-md bg-muted p-3 text-[13px]">{p}</p>) : <p className="text-helper">No passages yet.</p>}</div>}
         </DialogContent>
       </Dialog>

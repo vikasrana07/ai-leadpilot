@@ -234,10 +234,11 @@ export type AuditLogOrderByWithRelationInput = {
 }
 
 export type AuditLogWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id_createdAt?: Prisma.AuditLogIdCreatedAtCompoundUniqueInput
   AND?: Prisma.AuditLogWhereInput | Prisma.AuditLogWhereInput[]
   OR?: Prisma.AuditLogWhereInput[]
   NOT?: Prisma.AuditLogWhereInput | Prisma.AuditLogWhereInput[]
+  id?: Prisma.UuidFilter<"AuditLog"> | string
   tenantId?: Prisma.UuidNullableFilter<"AuditLog"> | string | null
   actorUserId?: Prisma.UuidNullableFilter<"AuditLog"> | string | null
   action?: Prisma.StringFilter<"AuditLog"> | string
@@ -247,7 +248,7 @@ export type AuditLogWhereUniqueInput = Prisma.AtLeast<{
   requestId?: Prisma.StringNullableFilter<"AuditLog"> | string | null
   ip?: Prisma.StringNullableFilter<"AuditLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"AuditLog"> | Date | string
-}, "id">
+}, "id_createdAt">
 
 export type AuditLogOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -370,6 +371,11 @@ export type AuditLogUncheckedUpdateManyInput = {
   requestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type AuditLogIdCreatedAtCompoundUniqueInput = {
+  id: string
+  createdAt: Date | string
 }
 
 export type AuditLogCountOrderByAggregateInput = {

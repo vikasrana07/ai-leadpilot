@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { inviteSchema, type InviteInput } from '@leadpilot/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, Send, ShieldCheck, UserPlus } from 'lucide-react';
@@ -12,7 +13,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, FormErrorAlert } from '@/components/ui/dialog';
 import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropdown';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Field } from '@/components/ui/field';
@@ -43,8 +44,9 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o:
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title="Invite a teammate" description="They will get an email with a link that expires in 7 days.">
+      <DialogContent title="Invite a teammate" description="They will get an email with a link that expires in 7 days." size="md">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+          <FormErrorAlert errors={errors} />
           <Field label="Email" htmlFor="invite-email" error={errors.email?.message}><Input id="invite-email" type="email" autoFocus {...register('email')} /></Field>
           <Field label="Role" htmlFor="invite-role" error={errors.roleKey?.message}>
             <select id="invite-role" className="h-9 w-full rounded-md border border-border bg-surface px-3 text-[13px]" {...register('roleKey')}>
@@ -58,27 +60,66 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o:
   );
 }
 
+const resetMfaSchema = z.object({
+  reason: z.string().trim().min(5, 'Reason must be at least 5 characters').max(200),
+});
+
+type ResetMfaFormValues = z.infer<typeof resetMfaSchema>;
+
 function ResetMfaDialog({ member, onClose }: { member: Member | null; onClose: () => void }) {
   const qc = useQueryClient();
-  const [reason, setReason] = useState('');
-  const [busy, setBusy] = useState(false);
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<ResetMfaFormValues>({
+    resolver: zodResolver(resetMfaSchema),
+    defaultValues: { reason: '' },
+  });
+
+  async function onSubmit(data: ResetMfaFormValues) {
     if (!member) return;
-    setBusy(true);
     try {
-      await api(`/team/members/${member.id}/mfa-reset`, { method: 'POST', body: { reason } });
+      await api(`/team/members/${member.id}/mfa-reset`, { method: 'POST', body: { reason: data.reason } });
       toast.success(`Two-step verification reset for ${member.user.name}`);
       await qc.invalidateQueries({ queryKey: ['team'] });
-      setReason(''); onClose();
-    } catch (err) { handleApiError(err); } finally { setBusy(false); }
+      reset();
+      onClose();
+    } catch (err) {
+      handleApiError(err, setError);
+    }
   }
+
   return (
-    <Dialog open={!!member} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent title={`Reset two-step verification for ${member?.user.name ?? ''}`} description="Use this only when they have lost their phone and their recovery codes. They are signed out, emailed, and must set it up again. Check who is asking before you continue.">
-        <form onSubmit={submit} className="space-y-4" noValidate>
-          <Field label="Reason (kept in the audit log)" htmlFor="mfa-reset-reason"><Input id="mfa-reset-reason" autoFocus value={reason} maxLength={200} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Lost phone, confirmed by phone call" /></Field>
-          <div className="flex justify-end gap-2 pt-2"><Button type="button" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary" loading={busy} disabled={reason.trim().length < 5}>Reset two-step verification</Button></div>
+    <Dialog open={!!member} onOpenChange={(o) => { if (!o) { reset(); onClose(); } }}>
+      <DialogContent
+        title={`Reset two-step verification for ${member?.user.name ?? ''}`}
+        description="Use this only when they have lost their phone and their recovery codes. They are signed out, emailed, and must set it up again. Check who is asking before you continue."
+        size="md"
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col justify-between" noValidate>
+          <div className="space-y-4">
+            <FormErrorAlert errors={errors} />
+            <Field label="Reason (kept in the audit log)" htmlFor="mfa-reset-reason" error={errors.reason?.message}>
+              <Input
+                id="mfa-reset-reason"
+                autoFocus
+                maxLength={200}
+                placeholder="e.g. Lost phone, confirmed by phone call"
+                {...register('reason')}
+              />
+            </Field>
+          </div>
+          <div className="mt-6 flex justify-end gap-2 border-t border-border pt-4">
+            <Button type="button" onClick={() => { reset(); onClose(); }}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" loading={isSubmitting}>
+              Reset two-step verification
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

@@ -1,5 +1,8 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { TIMELINES } from '@leadpilot/validation';
 import type { LeadDetailDto, LeadDto } from '@leadpilot/shared-types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -37,44 +40,159 @@ import { handleApiError } from '@/lib/forms';
 
 interface Note { id: string; body: string; author: string; createdAt: string }
 
+const editLeadSchema = z
+  .object({
+    name: z.string().trim().min(1, 'Name is required').max(120),
+    phone: z.string().trim().optional(),
+    email: z
+      .string()
+      .trim()
+      .email('Invalid email address')
+      .optional()
+      .or(z.literal('')),
+    budgetMin: z.string().optional(),
+    budgetMax: z.string().optional(),
+    location: z.string().trim().optional(),
+    propertyType: z.string().trim().optional(),
+    buyingTimeline: z.enum(TIMELINES),
+    nextFollowUpAt: z.string().optional(),
+    requirements: z.string().trim().max(4000).optional(),
+  })
+  .refine((v) => Boolean(v.phone?.trim()) || Boolean(v.email?.trim()), {
+    message: 'Provide a phone number or an email',
+    path: ['phone'],
+  });
+
+type EditLeadFormValues = z.infer<typeof editLeadSchema>;
+
 function EditDialog({ lead, open, onOpenChange }: { lead: LeadDto; open: boolean; onOpenChange: (o: boolean) => void }) {
   const qc = useQueryClient();
   const meta = useLeadMeta();
-  const lf = usePack().leadFields; const terms = useTerms();
-  const [f, setF] = useState({ name: lead.name, phone: lead.phone ?? '', email: lead.email ?? '', budgetMin: lead.budgetMin?.toString() ?? '', budgetMax: lead.budgetMax?.toString() ?? '', location: lead.location ?? '', propertyType: lead.propertyType ?? '', requirements: lead.requirements ?? '', buyingTimeline: lead.buyingTimeline, nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.slice(0, 16) : '' });
+  const lf = usePack().leadFields;
+  const terms = useTerms();
   const [cf, setCf] = useState<Record<string, string | number | boolean>>(lead.customFields);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
-  const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((s) => ({ ...s, [k]: e.target.value }));
-  const num = (v: string) => (v.trim() === '' ? null : Number(v.replace(/,/g, '')));
-  async function save() {
-    setBusy(true); setErrors({});
+  const [customFieldErrors, setCustomFieldErrors] = useState<Record<string, string>>({});
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<EditLeadFormValues>({
+    resolver: zodResolver(editLeadSchema),
+    defaultValues: {
+      name: lead.name,
+      phone: lead.phone ?? '',
+      email: lead.email ?? '',
+      budgetMin: lead.budgetMin?.toString() ?? '',
+      budgetMax: lead.budgetMax?.toString() ?? '',
+      location: lead.location ?? '',
+      propertyType: lead.propertyType ?? '',
+      buyingTimeline: lead.buyingTimeline,
+      nextFollowUpAt: lead.nextFollowUpAt ? lead.nextFollowUpAt.slice(0, 16) : '',
+      requirements: lead.requirements ?? '',
+    },
+  });
+
+  const num = (v?: string) => (!v || v.trim() === '' ? null : Number(v.replace(/,/g, '')));
+
+  async function onSubmit(f: EditLeadFormValues) {
+    setCustomFieldErrors({});
     try {
-      await api(`/leads/${lead.id}`, { method: 'PATCH', body: { name: f.name, phone: f.phone || null, email: f.email || null, budgetMin: num(f.budgetMin), budgetMax: num(f.budgetMax), location: f.location || null, propertyType: f.propertyType || null, requirements: f.requirements || null, buyingTimeline: f.buyingTimeline, nextFollowUpAt: f.nextFollowUpAt ? new Date(f.nextFollowUpAt).toISOString() : null, customFields: cf } });
+      await api(`/leads/${lead.id}`, {
+        method: 'PATCH',
+        body: {
+          name: f.name,
+          phone: f.phone?.trim() || null,
+          email: f.email?.trim() || null,
+          budgetMin: num(f.budgetMin),
+          budgetMax: num(f.budgetMax),
+          location: f.location?.trim() || null,
+          propertyType: f.propertyType?.trim() || null,
+          requirements: f.requirements?.trim() || null,
+          buyingTimeline: f.buyingTimeline,
+          nextFollowUpAt: f.nextFollowUpAt ? new Date(f.nextFollowUpAt).toISOString() : null,
+          customFields: cf,
+        },
+      });
       toast.success(`${terms.Lead} updated`);
-      await qc.invalidateQueries({ queryKey: ['leads'] }); await qc.invalidateQueries({ queryKey: ['pipeline'] });
+      await qc.invalidateQueries({ queryKey: ['leads'] });
+      await qc.invalidateQueries({ queryKey: ['pipeline'] });
       onOpenChange(false);
-    } catch (e) { if (e instanceof ApiError && e.details) setErrors(Object.fromEntries(e.details.map((d) => [d.path, d.message]))); else handleApiError(e); } finally { setBusy(false); }
+    } catch (e) {
+      if (e instanceof ApiError && e.details) {
+        const cfErrs: Record<string, string> = {};
+        for (const d of e.details) {
+          if (d.path.startsWith('customFields.')) {
+            cfErrs[d.path.replace('customFields.', '')] = d.message;
+          }
+        }
+        if (Object.keys(cfErrs).length > 0) setCustomFieldErrors(cfErrs);
+      }
+      handleApiError(e, setError);
+    }
   }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent title={`Edit ${terms.lead}`} className="max-w-xl">
-        <div className="grid max-h-[70vh] gap-3 overflow-y-auto pr-1 sm:grid-cols-2">
-          <Field label="Name" htmlFor="e-name" error={errors.name} className="sm:col-span-2"><Input id="e-name" value={f.name} onChange={set('name')} /></Field>
-          <Field label="Phone" htmlFor="e-phone" error={errors.phone}><Input id="e-phone" value={f.phone} onChange={set('phone')} /></Field>
-          <Field label="Email" htmlFor="e-email" error={errors.email}><Input id="e-email" type="email" value={f.email} onChange={set('email')} /></Field>
-          {lf.budget ? <>
-            <Field label={`${lf.budget.label} min (₹)`} htmlFor="e-bmin" error={errors.budgetMin}><Input id="e-bmin" inputMode="numeric" value={f.budgetMin} onChange={set('budgetMin')} /></Field>
-            <Field label={`${lf.budget.label} max (₹)`} htmlFor="e-bmax"><Input id="e-bmax" inputMode="numeric" value={f.budgetMax} onChange={set('budgetMax')} /></Field>
-          </> : null}
-          <Field label={lf.location.label} htmlFor="e-loc"><Input id="e-loc" value={f.location} onChange={set('location')} /></Field>
-          {lf.interest ? <Field label={lf.interest.label} htmlFor="e-type"><Input id="e-type" value={f.propertyType} onChange={set('propertyType')} /></Field> : null}
-          {lf.timeline ? <Field label={lf.timeline.label} htmlFor="e-tl"><Select id="e-tl" value={f.buyingTimeline} onChange={set('buyingTimeline')}>{TIMELINES.map((t) => <option key={t} value={t}>{TIMELINE_LABELS[t]}</option>)}</Select></Field> : null}
-          <Field label="Next follow-up" htmlFor="e-fu" className="sm:col-span-2"><Input id="e-fu" type="datetime-local" value={f.nextFollowUpAt} onChange={set('nextFollowUpAt')} /></Field>
-          <Field label={lf.requirements.label} htmlFor="e-req" className="sm:col-span-2"><Textarea id="e-req" value={f.requirements} onChange={set('requirements')} /></Field>
-          <CustomFieldInputs defs={meta.data?.customFields ?? []} values={cf} onChange={setCf} errors={errors} />
-        </div>
-        <div className="mt-4 flex justify-end gap-2"><Button onClick={() => onOpenChange(false)}>Cancel</Button><Button variant="primary" loading={busy} onClick={() => void save()}>Save changes</Button></div>
+        <form noValidate onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col justify-between">
+          <div className="grid gap-3.5 sm:grid-cols-2">
+            <Field label="Name" htmlFor="e-name" error={errors.name?.message} className="sm:col-span-2">
+              <Input id="e-name" autoFocus {...register('name')} />
+            </Field>
+            <Field label="Phone" htmlFor="e-phone" error={errors.phone?.message}>
+              <Input id="e-phone" {...register('phone')} />
+            </Field>
+            <Field label="Email" htmlFor="e-email" error={errors.email?.message}>
+              <Input id="e-email" type="email" {...register('email')} />
+            </Field>
+            {lf.budget ? (
+              <>
+                <Field label={`${lf.budget.label} min (₹)`} htmlFor="e-bmin" error={errors.budgetMin?.message}>
+                  <Input id="e-bmin" inputMode="numeric" {...register('budgetMin')} />
+                </Field>
+                <Field label={`${lf.budget.label} max (₹)`} htmlFor="e-bmax" error={errors.budgetMax?.message}>
+                  <Input id="e-bmax" inputMode="numeric" {...register('budgetMax')} />
+                </Field>
+              </>
+            ) : null}
+            <Field label={lf.location.label} htmlFor="e-loc" error={errors.location?.message}>
+              <Input id="e-loc" {...register('location')} />
+            </Field>
+            {lf.interest ? (
+              <Field label={lf.interest.label} htmlFor="e-type" error={errors.propertyType?.message}>
+                <Input id="e-type" {...register('propertyType')} />
+              </Field>
+            ) : null}
+            {lf.timeline ? (
+              <Field label={lf.timeline.label} htmlFor="e-tl" error={errors.buyingTimeline?.message}>
+                <Select id="e-tl" {...register('buyingTimeline')}>
+                  {TIMELINES.map((t) => (
+                    <option key={t} value={t}>
+                      {TIMELINE_LABELS[t]}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            ) : null}
+            <Field label="Next follow-up" htmlFor="e-fu" error={errors.nextFollowUpAt?.message} className="sm:col-span-2">
+              <Input id="e-fu" type="datetime-local" {...register('nextFollowUpAt')} />
+            </Field>
+            <Field label={lf.requirements.label} htmlFor="e-req" error={errors.requirements?.message} className="sm:col-span-2">
+              <Textarea id="e-req" {...register('requirements')} />
+            </Field>
+            <CustomFieldInputs defs={meta.data?.customFields ?? []} values={cf} onChange={setCf} errors={customFieldErrors} />
+          </div>
+          <div className="mt-6 flex justify-end gap-2 border-t border-border pt-4">
+            <Button type="button" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" loading={isSubmitting}>
+              Save changes
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
@@ -214,11 +332,40 @@ export default function LeadDetailPage() {
       <ConfirmDialog open={deleteOpen} onOpenChange={setDeleteOpen} danger title={`Delete this ${terms.lead}?`} description="It disappears from lists and reports. This is recorded in the audit log." confirmLabel="Delete lead" onConfirm={async () => { try { await api(`/leads/${id}`, { method: 'DELETE' }); toast.success('Lead deleted'); await refresh(); router.replace('/leads'); } catch (e) { handleApiError(e); throw e; } }} />
       <Dialog open={lostFor !== null} onOpenChange={(o) => { if (!o) setLostFor(null); }}>
         <DialogContent title={`Why was this ${terms.lead} lost?`} description="This helps you see where deals fall through.">
-          <div className="space-y-3">
-            <Field label="Reason" htmlFor="lost-reason"><Select id="lost-reason" value={lostReason} onChange={(e) => setLostReason(e.target.value)}><option value="">Choose a reason…</option>{stages.data?.lostReasons.filter((r) => r.active).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}</Select></Field>
-            <Field label="Note (optional)" htmlFor="lost-note"><Textarea id="lost-note" value={lostNote} onChange={(e) => setLostNote(e.target.value)} /></Field>
-          </div>
-          <div className="mt-4 flex justify-end gap-2"><Button onClick={() => setLostFor(null)}>Cancel</Button><Button variant="danger" disabled={!lostReason} loading={move.isPending} onClick={() => lostFor && move.mutate({ stageId: lostFor, lostReasonId: lostReason, ...(lostNote ? { lostNote } : {}) })}>Mark as lost</Button></div>
+          <form
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (lostFor && lostReason) {
+                move.mutate({ stageId: lostFor, lostReasonId: lostReason, ...(lostNote ? { lostNote } : {}) });
+              }
+            }}
+            className="flex flex-1 flex-col justify-between"
+          >
+            <div className="space-y-3">
+              <Field label="Reason" htmlFor="lost-reason">
+                <Select id="lost-reason" value={lostReason} onChange={(e) => setLostReason(e.target.value)}>
+                  <option value="">Choose a reason…</option>
+                  {stages.data?.lostReasons.filter((r) => r.active).map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Note (optional)" htmlFor="lost-note">
+                <Textarea id="lost-note" value={lostNote} onChange={(e) => setLostNote(e.target.value)} />
+              </Field>
+            </div>
+            <div className="mt-6 flex justify-end gap-2 border-t border-border pt-4">
+              <Button type="button" onClick={() => setLostFor(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="danger" disabled={!lostReason} loading={move.isPending}>
+                Mark as lost
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </>

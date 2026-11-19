@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsc -p tsconfig.build.json && (tsc -p tsconfig.build.json --watch --preserveWatchOutput & node --watch --env-file=../../.env dist/main.js)",
     "build": "tsc -p tsconfig.build.json",
+    "generate:openapi": "tsc -p tsconfig.build.json && node --env-file=../../.env dist/generate-openapi.js",
     "start": "node --env-file=../../.env dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "tsc -p tsconfig.json --noEmit",

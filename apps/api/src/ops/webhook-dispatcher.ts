@@ -27,21 +27,36 @@ interface Claimed { id: string; tenant_id: string; endpoint_id: string; event_ty
 @Injectable()
 export class WebhookDispatcher {
   private readonly log = new Logger('Webhooks');
+  /** Hooked by JobsService so redeliveries or events reach BullMQ workers. */
+  enqueueJob: (tenantId: string, deliveryId: string, generation?: number) => Promise<void> = async () => undefined;
+
   constructor(
     @Inject(DbService) private readonly db: DbService, @Inject(ENV) private readonly env: Env, @Inject(SecretBox) private readonly secrets: SecretBox,
     @Inject(BillingNotifier) private readonly notifier: BillingNotifier, @Inject(EntitlementsService) private readonly ent: EntitlementsService,
   ) {}
 
-  /** Inside the relay transaction. Returns the number of deliveries created. */
-  async enqueue(tx: TxClient, ev: DomainEvent): Promise<number> {
+  /** Inside the relay transaction. Returns the IDs of deliveries created. */
+  async enqueue(tx: TxClient, ev: DomainEvent): Promise<string[]> {
     const endpoints = await tx.webhookEndpoint.findMany({ where: { tenantId: ev.tenantId, enabled: true, events: { has: ev.type } }, select: { id: true } });
-    if (endpoints.length === 0) return 0;
+    if (endpoints.length === 0) return [];
     const plan = await this.ent.compute(tx, ev.tenantId);
-    if (!plan.features.api_access || plan.restricted) return 0;
+    if (!plan.features.api_access || plan.restricted) return [];
     const { depth: _d, originAutomationId: _o, ...data } = ev.payload as Record<string, unknown>;
     const envelope: WebhookEnvelope = { id: ev.id, type: ev.type, createdAt: new Date().toISOString(), test: false, data };
-    const r = await tx.webhookDelivery.createMany({ data: endpoints.map((e) => ({ tenantId: ev.tenantId, endpointId: e.id, eventId: ev.id, eventType: ev.type, payload: envelope as unknown as Prisma.InputJsonObject })), skipDuplicates: true });
-    return r.count;
+    const deliveryIds: string[] = [];
+    for (const e of endpoints) {
+      const d = await tx.webhookDelivery.create({
+        data: {
+          tenantId: ev.tenantId,
+          endpointId: e.id,
+          eventId: ev.id,
+          eventType: ev.type,
+          payload: envelope as unknown as Prisma.InputJsonObject,
+        },
+      });
+      deliveryIds.push(d.id);
+    }
+    return deliveryIds;
   }
 
   async drainOnce(limit = 20): Promise<number> {
@@ -64,9 +79,29 @@ export class WebhookDispatcher {
     return { deliveryId };
   }
 
+  /**
+   * BullMQ worker handler for outgoing webhook deliveries.
+   * Dispatches via SSRF-safe client, updates status in DB, and on exhaustion records DLQ entry (status: FAILED).
+   */
+  async deliverJob(deliveryId: string, tenantId: string, attempt: number, maxAttempts: number): Promise<void> {
+    const row = await this.db.tenantTx({ tenantId }, (tx) => tx.webhookDelivery.findUnique({ where: { id: deliveryId } }));
+    if (!row) return;
+    if (row.status === 'SUCCEEDED') return; // Idempotent: already succeeded
+
+    await this.deliver({
+      id: row.id,
+      tenant_id: row.tenantId,
+      endpoint_id: row.endpointId,
+      event_type: row.eventType,
+      payload: row.payload as unknown as WebhookEnvelope,
+      attempts: attempt,
+      test: row.test,
+    }, maxAttempts);
+  }
+
   private backoffMs(attempt: number): number { return Math.min(6 * 3600_000, this.env.WEBHOOK_BACKOFF_BASE_MS * 4 ** Math.max(0, attempt - 1)); }
 
-  private async deliver(row: Claimed): Promise<void> {
+  private async deliver(row: Claimed, customMaxAttempts?: number): Promise<void> {
     const tenantId = row.tenant_id;
     const ep = await this.db.tenantTx({ tenantId }, (tx) => tx.webhookEndpoint.findUnique({ where: { id: row.endpoint_id } }));
     if (!ep || !ep.enabled) {
@@ -90,18 +125,19 @@ export class WebhookDispatcher {
     }
 
     let disabledNow = false;
+    const maxAttempts = customMaxAttempts ?? this.env.WEBHOOK_MAX_ATTEMPTS;
     await this.db.tenantTx({ tenantId }, async (tx) => {
       if (!error) {
         metrics.job('webhook', 'ok');
-        await tx.webhookDelivery.update({ where: { id: row.id }, data: { status: 'SUCCEEDED', deliveredAt: new Date(), lastStatusCode: status, lastLatencyMs: latency, lastError: null } });
+        await tx.webhookDelivery.update({ where: { id: row.id }, data: { status: 'SUCCEEDED', deliveredAt: new Date(), attempts: row.attempts, lastStatusCode: status, lastLatencyMs: latency, lastError: null } });
         await tx.webhookEndpoint.updateMany({ where: { id: ep.id }, data: { consecutiveFailures: 0 } });
         return;
       }
-      const exhausted = terminal || row.attempts >= this.env.WEBHOOK_MAX_ATTEMPTS;
+      const exhausted = terminal || row.attempts >= maxAttempts;
       metrics.job('webhook', exhausted ? 'failed' : 'skipped'); // 'skipped' = failed attempt that will be retried
       await tx.webhookDelivery.update({ where: { id: row.id }, data: exhausted
-        ? { status: 'FAILED', lastStatusCode: status, lastLatencyMs: latency, lastError: error }
-        : { status: 'PENDING', nextAttemptAt: new Date(Date.now() + this.backoffMs(row.attempts)), lastStatusCode: status, lastLatencyMs: latency, lastError: error } });
+        ? { status: 'FAILED', attempts: row.attempts, lastStatusCode: status, lastLatencyMs: latency, lastError: error }
+        : { status: 'PENDING', attempts: row.attempts, nextAttemptAt: new Date(Date.now() + this.backoffMs(row.attempts)), lastStatusCode: status, lastLatencyMs: latency, lastError: error } });
       if (!exhausted || row.test) return;
       const upd = await tx.webhookEndpoint.update({ where: { id: ep.id }, data: { consecutiveFailures: { increment: 1 } }, select: { consecutiveFailures: true } });
       if (upd.consecutiveFailures >= this.env.WEBHOOK_DISABLE_AFTER) {
@@ -111,6 +147,9 @@ export class WebhookDispatcher {
     });
     if (disabledNow) {
       await this.notifier.notifyOwners(tenantId, { type: 'integration', title: 'A webhook endpoint was switched off', body: `${new URL(ep.url).host} failed ${this.env.WEBHOOK_DISABLE_AFTER} deliveries in a row. Fix the receiver, then re-enable it under Webhooks.`, link: '/webhooks' }, `webhook-disabled:${ep.id}:${Date.now()}`).catch(() => undefined);
+    }
+    if (error && customMaxAttempts) {
+      throw new Error(`Webhook delivery failed: ${error} (status: ${status})`);
     }
   }
 }

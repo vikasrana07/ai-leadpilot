@@ -11,6 +11,8 @@ import { Dropdown, DropdownItem, DropdownLabel, DropdownSeparator } from '@/comp
 import { useRealtime } from '@/hooks/use-realtime';
 import { useAuth } from '@/lib/auth';
 import { useSupportSession } from '@/lib/support';
+import { useSidebar } from '@/lib/sidebar-state';
+import { cn } from '@/lib/cn';
 import { CommandPalette } from './command-palette';
 import { SidebarContent } from './sidebar';
 import { NotificationBell } from './notification-bell';
@@ -21,26 +23,31 @@ import { DeletionBanner } from './deletion-banner';
 import { SupportBanner } from './support-banner';
 import { VerifyEmailBanner } from './verify-banner';
 
-const STORAGE_KEY = 'lp-sidebar-collapsed';
-
 export function AppShell({ children }: { children: ReactNode }) {
   const { ctx, logout } = useAuth();
   useRealtime(true);
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, toggle } = useSidebar();
+  const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const support = useSupportSession().data?.active === true;
 
-  // Restore the persisted sidebar state after hydration (reading storage during render would cause a hydration mismatch).
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { try { setCollapsed(localStorage.getItem(STORAGE_KEY) === '1'); } catch { /* ignore */ } }, []);
-  const toggle = () => setCollapsed((c) => { try { localStorage.setItem(STORAGE_KEY, c ? '0' : '1'); } catch { /* ignore */ } return !c; });
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isFullBleed = pathname === '/inbox' || pathname.startsWith('/inbox');
 
   return (
     <div className="flex h-dvh overflow-hidden">
       <a href="#main" className="sr-only z-[60] rounded-md bg-primary px-3 py-2 text-[13px] font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:left-3 focus:top-3">Skip to main content</a>
-      <motion.aside className="hidden shrink-0 lg:block" initial={false} animate={{ width: collapsed ? 64 : 248 }} transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}>
+      <motion.aside
+        className="hidden shrink-0 lg:block"
+        initial={false}
+        animate={{ width: collapsed ? 64 : 248 }}
+        transition={mounted ? { duration: 0.2, ease: [0.2, 0, 0, 1] } : { duration: 0 }}
+      >
         <SidebarContent collapsed={collapsed} onToggle={toggle} />
       </motion.aside>
 
@@ -81,9 +88,27 @@ export function AppShell({ children }: { children: ReactNode }) {
         <VerifyEmailBanner />
         <DeletionBanner />
         <BillingBanner />
-        <main id="main" tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto focus:outline-none">
+        <main
+          id="main"
+          tabIndex={-1}
+          className={cn(
+            'min-h-0 flex-1 focus:outline-none',
+            isFullBleed ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'
+          )}
+        >
           <AnimatePresence mode="wait" initial={false}>
-            <motion.div key={pathname} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.16, ease: [0.2, 0, 0, 1] }} className="mx-auto w-full max-w-[1280px] px-4 py-5 sm:px-6 sm:py-6">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.16, ease: [0.2, 0, 0, 1] }}
+              className={cn(
+                'w-full',
+                isFullBleed
+                  ? 'flex min-h-0 flex-1 flex-col'
+                  : 'px-4 py-5 sm:px-6 sm:py-6'
+              )}
+            >
               {children}
             </motion.div>
           </AnimatePresence>

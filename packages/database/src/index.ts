@@ -1,16 +1,20 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, type Prisma } from './generated/client.js';
+import { softDeleteExtension } from './soft-delete.js';
 
 export * from './generated/client.js';
 export { bootstrapTenant } from './bootstrap-tenant.js';
 export { applyIndustryPack, switchIndustryPack } from './industry-pack.js';
+export { softDeleteExtension, SOFT_DELETE_MODELS, type SoftDeleteOptions } from './soft-delete.js';
 
-export function createPrismaClient(connectionString: string): PrismaClient {
+export function createPrismaClient(connectionString: string) {
   const adapter = new PrismaPg({ connectionString });
-  return new PrismaClient({ adapter });
+  const client = new PrismaClient({ adapter });
+  return client.$extends(softDeleteExtension);
 }
 
-export type TxClient = Prisma.TransactionClient;
+export type ExtendedPrismaClient = ReturnType<typeof createPrismaClient>;
+export type TxClient = Parameters<Parameters<ExtendedPrismaClient['$transaction']>[0]>[0];
 
 export interface TenantContext {
   /** Set from the authenticated, validated membership. NEVER from request input. */
@@ -26,15 +30,15 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
  * Transaction-local settings are safe with transaction-mode connection pooling.
  */
 export async function withTenant<T>(
-  prisma: PrismaClient,
+  prisma: ExtendedPrismaClient | PrismaClient,
   ctx: TenantContext,
   fn: (tx: TxClient) => Promise<T>,
   options?: { timeout?: number; maxWait?: number },
 ): Promise<T> {
   if (ctx.tenantId !== null && !UUID_RE.test(ctx.tenantId)) throw new Error('Invalid tenant id');
   if (ctx.userId && !UUID_RE.test(ctx.userId)) throw new Error('Invalid user id');
-  return prisma.$transaction(
-    async (tx) => {
+  return (prisma as any).$transaction(
+    async (tx: any) => {
       await tx.$executeRaw`SELECT set_config('app.tenant_id', ${ctx.tenantId ?? ''}, true), set_config('app.user_id', ${ctx.userId ?? ''}, true)`;
       return fn(tx);
     },

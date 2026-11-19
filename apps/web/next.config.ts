@@ -17,7 +17,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self' ${apiOrigin} https://api.razorpay.com https://lumberjack.razorpay.com https://graph.facebook.com https://www.facebook.com https://web.facebook.com${isDev ? ' ws: wss:' : ''}`,
+  `connect-src 'self' https://api.razorpay.com wss: ${apiOrigin} https://lumberjack.razorpay.com https://graph.facebook.com https://www.facebook.com https://web.facebook.com${isDev ? ' ws:' : ''}`,
   'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com https://www.facebook.com https://web.facebook.com',
   "frame-ancestors 'none'",
   "object-src 'none'",

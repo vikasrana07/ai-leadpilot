@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --port 3100",
     "build": "next build",
+    "generate:api": "orval --config ../../orval.config.cjs",
     "start": "next start --port 3100",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",

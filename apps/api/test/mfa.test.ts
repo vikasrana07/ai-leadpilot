@@ -118,6 +118,8 @@ describe('tenant user MFA', () => {
     expect(regen.status).toBe(200); expect(regen.body.recoveryCodes).toHaveLength(10);
     expect((await ctx.http().post('/auth/mfa/verify').send({ challengeToken: (await login(u.email)).body.challengeToken, recoveryCode: recovery[4] })).status).toBe(401); // old set is gone
     expect((await ctx.http().post('/security/mfa/disable').set(auth(token)).send({ recoveryCode: (regen.body.recoveryCodes as string[])[0] })).status).toBe(204);
+    expect((await ctx.http().get('/auth/me').set(auth(token))).status).toBe(401);
+    expect((await owner$.query("SELECT count(*)::int n FROM sessions WHERE user_id = $1 AND revoked_at IS NULL", [u.userId])).rows[0].n).toBe(0);
     expect((await login(u.email)).body.accessToken).toBeTruthy();
     expect((await owner$.query("SELECT count(*)::int n FROM mfa_credentials WHERE subject_id = $1", [u.userId])).rows[0].n).toBe(0);
   });

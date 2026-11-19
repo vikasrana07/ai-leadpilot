@@ -7,13 +7,20 @@ import { Toaster } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ApiError } from '@/lib/api';
 import { ThemeProvider, useTheme } from '@/lib/theme';
+import { SidebarProvider } from '@/lib/sidebar-state';
 
 function ThemedToaster() {
   const { resolved } = useTheme();
   return <Toaster theme={resolved} position="bottom-right" toastOptions={{ classNames: { toast: '!bg-card !text-card-foreground !border-border !shadow-lg' } }} />;
 }
 
-export function Providers({ children }: { children: ReactNode }) {
+export function Providers({
+  initialSidebarCollapsed = false,
+  children,
+}: {
+  initialSidebarCollapsed?: boolean;
+  children: ReactNode;
+}) {
   const [client] = useState(() => new QueryClient({
     defaultOptions: {
       queries: { staleTime: 30_000, refetchOnWindowFocus: false, retry: (n, e) => !(e instanceof ApiError && e.status < 500) && n < 2 },
@@ -21,15 +28,17 @@ export function Providers({ children }: { children: ReactNode }) {
   }));
   return (
     <ThemeProvider>
-      {/* reducedMotion="user" makes every motion component honour prefers-reduced-motion */}
-      <MotionConfig reducedMotion="user">
-        <QueryClientProvider client={client}>
-          <TooltipProvider>
-            {children}
-            <ThemedToaster />
-          </TooltipProvider>
-        </QueryClientProvider>
-      </MotionConfig>
+      <SidebarProvider initialCollapsed={initialSidebarCollapsed}>
+        {/* reducedMotion="user" makes every motion component honour prefers-reduced-motion */}
+        <MotionConfig reducedMotion="user">
+          <QueryClientProvider client={client}>
+            <TooltipProvider>
+              {children}
+              <ThemedToaster />
+            </TooltipProvider>
+          </QueryClientProvider>
+        </MotionConfig>
+      </SidebarProvider>
     </ThemeProvider>
   );
 }

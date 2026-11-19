@@ -28,7 +28,7 @@ export function StageConfigDialog({ open, onOpenChange }: { open: boolean; onOpe
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent title="Configure pipeline" description={applyTerms("Rename, reorder and add stages. Stages with leads cannot be removed.", terms)} className="max-w-lg">
-        <div className="max-h-[60vh] space-y-5 overflow-y-auto pr-1">
+        <div className="space-y-5">
           <ul className="space-y-1.5">
             {list.map((s, i) => (
               <li key={s.id} className="flex items-center gap-2 rounded-md border border-border p-2">

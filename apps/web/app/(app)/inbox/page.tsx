@@ -58,7 +58,7 @@ function InboxView() {
   const items = list.data?.items ?? [];
 
   return (
-    <div className="-mx-4 -my-5 flex h-[calc(100dvh-3.5rem)] sm:-mx-6 sm:-my-6">
+    <div className="flex h-full w-full min-h-0 flex-1">
       {/* queues (wide screens) */}
       <nav aria-label="Queues" className="hidden w-52 shrink-0 flex-col gap-1 border-r border-border bg-header p-3 xl:flex">
         <h1 className="text-title px-2 pb-2 pt-1">Inbox</h1>
@@ -119,7 +119,7 @@ function InboxView() {
 
       {/* details (wide screens) */}
       {detail.data ? <aside aria-label="Customer details" className="hidden w-72 shrink-0 overflow-y-auto border-l border-border bg-surface xl:block"><DetailsPanel convo={detail.data} /></aside> : null}
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}><DialogContent title="Customer details" className="max-h-[85vh] max-w-md overflow-y-auto">{detail.data ? <DetailsPanel convo={detail.data} /> : null}</DialogContent></Dialog>
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}><DialogContent title="Customer details" className="max-w-md">{detail.data ? <DetailsPanel convo={detail.data} /> : null}</DialogContent></Dialog>
     </div>
   );
 }

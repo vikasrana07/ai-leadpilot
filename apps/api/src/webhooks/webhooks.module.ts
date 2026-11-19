@@ -125,6 +125,7 @@ export class WebhooksService {
       if (d.status === 'PENDING' || d.status === 'SENDING') throw new ConflictException({ code: 'in_progress', message: 'This delivery is still being attempted' });
       await tx.webhookDelivery.update({ where: { id }, data: { status: 'PENDING', attempts: 0, nextAttemptAt: new Date(), lastError: null } });
       await this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'webhook.redelivered', resourceType: 'webhook_delivery', resourceId: id, requestId: ctx.requestId, ip: ctx.ip });
+      await this.dispatcher.enqueueJob(ctx.tenantId, id, Date.now());
       return { queued: true };
     });
   }

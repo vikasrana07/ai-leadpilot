@@ -50,7 +50,32 @@ export default function PipelinePage() {
       await qc.cancelQueries({ queryKey: ['pipeline', 'board'] });
       const key = ['pipeline', 'board', filters];
       const prev = qc.getQueryData<{ columns: Column[] }>(key);
-      if (prev) qc.setQueryData(key, { columns: prev.columns.map((c) => c.stage.id === v.lead.stage.id ? { ...c, total: c.total - 1, leads: c.leads.filter((l) => l.id !== v.lead.id) } : c.stage.id === v.stageId ? { ...c, total: c.total + 1, leads: [{ ...v.lead, stage: { ...c.stage } }, ...c.leads] } : c) });
+      if (prev) {
+        const fromCol = prev.columns.find((c) => c.leads.some((l) => l.id === v.lead.id)) ?? prev.columns.find((c) => c.stage.id === v.lead.stage.id);
+        const movingLead = fromCol?.leads.find((l) => l.id === v.lead.id) ?? v.lead;
+        const targetCol = prev.columns.find((c) => c.stage.id === v.stageId);
+        if (fromCol && targetCol && fromCol.stage.id !== targetCol.stage.id) {
+          qc.setQueryData(key, {
+            columns: prev.columns.map((c) => {
+              if (c.stage.id === fromCol.stage.id) {
+                return {
+                  ...c,
+                  total: Math.max(0, c.total - 1),
+                  leads: c.leads.filter((l) => l.id !== v.lead.id),
+                };
+              }
+              if (c.stage.id === targetCol.stage.id) {
+                return {
+                  ...c,
+                  total: c.total + 1,
+                  leads: [{ ...movingLead, stage: { ...targetCol.stage } }, ...c.leads.filter((l) => l.id !== v.lead.id)],
+                };
+              }
+              return c;
+            }),
+          });
+        }
+      }
       return { prev, key };
     },
     onError: (e, _v, ctx) => { if (ctx?.prev) qc.setQueryData(ctx.key, ctx.prev); setNotice({ text: e instanceof ApiError ? e.message : `Could not move the ${terms.lead}`, ok: false }); },

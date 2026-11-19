@@ -45,7 +45,7 @@ export default function AuditPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[13px]">
-              <thead className="border-b border-border bg-muted/50 text-label text-muted-foreground"><tr><th className="px-5 py-2.5 font-medium">When</th><th className="px-5 py-2.5 font-medium">Event</th><th className="px-5 py-2.5 font-medium">Details</th><th className="px-5 py-2.5 font-medium">IP</th></tr></thead>
+              <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-label text-muted-foreground shadow-xs"><tr><th className="px-5 py-2.5 font-medium">When</th><th className="px-5 py-2.5 font-medium">Event</th><th className="px-5 py-2.5 font-medium">Details</th><th className="px-5 py-2.5 font-medium">IP</th></tr></thead>
               <tbody className="divide-y divide-border">
                 {items.map((e) => (
                   <tr key={e.id} className="hover:bg-muted/40">

@@ -204,8 +204,9 @@ model PasswordResetToken {
 }
 
 // Append-only: the app role has INSERT + SELECT only (see RLS migration).
+// Partitioned monthly by created_at in PostgreSQL.
 model AuditLog {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id           String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenantId     String?  @map("tenant_id") @db.Uuid
   actorUserId  String?  @map("actor_user_id") @db.Uuid
   action       String
@@ -216,6 +217,7 @@ model AuditLog {
   ip           String?
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
+  @@id([id, createdAt])
   @@index([tenantId, createdAt])
   @@index([tenantId, action])
   @@map("audit_logs")
