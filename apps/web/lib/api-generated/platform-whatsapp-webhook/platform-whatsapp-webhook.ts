@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type platformWhatsappWebhookControllerVerifyResponse200 = {
-  data: void
-  status: 200
-}
-
-export type platformWhatsappWebhookControllerVerifyResponseSuccess = (platformWhatsappWebhookControllerVerifyResponse200) & {
-  headers: Headers;
-};
-;
-
-export type platformWhatsappWebhookControllerVerifyResponse = (platformWhatsappWebhookControllerVerifyResponseSuccess)
-
 export const getPlatformWhatsappWebhookControllerVerifyUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getPlatformWhatsappWebhookControllerVerifyUrl = () => {
   return `/webhooks/whatsapp`
 }
 
-export const platformWhatsappWebhookControllerVerify = async ( options?: Parameters<typeof customInstance>[1]): Promise<platformWhatsappWebhookControllerVerifyResponse> => {
+export const platformWhatsappWebhookControllerVerify = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<platformWhatsappWebhookControllerVerifyResponse>(getPlatformWhatsappWebhookControllerVerifyUrl(),
+  return customInstance<void>(getPlatformWhatsappWebhookControllerVerifyUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const platformWhatsappWebhookControllerVerify = async ( options?: Paramet
 
 
 
-export const getPlatformWhatsappWebhookControllerVerifyMutationKey = () => ['platformWhatsappWebhookControllerVerify'] as const;
-
-export const getPlatformWhatsappWebhookControllerVerifyMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError,void, TContext> => {
-
-const mutationKey = getPlatformWhatsappWebhookControllerVerifyMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, void> = () => {
-
-
-          return  platformWhatsappWebhookControllerVerify(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PlatformWhatsappWebhookControllerVerifyMutationResult = NonNullable<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>>
-
-    export type PlatformWhatsappWebhookControllerVerifyMutationError = unknown
-
-
-    export const usePlatformWhatsappWebhookControllerVerify = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getPlatformWhatsappWebhookControllerVerifyMutationOptions(options), queryClient);
+export const getPlatformWhatsappWebhookControllerVerifyQueryKey = () => {
+    return [
+    `/webhooks/whatsapp`
+    ] as const;
     }
-    export type platformWhatsappWebhookControllerReceiveResponse200 = {
-  data: void
-  status: 200
+
+
+export const getPlatformWhatsappWebhookControllerVerifyQueryOptions = <TData = Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPlatformWhatsappWebhookControllerVerifyQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>> = ({ signal }) => platformWhatsappWebhookControllerVerify({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type platformWhatsappWebhookControllerReceiveResponseSuccess = (platformWhatsappWebhookControllerReceiveResponse200) & {
-  headers: Headers;
-};
-;
+export type PlatformWhatsappWebhookControllerVerifyQueryResult = NonNullable<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>>
+export type PlatformWhatsappWebhookControllerVerifyQueryError = unknown
 
-export type platformWhatsappWebhookControllerReceiveResponse = (platformWhatsappWebhookControllerReceiveResponseSuccess)
+
+export function usePlatformWhatsappWebhookControllerVerify<TData = Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>,
+          TError,
+          Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlatformWhatsappWebhookControllerVerify<TData = Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>,
+          TError,
+          Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlatformWhatsappWebhookControllerVerify<TData = Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlatformWhatsappWebhookControllerVerify<TData = Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerVerify>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPlatformWhatsappWebhookControllerVerifyQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getPlatformWhatsappWebhookControllerReceiveUrl = () => {
 
@@ -145,9 +147,9 @@ export const getPlatformWhatsappWebhookControllerReceiveUrl = () => {
   return `/webhooks/whatsapp`
 }
 
-export const platformWhatsappWebhookControllerReceive = async ( options?: Parameters<typeof customInstance>[1]): Promise<platformWhatsappWebhookControllerReceiveResponse> => {
+export const platformWhatsappWebhookControllerReceive = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<platformWhatsappWebhookControllerReceiveResponse>(getPlatformWhatsappWebhookControllerReceiveUrl(),
+  return customInstance<void>(getPlatformWhatsappWebhookControllerReceiveUrl(),
   {
     ...options,
     method: 'POST'
@@ -160,73 +162,47 @@ export const platformWhatsappWebhookControllerReceive = async ( options?: Parame
 
 
 
-export const getPlatformWhatsappWebhookControllerReceiveQueryKey = () => {
-    return [
-    'POST', `/webhooks/whatsapp`
-    ] as const;
+export const getPlatformWhatsappWebhookControllerReceiveMutationKey = () => ['platformWhatsappWebhookControllerReceive'] as const;
+
+export const getPlatformWhatsappWebhookControllerReceiveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError,void, TContext> => {
+
+const mutationKey = getPlatformWhatsappWebhookControllerReceiveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, void> = () => {
+
+
+          return  platformWhatsappWebhookControllerReceive(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PlatformWhatsappWebhookControllerReceiveMutationResult = NonNullable<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>>
+
+    export type PlatformWhatsappWebhookControllerReceiveMutationError = unknown
+
+
+    export const usePlatformWhatsappWebhookControllerReceive = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getPlatformWhatsappWebhookControllerReceiveMutationOptions(options), queryClient);
     }
-
-
-export const getPlatformWhatsappWebhookControllerReceiveQueryOptions = <TData = Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPlatformWhatsappWebhookControllerReceiveQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>> = ({ signal }) => platformWhatsappWebhookControllerReceive({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PlatformWhatsappWebhookControllerReceiveQueryResult = NonNullable<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>>
-export type PlatformWhatsappWebhookControllerReceiveQueryError = unknown
-
-
-export function usePlatformWhatsappWebhookControllerReceive<TData = Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>,
-          TError,
-          Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePlatformWhatsappWebhookControllerReceive<TData = Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>,
-          TError,
-          Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePlatformWhatsappWebhookControllerReceive<TData = Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePlatformWhatsappWebhookControllerReceive<TData = Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformWhatsappWebhookControllerReceive>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPlatformWhatsappWebhookControllerReceiveQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

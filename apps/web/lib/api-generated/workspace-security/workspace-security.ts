@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type workspaceSecurityControllerGetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type workspaceSecurityControllerGetResponseSuccess = (workspaceSecurityControllerGetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type workspaceSecurityControllerGetResponse = (workspaceSecurityControllerGetResponseSuccess)
-
 export const getWorkspaceSecurityControllerGetUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getWorkspaceSecurityControllerGetUrl = () => {
   return `/security/workspace`
 }
 
-export const workspaceSecurityControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<workspaceSecurityControllerGetResponse> => {
+export const workspaceSecurityControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<workspaceSecurityControllerGetResponse>(getWorkspaceSecurityControllerGetUrl(),
+  return customInstance<void>(getWorkspaceSecurityControllerGetUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const workspaceSecurityControllerGet = async ( options?: Parameters<typeo
 
 
 
-export const getWorkspaceSecurityControllerGetMutationKey = () => ['workspaceSecurityControllerGet'] as const;
-
-export const getWorkspaceSecurityControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError,void, TContext> => {
-
-const mutationKey = getWorkspaceSecurityControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, void> = () => {
-
-
-          return  workspaceSecurityControllerGet(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type WorkspaceSecurityControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>>
-
-    export type WorkspaceSecurityControllerGetMutationError = unknown
-
-
-    export const useWorkspaceSecurityControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof workspaceSecurityControllerGet>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getWorkspaceSecurityControllerGetMutationOptions(options), queryClient);
+export const getWorkspaceSecurityControllerGetQueryKey = () => {
+    return [
+    `/security/workspace`
+    ] as const;
     }
-    export type workspaceSecurityControllerPutResponse200 = {
-  data: void
-  status: 200
+
+
+export const getWorkspaceSecurityControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getWorkspaceSecurityControllerGetQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>> = ({ signal }) => workspaceSecurityControllerGet({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type workspaceSecurityControllerPutResponseSuccess = (workspaceSecurityControllerPutResponse200) & {
-  headers: Headers;
-};
-;
+export type WorkspaceSecurityControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>>
+export type WorkspaceSecurityControllerGetQueryError = unknown
 
-export type workspaceSecurityControllerPutResponse = (workspaceSecurityControllerPutResponseSuccess)
+
+export function useWorkspaceSecurityControllerGet<TData = Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof workspaceSecurityControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof workspaceSecurityControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWorkspaceSecurityControllerGet<TData = Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof workspaceSecurityControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof workspaceSecurityControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWorkspaceSecurityControllerGet<TData = Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWorkspaceSecurityControllerGet<TData = Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getWorkspaceSecurityControllerGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getWorkspaceSecurityControllerPutUrl = () => {
 
@@ -145,9 +147,9 @@ export const getWorkspaceSecurityControllerPutUrl = () => {
   return `/security/workspace`
 }
 
-export const workspaceSecurityControllerPut = async ( options?: Parameters<typeof customInstance>[1]): Promise<workspaceSecurityControllerPutResponse> => {
+export const workspaceSecurityControllerPut = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<workspaceSecurityControllerPutResponse>(getWorkspaceSecurityControllerPutUrl(),
+  return customInstance<void>(getWorkspaceSecurityControllerPutUrl(),
   {
     ...options,
     method: 'PUT'
@@ -160,73 +162,47 @@ export const workspaceSecurityControllerPut = async ( options?: Parameters<typeo
 
 
 
-export const getWorkspaceSecurityControllerPutQueryKey = () => {
-    return [
-    'PUT', `/security/workspace`
-    ] as const;
+export const getWorkspaceSecurityControllerPutMutationKey = () => ['workspaceSecurityControllerPut'] as const;
+
+export const getWorkspaceSecurityControllerPutMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError,void, TContext> => {
+
+const mutationKey = getWorkspaceSecurityControllerPutMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, void> = () => {
+
+
+          return  workspaceSecurityControllerPut(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type WorkspaceSecurityControllerPutMutationResult = NonNullable<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>>
+
+    export type WorkspaceSecurityControllerPutMutationError = unknown
+
+
+    export const useWorkspaceSecurityControllerPut = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof workspaceSecurityControllerPut>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getWorkspaceSecurityControllerPutMutationOptions(options), queryClient);
     }
-
-
-export const getWorkspaceSecurityControllerPutQueryOptions = <TData = Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getWorkspaceSecurityControllerPutQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>> = ({ signal }) => workspaceSecurityControllerPut({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type WorkspaceSecurityControllerPutQueryResult = NonNullable<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>>
-export type WorkspaceSecurityControllerPutQueryError = unknown
-
-
-export function useWorkspaceSecurityControllerPut<TData = Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof workspaceSecurityControllerPut>>,
-          TError,
-          Awaited<ReturnType<typeof workspaceSecurityControllerPut>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWorkspaceSecurityControllerPut<TData = Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof workspaceSecurityControllerPut>>,
-          TError,
-          Awaited<ReturnType<typeof workspaceSecurityControllerPut>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWorkspaceSecurityControllerPut<TData = Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWorkspaceSecurityControllerPut<TData = Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof workspaceSecurityControllerPut>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getWorkspaceSecurityControllerPutQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

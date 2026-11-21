@@ -38,11 +38,11 @@ export type UpdateLeadInput = z.infer<typeof updateLeadSchema>;
 
 export const leadListQuerySchema = z.object({
   q: z.string().trim().max(100).optional(),
-  stageId: z.string().uuid().optional(),
+  stageId: z.string().trim().optional(),
   kind: z.enum(['OPEN', 'WON', 'LOST']).optional(),
-  temperature: z.enum(TEMPERATURES).optional(),
-  assigned: z.union([z.literal('me'), z.literal('unassigned'), z.string().uuid()]).optional(),
-  sourceId: z.string().uuid().optional(),
+  temperature: z.string().trim().optional(),
+  assigned: z.string().trim().optional(),
+  sourceId: z.string().trim().optional(),
   tagId: z.string().uuid().optional(),
   createdFrom: z.string().datetime().optional(),
   createdTo: z.string().datetime().optional(),

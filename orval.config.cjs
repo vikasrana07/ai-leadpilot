@@ -3,6 +3,7 @@ module.exports = {
     input: {
       target: './packages/shared-types/openapi.json',
     },
+    hooks: { afterAllFilesWrite: 'node scripts/orval-fix-imports.mjs' },
     output: {
       mode: 'tags-split',
       target: './apps/web/lib/api-generated/index.ts',
@@ -15,10 +16,9 @@ module.exports = {
           path: './apps/web/lib/custom-instance.ts',
           name: 'customInstance',
         },
+        fetch: { includeHttpResponseReturnType: false },
         query: {
           version: 5,
-          useQuery: true,
-          useMutation: true,
           signal: true,
         },
       },

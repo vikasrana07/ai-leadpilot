@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type tenantsControllerGetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type tenantsControllerGetResponseSuccess = (tenantsControllerGetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type tenantsControllerGetResponse = (tenantsControllerGetResponseSuccess)
-
 export const getTenantsControllerGetUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getTenantsControllerGetUrl = () => {
   return `/tenant`
 }
 
-export const tenantsControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<tenantsControllerGetResponse> => {
+export const tenantsControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<tenantsControllerGetResponse>(getTenantsControllerGetUrl(),
+  return customInstance<void>(getTenantsControllerGetUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const tenantsControllerGet = async ( options?: Parameters<typeof customIn
 
 
 
-export const getTenantsControllerGetMutationKey = () => ['tenantsControllerGet'] as const;
-
-export const getTenantsControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerGet>>, TError,void, TContext> => {
-
-const mutationKey = getTenantsControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof tenantsControllerGet>>, void> = () => {
-
-
-          return  tenantsControllerGet(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type TenantsControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerGet>>>
-
-    export type TenantsControllerGetMutationError = unknown
-
-
-    export const useTenantsControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof tenantsControllerGet>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getTenantsControllerGetMutationOptions(options), queryClient);
+export const getTenantsControllerGetQueryKey = () => {
+    return [
+    `/tenant`
+    ] as const;
     }
-    export type tenantsControllerUpdateResponse200 = {
-  data: void
-  status: 200
+
+
+export const getTenantsControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof tenantsControllerGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getTenantsControllerGetQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof tenantsControllerGet>>> = ({ signal }) => tenantsControllerGet({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type tenantsControllerUpdateResponseSuccess = (tenantsControllerUpdateResponse200) & {
-  headers: Headers;
-};
-;
+export type TenantsControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerGet>>>
+export type TenantsControllerGetQueryError = unknown
 
-export type tenantsControllerUpdateResponse = (tenantsControllerUpdateResponseSuccess)
+
+export function useTenantsControllerGet<TData = Awaited<ReturnType<typeof tenantsControllerGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof tenantsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof tenantsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTenantsControllerGet<TData = Awaited<ReturnType<typeof tenantsControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof tenantsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof tenantsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTenantsControllerGet<TData = Awaited<ReturnType<typeof tenantsControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTenantsControllerGet<TData = Awaited<ReturnType<typeof tenantsControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getTenantsControllerGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getTenantsControllerUpdateUrl = () => {
 
@@ -145,9 +147,9 @@ export const getTenantsControllerUpdateUrl = () => {
   return `/tenant`
 }
 
-export const tenantsControllerUpdate = async ( options?: Parameters<typeof customInstance>[1]): Promise<tenantsControllerUpdateResponse> => {
+export const tenantsControllerUpdate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<tenantsControllerUpdateResponse>(getTenantsControllerUpdateUrl(),
+  return customInstance<void>(getTenantsControllerUpdateUrl(),
   {
     ...options,
     method: 'PATCH'
@@ -160,89 +162,51 @@ export const tenantsControllerUpdate = async ( options?: Parameters<typeof custo
 
 
 
-export const getTenantsControllerUpdateQueryKey = () => {
-    return [
-    'PATCH', `/tenant`
-    ] as const;
+export const getTenantsControllerUpdateMutationKey = () => ['tenantsControllerUpdate'] as const;
+
+export const getTenantsControllerUpdateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError,void, TContext> => {
+
+const mutationKey = getTenantsControllerUpdateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof tenantsControllerUpdate>>, void> = () => {
+
+
+          return  tenantsControllerUpdate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TenantsControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerUpdate>>>
+
+    export type TenantsControllerUpdateMutationError = unknown
+
+
+    export const useTenantsControllerUpdate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof tenantsControllerUpdate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getTenantsControllerUpdateMutationOptions(options), queryClient);
     }
-
-
-export const getTenantsControllerUpdateQueryOptions = <TData = Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getTenantsControllerUpdateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof tenantsControllerUpdate>>> = ({ signal }) => tenantsControllerUpdate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type TenantsControllerUpdateQueryResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerUpdate>>>
-export type TenantsControllerUpdateQueryError = unknown
-
-
-export function useTenantsControllerUpdate<TData = Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof tenantsControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof tenantsControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTenantsControllerUpdate<TData = Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof tenantsControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof tenantsControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTenantsControllerUpdate<TData = Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTenantsControllerUpdate<TData = Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getTenantsControllerUpdateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type tenantsControllerAssignmentResponse200 = {
-  data: void
-  status: 200
-}
-
-export type tenantsControllerAssignmentResponseSuccess = (tenantsControllerAssignmentResponse200) & {
-  headers: Headers;
-};
-;
-
-export type tenantsControllerAssignmentResponse = (tenantsControllerAssignmentResponseSuccess)
-
-export const getTenantsControllerAssignmentUrl = () => {
+    export const getTenantsControllerAssignmentUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getTenantsControllerAssignmentUrl = () => {
   return `/tenant/assignment`
 }
 
-export const tenantsControllerAssignment = async ( options?: Parameters<typeof customInstance>[1]): Promise<tenantsControllerAssignmentResponse> => {
+export const tenantsControllerAssignment = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<tenantsControllerAssignmentResponse>(getTenantsControllerAssignmentUrl(),
+  return customInstance<void>(getTenantsControllerAssignmentUrl(),
   {
     ...options,
     method: 'GET'
@@ -265,61 +229,75 @@ export const tenantsControllerAssignment = async ( options?: Parameters<typeof c
 
 
 
-export const getTenantsControllerAssignmentMutationKey = () => ['tenantsControllerAssignment'] as const;
-
-export const getTenantsControllerAssignmentMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError,void, TContext> => {
-
-const mutationKey = getTenantsControllerAssignmentMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof tenantsControllerAssignment>>, void> = () => {
-
-
-          return  tenantsControllerAssignment(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type TenantsControllerAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerAssignment>>>
-
-    export type TenantsControllerAssignmentMutationError = unknown
-
-
-    export const useTenantsControllerAssignment = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof tenantsControllerAssignment>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getTenantsControllerAssignmentMutationOptions(options), queryClient);
+export const getTenantsControllerAssignmentQueryKey = () => {
+    return [
+    `/tenant/assignment`
+    ] as const;
     }
-    export type tenantsControllerSetAssignmentResponse200 = {
-  data: void
-  status: 200
+
+
+export const getTenantsControllerAssignmentQueryOptions = <TData = Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getTenantsControllerAssignmentQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof tenantsControllerAssignment>>> = ({ signal }) => tenantsControllerAssignment({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type tenantsControllerSetAssignmentResponseSuccess = (tenantsControllerSetAssignmentResponse200) & {
-  headers: Headers;
-};
-;
+export type TenantsControllerAssignmentQueryResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerAssignment>>>
+export type TenantsControllerAssignmentQueryError = unknown
 
-export type tenantsControllerSetAssignmentResponse = (tenantsControllerSetAssignmentResponseSuccess)
+
+export function useTenantsControllerAssignment<TData = Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof tenantsControllerAssignment>>,
+          TError,
+          Awaited<ReturnType<typeof tenantsControllerAssignment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTenantsControllerAssignment<TData = Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof tenantsControllerAssignment>>,
+          TError,
+          Awaited<ReturnType<typeof tenantsControllerAssignment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTenantsControllerAssignment<TData = Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTenantsControllerAssignment<TData = Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerAssignment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getTenantsControllerAssignmentQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getTenantsControllerSetAssignmentUrl = () => {
 
@@ -329,9 +307,9 @@ export const getTenantsControllerSetAssignmentUrl = () => {
   return `/tenant/assignment`
 }
 
-export const tenantsControllerSetAssignment = async ( options?: Parameters<typeof customInstance>[1]): Promise<tenantsControllerSetAssignmentResponse> => {
+export const tenantsControllerSetAssignment = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<tenantsControllerSetAssignmentResponse>(getTenantsControllerSetAssignmentUrl(),
+  return customInstance<void>(getTenantsControllerSetAssignmentUrl(),
   {
     ...options,
     method: 'PUT'
@@ -344,89 +322,51 @@ export const tenantsControllerSetAssignment = async ( options?: Parameters<typeo
 
 
 
-export const getTenantsControllerSetAssignmentQueryKey = () => {
-    return [
-    'PUT', `/tenant/assignment`
-    ] as const;
+export const getTenantsControllerSetAssignmentMutationKey = () => ['tenantsControllerSetAssignment'] as const;
+
+export const getTenantsControllerSetAssignmentMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError,void, TContext> => {
+
+const mutationKey = getTenantsControllerSetAssignmentMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, void> = () => {
+
+
+          return  tenantsControllerSetAssignment(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TenantsControllerSetAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>>
+
+    export type TenantsControllerSetAssignmentMutationError = unknown
+
+
+    export const useTenantsControllerSetAssignment = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof tenantsControllerSetAssignment>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getTenantsControllerSetAssignmentMutationOptions(options), queryClient);
     }
-
-
-export const getTenantsControllerSetAssignmentQueryOptions = <TData = Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getTenantsControllerSetAssignmentQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>> = ({ signal }) => tenantsControllerSetAssignment({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type TenantsControllerSetAssignmentQueryResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>>
-export type TenantsControllerSetAssignmentQueryError = unknown
-
-
-export function useTenantsControllerSetAssignment<TData = Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof tenantsControllerSetAssignment>>,
-          TError,
-          Awaited<ReturnType<typeof tenantsControllerSetAssignment>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTenantsControllerSetAssignment<TData = Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof tenantsControllerSetAssignment>>,
-          TError,
-          Awaited<ReturnType<typeof tenantsControllerSetAssignment>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTenantsControllerSetAssignment<TData = Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTenantsControllerSetAssignment<TData = Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSetAssignment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getTenantsControllerSetAssignmentQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type tenantsControllerOnboardingResponse200 = {
-  data: void
-  status: 200
-}
-
-export type tenantsControllerOnboardingResponseSuccess = (tenantsControllerOnboardingResponse200) & {
-  headers: Headers;
-};
-;
-
-export type tenantsControllerOnboardingResponse = (tenantsControllerOnboardingResponseSuccess)
-
-export const getTenantsControllerOnboardingUrl = () => {
+    export const getTenantsControllerOnboardingUrl = () => {
 
 
 
@@ -434,9 +374,9 @@ export const getTenantsControllerOnboardingUrl = () => {
   return `/tenant/onboarding`
 }
 
-export const tenantsControllerOnboarding = async ( options?: Parameters<typeof customInstance>[1]): Promise<tenantsControllerOnboardingResponse> => {
+export const tenantsControllerOnboarding = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<tenantsControllerOnboardingResponse>(getTenantsControllerOnboardingUrl(),
+  return customInstance<void>(getTenantsControllerOnboardingUrl(),
   {
     ...options,
     method: 'GET'
@@ -449,61 +389,75 @@ export const tenantsControllerOnboarding = async ( options?: Parameters<typeof c
 
 
 
-export const getTenantsControllerOnboardingMutationKey = () => ['tenantsControllerOnboarding'] as const;
-
-export const getTenantsControllerOnboardingMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError,void, TContext> => {
-
-const mutationKey = getTenantsControllerOnboardingMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof tenantsControllerOnboarding>>, void> = () => {
-
-
-          return  tenantsControllerOnboarding(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type TenantsControllerOnboardingMutationResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerOnboarding>>>
-
-    export type TenantsControllerOnboardingMutationError = unknown
-
-
-    export const useTenantsControllerOnboarding = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof tenantsControllerOnboarding>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getTenantsControllerOnboardingMutationOptions(options), queryClient);
+export const getTenantsControllerOnboardingQueryKey = () => {
+    return [
+    `/tenant/onboarding`
+    ] as const;
     }
-    export type tenantsControllerSaveOnboardingResponse200 = {
-  data: void
-  status: 200
+
+
+export const getTenantsControllerOnboardingQueryOptions = <TData = Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getTenantsControllerOnboardingQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof tenantsControllerOnboarding>>> = ({ signal }) => tenantsControllerOnboarding({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type tenantsControllerSaveOnboardingResponseSuccess = (tenantsControllerSaveOnboardingResponse200) & {
-  headers: Headers;
-};
-;
+export type TenantsControllerOnboardingQueryResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerOnboarding>>>
+export type TenantsControllerOnboardingQueryError = unknown
 
-export type tenantsControllerSaveOnboardingResponse = (tenantsControllerSaveOnboardingResponseSuccess)
+
+export function useTenantsControllerOnboarding<TData = Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof tenantsControllerOnboarding>>,
+          TError,
+          Awaited<ReturnType<typeof tenantsControllerOnboarding>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTenantsControllerOnboarding<TData = Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof tenantsControllerOnboarding>>,
+          TError,
+          Awaited<ReturnType<typeof tenantsControllerOnboarding>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTenantsControllerOnboarding<TData = Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTenantsControllerOnboarding<TData = Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerOnboarding>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getTenantsControllerOnboardingQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getTenantsControllerSaveOnboardingUrl = () => {
 
@@ -513,9 +467,9 @@ export const getTenantsControllerSaveOnboardingUrl = () => {
   return `/tenant/onboarding`
 }
 
-export const tenantsControllerSaveOnboarding = async ( options?: Parameters<typeof customInstance>[1]): Promise<tenantsControllerSaveOnboardingResponse> => {
+export const tenantsControllerSaveOnboarding = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<tenantsControllerSaveOnboardingResponse>(getTenantsControllerSaveOnboardingUrl(),
+  return customInstance<void>(getTenantsControllerSaveOnboardingUrl(),
   {
     ...options,
     method: 'PUT'
@@ -528,73 +482,47 @@ export const tenantsControllerSaveOnboarding = async ( options?: Parameters<type
 
 
 
-export const getTenantsControllerSaveOnboardingQueryKey = () => {
-    return [
-    'PUT', `/tenant/onboarding`
-    ] as const;
+export const getTenantsControllerSaveOnboardingMutationKey = () => ['tenantsControllerSaveOnboarding'] as const;
+
+export const getTenantsControllerSaveOnboardingMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError,void, TContext> => {
+
+const mutationKey = getTenantsControllerSaveOnboardingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, void> = () => {
+
+
+          return  tenantsControllerSaveOnboarding(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TenantsControllerSaveOnboardingMutationResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>>
+
+    export type TenantsControllerSaveOnboardingMutationError = unknown
+
+
+    export const useTenantsControllerSaveOnboarding = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getTenantsControllerSaveOnboardingMutationOptions(options), queryClient);
     }
-
-
-export const getTenantsControllerSaveOnboardingQueryOptions = <TData = Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getTenantsControllerSaveOnboardingQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>> = ({ signal }) => tenantsControllerSaveOnboarding({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type TenantsControllerSaveOnboardingQueryResult = NonNullable<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>>
-export type TenantsControllerSaveOnboardingQueryError = unknown
-
-
-export function useTenantsControllerSaveOnboarding<TData = Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>,
-          TError,
-          Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTenantsControllerSaveOnboarding<TData = Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>,
-          TError,
-          Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTenantsControllerSaveOnboarding<TData = Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTenantsControllerSaveOnboarding<TData = Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof tenantsControllerSaveOnboarding>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getTenantsControllerSaveOnboardingQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

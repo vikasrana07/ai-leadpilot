@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type portalControllerMeResponse200 = {
-  data: void
-  status: 200
-}
-
-export type portalControllerMeResponseSuccess = (portalControllerMeResponse200) & {
-  headers: Headers;
-};
-;
-
-export type portalControllerMeResponse = (portalControllerMeResponseSuccess)
-
 export const getPortalControllerMeUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getPortalControllerMeUrl = () => {
   return `/portal/me`
 }
 
-export const portalControllerMe = async ( options?: Parameters<typeof customInstance>[1]): Promise<portalControllerMeResponse> => {
+export const portalControllerMe = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<portalControllerMeResponse>(getPortalControllerMeUrl(),
+  return customInstance<void>(getPortalControllerMeUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const portalControllerMe = async ( options?: Parameters<typeof customInst
 
 
 
-export const getPortalControllerMeMutationKey = () => ['portalControllerMe'] as const;
-
-export const getPortalControllerMeMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerMe>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof portalControllerMe>>, TError,void, TContext> => {
-
-const mutationKey = getPortalControllerMeMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof portalControllerMe>>, void> = () => {
-
-
-          return  portalControllerMe(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PortalControllerMeMutationResult = NonNullable<Awaited<ReturnType<typeof portalControllerMe>>>
-
-    export type PortalControllerMeMutationError = unknown
-
-
-    export const usePortalControllerMe = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerMe>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof portalControllerMe>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getPortalControllerMeMutationOptions(options), queryClient);
+export const getPortalControllerMeQueryKey = () => {
+    return [
+    `/portal/me`
+    ] as const;
     }
-    export type portalControllerAppointmentsResponse200 = {
-  data: void
-  status: 200
+
+
+export const getPortalControllerMeQueryOptions = <TData = Awaited<ReturnType<typeof portalControllerMe>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPortalControllerMeQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof portalControllerMe>>> = ({ signal }) => portalControllerMe({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof portalControllerMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type portalControllerAppointmentsResponseSuccess = (portalControllerAppointmentsResponse200) & {
-  headers: Headers;
-};
-;
+export type PortalControllerMeQueryResult = NonNullable<Awaited<ReturnType<typeof portalControllerMe>>>
+export type PortalControllerMeQueryError = unknown
 
-export type portalControllerAppointmentsResponse = (portalControllerAppointmentsResponseSuccess)
+
+export function usePortalControllerMe<TData = Awaited<ReturnType<typeof portalControllerMe>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerMe>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof portalControllerMe>>,
+          TError,
+          Awaited<ReturnType<typeof portalControllerMe>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalControllerMe<TData = Awaited<ReturnType<typeof portalControllerMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerMe>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof portalControllerMe>>,
+          TError,
+          Awaited<ReturnType<typeof portalControllerMe>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalControllerMe<TData = Awaited<ReturnType<typeof portalControllerMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalControllerMe<TData = Awaited<ReturnType<typeof portalControllerMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPortalControllerMeQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getPortalControllerAppointmentsUrl = () => {
 
@@ -145,9 +147,9 @@ export const getPortalControllerAppointmentsUrl = () => {
   return `/portal/appointments`
 }
 
-export const portalControllerAppointments = async ( options?: Parameters<typeof customInstance>[1]): Promise<portalControllerAppointmentsResponse> => {
+export const portalControllerAppointments = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<portalControllerAppointmentsResponse>(getPortalControllerAppointmentsUrl(),
+  return customInstance<void>(getPortalControllerAppointmentsUrl(),
   {
     ...options,
     method: 'GET'
@@ -160,61 +162,75 @@ export const portalControllerAppointments = async ( options?: Parameters<typeof 
 
 
 
-export const getPortalControllerAppointmentsMutationKey = () => ['portalControllerAppointments'] as const;
-
-export const getPortalControllerAppointmentsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerAppointments>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof portalControllerAppointments>>, TError,void, TContext> => {
-
-const mutationKey = getPortalControllerAppointmentsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof portalControllerAppointments>>, void> = () => {
-
-
-          return  portalControllerAppointments(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PortalControllerAppointmentsMutationResult = NonNullable<Awaited<ReturnType<typeof portalControllerAppointments>>>
-
-    export type PortalControllerAppointmentsMutationError = unknown
-
-
-    export const usePortalControllerAppointments = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerAppointments>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof portalControllerAppointments>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getPortalControllerAppointmentsMutationOptions(options), queryClient);
+export const getPortalControllerAppointmentsQueryKey = () => {
+    return [
+    `/portal/appointments`
+    ] as const;
     }
-    export type portalControllerLogoutResponse204 = {
-  data: void
-  status: 204
+
+
+export const getPortalControllerAppointmentsQueryOptions = <TData = Awaited<ReturnType<typeof portalControllerAppointments>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerAppointments>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPortalControllerAppointmentsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof portalControllerAppointments>>> = ({ signal }) => portalControllerAppointments({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof portalControllerAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type portalControllerLogoutResponseSuccess = (portalControllerLogoutResponse204) & {
-  headers: Headers;
-};
-;
+export type PortalControllerAppointmentsQueryResult = NonNullable<Awaited<ReturnType<typeof portalControllerAppointments>>>
+export type PortalControllerAppointmentsQueryError = unknown
 
-export type portalControllerLogoutResponse = (portalControllerLogoutResponseSuccess)
+
+export function usePortalControllerAppointments<TData = Awaited<ReturnType<typeof portalControllerAppointments>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerAppointments>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof portalControllerAppointments>>,
+          TError,
+          Awaited<ReturnType<typeof portalControllerAppointments>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalControllerAppointments<TData = Awaited<ReturnType<typeof portalControllerAppointments>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerAppointments>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof portalControllerAppointments>>,
+          TError,
+          Awaited<ReturnType<typeof portalControllerAppointments>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalControllerAppointments<TData = Awaited<ReturnType<typeof portalControllerAppointments>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerAppointments>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalControllerAppointments<TData = Awaited<ReturnType<typeof portalControllerAppointments>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerAppointments>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPortalControllerAppointmentsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getPortalControllerLogoutUrl = () => {
 
@@ -224,9 +240,9 @@ export const getPortalControllerLogoutUrl = () => {
   return `/portal/logout`
 }
 
-export const portalControllerLogout = async ( options?: Parameters<typeof customInstance>[1]): Promise<portalControllerLogoutResponse> => {
+export const portalControllerLogout = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<portalControllerLogoutResponse>(getPortalControllerLogoutUrl(),
+  return customInstance<void>(getPortalControllerLogoutUrl(),
   {
     ...options,
     method: 'POST'
@@ -239,89 +255,51 @@ export const portalControllerLogout = async ( options?: Parameters<typeof custom
 
 
 
-export const getPortalControllerLogoutQueryKey = () => {
-    return [
-    'POST', `/portal/logout`
-    ] as const;
+export const getPortalControllerLogoutMutationKey = () => ['portalControllerLogout'] as const;
+
+export const getPortalControllerLogoutMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerLogout>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof portalControllerLogout>>, TError,void, TContext> => {
+
+const mutationKey = getPortalControllerLogoutMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof portalControllerLogout>>, void> = () => {
+
+
+          return  portalControllerLogout(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PortalControllerLogoutMutationResult = NonNullable<Awaited<ReturnType<typeof portalControllerLogout>>>
+
+    export type PortalControllerLogoutMutationError = unknown
+
+
+    export const usePortalControllerLogout = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerLogout>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof portalControllerLogout>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getPortalControllerLogoutMutationOptions(options), queryClient);
     }
-
-
-export const getPortalControllerLogoutQueryOptions = <TData = Awaited<ReturnType<typeof portalControllerLogout>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerLogout>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPortalControllerLogoutQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof portalControllerLogout>>> = ({ signal }) => portalControllerLogout({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof portalControllerLogout>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PortalControllerLogoutQueryResult = NonNullable<Awaited<ReturnType<typeof portalControllerLogout>>>
-export type PortalControllerLogoutQueryError = unknown
-
-
-export function usePortalControllerLogout<TData = Awaited<ReturnType<typeof portalControllerLogout>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerLogout>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof portalControllerLogout>>,
-          TError,
-          Awaited<ReturnType<typeof portalControllerLogout>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalControllerLogout<TData = Awaited<ReturnType<typeof portalControllerLogout>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerLogout>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof portalControllerLogout>>,
-          TError,
-          Awaited<ReturnType<typeof portalControllerLogout>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalControllerLogout<TData = Awaited<ReturnType<typeof portalControllerLogout>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerLogout>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalControllerLogout<TData = Awaited<ReturnType<typeof portalControllerLogout>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerLogout>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPortalControllerLogoutQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type portalControllerPageResponse200 = {
-  data: void
-  status: 200
-}
-
-export type portalControllerPageResponseSuccess = (portalControllerPageResponse200) & {
-  headers: Headers;
-};
-;
-
-export type portalControllerPageResponse = (portalControllerPageResponseSuccess)
-
-export const getPortalControllerPageUrl = (key: string,) => {
+    export const getPortalControllerPageUrl = (key: string,) => {
 
 
 
@@ -329,9 +307,9 @@ export const getPortalControllerPageUrl = (key: string,) => {
   return `/portal/${key}`
 }
 
-export const portalControllerPage = async (key: string, options?: Parameters<typeof customInstance>[1]): Promise<portalControllerPageResponse> => {
+export const portalControllerPage = async (key: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<portalControllerPageResponse>(getPortalControllerPageUrl(key),
+  return customInstance<void>(getPortalControllerPageUrl(key),
   {
     ...options,
     method: 'GET'
@@ -344,61 +322,75 @@ export const portalControllerPage = async (key: string, options?: Parameters<typ
 
 
 
-export const getPortalControllerPageMutationKey = () => ['portalControllerPage'] as const;
-
-export const getPortalControllerPageMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerPage>>, TError,PortalControllerPageMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof portalControllerPage>>, TError,PortalControllerPageMutationVariables, TContext> => {
-
-const mutationKey = getPortalControllerPageMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof portalControllerPage>>, PortalControllerPageMutationVariables> = (props) => {
-          const {key} = props ?? {};
-
-          return  portalControllerPage(key,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PortalControllerPageMutationResult = NonNullable<Awaited<ReturnType<typeof portalControllerPage>>>
-
-    export type PortalControllerPageMutationError = unknown
-    export type PortalControllerPageMutationVariables = {key: string}
-
-    export const usePortalControllerPage = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerPage>>, TError,PortalControllerPageMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof portalControllerPage>>,
-        TError,
-        PortalControllerPageMutationVariables,
-        TContext
-      > => {
-      return useMutation(getPortalControllerPageMutationOptions(options), queryClient);
+export const getPortalControllerPageQueryKey = (key: string,) => {
+    return [
+    `/portal/${key}`
+    ] as const;
     }
-    export type portalControllerCodeResponse202 = {
-  data: void
-  status: 202
+
+
+export const getPortalControllerPageQueryOptions = <TData = Awaited<ReturnType<typeof portalControllerPage>>, TError = unknown>(key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerPage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPortalControllerPageQueryKey(key);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof portalControllerPage>>> = ({ signal }) => portalControllerPage(key, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: key !== null && key !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof portalControllerPage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type portalControllerCodeResponseSuccess = (portalControllerCodeResponse202) & {
-  headers: Headers;
-};
-;
+export type PortalControllerPageQueryResult = NonNullable<Awaited<ReturnType<typeof portalControllerPage>>>
+export type PortalControllerPageQueryError = unknown
 
-export type portalControllerCodeResponse = (portalControllerCodeResponseSuccess)
+
+export function usePortalControllerPage<TData = Awaited<ReturnType<typeof portalControllerPage>>, TError = unknown>(
+ key: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerPage>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof portalControllerPage>>,
+          TError,
+          Awaited<ReturnType<typeof portalControllerPage>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalControllerPage<TData = Awaited<ReturnType<typeof portalControllerPage>>, TError = unknown>(
+ key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerPage>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof portalControllerPage>>,
+          TError,
+          Awaited<ReturnType<typeof portalControllerPage>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalControllerPage<TData = Awaited<ReturnType<typeof portalControllerPage>>, TError = unknown>(
+ key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerPage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalControllerPage<TData = Awaited<ReturnType<typeof portalControllerPage>>, TError = unknown>(
+ key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerPage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPortalControllerPageQueryOptions(key,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getPortalControllerCodeUrl = (key: string,) => {
 
@@ -408,9 +400,9 @@ export const getPortalControllerCodeUrl = (key: string,) => {
   return `/portal/${key}/code`
 }
 
-export const portalControllerCode = async (key: string, options?: Parameters<typeof customInstance>[1]): Promise<portalControllerCodeResponse> => {
+export const portalControllerCode = async (key: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<portalControllerCodeResponse>(getPortalControllerCodeUrl(key),
+  return customInstance<void>(getPortalControllerCodeUrl(key),
   {
     ...options,
     method: 'POST'
@@ -423,89 +415,51 @@ export const portalControllerCode = async (key: string, options?: Parameters<typ
 
 
 
-export const getPortalControllerCodeQueryKey = (key: string,) => {
-    return [
-    'POST', `/portal/${key}/code`
-    ] as const;
+export const getPortalControllerCodeMutationKey = () => ['portalControllerCode'] as const;
+
+export const getPortalControllerCodeMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerCode>>, TError,PortalControllerCodeMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof portalControllerCode>>, TError,PortalControllerCodeMutationVariables, TContext> => {
+
+const mutationKey = getPortalControllerCodeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof portalControllerCode>>, PortalControllerCodeMutationVariables> = (props) => {
+          const {key} = props ?? {};
+
+          return  portalControllerCode(key,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PortalControllerCodeMutationResult = NonNullable<Awaited<ReturnType<typeof portalControllerCode>>>
+
+    export type PortalControllerCodeMutationError = unknown
+    export type PortalControllerCodeMutationVariables = {key: string}
+
+    export const usePortalControllerCode = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerCode>>, TError,PortalControllerCodeMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof portalControllerCode>>,
+        TError,
+        PortalControllerCodeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPortalControllerCodeMutationOptions(options), queryClient);
     }
-
-
-export const getPortalControllerCodeQueryOptions = <TData = Awaited<ReturnType<typeof portalControllerCode>>, TError = unknown>(key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerCode>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPortalControllerCodeQueryKey(key);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof portalControllerCode>>> = ({ signal }) => portalControllerCode(key, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: key !== null && key !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof portalControllerCode>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PortalControllerCodeQueryResult = NonNullable<Awaited<ReturnType<typeof portalControllerCode>>>
-export type PortalControllerCodeQueryError = unknown
-
-
-export function usePortalControllerCode<TData = Awaited<ReturnType<typeof portalControllerCode>>, TError = unknown>(
- key: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerCode>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof portalControllerCode>>,
-          TError,
-          Awaited<ReturnType<typeof portalControllerCode>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalControllerCode<TData = Awaited<ReturnType<typeof portalControllerCode>>, TError = unknown>(
- key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerCode>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof portalControllerCode>>,
-          TError,
-          Awaited<ReturnType<typeof portalControllerCode>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalControllerCode<TData = Awaited<ReturnType<typeof portalControllerCode>>, TError = unknown>(
- key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerCode>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalControllerCode<TData = Awaited<ReturnType<typeof portalControllerCode>>, TError = unknown>(
- key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerCode>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPortalControllerCodeQueryOptions(key,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type portalControllerVerifyResponse200 = {
-  data: void
-  status: 200
-}
-
-export type portalControllerVerifyResponseSuccess = (portalControllerVerifyResponse200) & {
-  headers: Headers;
-};
-;
-
-export type portalControllerVerifyResponse = (portalControllerVerifyResponseSuccess)
-
-export const getPortalControllerVerifyUrl = (key: string,) => {
+    export const getPortalControllerVerifyUrl = (key: string,) => {
 
 
 
@@ -513,9 +467,9 @@ export const getPortalControllerVerifyUrl = (key: string,) => {
   return `/portal/${key}/verify`
 }
 
-export const portalControllerVerify = async (key: string, options?: Parameters<typeof customInstance>[1]): Promise<portalControllerVerifyResponse> => {
+export const portalControllerVerify = async (key: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<portalControllerVerifyResponse>(getPortalControllerVerifyUrl(key),
+  return customInstance<void>(getPortalControllerVerifyUrl(key),
   {
     ...options,
     method: 'POST'
@@ -528,73 +482,47 @@ export const portalControllerVerify = async (key: string, options?: Parameters<t
 
 
 
-export const getPortalControllerVerifyQueryKey = (key: string,) => {
-    return [
-    'POST', `/portal/${key}/verify`
-    ] as const;
+export const getPortalControllerVerifyMutationKey = () => ['portalControllerVerify'] as const;
+
+export const getPortalControllerVerifyMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerVerify>>, TError,PortalControllerVerifyMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof portalControllerVerify>>, TError,PortalControllerVerifyMutationVariables, TContext> => {
+
+const mutationKey = getPortalControllerVerifyMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof portalControllerVerify>>, PortalControllerVerifyMutationVariables> = (props) => {
+          const {key} = props ?? {};
+
+          return  portalControllerVerify(key,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PortalControllerVerifyMutationResult = NonNullable<Awaited<ReturnType<typeof portalControllerVerify>>>
+
+    export type PortalControllerVerifyMutationError = unknown
+    export type PortalControllerVerifyMutationVariables = {key: string}
+
+    export const usePortalControllerVerify = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalControllerVerify>>, TError,PortalControllerVerifyMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof portalControllerVerify>>,
+        TError,
+        PortalControllerVerifyMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPortalControllerVerifyMutationOptions(options), queryClient);
     }
-
-
-export const getPortalControllerVerifyQueryOptions = <TData = Awaited<ReturnType<typeof portalControllerVerify>>, TError = unknown>(key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerVerify>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPortalControllerVerifyQueryKey(key);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof portalControllerVerify>>> = ({ signal }) => portalControllerVerify(key, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: key !== null && key !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof portalControllerVerify>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PortalControllerVerifyQueryResult = NonNullable<Awaited<ReturnType<typeof portalControllerVerify>>>
-export type PortalControllerVerifyQueryError = unknown
-
-
-export function usePortalControllerVerify<TData = Awaited<ReturnType<typeof portalControllerVerify>>, TError = unknown>(
- key: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerVerify>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof portalControllerVerify>>,
-          TError,
-          Awaited<ReturnType<typeof portalControllerVerify>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalControllerVerify<TData = Awaited<ReturnType<typeof portalControllerVerify>>, TError = unknown>(
- key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerVerify>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof portalControllerVerify>>,
-          TError,
-          Awaited<ReturnType<typeof portalControllerVerify>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalControllerVerify<TData = Awaited<ReturnType<typeof portalControllerVerify>>, TError = unknown>(
- key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerVerify>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalControllerVerify<TData = Awaited<ReturnType<typeof portalControllerVerify>>, TError = unknown>(
- key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalControllerVerify>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPortalControllerVerifyQueryOptions(key,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

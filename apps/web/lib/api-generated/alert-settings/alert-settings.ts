@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type alertSettingsControllerGetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type alertSettingsControllerGetResponseSuccess = (alertSettingsControllerGetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type alertSettingsControllerGetResponse = (alertSettingsControllerGetResponseSuccess)
-
 export const getAlertSettingsControllerGetUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getAlertSettingsControllerGetUrl = () => {
   return `/me/alert-settings`
 }
 
-export const alertSettingsControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<alertSettingsControllerGetResponse> => {
+export const alertSettingsControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<alertSettingsControllerGetResponse>(getAlertSettingsControllerGetUrl(),
+  return customInstance<void>(getAlertSettingsControllerGetUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const alertSettingsControllerGet = async ( options?: Parameters<typeof cu
 
 
 
-export const getAlertSettingsControllerGetMutationKey = () => ['alertSettingsControllerGet'] as const;
-
-export const getAlertSettingsControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError,void, TContext> => {
-
-const mutationKey = getAlertSettingsControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof alertSettingsControllerGet>>, void> = () => {
-
-
-          return  alertSettingsControllerGet(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AlertSettingsControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof alertSettingsControllerGet>>>
-
-    export type AlertSettingsControllerGetMutationError = unknown
-
-
-    export const useAlertSettingsControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof alertSettingsControllerGet>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAlertSettingsControllerGetMutationOptions(options), queryClient);
+export const getAlertSettingsControllerGetQueryKey = () => {
+    return [
+    `/me/alert-settings`
+    ] as const;
     }
-    export type alertSettingsControllerPutResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAlertSettingsControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAlertSettingsControllerGetQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof alertSettingsControllerGet>>> = ({ signal }) => alertSettingsControllerGet({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type alertSettingsControllerPutResponseSuccess = (alertSettingsControllerPutResponse200) & {
-  headers: Headers;
-};
-;
+export type AlertSettingsControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof alertSettingsControllerGet>>>
+export type AlertSettingsControllerGetQueryError = unknown
 
-export type alertSettingsControllerPutResponse = (alertSettingsControllerPutResponseSuccess)
+
+export function useAlertSettingsControllerGet<TData = Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof alertSettingsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof alertSettingsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAlertSettingsControllerGet<TData = Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof alertSettingsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof alertSettingsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAlertSettingsControllerGet<TData = Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAlertSettingsControllerGet<TData = Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAlertSettingsControllerGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAlertSettingsControllerPutUrl = () => {
 
@@ -145,9 +147,9 @@ export const getAlertSettingsControllerPutUrl = () => {
   return `/me/alert-settings`
 }
 
-export const alertSettingsControllerPut = async ( options?: Parameters<typeof customInstance>[1]): Promise<alertSettingsControllerPutResponse> => {
+export const alertSettingsControllerPut = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<alertSettingsControllerPutResponse>(getAlertSettingsControllerPutUrl(),
+  return customInstance<void>(getAlertSettingsControllerPutUrl(),
   {
     ...options,
     method: 'PUT'
@@ -160,73 +162,47 @@ export const alertSettingsControllerPut = async ( options?: Parameters<typeof cu
 
 
 
-export const getAlertSettingsControllerPutQueryKey = () => {
-    return [
-    'PUT', `/me/alert-settings`
-    ] as const;
+export const getAlertSettingsControllerPutMutationKey = () => ['alertSettingsControllerPut'] as const;
+
+export const getAlertSettingsControllerPutMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError,void, TContext> => {
+
+const mutationKey = getAlertSettingsControllerPutMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof alertSettingsControllerPut>>, void> = () => {
+
+
+          return  alertSettingsControllerPut(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AlertSettingsControllerPutMutationResult = NonNullable<Awaited<ReturnType<typeof alertSettingsControllerPut>>>
+
+    export type AlertSettingsControllerPutMutationError = unknown
+
+
+    export const useAlertSettingsControllerPut = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof alertSettingsControllerPut>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAlertSettingsControllerPutMutationOptions(options), queryClient);
     }
-
-
-export const getAlertSettingsControllerPutQueryOptions = <TData = Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAlertSettingsControllerPutQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof alertSettingsControllerPut>>> = ({ signal }) => alertSettingsControllerPut({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AlertSettingsControllerPutQueryResult = NonNullable<Awaited<ReturnType<typeof alertSettingsControllerPut>>>
-export type AlertSettingsControllerPutQueryError = unknown
-
-
-export function useAlertSettingsControllerPut<TData = Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof alertSettingsControllerPut>>,
-          TError,
-          Awaited<ReturnType<typeof alertSettingsControllerPut>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAlertSettingsControllerPut<TData = Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof alertSettingsControllerPut>>,
-          TError,
-          Awaited<ReturnType<typeof alertSettingsControllerPut>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAlertSettingsControllerPut<TData = Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAlertSettingsControllerPut<TData = Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof alertSettingsControllerPut>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAlertSettingsControllerPutQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

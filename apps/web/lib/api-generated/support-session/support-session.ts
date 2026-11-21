@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type supportSessionControllerCurrentResponse200 = {
-  data: void
-  status: 200
-}
-
-export type supportSessionControllerCurrentResponseSuccess = (supportSessionControllerCurrentResponse200) & {
-  headers: Headers;
-};
-;
-
-export type supportSessionControllerCurrentResponse = (supportSessionControllerCurrentResponseSuccess)
-
 export const getSupportSessionControllerCurrentUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getSupportSessionControllerCurrentUrl = () => {
   return `/support-session`
 }
 
-export const supportSessionControllerCurrent = async ( options?: Parameters<typeof customInstance>[1]): Promise<supportSessionControllerCurrentResponse> => {
+export const supportSessionControllerCurrent = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<supportSessionControllerCurrentResponse>(getSupportSessionControllerCurrentUrl(),
+  return customInstance<void>(getSupportSessionControllerCurrentUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const supportSessionControllerCurrent = async ( options?: Parameters<type
 
 
 
-export const getSupportSessionControllerCurrentMutationKey = () => ['supportSessionControllerCurrent'] as const;
-
-export const getSupportSessionControllerCurrentMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError,void, TContext> => {
-
-const mutationKey = getSupportSessionControllerCurrentMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof supportSessionControllerCurrent>>, void> = () => {
-
-
-          return  supportSessionControllerCurrent(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type SupportSessionControllerCurrentMutationResult = NonNullable<Awaited<ReturnType<typeof supportSessionControllerCurrent>>>
-
-    export type SupportSessionControllerCurrentMutationError = unknown
-
-
-    export const useSupportSessionControllerCurrent = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof supportSessionControllerCurrent>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getSupportSessionControllerCurrentMutationOptions(options), queryClient);
+export const getSupportSessionControllerCurrentQueryKey = () => {
+    return [
+    `/support-session`
+    ] as const;
     }
-    export type supportSessionControllerEndResponse200 = {
-  data: void
-  status: 200
+
+
+export const getSupportSessionControllerCurrentQueryOptions = <TData = Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSupportSessionControllerCurrentQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof supportSessionControllerCurrent>>> = ({ signal }) => supportSessionControllerCurrent({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type supportSessionControllerEndResponseSuccess = (supportSessionControllerEndResponse200) & {
-  headers: Headers;
-};
-;
+export type SupportSessionControllerCurrentQueryResult = NonNullable<Awaited<ReturnType<typeof supportSessionControllerCurrent>>>
+export type SupportSessionControllerCurrentQueryError = unknown
 
-export type supportSessionControllerEndResponse = (supportSessionControllerEndResponseSuccess)
+
+export function useSupportSessionControllerCurrent<TData = Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof supportSessionControllerCurrent>>,
+          TError,
+          Awaited<ReturnType<typeof supportSessionControllerCurrent>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSupportSessionControllerCurrent<TData = Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof supportSessionControllerCurrent>>,
+          TError,
+          Awaited<ReturnType<typeof supportSessionControllerCurrent>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSupportSessionControllerCurrent<TData = Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSupportSessionControllerCurrent<TData = Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerCurrent>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getSupportSessionControllerCurrentQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getSupportSessionControllerEndUrl = () => {
 
@@ -145,9 +147,9 @@ export const getSupportSessionControllerEndUrl = () => {
   return `/support-session/end`
 }
 
-export const supportSessionControllerEnd = async ( options?: Parameters<typeof customInstance>[1]): Promise<supportSessionControllerEndResponse> => {
+export const supportSessionControllerEnd = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<supportSessionControllerEndResponse>(getSupportSessionControllerEndUrl(),
+  return customInstance<void>(getSupportSessionControllerEndUrl(),
   {
     ...options,
     method: 'POST'
@@ -160,89 +162,51 @@ export const supportSessionControllerEnd = async ( options?: Parameters<typeof c
 
 
 
-export const getSupportSessionControllerEndQueryKey = () => {
-    return [
-    'POST', `/support-session/end`
-    ] as const;
+export const getSupportSessionControllerEndMutationKey = () => ['supportSessionControllerEnd'] as const;
+
+export const getSupportSessionControllerEndMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError,void, TContext> => {
+
+const mutationKey = getSupportSessionControllerEndMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof supportSessionControllerEnd>>, void> = () => {
+
+
+          return  supportSessionControllerEnd(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SupportSessionControllerEndMutationResult = NonNullable<Awaited<ReturnType<typeof supportSessionControllerEnd>>>
+
+    export type SupportSessionControllerEndMutationError = unknown
+
+
+    export const useSupportSessionControllerEnd = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof supportSessionControllerEnd>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getSupportSessionControllerEndMutationOptions(options), queryClient);
     }
-
-
-export const getSupportSessionControllerEndQueryOptions = <TData = Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSupportSessionControllerEndQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof supportSessionControllerEnd>>> = ({ signal }) => supportSessionControllerEnd({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SupportSessionControllerEndQueryResult = NonNullable<Awaited<ReturnType<typeof supportSessionControllerEnd>>>
-export type SupportSessionControllerEndQueryError = unknown
-
-
-export function useSupportSessionControllerEnd<TData = Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof supportSessionControllerEnd>>,
-          TError,
-          Awaited<ReturnType<typeof supportSessionControllerEnd>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportSessionControllerEnd<TData = Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof supportSessionControllerEnd>>,
-          TError,
-          Awaited<ReturnType<typeof supportSessionControllerEnd>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportSessionControllerEnd<TData = Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportSessionControllerEnd<TData = Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerEnd>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSupportSessionControllerEndQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type supportSessionControllerGetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type supportSessionControllerGetResponseSuccess = (supportSessionControllerGetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type supportSessionControllerGetResponse = (supportSessionControllerGetResponseSuccess)
-
-export const getSupportSessionControllerGetUrl = () => {
+    export const getSupportSessionControllerGetUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getSupportSessionControllerGetUrl = () => {
   return `/support-access`
 }
 
-export const supportSessionControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<supportSessionControllerGetResponse> => {
+export const supportSessionControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<supportSessionControllerGetResponse>(getSupportSessionControllerGetUrl(),
+  return customInstance<void>(getSupportSessionControllerGetUrl(),
   {
     ...options,
     method: 'GET'
@@ -265,61 +229,75 @@ export const supportSessionControllerGet = async ( options?: Parameters<typeof c
 
 
 
-export const getSupportSessionControllerGetMutationKey = () => ['supportSessionControllerGet'] as const;
-
-export const getSupportSessionControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerGet>>, TError,void, TContext> => {
-
-const mutationKey = getSupportSessionControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof supportSessionControllerGet>>, void> = () => {
-
-
-          return  supportSessionControllerGet(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type SupportSessionControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof supportSessionControllerGet>>>
-
-    export type SupportSessionControllerGetMutationError = unknown
-
-
-    export const useSupportSessionControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof supportSessionControllerGet>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getSupportSessionControllerGetMutationOptions(options), queryClient);
+export const getSupportSessionControllerGetQueryKey = () => {
+    return [
+    `/support-access`
+    ] as const;
     }
-    export type supportSessionControllerSetResponse200 = {
-  data: void
-  status: 200
+
+
+export const getSupportSessionControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof supportSessionControllerGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSupportSessionControllerGetQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof supportSessionControllerGet>>> = ({ signal }) => supportSessionControllerGet({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type supportSessionControllerSetResponseSuccess = (supportSessionControllerSetResponse200) & {
-  headers: Headers;
-};
-;
+export type SupportSessionControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof supportSessionControllerGet>>>
+export type SupportSessionControllerGetQueryError = unknown
 
-export type supportSessionControllerSetResponse = (supportSessionControllerSetResponseSuccess)
+
+export function useSupportSessionControllerGet<TData = Awaited<ReturnType<typeof supportSessionControllerGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof supportSessionControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof supportSessionControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSupportSessionControllerGet<TData = Awaited<ReturnType<typeof supportSessionControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof supportSessionControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof supportSessionControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSupportSessionControllerGet<TData = Awaited<ReturnType<typeof supportSessionControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSupportSessionControllerGet<TData = Awaited<ReturnType<typeof supportSessionControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getSupportSessionControllerGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getSupportSessionControllerSetUrl = () => {
 
@@ -329,9 +307,9 @@ export const getSupportSessionControllerSetUrl = () => {
   return `/support-access`
 }
 
-export const supportSessionControllerSet = async ( options?: Parameters<typeof customInstance>[1]): Promise<supportSessionControllerSetResponse> => {
+export const supportSessionControllerSet = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<supportSessionControllerSetResponse>(getSupportSessionControllerSetUrl(),
+  return customInstance<void>(getSupportSessionControllerSetUrl(),
   {
     ...options,
     method: 'PUT'
@@ -344,73 +322,47 @@ export const supportSessionControllerSet = async ( options?: Parameters<typeof c
 
 
 
-export const getSupportSessionControllerSetQueryKey = () => {
-    return [
-    'PUT', `/support-access`
-    ] as const;
+export const getSupportSessionControllerSetMutationKey = () => ['supportSessionControllerSet'] as const;
+
+export const getSupportSessionControllerSetMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerSet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerSet>>, TError,void, TContext> => {
+
+const mutationKey = getSupportSessionControllerSetMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof supportSessionControllerSet>>, void> = () => {
+
+
+          return  supportSessionControllerSet(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SupportSessionControllerSetMutationResult = NonNullable<Awaited<ReturnType<typeof supportSessionControllerSet>>>
+
+    export type SupportSessionControllerSetMutationError = unknown
+
+
+    export const useSupportSessionControllerSet = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportSessionControllerSet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof supportSessionControllerSet>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getSupportSessionControllerSetMutationOptions(options), queryClient);
     }
-
-
-export const getSupportSessionControllerSetQueryOptions = <TData = Awaited<ReturnType<typeof supportSessionControllerSet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerSet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSupportSessionControllerSetQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof supportSessionControllerSet>>> = ({ signal }) => supportSessionControllerSet({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerSet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SupportSessionControllerSetQueryResult = NonNullable<Awaited<ReturnType<typeof supportSessionControllerSet>>>
-export type SupportSessionControllerSetQueryError = unknown
-
-
-export function useSupportSessionControllerSet<TData = Awaited<ReturnType<typeof supportSessionControllerSet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerSet>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof supportSessionControllerSet>>,
-          TError,
-          Awaited<ReturnType<typeof supportSessionControllerSet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportSessionControllerSet<TData = Awaited<ReturnType<typeof supportSessionControllerSet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerSet>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof supportSessionControllerSet>>,
-          TError,
-          Awaited<ReturnType<typeof supportSessionControllerSet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportSessionControllerSet<TData = Awaited<ReturnType<typeof supportSessionControllerSet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerSet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportSessionControllerSet<TData = Awaited<ReturnType<typeof supportSessionControllerSet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportSessionControllerSet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSupportSessionControllerSetQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

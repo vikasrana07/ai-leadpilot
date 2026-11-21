@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type billingControllerSummaryResponse200 = {
-  data: void
-  status: 200
-}
-
-export type billingControllerSummaryResponseSuccess = (billingControllerSummaryResponse200) & {
-  headers: Headers;
-};
-;
-
-export type billingControllerSummaryResponse = (billingControllerSummaryResponseSuccess)
-
 export const getBillingControllerSummaryUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getBillingControllerSummaryUrl = () => {
   return `/billing/summary`
 }
 
-export const billingControllerSummary = async ( options?: Parameters<typeof customInstance>[1]): Promise<billingControllerSummaryResponse> => {
+export const billingControllerSummary = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<billingControllerSummaryResponse>(getBillingControllerSummaryUrl(),
+  return customInstance<void>(getBillingControllerSummaryUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const billingControllerSummary = async ( options?: Parameters<typeof cust
 
 
 
-export const getBillingControllerSummaryMutationKey = () => ['billingControllerSummary'] as const;
-
-export const getBillingControllerSummaryMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerSummary>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof billingControllerSummary>>, TError,void, TContext> => {
-
-const mutationKey = getBillingControllerSummaryMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingControllerSummary>>, void> = () => {
-
-
-          return  billingControllerSummary(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type BillingControllerSummaryMutationResult = NonNullable<Awaited<ReturnType<typeof billingControllerSummary>>>
-
-    export type BillingControllerSummaryMutationError = unknown
-
-
-    export const useBillingControllerSummary = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerSummary>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof billingControllerSummary>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getBillingControllerSummaryMutationOptions(options), queryClient);
+export const getBillingControllerSummaryQueryKey = () => {
+    return [
+    `/billing/summary`
+    ] as const;
     }
-    export type billingControllerPlansResponse200 = {
-  data: void
-  status: 200
+
+
+export const getBillingControllerSummaryQueryOptions = <TData = Awaited<ReturnType<typeof billingControllerSummary>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSummary>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBillingControllerSummaryQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof billingControllerSummary>>> = ({ signal }) => billingControllerSummary({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof billingControllerSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type billingControllerPlansResponseSuccess = (billingControllerPlansResponse200) & {
-  headers: Headers;
-};
-;
+export type BillingControllerSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof billingControllerSummary>>>
+export type BillingControllerSummaryQueryError = unknown
 
-export type billingControllerPlansResponse = (billingControllerPlansResponseSuccess)
+
+export function useBillingControllerSummary<TData = Awaited<ReturnType<typeof billingControllerSummary>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSummary>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof billingControllerSummary>>,
+          TError,
+          Awaited<ReturnType<typeof billingControllerSummary>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerSummary<TData = Awaited<ReturnType<typeof billingControllerSummary>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSummary>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof billingControllerSummary>>,
+          TError,
+          Awaited<ReturnType<typeof billingControllerSummary>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerSummary<TData = Awaited<ReturnType<typeof billingControllerSummary>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSummary>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerSummary<TData = Awaited<ReturnType<typeof billingControllerSummary>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSummary>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBillingControllerSummaryQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getBillingControllerPlansUrl = () => {
 
@@ -145,9 +147,9 @@ export const getBillingControllerPlansUrl = () => {
   return `/billing/plans`
 }
 
-export const billingControllerPlans = async ( options?: Parameters<typeof customInstance>[1]): Promise<billingControllerPlansResponse> => {
+export const billingControllerPlans = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<billingControllerPlansResponse>(getBillingControllerPlansUrl(),
+  return customInstance<void>(getBillingControllerPlansUrl(),
   {
     ...options,
     method: 'GET'
@@ -160,61 +162,75 @@ export const billingControllerPlans = async ( options?: Parameters<typeof custom
 
 
 
-export const getBillingControllerPlansMutationKey = () => ['billingControllerPlans'] as const;
-
-export const getBillingControllerPlansMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerPlans>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof billingControllerPlans>>, TError,void, TContext> => {
-
-const mutationKey = getBillingControllerPlansMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingControllerPlans>>, void> = () => {
-
-
-          return  billingControllerPlans(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type BillingControllerPlansMutationResult = NonNullable<Awaited<ReturnType<typeof billingControllerPlans>>>
-
-    export type BillingControllerPlansMutationError = unknown
-
-
-    export const useBillingControllerPlans = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerPlans>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof billingControllerPlans>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getBillingControllerPlansMutationOptions(options), queryClient);
+export const getBillingControllerPlansQueryKey = () => {
+    return [
+    `/billing/plans`
+    ] as const;
     }
-    export type billingControllerProfileResponse200 = {
-  data: void
-  status: 200
+
+
+export const getBillingControllerPlansQueryOptions = <TData = Awaited<ReturnType<typeof billingControllerPlans>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerPlans>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBillingControllerPlansQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof billingControllerPlans>>> = ({ signal }) => billingControllerPlans({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof billingControllerPlans>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type billingControllerProfileResponseSuccess = (billingControllerProfileResponse200) & {
-  headers: Headers;
-};
-;
+export type BillingControllerPlansQueryResult = NonNullable<Awaited<ReturnType<typeof billingControllerPlans>>>
+export type BillingControllerPlansQueryError = unknown
 
-export type billingControllerProfileResponse = (billingControllerProfileResponseSuccess)
+
+export function useBillingControllerPlans<TData = Awaited<ReturnType<typeof billingControllerPlans>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerPlans>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof billingControllerPlans>>,
+          TError,
+          Awaited<ReturnType<typeof billingControllerPlans>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerPlans<TData = Awaited<ReturnType<typeof billingControllerPlans>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerPlans>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof billingControllerPlans>>,
+          TError,
+          Awaited<ReturnType<typeof billingControllerPlans>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerPlans<TData = Awaited<ReturnType<typeof billingControllerPlans>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerPlans>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerPlans<TData = Awaited<ReturnType<typeof billingControllerPlans>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerPlans>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBillingControllerPlansQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getBillingControllerProfileUrl = () => {
 
@@ -224,9 +240,9 @@ export const getBillingControllerProfileUrl = () => {
   return `/billing/profile`
 }
 
-export const billingControllerProfile = async ( options?: Parameters<typeof customInstance>[1]): Promise<billingControllerProfileResponse> => {
+export const billingControllerProfile = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<billingControllerProfileResponse>(getBillingControllerProfileUrl(),
+  return customInstance<void>(getBillingControllerProfileUrl(),
   {
     ...options,
     method: 'GET'
@@ -239,61 +255,75 @@ export const billingControllerProfile = async ( options?: Parameters<typeof cust
 
 
 
-export const getBillingControllerProfileMutationKey = () => ['billingControllerProfile'] as const;
-
-export const getBillingControllerProfileMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerProfile>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof billingControllerProfile>>, TError,void, TContext> => {
-
-const mutationKey = getBillingControllerProfileMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingControllerProfile>>, void> = () => {
-
-
-          return  billingControllerProfile(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type BillingControllerProfileMutationResult = NonNullable<Awaited<ReturnType<typeof billingControllerProfile>>>
-
-    export type BillingControllerProfileMutationError = unknown
-
-
-    export const useBillingControllerProfile = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerProfile>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof billingControllerProfile>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getBillingControllerProfileMutationOptions(options), queryClient);
+export const getBillingControllerProfileQueryKey = () => {
+    return [
+    `/billing/profile`
+    ] as const;
     }
-    export type billingControllerSaveProfileResponse200 = {
-  data: void
-  status: 200
+
+
+export const getBillingControllerProfileQueryOptions = <TData = Awaited<ReturnType<typeof billingControllerProfile>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerProfile>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBillingControllerProfileQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof billingControllerProfile>>> = ({ signal }) => billingControllerProfile({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof billingControllerProfile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type billingControllerSaveProfileResponseSuccess = (billingControllerSaveProfileResponse200) & {
-  headers: Headers;
-};
-;
+export type BillingControllerProfileQueryResult = NonNullable<Awaited<ReturnType<typeof billingControllerProfile>>>
+export type BillingControllerProfileQueryError = unknown
 
-export type billingControllerSaveProfileResponse = (billingControllerSaveProfileResponseSuccess)
+
+export function useBillingControllerProfile<TData = Awaited<ReturnType<typeof billingControllerProfile>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerProfile>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof billingControllerProfile>>,
+          TError,
+          Awaited<ReturnType<typeof billingControllerProfile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerProfile<TData = Awaited<ReturnType<typeof billingControllerProfile>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerProfile>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof billingControllerProfile>>,
+          TError,
+          Awaited<ReturnType<typeof billingControllerProfile>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerProfile<TData = Awaited<ReturnType<typeof billingControllerProfile>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerProfile>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerProfile<TData = Awaited<ReturnType<typeof billingControllerProfile>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerProfile>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBillingControllerProfileQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getBillingControllerSaveProfileUrl = () => {
 
@@ -303,9 +333,9 @@ export const getBillingControllerSaveProfileUrl = () => {
   return `/billing/profile`
 }
 
-export const billingControllerSaveProfile = async ( options?: Parameters<typeof customInstance>[1]): Promise<billingControllerSaveProfileResponse> => {
+export const billingControllerSaveProfile = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<billingControllerSaveProfileResponse>(getBillingControllerSaveProfileUrl(),
+  return customInstance<void>(getBillingControllerSaveProfileUrl(),
   {
     ...options,
     method: 'PUT'
@@ -318,89 +348,51 @@ export const billingControllerSaveProfile = async ( options?: Parameters<typeof 
 
 
 
-export const getBillingControllerSaveProfileQueryKey = () => {
-    return [
-    'PUT', `/billing/profile`
-    ] as const;
+export const getBillingControllerSaveProfileMutationKey = () => ['billingControllerSaveProfile'] as const;
+
+export const getBillingControllerSaveProfileMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError,void, TContext> => {
+
+const mutationKey = getBillingControllerSaveProfileMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingControllerSaveProfile>>, void> = () => {
+
+
+          return  billingControllerSaveProfile(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BillingControllerSaveProfileMutationResult = NonNullable<Awaited<ReturnType<typeof billingControllerSaveProfile>>>
+
+    export type BillingControllerSaveProfileMutationError = unknown
+
+
+    export const useBillingControllerSaveProfile = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof billingControllerSaveProfile>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getBillingControllerSaveProfileMutationOptions(options), queryClient);
     }
-
-
-export const getBillingControllerSaveProfileQueryOptions = <TData = Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getBillingControllerSaveProfileQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof billingControllerSaveProfile>>> = ({ signal }) => billingControllerSaveProfile({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type BillingControllerSaveProfileQueryResult = NonNullable<Awaited<ReturnType<typeof billingControllerSaveProfile>>>
-export type BillingControllerSaveProfileQueryError = unknown
-
-
-export function useBillingControllerSaveProfile<TData = Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof billingControllerSaveProfile>>,
-          TError,
-          Awaited<ReturnType<typeof billingControllerSaveProfile>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerSaveProfile<TData = Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof billingControllerSaveProfile>>,
-          TError,
-          Awaited<ReturnType<typeof billingControllerSaveProfile>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerSaveProfile<TData = Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerSaveProfile<TData = Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSaveProfile>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getBillingControllerSaveProfileQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type billingControllerSubscribeResponse200 = {
-  data: void
-  status: 200
-}
-
-export type billingControllerSubscribeResponseSuccess = (billingControllerSubscribeResponse200) & {
-  headers: Headers;
-};
-;
-
-export type billingControllerSubscribeResponse = (billingControllerSubscribeResponseSuccess)
-
-export const getBillingControllerSubscribeUrl = () => {
+    export const getBillingControllerSubscribeUrl = () => {
 
 
 
@@ -408,9 +400,9 @@ export const getBillingControllerSubscribeUrl = () => {
   return `/billing/subscribe`
 }
 
-export const billingControllerSubscribe = async ( options?: Parameters<typeof customInstance>[1]): Promise<billingControllerSubscribeResponse> => {
+export const billingControllerSubscribe = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<billingControllerSubscribeResponse>(getBillingControllerSubscribeUrl(),
+  return customInstance<void>(getBillingControllerSubscribeUrl(),
   {
     ...options,
     method: 'POST'
@@ -423,89 +415,51 @@ export const billingControllerSubscribe = async ( options?: Parameters<typeof cu
 
 
 
-export const getBillingControllerSubscribeQueryKey = () => {
-    return [
-    'POST', `/billing/subscribe`
-    ] as const;
+export const getBillingControllerSubscribeMutationKey = () => ['billingControllerSubscribe'] as const;
+
+export const getBillingControllerSubscribeMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerSubscribe>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof billingControllerSubscribe>>, TError,void, TContext> => {
+
+const mutationKey = getBillingControllerSubscribeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingControllerSubscribe>>, void> = () => {
+
+
+          return  billingControllerSubscribe(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BillingControllerSubscribeMutationResult = NonNullable<Awaited<ReturnType<typeof billingControllerSubscribe>>>
+
+    export type BillingControllerSubscribeMutationError = unknown
+
+
+    export const useBillingControllerSubscribe = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerSubscribe>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof billingControllerSubscribe>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getBillingControllerSubscribeMutationOptions(options), queryClient);
     }
-
-
-export const getBillingControllerSubscribeQueryOptions = <TData = Awaited<ReturnType<typeof billingControllerSubscribe>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSubscribe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getBillingControllerSubscribeQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof billingControllerSubscribe>>> = ({ signal }) => billingControllerSubscribe({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof billingControllerSubscribe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type BillingControllerSubscribeQueryResult = NonNullable<Awaited<ReturnType<typeof billingControllerSubscribe>>>
-export type BillingControllerSubscribeQueryError = unknown
-
-
-export function useBillingControllerSubscribe<TData = Awaited<ReturnType<typeof billingControllerSubscribe>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSubscribe>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof billingControllerSubscribe>>,
-          TError,
-          Awaited<ReturnType<typeof billingControllerSubscribe>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerSubscribe<TData = Awaited<ReturnType<typeof billingControllerSubscribe>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSubscribe>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof billingControllerSubscribe>>,
-          TError,
-          Awaited<ReturnType<typeof billingControllerSubscribe>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerSubscribe<TData = Awaited<ReturnType<typeof billingControllerSubscribe>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSubscribe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerSubscribe<TData = Awaited<ReturnType<typeof billingControllerSubscribe>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSubscribe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getBillingControllerSubscribeQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type billingControllerChangeResponse200 = {
-  data: void
-  status: 200
-}
-
-export type billingControllerChangeResponseSuccess = (billingControllerChangeResponse200) & {
-  headers: Headers;
-};
-;
-
-export type billingControllerChangeResponse = (billingControllerChangeResponseSuccess)
-
-export const getBillingControllerChangeUrl = () => {
+    export const getBillingControllerChangeUrl = () => {
 
 
 
@@ -513,9 +467,9 @@ export const getBillingControllerChangeUrl = () => {
   return `/billing/change-plan`
 }
 
-export const billingControllerChange = async ( options?: Parameters<typeof customInstance>[1]): Promise<billingControllerChangeResponse> => {
+export const billingControllerChange = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<billingControllerChangeResponse>(getBillingControllerChangeUrl(),
+  return customInstance<void>(getBillingControllerChangeUrl(),
   {
     ...options,
     method: 'POST'
@@ -528,89 +482,51 @@ export const billingControllerChange = async ( options?: Parameters<typeof custo
 
 
 
-export const getBillingControllerChangeQueryKey = () => {
-    return [
-    'POST', `/billing/change-plan`
-    ] as const;
+export const getBillingControllerChangeMutationKey = () => ['billingControllerChange'] as const;
+
+export const getBillingControllerChangeMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerChange>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof billingControllerChange>>, TError,void, TContext> => {
+
+const mutationKey = getBillingControllerChangeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingControllerChange>>, void> = () => {
+
+
+          return  billingControllerChange(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BillingControllerChangeMutationResult = NonNullable<Awaited<ReturnType<typeof billingControllerChange>>>
+
+    export type BillingControllerChangeMutationError = unknown
+
+
+    export const useBillingControllerChange = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerChange>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof billingControllerChange>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getBillingControllerChangeMutationOptions(options), queryClient);
     }
-
-
-export const getBillingControllerChangeQueryOptions = <TData = Awaited<ReturnType<typeof billingControllerChange>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerChange>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getBillingControllerChangeQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof billingControllerChange>>> = ({ signal }) => billingControllerChange({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof billingControllerChange>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type BillingControllerChangeQueryResult = NonNullable<Awaited<ReturnType<typeof billingControllerChange>>>
-export type BillingControllerChangeQueryError = unknown
-
-
-export function useBillingControllerChange<TData = Awaited<ReturnType<typeof billingControllerChange>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerChange>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof billingControllerChange>>,
-          TError,
-          Awaited<ReturnType<typeof billingControllerChange>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerChange<TData = Awaited<ReturnType<typeof billingControllerChange>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerChange>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof billingControllerChange>>,
-          TError,
-          Awaited<ReturnType<typeof billingControllerChange>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerChange<TData = Awaited<ReturnType<typeof billingControllerChange>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerChange>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerChange<TData = Awaited<ReturnType<typeof billingControllerChange>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerChange>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getBillingControllerChangeQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type billingControllerCancelResponse200 = {
-  data: void
-  status: 200
-}
-
-export type billingControllerCancelResponseSuccess = (billingControllerCancelResponse200) & {
-  headers: Headers;
-};
-;
-
-export type billingControllerCancelResponse = (billingControllerCancelResponseSuccess)
-
-export const getBillingControllerCancelUrl = () => {
+    export const getBillingControllerCancelUrl = () => {
 
 
 
@@ -618,9 +534,9 @@ export const getBillingControllerCancelUrl = () => {
   return `/billing/cancel`
 }
 
-export const billingControllerCancel = async ( options?: Parameters<typeof customInstance>[1]): Promise<billingControllerCancelResponse> => {
+export const billingControllerCancel = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<billingControllerCancelResponse>(getBillingControllerCancelUrl(),
+  return customInstance<void>(getBillingControllerCancelUrl(),
   {
     ...options,
     method: 'POST'
@@ -633,89 +549,51 @@ export const billingControllerCancel = async ( options?: Parameters<typeof custo
 
 
 
-export const getBillingControllerCancelQueryKey = () => {
-    return [
-    'POST', `/billing/cancel`
-    ] as const;
+export const getBillingControllerCancelMutationKey = () => ['billingControllerCancel'] as const;
+
+export const getBillingControllerCancelMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerCancel>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof billingControllerCancel>>, TError,void, TContext> => {
+
+const mutationKey = getBillingControllerCancelMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingControllerCancel>>, void> = () => {
+
+
+          return  billingControllerCancel(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BillingControllerCancelMutationResult = NonNullable<Awaited<ReturnType<typeof billingControllerCancel>>>
+
+    export type BillingControllerCancelMutationError = unknown
+
+
+    export const useBillingControllerCancel = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerCancel>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof billingControllerCancel>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getBillingControllerCancelMutationOptions(options), queryClient);
     }
-
-
-export const getBillingControllerCancelQueryOptions = <TData = Awaited<ReturnType<typeof billingControllerCancel>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getBillingControllerCancelQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof billingControllerCancel>>> = ({ signal }) => billingControllerCancel({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof billingControllerCancel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type BillingControllerCancelQueryResult = NonNullable<Awaited<ReturnType<typeof billingControllerCancel>>>
-export type BillingControllerCancelQueryError = unknown
-
-
-export function useBillingControllerCancel<TData = Awaited<ReturnType<typeof billingControllerCancel>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerCancel>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof billingControllerCancel>>,
-          TError,
-          Awaited<ReturnType<typeof billingControllerCancel>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerCancel<TData = Awaited<ReturnType<typeof billingControllerCancel>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerCancel>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof billingControllerCancel>>,
-          TError,
-          Awaited<ReturnType<typeof billingControllerCancel>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerCancel<TData = Awaited<ReturnType<typeof billingControllerCancel>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerCancel<TData = Awaited<ReturnType<typeof billingControllerCancel>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getBillingControllerCancelQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type billingControllerInvoicesResponse200 = {
-  data: void
-  status: 200
-}
-
-export type billingControllerInvoicesResponseSuccess = (billingControllerInvoicesResponse200) & {
-  headers: Headers;
-};
-;
-
-export type billingControllerInvoicesResponse = (billingControllerInvoicesResponseSuccess)
-
-export const getBillingControllerInvoicesUrl = () => {
+    export const getBillingControllerInvoicesUrl = () => {
 
 
 
@@ -723,9 +601,9 @@ export const getBillingControllerInvoicesUrl = () => {
   return `/billing/invoices`
 }
 
-export const billingControllerInvoices = async ( options?: Parameters<typeof customInstance>[1]): Promise<billingControllerInvoicesResponse> => {
+export const billingControllerInvoices = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<billingControllerInvoicesResponse>(getBillingControllerInvoicesUrl(),
+  return customInstance<void>(getBillingControllerInvoicesUrl(),
   {
     ...options,
     method: 'GET'
@@ -738,61 +616,75 @@ export const billingControllerInvoices = async ( options?: Parameters<typeof cus
 
 
 
-export const getBillingControllerInvoicesMutationKey = () => ['billingControllerInvoices'] as const;
-
-export const getBillingControllerInvoicesMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerInvoices>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof billingControllerInvoices>>, TError,void, TContext> => {
-
-const mutationKey = getBillingControllerInvoicesMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingControllerInvoices>>, void> = () => {
-
-
-          return  billingControllerInvoices(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type BillingControllerInvoicesMutationResult = NonNullable<Awaited<ReturnType<typeof billingControllerInvoices>>>
-
-    export type BillingControllerInvoicesMutationError = unknown
-
-
-    export const useBillingControllerInvoices = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerInvoices>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof billingControllerInvoices>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getBillingControllerInvoicesMutationOptions(options), queryClient);
+export const getBillingControllerInvoicesQueryKey = () => {
+    return [
+    `/billing/invoices`
+    ] as const;
     }
-    export type billingControllerInvoiceResponse200 = {
-  data: void
-  status: 200
+
+
+export const getBillingControllerInvoicesQueryOptions = <TData = Awaited<ReturnType<typeof billingControllerInvoices>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoices>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBillingControllerInvoicesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof billingControllerInvoices>>> = ({ signal }) => billingControllerInvoices({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type billingControllerInvoiceResponseSuccess = (billingControllerInvoiceResponse200) & {
-  headers: Headers;
-};
-;
+export type BillingControllerInvoicesQueryResult = NonNullable<Awaited<ReturnType<typeof billingControllerInvoices>>>
+export type BillingControllerInvoicesQueryError = unknown
 
-export type billingControllerInvoiceResponse = (billingControllerInvoiceResponseSuccess)
+
+export function useBillingControllerInvoices<TData = Awaited<ReturnType<typeof billingControllerInvoices>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoices>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof billingControllerInvoices>>,
+          TError,
+          Awaited<ReturnType<typeof billingControllerInvoices>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerInvoices<TData = Awaited<ReturnType<typeof billingControllerInvoices>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoices>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof billingControllerInvoices>>,
+          TError,
+          Awaited<ReturnType<typeof billingControllerInvoices>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerInvoices<TData = Awaited<ReturnType<typeof billingControllerInvoices>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoices>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerInvoices<TData = Awaited<ReturnType<typeof billingControllerInvoices>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoices>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBillingControllerInvoicesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getBillingControllerInvoiceUrl = (id: string,) => {
 
@@ -802,9 +694,9 @@ export const getBillingControllerInvoiceUrl = (id: string,) => {
   return `/billing/invoices/${id}`
 }
 
-export const billingControllerInvoice = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<billingControllerInvoiceResponse> => {
+export const billingControllerInvoice = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<billingControllerInvoiceResponse>(getBillingControllerInvoiceUrl(id),
+  return customInstance<void>(getBillingControllerInvoiceUrl(id),
   {
     ...options,
     method: 'GET'
@@ -817,61 +709,75 @@ export const billingControllerInvoice = async (id: string, options?: Parameters<
 
 
 
-export const getBillingControllerInvoiceMutationKey = () => ['billingControllerInvoice'] as const;
-
-export const getBillingControllerInvoiceMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerInvoice>>, TError,BillingControllerInvoiceMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof billingControllerInvoice>>, TError,BillingControllerInvoiceMutationVariables, TContext> => {
-
-const mutationKey = getBillingControllerInvoiceMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingControllerInvoice>>, BillingControllerInvoiceMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  billingControllerInvoice(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type BillingControllerInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof billingControllerInvoice>>>
-
-    export type BillingControllerInvoiceMutationError = unknown
-    export type BillingControllerInvoiceMutationVariables = {id: string}
-
-    export const useBillingControllerInvoice = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerInvoice>>, TError,BillingControllerInvoiceMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof billingControllerInvoice>>,
-        TError,
-        BillingControllerInvoiceMutationVariables,
-        TContext
-      > => {
-      return useMutation(getBillingControllerInvoiceMutationOptions(options), queryClient);
+export const getBillingControllerInvoiceQueryKey = (id: string,) => {
+    return [
+    `/billing/invoices/${id}`
+    ] as const;
     }
-    export type billingControllerSimulateResponse200 = {
-  data: void
-  status: 200
+
+
+export const getBillingControllerInvoiceQueryOptions = <TData = Awaited<ReturnType<typeof billingControllerInvoice>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoice>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBillingControllerInvoiceQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof billingControllerInvoice>>> = ({ signal }) => billingControllerInvoice(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoice>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type billingControllerSimulateResponseSuccess = (billingControllerSimulateResponse200) & {
-  headers: Headers;
-};
-;
+export type BillingControllerInvoiceQueryResult = NonNullable<Awaited<ReturnType<typeof billingControllerInvoice>>>
+export type BillingControllerInvoiceQueryError = unknown
 
-export type billingControllerSimulateResponse = (billingControllerSimulateResponseSuccess)
+
+export function useBillingControllerInvoice<TData = Awaited<ReturnType<typeof billingControllerInvoice>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoice>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof billingControllerInvoice>>,
+          TError,
+          Awaited<ReturnType<typeof billingControllerInvoice>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerInvoice<TData = Awaited<ReturnType<typeof billingControllerInvoice>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoice>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof billingControllerInvoice>>,
+          TError,
+          Awaited<ReturnType<typeof billingControllerInvoice>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerInvoice<TData = Awaited<ReturnType<typeof billingControllerInvoice>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoice>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBillingControllerInvoice<TData = Awaited<ReturnType<typeof billingControllerInvoice>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerInvoice>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBillingControllerInvoiceQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getBillingControllerSimulateUrl = () => {
 
@@ -881,9 +787,9 @@ export const getBillingControllerSimulateUrl = () => {
   return `/billing/mock/simulate`
 }
 
-export const billingControllerSimulate = async ( options?: Parameters<typeof customInstance>[1]): Promise<billingControllerSimulateResponse> => {
+export const billingControllerSimulate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<billingControllerSimulateResponse>(getBillingControllerSimulateUrl(),
+  return customInstance<void>(getBillingControllerSimulateUrl(),
   {
     ...options,
     method: 'POST'
@@ -896,73 +802,47 @@ export const billingControllerSimulate = async ( options?: Parameters<typeof cus
 
 
 
-export const getBillingControllerSimulateQueryKey = () => {
-    return [
-    'POST', `/billing/mock/simulate`
-    ] as const;
+export const getBillingControllerSimulateMutationKey = () => ['billingControllerSimulate'] as const;
+
+export const getBillingControllerSimulateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerSimulate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof billingControllerSimulate>>, TError,void, TContext> => {
+
+const mutationKey = getBillingControllerSimulateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingControllerSimulate>>, void> = () => {
+
+
+          return  billingControllerSimulate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BillingControllerSimulateMutationResult = NonNullable<Awaited<ReturnType<typeof billingControllerSimulate>>>
+
+    export type BillingControllerSimulateMutationError = unknown
+
+
+    export const useBillingControllerSimulate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingControllerSimulate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof billingControllerSimulate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getBillingControllerSimulateMutationOptions(options), queryClient);
     }
-
-
-export const getBillingControllerSimulateQueryOptions = <TData = Awaited<ReturnType<typeof billingControllerSimulate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSimulate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getBillingControllerSimulateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof billingControllerSimulate>>> = ({ signal }) => billingControllerSimulate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof billingControllerSimulate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type BillingControllerSimulateQueryResult = NonNullable<Awaited<ReturnType<typeof billingControllerSimulate>>>
-export type BillingControllerSimulateQueryError = unknown
-
-
-export function useBillingControllerSimulate<TData = Awaited<ReturnType<typeof billingControllerSimulate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSimulate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof billingControllerSimulate>>,
-          TError,
-          Awaited<ReturnType<typeof billingControllerSimulate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerSimulate<TData = Awaited<ReturnType<typeof billingControllerSimulate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSimulate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof billingControllerSimulate>>,
-          TError,
-          Awaited<ReturnType<typeof billingControllerSimulate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerSimulate<TData = Awaited<ReturnType<typeof billingControllerSimulate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSimulate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBillingControllerSimulate<TData = Awaited<ReturnType<typeof billingControllerSimulate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof billingControllerSimulate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getBillingControllerSimulateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

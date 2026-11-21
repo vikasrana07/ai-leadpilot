@@ -6,13 +6,18 @@
  * OpenAPI spec version: 1.0
  */
 import {
-  useMutation
+  useQuery
 } from '@tanstack/react-query';
 import type {
-  MutationFunction,
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   QueryClient,
-  UseMutationOptions,
-  UseMutationResult
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import { customInstance } from '../../custom-instance';
@@ -22,17 +27,20 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-export type platformDeletionControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type platformDeletionControllerListResponseSuccess = (platformDeletionControllerListResponse200) & {
-  headers: Headers;
+const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+  const result = { queryKey } as T & { queryKey: K };
+  for (const key of Object.keys(query)) {
+    // The explicit queryKey always wins, matching the previous
+    // `{ ...query, queryKey }` spread where it was set last.
+    if (key === 'queryKey') continue;
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      configurable: true,
+      get: () => (query as Record<string, unknown>)[key],
+    });
+  }
+  return result;
 };
-;
-
-export type platformDeletionControllerListResponse = (platformDeletionControllerListResponseSuccess)
 
 export const getPlatformDeletionControllerListUrl = () => {
 
@@ -42,9 +50,9 @@ export const getPlatformDeletionControllerListUrl = () => {
   return `/platform/deletion-requests`
 }
 
-export const platformDeletionControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<platformDeletionControllerListResponse> => {
+export const platformDeletionControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<platformDeletionControllerListResponse>(getPlatformDeletionControllerListUrl(),
+  return customInstance<void>(getPlatformDeletionControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -57,47 +65,73 @@ export const platformDeletionControllerList = async ( options?: Parameters<typeo
 
 
 
-export const getPlatformDeletionControllerListMutationKey = () => ['platformDeletionControllerList'] as const;
-
-export const getPlatformDeletionControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof platformDeletionControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof platformDeletionControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getPlatformDeletionControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof platformDeletionControllerList>>, void> = () => {
-
-
-          return  platformDeletionControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PlatformDeletionControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof platformDeletionControllerList>>>
-
-    export type PlatformDeletionControllerListMutationError = unknown
-
-
-    export const usePlatformDeletionControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof platformDeletionControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof platformDeletionControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getPlatformDeletionControllerListMutationOptions(options), queryClient);
+export const getPlatformDeletionControllerListQueryKey = () => {
+    return [
+    `/platform/deletion-requests`
+    ] as const;
     }
+
+
+export const getPlatformDeletionControllerListQueryOptions = <TData = Awaited<ReturnType<typeof platformDeletionControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformDeletionControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPlatformDeletionControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof platformDeletionControllerList>>> = ({ signal }) => platformDeletionControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof platformDeletionControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlatformDeletionControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof platformDeletionControllerList>>>
+export type PlatformDeletionControllerListQueryError = unknown
+
+
+export function usePlatformDeletionControllerList<TData = Awaited<ReturnType<typeof platformDeletionControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformDeletionControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof platformDeletionControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof platformDeletionControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlatformDeletionControllerList<TData = Awaited<ReturnType<typeof platformDeletionControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformDeletionControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof platformDeletionControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof platformDeletionControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlatformDeletionControllerList<TData = Awaited<ReturnType<typeof platformDeletionControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformDeletionControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlatformDeletionControllerList<TData = Awaited<ReturnType<typeof platformDeletionControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof platformDeletionControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPlatformDeletionControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type mfaControllerStatusResponse200 = {
-  data: void
-  status: 200
-}
-
-export type mfaControllerStatusResponseSuccess = (mfaControllerStatusResponse200) & {
-  headers: Headers;
-};
-;
-
-export type mfaControllerStatusResponse = (mfaControllerStatusResponseSuccess)
-
 export const getMfaControllerStatusUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getMfaControllerStatusUrl = () => {
   return `/security/mfa`
 }
 
-export const mfaControllerStatus = async ( options?: Parameters<typeof customInstance>[1]): Promise<mfaControllerStatusResponse> => {
+export const mfaControllerStatus = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<mfaControllerStatusResponse>(getMfaControllerStatusUrl(),
+  return customInstance<void>(getMfaControllerStatusUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const mfaControllerStatus = async ( options?: Parameters<typeof customIns
 
 
 
-export const getMfaControllerStatusMutationKey = () => ['mfaControllerStatus'] as const;
-
-export const getMfaControllerStatusMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mfaControllerStatus>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof mfaControllerStatus>>, TError,void, TContext> => {
-
-const mutationKey = getMfaControllerStatusMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof mfaControllerStatus>>, void> = () => {
-
-
-          return  mfaControllerStatus(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type MfaControllerStatusMutationResult = NonNullable<Awaited<ReturnType<typeof mfaControllerStatus>>>
-
-    export type MfaControllerStatusMutationError = unknown
-
-
-    export const useMfaControllerStatus = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mfaControllerStatus>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof mfaControllerStatus>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getMfaControllerStatusMutationOptions(options), queryClient);
+export const getMfaControllerStatusQueryKey = () => {
+    return [
+    `/security/mfa`
+    ] as const;
     }
-    export type mfaControllerEnrollResponse200 = {
-  data: void
-  status: 200
+
+
+export const getMfaControllerStatusQueryOptions = <TData = Awaited<ReturnType<typeof mfaControllerStatus>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getMfaControllerStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof mfaControllerStatus>>> = ({ signal }) => mfaControllerStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof mfaControllerStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type mfaControllerEnrollResponseSuccess = (mfaControllerEnrollResponse200) & {
-  headers: Headers;
-};
-;
+export type MfaControllerStatusQueryResult = NonNullable<Awaited<ReturnType<typeof mfaControllerStatus>>>
+export type MfaControllerStatusQueryError = unknown
 
-export type mfaControllerEnrollResponse = (mfaControllerEnrollResponseSuccess)
+
+export function useMfaControllerStatus<TData = Awaited<ReturnType<typeof mfaControllerStatus>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerStatus>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof mfaControllerStatus>>,
+          TError,
+          Awaited<ReturnType<typeof mfaControllerStatus>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useMfaControllerStatus<TData = Awaited<ReturnType<typeof mfaControllerStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerStatus>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof mfaControllerStatus>>,
+          TError,
+          Awaited<ReturnType<typeof mfaControllerStatus>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useMfaControllerStatus<TData = Awaited<ReturnType<typeof mfaControllerStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useMfaControllerStatus<TData = Awaited<ReturnType<typeof mfaControllerStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getMfaControllerStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getMfaControllerEnrollUrl = () => {
 
@@ -145,9 +147,9 @@ export const getMfaControllerEnrollUrl = () => {
   return `/security/mfa/enroll`
 }
 
-export const mfaControllerEnroll = async ( options?: Parameters<typeof customInstance>[1]): Promise<mfaControllerEnrollResponse> => {
+export const mfaControllerEnroll = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<mfaControllerEnrollResponse>(getMfaControllerEnrollUrl(),
+  return customInstance<void>(getMfaControllerEnrollUrl(),
   {
     ...options,
     method: 'POST'
@@ -160,89 +162,51 @@ export const mfaControllerEnroll = async ( options?: Parameters<typeof customIns
 
 
 
-export const getMfaControllerEnrollQueryKey = () => {
-    return [
-    'POST', `/security/mfa/enroll`
-    ] as const;
+export const getMfaControllerEnrollMutationKey = () => ['mfaControllerEnroll'] as const;
+
+export const getMfaControllerEnrollMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mfaControllerEnroll>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof mfaControllerEnroll>>, TError,void, TContext> => {
+
+const mutationKey = getMfaControllerEnrollMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof mfaControllerEnroll>>, void> = () => {
+
+
+          return  mfaControllerEnroll(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MfaControllerEnrollMutationResult = NonNullable<Awaited<ReturnType<typeof mfaControllerEnroll>>>
+
+    export type MfaControllerEnrollMutationError = unknown
+
+
+    export const useMfaControllerEnroll = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mfaControllerEnroll>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof mfaControllerEnroll>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getMfaControllerEnrollMutationOptions(options), queryClient);
     }
-
-
-export const getMfaControllerEnrollQueryOptions = <TData = Awaited<ReturnType<typeof mfaControllerEnroll>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerEnroll>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getMfaControllerEnrollQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof mfaControllerEnroll>>> = ({ signal }) => mfaControllerEnroll({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof mfaControllerEnroll>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type MfaControllerEnrollQueryResult = NonNullable<Awaited<ReturnType<typeof mfaControllerEnroll>>>
-export type MfaControllerEnrollQueryError = unknown
-
-
-export function useMfaControllerEnroll<TData = Awaited<ReturnType<typeof mfaControllerEnroll>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerEnroll>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof mfaControllerEnroll>>,
-          TError,
-          Awaited<ReturnType<typeof mfaControllerEnroll>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerEnroll<TData = Awaited<ReturnType<typeof mfaControllerEnroll>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerEnroll>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof mfaControllerEnroll>>,
-          TError,
-          Awaited<ReturnType<typeof mfaControllerEnroll>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerEnroll<TData = Awaited<ReturnType<typeof mfaControllerEnroll>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerEnroll>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerEnroll<TData = Awaited<ReturnType<typeof mfaControllerEnroll>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerEnroll>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getMfaControllerEnrollQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type mfaControllerConfirmResponse200 = {
-  data: void
-  status: 200
-}
-
-export type mfaControllerConfirmResponseSuccess = (mfaControllerConfirmResponse200) & {
-  headers: Headers;
-};
-;
-
-export type mfaControllerConfirmResponse = (mfaControllerConfirmResponseSuccess)
-
-export const getMfaControllerConfirmUrl = () => {
+    export const getMfaControllerConfirmUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getMfaControllerConfirmUrl = () => {
   return `/security/mfa/confirm`
 }
 
-export const mfaControllerConfirm = async ( options?: Parameters<typeof customInstance>[1]): Promise<mfaControllerConfirmResponse> => {
+export const mfaControllerConfirm = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<mfaControllerConfirmResponse>(getMfaControllerConfirmUrl(),
+  return customInstance<void>(getMfaControllerConfirmUrl(),
   {
     ...options,
     method: 'POST'
@@ -265,89 +229,51 @@ export const mfaControllerConfirm = async ( options?: Parameters<typeof customIn
 
 
 
-export const getMfaControllerConfirmQueryKey = () => {
-    return [
-    'POST', `/security/mfa/confirm`
-    ] as const;
+export const getMfaControllerConfirmMutationKey = () => ['mfaControllerConfirm'] as const;
+
+export const getMfaControllerConfirmMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mfaControllerConfirm>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof mfaControllerConfirm>>, TError,void, TContext> => {
+
+const mutationKey = getMfaControllerConfirmMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof mfaControllerConfirm>>, void> = () => {
+
+
+          return  mfaControllerConfirm(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MfaControllerConfirmMutationResult = NonNullable<Awaited<ReturnType<typeof mfaControllerConfirm>>>
+
+    export type MfaControllerConfirmMutationError = unknown
+
+
+    export const useMfaControllerConfirm = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mfaControllerConfirm>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof mfaControllerConfirm>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getMfaControllerConfirmMutationOptions(options), queryClient);
     }
-
-
-export const getMfaControllerConfirmQueryOptions = <TData = Awaited<ReturnType<typeof mfaControllerConfirm>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerConfirm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getMfaControllerConfirmQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof mfaControllerConfirm>>> = ({ signal }) => mfaControllerConfirm({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof mfaControllerConfirm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type MfaControllerConfirmQueryResult = NonNullable<Awaited<ReturnType<typeof mfaControllerConfirm>>>
-export type MfaControllerConfirmQueryError = unknown
-
-
-export function useMfaControllerConfirm<TData = Awaited<ReturnType<typeof mfaControllerConfirm>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerConfirm>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof mfaControllerConfirm>>,
-          TError,
-          Awaited<ReturnType<typeof mfaControllerConfirm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerConfirm<TData = Awaited<ReturnType<typeof mfaControllerConfirm>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerConfirm>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof mfaControllerConfirm>>,
-          TError,
-          Awaited<ReturnType<typeof mfaControllerConfirm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerConfirm<TData = Awaited<ReturnType<typeof mfaControllerConfirm>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerConfirm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerConfirm<TData = Awaited<ReturnType<typeof mfaControllerConfirm>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerConfirm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getMfaControllerConfirmQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type mfaControllerRegenerateResponse200 = {
-  data: void
-  status: 200
-}
-
-export type mfaControllerRegenerateResponseSuccess = (mfaControllerRegenerateResponse200) & {
-  headers: Headers;
-};
-;
-
-export type mfaControllerRegenerateResponse = (mfaControllerRegenerateResponseSuccess)
-
-export const getMfaControllerRegenerateUrl = () => {
+    export const getMfaControllerRegenerateUrl = () => {
 
 
 
@@ -355,9 +281,9 @@ export const getMfaControllerRegenerateUrl = () => {
   return `/security/mfa/recovery-codes`
 }
 
-export const mfaControllerRegenerate = async ( options?: Parameters<typeof customInstance>[1]): Promise<mfaControllerRegenerateResponse> => {
+export const mfaControllerRegenerate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<mfaControllerRegenerateResponse>(getMfaControllerRegenerateUrl(),
+  return customInstance<void>(getMfaControllerRegenerateUrl(),
   {
     ...options,
     method: 'POST'
@@ -370,89 +296,51 @@ export const mfaControllerRegenerate = async ( options?: Parameters<typeof custo
 
 
 
-export const getMfaControllerRegenerateQueryKey = () => {
-    return [
-    'POST', `/security/mfa/recovery-codes`
-    ] as const;
+export const getMfaControllerRegenerateMutationKey = () => ['mfaControllerRegenerate'] as const;
+
+export const getMfaControllerRegenerateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError,void, TContext> => {
+
+const mutationKey = getMfaControllerRegenerateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof mfaControllerRegenerate>>, void> = () => {
+
+
+          return  mfaControllerRegenerate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MfaControllerRegenerateMutationResult = NonNullable<Awaited<ReturnType<typeof mfaControllerRegenerate>>>
+
+    export type MfaControllerRegenerateMutationError = unknown
+
+
+    export const useMfaControllerRegenerate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof mfaControllerRegenerate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getMfaControllerRegenerateMutationOptions(options), queryClient);
     }
-
-
-export const getMfaControllerRegenerateQueryOptions = <TData = Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getMfaControllerRegenerateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof mfaControllerRegenerate>>> = ({ signal }) => mfaControllerRegenerate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type MfaControllerRegenerateQueryResult = NonNullable<Awaited<ReturnType<typeof mfaControllerRegenerate>>>
-export type MfaControllerRegenerateQueryError = unknown
-
-
-export function useMfaControllerRegenerate<TData = Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof mfaControllerRegenerate>>,
-          TError,
-          Awaited<ReturnType<typeof mfaControllerRegenerate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerRegenerate<TData = Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof mfaControllerRegenerate>>,
-          TError,
-          Awaited<ReturnType<typeof mfaControllerRegenerate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerRegenerate<TData = Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerRegenerate<TData = Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerRegenerate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getMfaControllerRegenerateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type mfaControllerDisableResponse204 = {
-  data: void
-  status: 204
-}
-
-export type mfaControllerDisableResponseSuccess = (mfaControllerDisableResponse204) & {
-  headers: Headers;
-};
-;
-
-export type mfaControllerDisableResponse = (mfaControllerDisableResponseSuccess)
-
-export const getMfaControllerDisableUrl = () => {
+    export const getMfaControllerDisableUrl = () => {
 
 
 
@@ -460,9 +348,9 @@ export const getMfaControllerDisableUrl = () => {
   return `/security/mfa/disable`
 }
 
-export const mfaControllerDisable = async ( options?: Parameters<typeof customInstance>[1]): Promise<mfaControllerDisableResponse> => {
+export const mfaControllerDisable = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<mfaControllerDisableResponse>(getMfaControllerDisableUrl(),
+  return customInstance<void>(getMfaControllerDisableUrl(),
   {
     ...options,
     method: 'POST'
@@ -475,73 +363,47 @@ export const mfaControllerDisable = async ( options?: Parameters<typeof customIn
 
 
 
-export const getMfaControllerDisableQueryKey = () => {
-    return [
-    'POST', `/security/mfa/disable`
-    ] as const;
+export const getMfaControllerDisableMutationKey = () => ['mfaControllerDisable'] as const;
+
+export const getMfaControllerDisableMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mfaControllerDisable>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof mfaControllerDisable>>, TError,void, TContext> => {
+
+const mutationKey = getMfaControllerDisableMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof mfaControllerDisable>>, void> = () => {
+
+
+          return  mfaControllerDisable(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MfaControllerDisableMutationResult = NonNullable<Awaited<ReturnType<typeof mfaControllerDisable>>>
+
+    export type MfaControllerDisableMutationError = unknown
+
+
+    export const useMfaControllerDisable = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mfaControllerDisable>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof mfaControllerDisable>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getMfaControllerDisableMutationOptions(options), queryClient);
     }
-
-
-export const getMfaControllerDisableQueryOptions = <TData = Awaited<ReturnType<typeof mfaControllerDisable>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerDisable>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getMfaControllerDisableQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof mfaControllerDisable>>> = ({ signal }) => mfaControllerDisable({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof mfaControllerDisable>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type MfaControllerDisableQueryResult = NonNullable<Awaited<ReturnType<typeof mfaControllerDisable>>>
-export type MfaControllerDisableQueryError = unknown
-
-
-export function useMfaControllerDisable<TData = Awaited<ReturnType<typeof mfaControllerDisable>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerDisable>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof mfaControllerDisable>>,
-          TError,
-          Awaited<ReturnType<typeof mfaControllerDisable>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerDisable<TData = Awaited<ReturnType<typeof mfaControllerDisable>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerDisable>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof mfaControllerDisable>>,
-          TError,
-          Awaited<ReturnType<typeof mfaControllerDisable>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerDisable<TData = Awaited<ReturnType<typeof mfaControllerDisable>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerDisable>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMfaControllerDisable<TData = Awaited<ReturnType<typeof mfaControllerDisable>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mfaControllerDisable>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getMfaControllerDisableQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

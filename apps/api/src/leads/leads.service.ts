@@ -124,14 +124,39 @@ export class LeadsService {
         ...(digits.length >= 3 ? [{ phoneNorm: { contains: digits } }] : []),
       ] });
     }
-    if (q.stageId) and.push({ stageId: q.stageId });
+    if (q.stageId) {
+      const ids = q.stageId.split(',').map((s) => s.trim()).filter(Boolean);
+      if (ids.length > 1) and.push({ stageId: { in: ids } });
+      else if (ids[0]) and.push({ stageId: ids[0] });
+    }
     if (q.kind) and.push({ stage: { kind: q.kind } });
-    if (q.temperature) and.push({ temperature: q.temperature });
-    if (q.sourceId) and.push({ sourceId: q.sourceId });
+    if (q.temperature) {
+      const temps = q.temperature.split(',').map((s) => s.trim()).filter(Boolean);
+      if (temps.length > 1) and.push({ temperature: { in: temps as any } });
+      else if (temps[0]) and.push({ temperature: temps[0] as any });
+    }
+    if (q.sourceId) {
+      const sources = q.sourceId.split(',').map((s) => s.trim()).filter(Boolean);
+      if (sources.length > 1) and.push({ sourceId: { in: sources } });
+      else if (sources[0]) and.push({ sourceId: sources[0] });
+    }
     if (q.tagId) and.push({ tags: { some: { tagId: q.tagId } } });
-    if (q.assigned === 'unassigned') and.push({ assignedMembershipId: null });
-    else if (q.assigned === 'me') and.push({ assignedMembershipId: a.membershipId ?? '00000000-0000-0000-0000-000000000000' });
-    else if (q.assigned) and.push({ assignedMembershipId: q.assigned });
+    if (q.assigned) {
+      const assignedList = q.assigned.split(',').map((s) => s.trim()).filter(Boolean);
+      if (assignedList.length > 0) {
+        const conditions: Prisma.LeadWhereInput[] = [];
+        for (const item of assignedList) {
+          if (item === 'unassigned') conditions.push({ assignedMembershipId: null });
+          else if (item === 'me') conditions.push({ assignedMembershipId: a.membershipId ?? '00000000-0000-0000-0000-000000000000' });
+          else conditions.push({ assignedMembershipId: item });
+        }
+        if (conditions.length === 1 && conditions[0]) {
+          and.push(conditions[0]);
+        } else if (conditions.length > 1) {
+          and.push({ OR: conditions });
+        }
+      }
+    }
     if (q.createdFrom) and.push({ createdAt: { gte: new Date(q.createdFrom) } });
     if (q.createdTo) and.push({ createdAt: { lte: new Date(q.createdTo) } });
     if (q.overdue === 'true') and.push({ nextFollowUpAt: { lt: new Date() }, stage: { kind: 'OPEN' } });

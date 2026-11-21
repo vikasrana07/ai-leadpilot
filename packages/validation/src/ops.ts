@@ -152,6 +152,12 @@ export const taskUpdateSchema = z.object({
   assigneeMembershipId: z.string().uuid().nullish(),
 });
 export const taskListQuerySchema = z.object({ status: z.enum(['OPEN', 'DONE']).optional(), leadId: z.string().uuid().optional(), mine: z.enum(['true', 'false']).optional(), limit: z.coerce.number().int().min(1).max(200).default(50) });
+export const taskItemSchema = z.object({
+  id: z.string(), title: z.string(), notes: z.string().nullable(), status: z.enum(['OPEN', 'DONE']), dueAt: z.string().nullable(), overdue: z.boolean(),
+  leadId: z.string().nullable(), leadName: z.string().nullable(), assigneeMembershipId: z.string().nullable(), assigneeName: z.string().nullable(),
+  source: z.string(), createdAt: z.string(), completedAt: z.string().nullable(),
+});
+export const taskListResponseSchema = z.object({ items: z.array(taskItemSchema) });
 
 export const NOTIFICATION_TYPES = ['lead_assigned', 'hot_lead', 'handover', 'appointment_booked', 'appointment_changed', 'appointment_reminder', 'task_due', 'sla_breach', 'automation_failed', 'lead_inactive', 'billing', 'quota', 'privacy', 'integration', 'security', 'new_message'] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

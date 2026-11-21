@@ -6,13 +6,18 @@
  * OpenAPI spec version: 1.0
  */
 import {
-  useMutation
+  useQuery
 } from '@tanstack/react-query';
 import type {
-  MutationFunction,
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   QueryClient,
-  UseMutationOptions,
-  UseMutationResult
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import { customInstance } from '../../custom-instance';
@@ -22,17 +27,20 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-export type realtimeControllerStreamResponse200 = {
-  data: void
-  status: 200
-}
-
-export type realtimeControllerStreamResponseSuccess = (realtimeControllerStreamResponse200) & {
-  headers: Headers;
+const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+  const result = { queryKey } as T & { queryKey: K };
+  for (const key of Object.keys(query)) {
+    // The explicit queryKey always wins, matching the previous
+    // `{ ...query, queryKey }` spread where it was set last.
+    if (key === 'queryKey') continue;
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      configurable: true,
+      get: () => (query as Record<string, unknown>)[key],
+    });
+  }
+  return result;
 };
-;
-
-export type realtimeControllerStreamResponse = (realtimeControllerStreamResponseSuccess)
 
 export const getRealtimeControllerStreamUrl = () => {
 
@@ -42,9 +50,9 @@ export const getRealtimeControllerStreamUrl = () => {
   return `/realtime/stream`
 }
 
-export const realtimeControllerStream = async ( options?: Parameters<typeof customInstance>[1]): Promise<realtimeControllerStreamResponse> => {
+export const realtimeControllerStream = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<realtimeControllerStreamResponse>(getRealtimeControllerStreamUrl(),
+  return customInstance<void>(getRealtimeControllerStreamUrl(),
   {
     ...options,
     method: 'GET'
@@ -57,47 +65,73 @@ export const realtimeControllerStream = async ( options?: Parameters<typeof cust
 
 
 
-export const getRealtimeControllerStreamMutationKey = () => ['realtimeControllerStream'] as const;
-
-export const getRealtimeControllerStreamMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof realtimeControllerStream>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof realtimeControllerStream>>, TError,void, TContext> => {
-
-const mutationKey = getRealtimeControllerStreamMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof realtimeControllerStream>>, void> = () => {
-
-
-          return  realtimeControllerStream(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type RealtimeControllerStreamMutationResult = NonNullable<Awaited<ReturnType<typeof realtimeControllerStream>>>
-
-    export type RealtimeControllerStreamMutationError = unknown
-
-
-    export const useRealtimeControllerStream = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof realtimeControllerStream>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof realtimeControllerStream>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getRealtimeControllerStreamMutationOptions(options), queryClient);
+export const getRealtimeControllerStreamQueryKey = () => {
+    return [
+    `/realtime/stream`
+    ] as const;
     }
+
+
+export const getRealtimeControllerStreamQueryOptions = <TData = Awaited<ReturnType<typeof realtimeControllerStream>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof realtimeControllerStream>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getRealtimeControllerStreamQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof realtimeControllerStream>>> = ({ signal }) => realtimeControllerStream({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof realtimeControllerStream>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type RealtimeControllerStreamQueryResult = NonNullable<Awaited<ReturnType<typeof realtimeControllerStream>>>
+export type RealtimeControllerStreamQueryError = unknown
+
+
+export function useRealtimeControllerStream<TData = Awaited<ReturnType<typeof realtimeControllerStream>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof realtimeControllerStream>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof realtimeControllerStream>>,
+          TError,
+          Awaited<ReturnType<typeof realtimeControllerStream>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRealtimeControllerStream<TData = Awaited<ReturnType<typeof realtimeControllerStream>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof realtimeControllerStream>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof realtimeControllerStream>>,
+          TError,
+          Awaited<ReturnType<typeof realtimeControllerStream>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRealtimeControllerStream<TData = Awaited<ReturnType<typeof realtimeControllerStream>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof realtimeControllerStream>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRealtimeControllerStream<TData = Awaited<ReturnType<typeof realtimeControllerStream>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof realtimeControllerStream>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getRealtimeControllerStreamQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

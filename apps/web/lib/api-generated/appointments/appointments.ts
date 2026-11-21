@@ -50,18 +50,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type appointmentsControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type appointmentsControllerListResponseSuccess = (appointmentsControllerListResponse200) & {
-  headers: Headers;
-};
-;
-
-export type appointmentsControllerListResponse = (appointmentsControllerListResponseSuccess)
-
 export const getAppointmentsControllerListUrl = () => {
 
 
@@ -70,9 +58,9 @@ export const getAppointmentsControllerListUrl = () => {
   return `/appointments`
 }
 
-export const appointmentsControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerListResponse> => {
+export const appointmentsControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerListResponse>(getAppointmentsControllerListUrl(),
+  return customInstance<void>(getAppointmentsControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -85,61 +73,75 @@ export const appointmentsControllerList = async ( options?: Parameters<typeof cu
 
 
 
-export const getAppointmentsControllerListMutationKey = () => ['appointmentsControllerList'] as const;
-
-export const getAppointmentsControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getAppointmentsControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerList>>, void> = () => {
-
-
-          return  appointmentsControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AppointmentsControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerList>>>
-
-    export type AppointmentsControllerListMutationError = unknown
-
-
-    export const useAppointmentsControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof appointmentsControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAppointmentsControllerListMutationOptions(options), queryClient);
+export const getAppointmentsControllerListQueryKey = () => {
+    return [
+    `/appointments`
+    ] as const;
     }
-    export type appointmentsControllerCreateResponse201 = {
-  data: void
-  status: 201
+
+
+export const getAppointmentsControllerListQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerList>>> = ({ signal }) => appointmentsControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type appointmentsControllerCreateResponseSuccess = (appointmentsControllerCreateResponse201) & {
-  headers: Headers;
-};
-;
+export type AppointmentsControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerList>>>
+export type AppointmentsControllerListQueryError = unknown
 
-export type appointmentsControllerCreateResponse = (appointmentsControllerCreateResponseSuccess)
+
+export function useAppointmentsControllerList<TData = Awaited<ReturnType<typeof appointmentsControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerList<TData = Awaited<ReturnType<typeof appointmentsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerList<TData = Awaited<ReturnType<typeof appointmentsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerList<TData = Awaited<ReturnType<typeof appointmentsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAppointmentsControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAppointmentsControllerCreateUrl = () => {
 
@@ -149,9 +151,9 @@ export const getAppointmentsControllerCreateUrl = () => {
   return `/appointments`
 }
 
-export const appointmentsControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerCreateResponse> => {
+export const appointmentsControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerCreateResponse>(getAppointmentsControllerCreateUrl(),
+  return customInstance<void>(getAppointmentsControllerCreateUrl(),
   {
     ...options,
     method: 'POST'
@@ -164,89 +166,51 @@ export const appointmentsControllerCreate = async ( options?: Parameters<typeof 
 
 
 
-export const getAppointmentsControllerCreateQueryKey = () => {
-    return [
-    'POST', `/appointments`
-    ] as const;
+export const getAppointmentsControllerCreateMutationKey = () => ['appointmentsControllerCreate'] as const;
+
+export const getAppointmentsControllerCreateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError,void, TContext> => {
+
+const mutationKey = getAppointmentsControllerCreateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerCreate>>, void> = () => {
+
+
+          return  appointmentsControllerCreate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppointmentsControllerCreateMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerCreate>>>
+
+    export type AppointmentsControllerCreateMutationError = unknown
+
+
+    export const useAppointmentsControllerCreate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof appointmentsControllerCreate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAppointmentsControllerCreateMutationOptions(options), queryClient);
     }
-
-
-export const getAppointmentsControllerCreateQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerCreateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerCreate>>> = ({ signal }) => appointmentsControllerCreate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AppointmentsControllerCreateQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerCreate>>>
-export type AppointmentsControllerCreateQueryError = unknown
-
-
-export function useAppointmentsControllerCreate<TData = Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerCreate<TData = Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerCreate<TData = Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerCreate<TData = Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAppointmentsControllerCreateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type appointmentsControllerSlotsResponse200 = {
-  data: void
-  status: 200
-}
-
-export type appointmentsControllerSlotsResponseSuccess = (appointmentsControllerSlotsResponse200) & {
-  headers: Headers;
-};
-;
-
-export type appointmentsControllerSlotsResponse = (appointmentsControllerSlotsResponseSuccess)
-
-export const getAppointmentsControllerSlotsUrl = () => {
+    export const getAppointmentsControllerSlotsUrl = () => {
 
 
 
@@ -254,9 +218,9 @@ export const getAppointmentsControllerSlotsUrl = () => {
   return `/appointments/slots`
 }
 
-export const appointmentsControllerSlots = async ( options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerSlotsResponse> => {
+export const appointmentsControllerSlots = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerSlotsResponse>(getAppointmentsControllerSlotsUrl(),
+  return customInstance<void>(getAppointmentsControllerSlotsUrl(),
   {
     ...options,
     method: 'GET'
@@ -269,61 +233,75 @@ export const appointmentsControllerSlots = async ( options?: Parameters<typeof c
 
 
 
-export const getAppointmentsControllerSlotsMutationKey = () => ['appointmentsControllerSlots'] as const;
-
-export const getAppointmentsControllerSlotsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError,void, TContext> => {
-
-const mutationKey = getAppointmentsControllerSlotsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerSlots>>, void> = () => {
-
-
-          return  appointmentsControllerSlots(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AppointmentsControllerSlotsMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerSlots>>>
-
-    export type AppointmentsControllerSlotsMutationError = unknown
-
-
-    export const useAppointmentsControllerSlots = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof appointmentsControllerSlots>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAppointmentsControllerSlotsMutationOptions(options), queryClient);
+export const getAppointmentsControllerSlotsQueryKey = () => {
+    return [
+    `/appointments/slots`
+    ] as const;
     }
-    export type appointmentsControllerAvailabilityResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAppointmentsControllerSlotsQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerSlotsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerSlots>>> = ({ signal }) => appointmentsControllerSlots({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type appointmentsControllerAvailabilityResponseSuccess = (appointmentsControllerAvailabilityResponse200) & {
-  headers: Headers;
-};
-;
+export type AppointmentsControllerSlotsQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerSlots>>>
+export type AppointmentsControllerSlotsQueryError = unknown
 
-export type appointmentsControllerAvailabilityResponse = (appointmentsControllerAvailabilityResponseSuccess)
+
+export function useAppointmentsControllerSlots<TData = Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentsControllerSlots>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentsControllerSlots>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerSlots<TData = Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentsControllerSlots>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentsControllerSlots>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerSlots<TData = Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerSlots<TData = Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerSlots>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAppointmentsControllerSlotsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAppointmentsControllerAvailabilityUrl = (params: AppointmentsControllerAvailabilityParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -340,9 +318,9 @@ export const getAppointmentsControllerAvailabilityUrl = (params: AppointmentsCon
   return stringifiedParams.length > 0 ? `/appointments/availability?${stringifiedParams}` : `/appointments/availability`
 }
 
-export const appointmentsControllerAvailability = async (params: AppointmentsControllerAvailabilityParams, options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerAvailabilityResponse> => {
+export const appointmentsControllerAvailability = async (params: AppointmentsControllerAvailabilityParams, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerAvailabilityResponse>(getAppointmentsControllerAvailabilityUrl(params),
+  return customInstance<void>(getAppointmentsControllerAvailabilityUrl(params),
   {
     ...options,
     method: 'GET'
@@ -355,61 +333,75 @@ export const appointmentsControllerAvailability = async (params: AppointmentsCon
 
 
 
-export const getAppointmentsControllerAvailabilityMutationKey = () => ['appointmentsControllerAvailability'] as const;
-
-export const getAppointmentsControllerAvailabilityMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError,AppointmentsControllerAvailabilityMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError,AppointmentsControllerAvailabilityMutationVariables, TContext> => {
-
-const mutationKey = getAppointmentsControllerAvailabilityMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerAvailability>>, AppointmentsControllerAvailabilityMutationVariables> = (props) => {
-          const {params} = props ?? {};
-
-          return  appointmentsControllerAvailability(params,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AppointmentsControllerAvailabilityMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerAvailability>>>
-
-    export type AppointmentsControllerAvailabilityMutationError = unknown
-    export type AppointmentsControllerAvailabilityMutationVariables = {params: AppointmentsControllerAvailabilityParams}
-
-    export const useAppointmentsControllerAvailability = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError,AppointmentsControllerAvailabilityMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof appointmentsControllerAvailability>>,
-        TError,
-        AppointmentsControllerAvailabilityMutationVariables,
-        TContext
-      > => {
-      return useMutation(getAppointmentsControllerAvailabilityMutationOptions(options), queryClient);
+export const getAppointmentsControllerAvailabilityQueryKey = (params?: AppointmentsControllerAvailabilityParams,) => {
+    return [
+    `/appointments/availability`, ...(params ? [params] : [])
+    ] as const;
     }
-    export type appointmentsControllerReplaceResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAppointmentsControllerAvailabilityQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError = unknown>(params: AppointmentsControllerAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerAvailabilityQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerAvailability>>> = ({ signal }) => appointmentsControllerAvailability(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type appointmentsControllerReplaceResponseSuccess = (appointmentsControllerReplaceResponse200) & {
-  headers: Headers;
-};
-;
+export type AppointmentsControllerAvailabilityQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerAvailability>>>
+export type AppointmentsControllerAvailabilityQueryError = unknown
 
-export type appointmentsControllerReplaceResponse = (appointmentsControllerReplaceResponseSuccess)
+
+export function useAppointmentsControllerAvailability<TData = Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError = unknown>(
+ params: AppointmentsControllerAvailabilityParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentsControllerAvailability>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentsControllerAvailability>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerAvailability<TData = Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError = unknown>(
+ params: AppointmentsControllerAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentsControllerAvailability>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentsControllerAvailability>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerAvailability<TData = Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError = unknown>(
+ params: AppointmentsControllerAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerAvailability<TData = Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError = unknown>(
+ params: AppointmentsControllerAvailabilityParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAvailability>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAppointmentsControllerAvailabilityQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAppointmentsControllerReplaceUrl = () => {
 
@@ -419,9 +411,9 @@ export const getAppointmentsControllerReplaceUrl = () => {
   return `/appointments/availability`
 }
 
-export const appointmentsControllerReplace = async ( options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerReplaceResponse> => {
+export const appointmentsControllerReplace = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerReplaceResponse>(getAppointmentsControllerReplaceUrl(),
+  return customInstance<void>(getAppointmentsControllerReplaceUrl(),
   {
     ...options,
     method: 'PUT'
@@ -434,89 +426,51 @@ export const appointmentsControllerReplace = async ( options?: Parameters<typeof
 
 
 
-export const getAppointmentsControllerReplaceQueryKey = () => {
-    return [
-    'PUT', `/appointments/availability`
-    ] as const;
+export const getAppointmentsControllerReplaceMutationKey = () => ['appointmentsControllerReplace'] as const;
+
+export const getAppointmentsControllerReplaceMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError,void, TContext> => {
+
+const mutationKey = getAppointmentsControllerReplaceMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerReplace>>, void> = () => {
+
+
+          return  appointmentsControllerReplace(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppointmentsControllerReplaceMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerReplace>>>
+
+    export type AppointmentsControllerReplaceMutationError = unknown
+
+
+    export const useAppointmentsControllerReplace = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof appointmentsControllerReplace>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAppointmentsControllerReplaceMutationOptions(options), queryClient);
     }
-
-
-export const getAppointmentsControllerReplaceQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerReplaceQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerReplace>>> = ({ signal }) => appointmentsControllerReplace({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AppointmentsControllerReplaceQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerReplace>>>
-export type AppointmentsControllerReplaceQueryError = unknown
-
-
-export function useAppointmentsControllerReplace<TData = Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerReplace>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerReplace>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerReplace<TData = Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerReplace>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerReplace>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerReplace<TData = Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerReplace<TData = Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReplace>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAppointmentsControllerReplaceQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type appointmentsControllerAddExceptionResponse201 = {
-  data: void
-  status: 201
-}
-
-export type appointmentsControllerAddExceptionResponseSuccess = (appointmentsControllerAddExceptionResponse201) & {
-  headers: Headers;
-};
-;
-
-export type appointmentsControllerAddExceptionResponse = (appointmentsControllerAddExceptionResponseSuccess)
-
-export const getAppointmentsControllerAddExceptionUrl = () => {
+    export const getAppointmentsControllerAddExceptionUrl = () => {
 
 
 
@@ -524,9 +478,9 @@ export const getAppointmentsControllerAddExceptionUrl = () => {
   return `/appointments/availability/exceptions`
 }
 
-export const appointmentsControllerAddException = async ( options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerAddExceptionResponse> => {
+export const appointmentsControllerAddException = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerAddExceptionResponse>(getAppointmentsControllerAddExceptionUrl(),
+  return customInstance<void>(getAppointmentsControllerAddExceptionUrl(),
   {
     ...options,
     method: 'POST'
@@ -539,89 +493,51 @@ export const appointmentsControllerAddException = async ( options?: Parameters<t
 
 
 
-export const getAppointmentsControllerAddExceptionQueryKey = () => {
-    return [
-    'POST', `/appointments/availability/exceptions`
-    ] as const;
+export const getAppointmentsControllerAddExceptionMutationKey = () => ['appointmentsControllerAddException'] as const;
+
+export const getAppointmentsControllerAddExceptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError,void, TContext> => {
+
+const mutationKey = getAppointmentsControllerAddExceptionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerAddException>>, void> = () => {
+
+
+          return  appointmentsControllerAddException(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppointmentsControllerAddExceptionMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerAddException>>>
+
+    export type AppointmentsControllerAddExceptionMutationError = unknown
+
+
+    export const useAppointmentsControllerAddException = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof appointmentsControllerAddException>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAppointmentsControllerAddExceptionMutationOptions(options), queryClient);
     }
-
-
-export const getAppointmentsControllerAddExceptionQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerAddExceptionQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerAddException>>> = ({ signal }) => appointmentsControllerAddException({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AppointmentsControllerAddExceptionQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerAddException>>>
-export type AppointmentsControllerAddExceptionQueryError = unknown
-
-
-export function useAppointmentsControllerAddException<TData = Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerAddException>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerAddException>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerAddException<TData = Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerAddException>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerAddException>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerAddException<TData = Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerAddException<TData = Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerAddException>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAppointmentsControllerAddExceptionQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type appointmentsControllerRemoveExceptionResponse204 = {
-  data: void
-  status: 204
-}
-
-export type appointmentsControllerRemoveExceptionResponseSuccess = (appointmentsControllerRemoveExceptionResponse204) & {
-  headers: Headers;
-};
-;
-
-export type appointmentsControllerRemoveExceptionResponse = (appointmentsControllerRemoveExceptionResponseSuccess)
-
-export const getAppointmentsControllerRemoveExceptionUrl = (id: string,) => {
+    export const getAppointmentsControllerRemoveExceptionUrl = (id: string,) => {
 
 
 
@@ -629,9 +545,9 @@ export const getAppointmentsControllerRemoveExceptionUrl = (id: string,) => {
   return `/appointments/availability/exceptions/${id}`
 }
 
-export const appointmentsControllerRemoveException = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerRemoveExceptionResponse> => {
+export const appointmentsControllerRemoveException = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerRemoveExceptionResponse>(getAppointmentsControllerRemoveExceptionUrl(id),
+  return customInstance<void>(getAppointmentsControllerRemoveExceptionUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -644,89 +560,51 @@ export const appointmentsControllerRemoveException = async (id: string, options?
 
 
 
-export const getAppointmentsControllerRemoveExceptionQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/appointments/availability/exceptions/${id}`
-    ] as const;
+export const getAppointmentsControllerRemoveExceptionMutationKey = () => ['appointmentsControllerRemoveException'] as const;
+
+export const getAppointmentsControllerRemoveExceptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError,AppointmentsControllerRemoveExceptionMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError,AppointmentsControllerRemoveExceptionMutationVariables, TContext> => {
+
+const mutationKey = getAppointmentsControllerRemoveExceptionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, AppointmentsControllerRemoveExceptionMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  appointmentsControllerRemoveException(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppointmentsControllerRemoveExceptionMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>>
+
+    export type AppointmentsControllerRemoveExceptionMutationError = unknown
+    export type AppointmentsControllerRemoveExceptionMutationVariables = {id: string}
+
+    export const useAppointmentsControllerRemoveException = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError,AppointmentsControllerRemoveExceptionMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof appointmentsControllerRemoveException>>,
+        TError,
+        AppointmentsControllerRemoveExceptionMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAppointmentsControllerRemoveExceptionMutationOptions(options), queryClient);
     }
-
-
-export const getAppointmentsControllerRemoveExceptionQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerRemoveExceptionQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>> = ({ signal }) => appointmentsControllerRemoveException(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AppointmentsControllerRemoveExceptionQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>>
-export type AppointmentsControllerRemoveExceptionQueryError = unknown
-
-
-export function useAppointmentsControllerRemoveException<TData = Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerRemoveException>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerRemoveException>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerRemoveException<TData = Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerRemoveException>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerRemoveException>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerRemoveException<TData = Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerRemoveException<TData = Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerRemoveException>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAppointmentsControllerRemoveExceptionQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type appointmentsControllerGetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type appointmentsControllerGetResponseSuccess = (appointmentsControllerGetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type appointmentsControllerGetResponse = (appointmentsControllerGetResponseSuccess)
-
-export const getAppointmentsControllerGetUrl = (id: string,) => {
+    export const getAppointmentsControllerGetUrl = (id: string,) => {
 
 
 
@@ -734,9 +612,9 @@ export const getAppointmentsControllerGetUrl = (id: string,) => {
   return `/appointments/${id}`
 }
 
-export const appointmentsControllerGet = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerGetResponse> => {
+export const appointmentsControllerGet = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerGetResponse>(getAppointmentsControllerGetUrl(id),
+  return customInstance<void>(getAppointmentsControllerGetUrl(id),
   {
     ...options,
     method: 'GET'
@@ -749,61 +627,75 @@ export const appointmentsControllerGet = async (id: string, options?: Parameters
 
 
 
-export const getAppointmentsControllerGetMutationKey = () => ['appointmentsControllerGet'] as const;
-
-export const getAppointmentsControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerGet>>, TError,AppointmentsControllerGetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerGet>>, TError,AppointmentsControllerGetMutationVariables, TContext> => {
-
-const mutationKey = getAppointmentsControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerGet>>, AppointmentsControllerGetMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  appointmentsControllerGet(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AppointmentsControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerGet>>>
-
-    export type AppointmentsControllerGetMutationError = unknown
-    export type AppointmentsControllerGetMutationVariables = {id: string}
-
-    export const useAppointmentsControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerGet>>, TError,AppointmentsControllerGetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof appointmentsControllerGet>>,
-        TError,
-        AppointmentsControllerGetMutationVariables,
-        TContext
-      > => {
-      return useMutation(getAppointmentsControllerGetMutationOptions(options), queryClient);
+export const getAppointmentsControllerGetQueryKey = (id: string,) => {
+    return [
+    `/appointments/${id}`
+    ] as const;
     }
-    export type appointmentsControllerUpdateResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAppointmentsControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerGet>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerGetQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerGet>>> = ({ signal }) => appointmentsControllerGet(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type appointmentsControllerUpdateResponseSuccess = (appointmentsControllerUpdateResponse200) & {
-  headers: Headers;
-};
-;
+export type AppointmentsControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerGet>>>
+export type AppointmentsControllerGetQueryError = unknown
 
-export type appointmentsControllerUpdateResponse = (appointmentsControllerUpdateResponseSuccess)
+
+export function useAppointmentsControllerGet<TData = Awaited<ReturnType<typeof appointmentsControllerGet>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerGet<TData = Awaited<ReturnType<typeof appointmentsControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerGet<TData = Awaited<ReturnType<typeof appointmentsControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAppointmentsControllerGet<TData = Awaited<ReturnType<typeof appointmentsControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAppointmentsControllerGetQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAppointmentsControllerUpdateUrl = (id: string,) => {
 
@@ -813,9 +705,9 @@ export const getAppointmentsControllerUpdateUrl = (id: string,) => {
   return `/appointments/${id}`
 }
 
-export const appointmentsControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerUpdateResponse> => {
+export const appointmentsControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerUpdateResponse>(getAppointmentsControllerUpdateUrl(id),
+  return customInstance<void>(getAppointmentsControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH'
@@ -828,89 +720,51 @@ export const appointmentsControllerUpdate = async (id: string, options?: Paramet
 
 
 
-export const getAppointmentsControllerUpdateQueryKey = (id: string,) => {
-    return [
-    'PATCH', `/appointments/${id}`
-    ] as const;
+export const getAppointmentsControllerUpdateMutationKey = () => ['appointmentsControllerUpdate'] as const;
+
+export const getAppointmentsControllerUpdateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError,AppointmentsControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError,AppointmentsControllerUpdateMutationVariables, TContext> => {
+
+const mutationKey = getAppointmentsControllerUpdateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerUpdate>>, AppointmentsControllerUpdateMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  appointmentsControllerUpdate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppointmentsControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerUpdate>>>
+
+    export type AppointmentsControllerUpdateMutationError = unknown
+    export type AppointmentsControllerUpdateMutationVariables = {id: string}
+
+    export const useAppointmentsControllerUpdate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError,AppointmentsControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof appointmentsControllerUpdate>>,
+        TError,
+        AppointmentsControllerUpdateMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAppointmentsControllerUpdateMutationOptions(options), queryClient);
     }
-
-
-export const getAppointmentsControllerUpdateQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerUpdateQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerUpdate>>> = ({ signal }) => appointmentsControllerUpdate(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AppointmentsControllerUpdateQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerUpdate>>>
-export type AppointmentsControllerUpdateQueryError = unknown
-
-
-export function useAppointmentsControllerUpdate<TData = Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerUpdate<TData = Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerUpdate<TData = Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerUpdate<TData = Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAppointmentsControllerUpdateQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type appointmentsControllerConfirmResponse200 = {
-  data: void
-  status: 200
-}
-
-export type appointmentsControllerConfirmResponseSuccess = (appointmentsControllerConfirmResponse200) & {
-  headers: Headers;
-};
-;
-
-export type appointmentsControllerConfirmResponse = (appointmentsControllerConfirmResponseSuccess)
-
-export const getAppointmentsControllerConfirmUrl = (id: string,) => {
+    export const getAppointmentsControllerConfirmUrl = (id: string,) => {
 
 
 
@@ -918,9 +772,9 @@ export const getAppointmentsControllerConfirmUrl = (id: string,) => {
   return `/appointments/${id}/confirm`
 }
 
-export const appointmentsControllerConfirm = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerConfirmResponse> => {
+export const appointmentsControllerConfirm = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerConfirmResponse>(getAppointmentsControllerConfirmUrl(id),
+  return customInstance<void>(getAppointmentsControllerConfirmUrl(id),
   {
     ...options,
     method: 'POST'
@@ -933,89 +787,51 @@ export const appointmentsControllerConfirm = async (id: string, options?: Parame
 
 
 
-export const getAppointmentsControllerConfirmQueryKey = (id: string,) => {
-    return [
-    'POST', `/appointments/${id}/confirm`
-    ] as const;
+export const getAppointmentsControllerConfirmMutationKey = () => ['appointmentsControllerConfirm'] as const;
+
+export const getAppointmentsControllerConfirmMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError,AppointmentsControllerConfirmMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError,AppointmentsControllerConfirmMutationVariables, TContext> => {
+
+const mutationKey = getAppointmentsControllerConfirmMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerConfirm>>, AppointmentsControllerConfirmMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  appointmentsControllerConfirm(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppointmentsControllerConfirmMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerConfirm>>>
+
+    export type AppointmentsControllerConfirmMutationError = unknown
+    export type AppointmentsControllerConfirmMutationVariables = {id: string}
+
+    export const useAppointmentsControllerConfirm = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError,AppointmentsControllerConfirmMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof appointmentsControllerConfirm>>,
+        TError,
+        AppointmentsControllerConfirmMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAppointmentsControllerConfirmMutationOptions(options), queryClient);
     }
-
-
-export const getAppointmentsControllerConfirmQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerConfirmQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerConfirm>>> = ({ signal }) => appointmentsControllerConfirm(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AppointmentsControllerConfirmQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerConfirm>>>
-export type AppointmentsControllerConfirmQueryError = unknown
-
-
-export function useAppointmentsControllerConfirm<TData = Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerConfirm>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerConfirm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerConfirm<TData = Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerConfirm>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerConfirm>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerConfirm<TData = Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerConfirm<TData = Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerConfirm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAppointmentsControllerConfirmQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type appointmentsControllerCompleteResponse200 = {
-  data: void
-  status: 200
-}
-
-export type appointmentsControllerCompleteResponseSuccess = (appointmentsControllerCompleteResponse200) & {
-  headers: Headers;
-};
-;
-
-export type appointmentsControllerCompleteResponse = (appointmentsControllerCompleteResponseSuccess)
-
-export const getAppointmentsControllerCompleteUrl = (id: string,) => {
+    export const getAppointmentsControllerCompleteUrl = (id: string,) => {
 
 
 
@@ -1023,9 +839,9 @@ export const getAppointmentsControllerCompleteUrl = (id: string,) => {
   return `/appointments/${id}/complete`
 }
 
-export const appointmentsControllerComplete = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerCompleteResponse> => {
+export const appointmentsControllerComplete = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerCompleteResponse>(getAppointmentsControllerCompleteUrl(id),
+  return customInstance<void>(getAppointmentsControllerCompleteUrl(id),
   {
     ...options,
     method: 'POST'
@@ -1038,89 +854,51 @@ export const appointmentsControllerComplete = async (id: string, options?: Param
 
 
 
-export const getAppointmentsControllerCompleteQueryKey = (id: string,) => {
-    return [
-    'POST', `/appointments/${id}/complete`
-    ] as const;
+export const getAppointmentsControllerCompleteMutationKey = () => ['appointmentsControllerComplete'] as const;
+
+export const getAppointmentsControllerCompleteMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError,AppointmentsControllerCompleteMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError,AppointmentsControllerCompleteMutationVariables, TContext> => {
+
+const mutationKey = getAppointmentsControllerCompleteMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerComplete>>, AppointmentsControllerCompleteMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  appointmentsControllerComplete(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppointmentsControllerCompleteMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerComplete>>>
+
+    export type AppointmentsControllerCompleteMutationError = unknown
+    export type AppointmentsControllerCompleteMutationVariables = {id: string}
+
+    export const useAppointmentsControllerComplete = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError,AppointmentsControllerCompleteMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof appointmentsControllerComplete>>,
+        TError,
+        AppointmentsControllerCompleteMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAppointmentsControllerCompleteMutationOptions(options), queryClient);
     }
-
-
-export const getAppointmentsControllerCompleteQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerCompleteQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerComplete>>> = ({ signal }) => appointmentsControllerComplete(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AppointmentsControllerCompleteQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerComplete>>>
-export type AppointmentsControllerCompleteQueryError = unknown
-
-
-export function useAppointmentsControllerComplete<TData = Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerComplete>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerComplete>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerComplete<TData = Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerComplete>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerComplete>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerComplete<TData = Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerComplete<TData = Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerComplete>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAppointmentsControllerCompleteQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type appointmentsControllerNoShowResponse200 = {
-  data: void
-  status: 200
-}
-
-export type appointmentsControllerNoShowResponseSuccess = (appointmentsControllerNoShowResponse200) & {
-  headers: Headers;
-};
-;
-
-export type appointmentsControllerNoShowResponse = (appointmentsControllerNoShowResponseSuccess)
-
-export const getAppointmentsControllerNoShowUrl = (id: string,) => {
+    export const getAppointmentsControllerNoShowUrl = (id: string,) => {
 
 
 
@@ -1128,9 +906,9 @@ export const getAppointmentsControllerNoShowUrl = (id: string,) => {
   return `/appointments/${id}/no-show`
 }
 
-export const appointmentsControllerNoShow = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerNoShowResponse> => {
+export const appointmentsControllerNoShow = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerNoShowResponse>(getAppointmentsControllerNoShowUrl(id),
+  return customInstance<void>(getAppointmentsControllerNoShowUrl(id),
   {
     ...options,
     method: 'POST'
@@ -1143,89 +921,51 @@ export const appointmentsControllerNoShow = async (id: string, options?: Paramet
 
 
 
-export const getAppointmentsControllerNoShowQueryKey = (id: string,) => {
-    return [
-    'POST', `/appointments/${id}/no-show`
-    ] as const;
+export const getAppointmentsControllerNoShowMutationKey = () => ['appointmentsControllerNoShow'] as const;
+
+export const getAppointmentsControllerNoShowMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError,AppointmentsControllerNoShowMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError,AppointmentsControllerNoShowMutationVariables, TContext> => {
+
+const mutationKey = getAppointmentsControllerNoShowMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerNoShow>>, AppointmentsControllerNoShowMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  appointmentsControllerNoShow(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppointmentsControllerNoShowMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerNoShow>>>
+
+    export type AppointmentsControllerNoShowMutationError = unknown
+    export type AppointmentsControllerNoShowMutationVariables = {id: string}
+
+    export const useAppointmentsControllerNoShow = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError,AppointmentsControllerNoShowMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof appointmentsControllerNoShow>>,
+        TError,
+        AppointmentsControllerNoShowMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAppointmentsControllerNoShowMutationOptions(options), queryClient);
     }
-
-
-export const getAppointmentsControllerNoShowQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerNoShowQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerNoShow>>> = ({ signal }) => appointmentsControllerNoShow(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AppointmentsControllerNoShowQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerNoShow>>>
-export type AppointmentsControllerNoShowQueryError = unknown
-
-
-export function useAppointmentsControllerNoShow<TData = Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerNoShow>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerNoShow>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerNoShow<TData = Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerNoShow>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerNoShow>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerNoShow<TData = Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerNoShow<TData = Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerNoShow>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAppointmentsControllerNoShowQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type appointmentsControllerCancelResponse200 = {
-  data: void
-  status: 200
-}
-
-export type appointmentsControllerCancelResponseSuccess = (appointmentsControllerCancelResponse200) & {
-  headers: Headers;
-};
-;
-
-export type appointmentsControllerCancelResponse = (appointmentsControllerCancelResponseSuccess)
-
-export const getAppointmentsControllerCancelUrl = (id: string,) => {
+    export const getAppointmentsControllerCancelUrl = (id: string,) => {
 
 
 
@@ -1233,9 +973,9 @@ export const getAppointmentsControllerCancelUrl = (id: string,) => {
   return `/appointments/${id}/cancel`
 }
 
-export const appointmentsControllerCancel = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerCancelResponse> => {
+export const appointmentsControllerCancel = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerCancelResponse>(getAppointmentsControllerCancelUrl(id),
+  return customInstance<void>(getAppointmentsControllerCancelUrl(id),
   {
     ...options,
     method: 'POST'
@@ -1248,89 +988,51 @@ export const appointmentsControllerCancel = async (id: string, options?: Paramet
 
 
 
-export const getAppointmentsControllerCancelQueryKey = (id: string,) => {
-    return [
-    'POST', `/appointments/${id}/cancel`
-    ] as const;
+export const getAppointmentsControllerCancelMutationKey = () => ['appointmentsControllerCancel'] as const;
+
+export const getAppointmentsControllerCancelMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError,AppointmentsControllerCancelMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError,AppointmentsControllerCancelMutationVariables, TContext> => {
+
+const mutationKey = getAppointmentsControllerCancelMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerCancel>>, AppointmentsControllerCancelMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  appointmentsControllerCancel(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppointmentsControllerCancelMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerCancel>>>
+
+    export type AppointmentsControllerCancelMutationError = unknown
+    export type AppointmentsControllerCancelMutationVariables = {id: string}
+
+    export const useAppointmentsControllerCancel = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError,AppointmentsControllerCancelMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof appointmentsControllerCancel>>,
+        TError,
+        AppointmentsControllerCancelMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAppointmentsControllerCancelMutationOptions(options), queryClient);
     }
-
-
-export const getAppointmentsControllerCancelQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerCancelQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerCancel>>> = ({ signal }) => appointmentsControllerCancel(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AppointmentsControllerCancelQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerCancel>>>
-export type AppointmentsControllerCancelQueryError = unknown
-
-
-export function useAppointmentsControllerCancel<TData = Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerCancel>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerCancel>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerCancel<TData = Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerCancel>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerCancel>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerCancel<TData = Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerCancel<TData = Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAppointmentsControllerCancelQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type appointmentsControllerRescheduleResponse200 = {
-  data: void
-  status: 200
-}
-
-export type appointmentsControllerRescheduleResponseSuccess = (appointmentsControllerRescheduleResponse200) & {
-  headers: Headers;
-};
-;
-
-export type appointmentsControllerRescheduleResponse = (appointmentsControllerRescheduleResponseSuccess)
-
-export const getAppointmentsControllerRescheduleUrl = (id: string,) => {
+    export const getAppointmentsControllerRescheduleUrl = (id: string,) => {
 
 
 
@@ -1338,9 +1040,9 @@ export const getAppointmentsControllerRescheduleUrl = (id: string,) => {
   return `/appointments/${id}/reschedule`
 }
 
-export const appointmentsControllerReschedule = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<appointmentsControllerRescheduleResponse> => {
+export const appointmentsControllerReschedule = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<appointmentsControllerRescheduleResponse>(getAppointmentsControllerRescheduleUrl(id),
+  return customInstance<void>(getAppointmentsControllerRescheduleUrl(id),
   {
     ...options,
     method: 'POST'
@@ -1353,73 +1055,47 @@ export const appointmentsControllerReschedule = async (id: string, options?: Par
 
 
 
-export const getAppointmentsControllerRescheduleQueryKey = (id: string,) => {
-    return [
-    'POST', `/appointments/${id}/reschedule`
-    ] as const;
+export const getAppointmentsControllerRescheduleMutationKey = () => ['appointmentsControllerReschedule'] as const;
+
+export const getAppointmentsControllerRescheduleMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError,AppointmentsControllerRescheduleMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError,AppointmentsControllerRescheduleMutationVariables, TContext> => {
+
+const mutationKey = getAppointmentsControllerRescheduleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appointmentsControllerReschedule>>, AppointmentsControllerRescheduleMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  appointmentsControllerReschedule(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppointmentsControllerRescheduleMutationResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerReschedule>>>
+
+    export type AppointmentsControllerRescheduleMutationError = unknown
+    export type AppointmentsControllerRescheduleMutationVariables = {id: string}
+
+    export const useAppointmentsControllerReschedule = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError,AppointmentsControllerRescheduleMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof appointmentsControllerReschedule>>,
+        TError,
+        AppointmentsControllerRescheduleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAppointmentsControllerRescheduleMutationOptions(options), queryClient);
     }
-
-
-export const getAppointmentsControllerRescheduleQueryOptions = <TData = Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAppointmentsControllerRescheduleQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof appointmentsControllerReschedule>>> = ({ signal }) => appointmentsControllerReschedule(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AppointmentsControllerRescheduleQueryResult = NonNullable<Awaited<ReturnType<typeof appointmentsControllerReschedule>>>
-export type AppointmentsControllerRescheduleQueryError = unknown
-
-
-export function useAppointmentsControllerReschedule<TData = Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerReschedule>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerReschedule>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerReschedule<TData = Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof appointmentsControllerReschedule>>,
-          TError,
-          Awaited<ReturnType<typeof appointmentsControllerReschedule>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerReschedule<TData = Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAppointmentsControllerReschedule<TData = Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof appointmentsControllerReschedule>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAppointmentsControllerRescheduleQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

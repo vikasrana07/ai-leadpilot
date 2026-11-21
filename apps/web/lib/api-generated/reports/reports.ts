@@ -6,13 +6,18 @@
  * OpenAPI spec version: 1.0
  */
 import {
-  useMutation
+  useQuery
 } from '@tanstack/react-query';
 import type {
-  MutationFunction,
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   QueryClient,
-  UseMutationOptions,
-  UseMutationResult
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import { customInstance } from '../../custom-instance';
@@ -22,17 +27,20 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-export type reportsControllerGetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type reportsControllerGetResponseSuccess = (reportsControllerGetResponse200) & {
-  headers: Headers;
+const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+  const result = { queryKey } as T & { queryKey: K };
+  for (const key of Object.keys(query)) {
+    // The explicit queryKey always wins, matching the previous
+    // `{ ...query, queryKey }` spread where it was set last.
+    if (key === 'queryKey') continue;
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      configurable: true,
+      get: () => (query as Record<string, unknown>)[key],
+    });
+  }
+  return result;
 };
-;
-
-export type reportsControllerGetResponse = (reportsControllerGetResponseSuccess)
 
 export const getReportsControllerGetUrl = (key: string,) => {
 
@@ -42,9 +50,9 @@ export const getReportsControllerGetUrl = (key: string,) => {
   return `/reports/${key}`
 }
 
-export const reportsControllerGet = async (key: string, options?: Parameters<typeof customInstance>[1]): Promise<reportsControllerGetResponse> => {
+export const reportsControllerGet = async (key: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<reportsControllerGetResponse>(getReportsControllerGetUrl(key),
+  return customInstance<void>(getReportsControllerGetUrl(key),
   {
     ...options,
     method: 'GET'
@@ -57,61 +65,75 @@ export const reportsControllerGet = async (key: string, options?: Parameters<typ
 
 
 
-export const getReportsControllerGetMutationKey = () => ['reportsControllerGet'] as const;
-
-export const getReportsControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportsControllerGet>>, TError,ReportsControllerGetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof reportsControllerGet>>, TError,ReportsControllerGetMutationVariables, TContext> => {
-
-const mutationKey = getReportsControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reportsControllerGet>>, ReportsControllerGetMutationVariables> = (props) => {
-          const {key} = props ?? {};
-
-          return  reportsControllerGet(key,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ReportsControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof reportsControllerGet>>>
-
-    export type ReportsControllerGetMutationError = unknown
-    export type ReportsControllerGetMutationVariables = {key: string}
-
-    export const useReportsControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportsControllerGet>>, TError,ReportsControllerGetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof reportsControllerGet>>,
-        TError,
-        ReportsControllerGetMutationVariables,
-        TContext
-      > => {
-      return useMutation(getReportsControllerGetMutationOptions(options), queryClient);
+export const getReportsControllerGetQueryKey = (key: string,) => {
+    return [
+    `/reports/${key}`
+    ] as const;
     }
-    export type reportsControllerExportResponse200 = {
-  data: void
-  status: 200
+
+
+export const getReportsControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof reportsControllerGet>>, TError = unknown>(key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getReportsControllerGetQueryKey(key);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportsControllerGet>>> = ({ signal }) => reportsControllerGet(key, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: key !== null && key !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportsControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type reportsControllerExportResponseSuccess = (reportsControllerExportResponse200) & {
-  headers: Headers;
-};
-;
+export type ReportsControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof reportsControllerGet>>>
+export type ReportsControllerGetQueryError = unknown
 
-export type reportsControllerExportResponse = (reportsControllerExportResponseSuccess)
+
+export function useReportsControllerGet<TData = Awaited<ReturnType<typeof reportsControllerGet>>, TError = unknown>(
+ key: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof reportsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useReportsControllerGet<TData = Awaited<ReturnType<typeof reportsControllerGet>>, TError = unknown>(
+ key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof reportsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useReportsControllerGet<TData = Awaited<ReturnType<typeof reportsControllerGet>>, TError = unknown>(
+ key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useReportsControllerGet<TData = Awaited<ReturnType<typeof reportsControllerGet>>, TError = unknown>(
+ key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getReportsControllerGetQueryOptions(key,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getReportsControllerExportUrl = (key: string,) => {
 
@@ -121,9 +143,9 @@ export const getReportsControllerExportUrl = (key: string,) => {
   return `/reports/${key}/export`
 }
 
-export const reportsControllerExport = async (key: string, options?: Parameters<typeof customInstance>[1]): Promise<reportsControllerExportResponse> => {
+export const reportsControllerExport = async (key: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<reportsControllerExportResponse>(getReportsControllerExportUrl(key),
+  return customInstance<void>(getReportsControllerExportUrl(key),
   {
     ...options,
     method: 'GET'
@@ -136,47 +158,73 @@ export const reportsControllerExport = async (key: string, options?: Parameters<
 
 
 
-export const getReportsControllerExportMutationKey = () => ['reportsControllerExport'] as const;
-
-export const getReportsControllerExportMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportsControllerExport>>, TError,ReportsControllerExportMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof reportsControllerExport>>, TError,ReportsControllerExportMutationVariables, TContext> => {
-
-const mutationKey = getReportsControllerExportMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reportsControllerExport>>, ReportsControllerExportMutationVariables> = (props) => {
-          const {key} = props ?? {};
-
-          return  reportsControllerExport(key,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ReportsControllerExportMutationResult = NonNullable<Awaited<ReturnType<typeof reportsControllerExport>>>
-
-    export type ReportsControllerExportMutationError = unknown
-    export type ReportsControllerExportMutationVariables = {key: string}
-
-    export const useReportsControllerExport = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportsControllerExport>>, TError,ReportsControllerExportMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof reportsControllerExport>>,
-        TError,
-        ReportsControllerExportMutationVariables,
-        TContext
-      > => {
-      return useMutation(getReportsControllerExportMutationOptions(options), queryClient);
+export const getReportsControllerExportQueryKey = (key: string,) => {
+    return [
+    `/reports/${key}/export`
+    ] as const;
     }
+
+
+export const getReportsControllerExportQueryOptions = <TData = Awaited<ReturnType<typeof reportsControllerExport>>, TError = unknown>(key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsControllerExport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getReportsControllerExportQueryKey(key);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof reportsControllerExport>>> = ({ signal }) => reportsControllerExport(key, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: key !== null && key !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof reportsControllerExport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ReportsControllerExportQueryResult = NonNullable<Awaited<ReturnType<typeof reportsControllerExport>>>
+export type ReportsControllerExportQueryError = unknown
+
+
+export function useReportsControllerExport<TData = Awaited<ReturnType<typeof reportsControllerExport>>, TError = unknown>(
+ key: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsControllerExport>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsControllerExport>>,
+          TError,
+          Awaited<ReturnType<typeof reportsControllerExport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useReportsControllerExport<TData = Awaited<ReturnType<typeof reportsControllerExport>>, TError = unknown>(
+ key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsControllerExport>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsControllerExport>>,
+          TError,
+          Awaited<ReturnType<typeof reportsControllerExport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useReportsControllerExport<TData = Awaited<ReturnType<typeof reportsControllerExport>>, TError = unknown>(
+ key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsControllerExport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useReportsControllerExport<TData = Awaited<ReturnType<typeof reportsControllerExport>>, TError = unknown>(
+ key: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsControllerExport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getReportsControllerExportQueryOptions(key,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

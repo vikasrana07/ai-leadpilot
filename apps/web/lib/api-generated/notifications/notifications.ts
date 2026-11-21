@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type notificationsControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type notificationsControllerListResponseSuccess = (notificationsControllerListResponse200) & {
-  headers: Headers;
-};
-;
-
-export type notificationsControllerListResponse = (notificationsControllerListResponseSuccess)
-
 export const getNotificationsControllerListUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getNotificationsControllerListUrl = () => {
   return `/notifications`
 }
 
-export const notificationsControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<notificationsControllerListResponse> => {
+export const notificationsControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<notificationsControllerListResponse>(getNotificationsControllerListUrl(),
+  return customInstance<void>(getNotificationsControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const notificationsControllerList = async ( options?: Parameters<typeof c
 
 
 
-export const getNotificationsControllerListMutationKey = () => ['notificationsControllerList'] as const;
-
-export const getNotificationsControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getNotificationsControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof notificationsControllerList>>, void> = () => {
-
-
-          return  notificationsControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type NotificationsControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerList>>>
-
-    export type NotificationsControllerListMutationError = unknown
-
-
-    export const useNotificationsControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof notificationsControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getNotificationsControllerListMutationOptions(options), queryClient);
+export const getNotificationsControllerListQueryKey = () => {
+    return [
+    `/notifications`
+    ] as const;
     }
-    export type notificationsControllerUnreadResponse200 = {
-  data: void
-  status: 200
+
+
+export const getNotificationsControllerListQueryOptions = <TData = Awaited<ReturnType<typeof notificationsControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getNotificationsControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof notificationsControllerList>>> = ({ signal }) => notificationsControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type notificationsControllerUnreadResponseSuccess = (notificationsControllerUnreadResponse200) & {
-  headers: Headers;
-};
-;
+export type NotificationsControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerList>>>
+export type NotificationsControllerListQueryError = unknown
 
-export type notificationsControllerUnreadResponse = (notificationsControllerUnreadResponseSuccess)
+
+export function useNotificationsControllerList<TData = Awaited<ReturnType<typeof notificationsControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof notificationsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof notificationsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerList<TData = Awaited<ReturnType<typeof notificationsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof notificationsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof notificationsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerList<TData = Awaited<ReturnType<typeof notificationsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerList<TData = Awaited<ReturnType<typeof notificationsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getNotificationsControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getNotificationsControllerUnreadUrl = () => {
 
@@ -145,9 +147,9 @@ export const getNotificationsControllerUnreadUrl = () => {
   return `/notifications/unread-count`
 }
 
-export const notificationsControllerUnread = async ( options?: Parameters<typeof customInstance>[1]): Promise<notificationsControllerUnreadResponse> => {
+export const notificationsControllerUnread = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<notificationsControllerUnreadResponse>(getNotificationsControllerUnreadUrl(),
+  return customInstance<void>(getNotificationsControllerUnreadUrl(),
   {
     ...options,
     method: 'GET'
@@ -160,61 +162,75 @@ export const notificationsControllerUnread = async ( options?: Parameters<typeof
 
 
 
-export const getNotificationsControllerUnreadMutationKey = () => ['notificationsControllerUnread'] as const;
-
-export const getNotificationsControllerUnreadMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerUnread>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerUnread>>, TError,void, TContext> => {
-
-const mutationKey = getNotificationsControllerUnreadMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof notificationsControllerUnread>>, void> = () => {
-
-
-          return  notificationsControllerUnread(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type NotificationsControllerUnreadMutationResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerUnread>>>
-
-    export type NotificationsControllerUnreadMutationError = unknown
-
-
-    export const useNotificationsControllerUnread = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerUnread>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof notificationsControllerUnread>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getNotificationsControllerUnreadMutationOptions(options), queryClient);
+export const getNotificationsControllerUnreadQueryKey = () => {
+    return [
+    `/notifications/unread-count`
+    ] as const;
     }
-    export type notificationsControllerPrefsResponse200 = {
-  data: void
-  status: 200
+
+
+export const getNotificationsControllerUnreadQueryOptions = <TData = Awaited<ReturnType<typeof notificationsControllerUnread>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerUnread>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getNotificationsControllerUnreadQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof notificationsControllerUnread>>> = ({ signal }) => notificationsControllerUnread({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerUnread>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type notificationsControllerPrefsResponseSuccess = (notificationsControllerPrefsResponse200) & {
-  headers: Headers;
-};
-;
+export type NotificationsControllerUnreadQueryResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerUnread>>>
+export type NotificationsControllerUnreadQueryError = unknown
 
-export type notificationsControllerPrefsResponse = (notificationsControllerPrefsResponseSuccess)
+
+export function useNotificationsControllerUnread<TData = Awaited<ReturnType<typeof notificationsControllerUnread>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerUnread>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof notificationsControllerUnread>>,
+          TError,
+          Awaited<ReturnType<typeof notificationsControllerUnread>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerUnread<TData = Awaited<ReturnType<typeof notificationsControllerUnread>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerUnread>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof notificationsControllerUnread>>,
+          TError,
+          Awaited<ReturnType<typeof notificationsControllerUnread>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerUnread<TData = Awaited<ReturnType<typeof notificationsControllerUnread>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerUnread>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerUnread<TData = Awaited<ReturnType<typeof notificationsControllerUnread>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerUnread>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getNotificationsControllerUnreadQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getNotificationsControllerPrefsUrl = () => {
 
@@ -224,9 +240,9 @@ export const getNotificationsControllerPrefsUrl = () => {
   return `/notifications/preferences`
 }
 
-export const notificationsControllerPrefs = async ( options?: Parameters<typeof customInstance>[1]): Promise<notificationsControllerPrefsResponse> => {
+export const notificationsControllerPrefs = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<notificationsControllerPrefsResponse>(getNotificationsControllerPrefsUrl(),
+  return customInstance<void>(getNotificationsControllerPrefsUrl(),
   {
     ...options,
     method: 'GET'
@@ -239,61 +255,75 @@ export const notificationsControllerPrefs = async ( options?: Parameters<typeof 
 
 
 
-export const getNotificationsControllerPrefsMutationKey = () => ['notificationsControllerPrefs'] as const;
-
-export const getNotificationsControllerPrefsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError,void, TContext> => {
-
-const mutationKey = getNotificationsControllerPrefsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof notificationsControllerPrefs>>, void> = () => {
-
-
-          return  notificationsControllerPrefs(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type NotificationsControllerPrefsMutationResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerPrefs>>>
-
-    export type NotificationsControllerPrefsMutationError = unknown
-
-
-    export const useNotificationsControllerPrefs = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof notificationsControllerPrefs>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getNotificationsControllerPrefsMutationOptions(options), queryClient);
+export const getNotificationsControllerPrefsQueryKey = () => {
+    return [
+    `/notifications/preferences`
+    ] as const;
     }
-    export type notificationsControllerSetPrefsResponse200 = {
-  data: void
-  status: 200
+
+
+export const getNotificationsControllerPrefsQueryOptions = <TData = Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getNotificationsControllerPrefsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof notificationsControllerPrefs>>> = ({ signal }) => notificationsControllerPrefs({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type notificationsControllerSetPrefsResponseSuccess = (notificationsControllerSetPrefsResponse200) & {
-  headers: Headers;
-};
-;
+export type NotificationsControllerPrefsQueryResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerPrefs>>>
+export type NotificationsControllerPrefsQueryError = unknown
 
-export type notificationsControllerSetPrefsResponse = (notificationsControllerSetPrefsResponseSuccess)
+
+export function useNotificationsControllerPrefs<TData = Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof notificationsControllerPrefs>>,
+          TError,
+          Awaited<ReturnType<typeof notificationsControllerPrefs>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerPrefs<TData = Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof notificationsControllerPrefs>>,
+          TError,
+          Awaited<ReturnType<typeof notificationsControllerPrefs>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerPrefs<TData = Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerPrefs<TData = Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerPrefs>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getNotificationsControllerPrefsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getNotificationsControllerSetPrefsUrl = () => {
 
@@ -303,9 +333,9 @@ export const getNotificationsControllerSetPrefsUrl = () => {
   return `/notifications/preferences`
 }
 
-export const notificationsControllerSetPrefs = async ( options?: Parameters<typeof customInstance>[1]): Promise<notificationsControllerSetPrefsResponse> => {
+export const notificationsControllerSetPrefs = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<notificationsControllerSetPrefsResponse>(getNotificationsControllerSetPrefsUrl(),
+  return customInstance<void>(getNotificationsControllerSetPrefsUrl(),
   {
     ...options,
     method: 'PUT'
@@ -318,89 +348,51 @@ export const notificationsControllerSetPrefs = async ( options?: Parameters<type
 
 
 
-export const getNotificationsControllerSetPrefsQueryKey = () => {
-    return [
-    'PUT', `/notifications/preferences`
-    ] as const;
+export const getNotificationsControllerSetPrefsMutationKey = () => ['notificationsControllerSetPrefs'] as const;
+
+export const getNotificationsControllerSetPrefsMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError,void, TContext> => {
+
+const mutationKey = getNotificationsControllerSetPrefsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, void> = () => {
+
+
+          return  notificationsControllerSetPrefs(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type NotificationsControllerSetPrefsMutationResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>>
+
+    export type NotificationsControllerSetPrefsMutationError = unknown
+
+
+    export const useNotificationsControllerSetPrefs = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof notificationsControllerSetPrefs>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getNotificationsControllerSetPrefsMutationOptions(options), queryClient);
     }
-
-
-export const getNotificationsControllerSetPrefsQueryOptions = <TData = Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getNotificationsControllerSetPrefsQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>> = ({ signal }) => notificationsControllerSetPrefs({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type NotificationsControllerSetPrefsQueryResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>>
-export type NotificationsControllerSetPrefsQueryError = unknown
-
-
-export function useNotificationsControllerSetPrefs<TData = Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof notificationsControllerSetPrefs>>,
-          TError,
-          Awaited<ReturnType<typeof notificationsControllerSetPrefs>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useNotificationsControllerSetPrefs<TData = Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof notificationsControllerSetPrefs>>,
-          TError,
-          Awaited<ReturnType<typeof notificationsControllerSetPrefs>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useNotificationsControllerSetPrefs<TData = Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useNotificationsControllerSetPrefs<TData = Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerSetPrefs>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getNotificationsControllerSetPrefsQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type notificationsControllerReadAllResponse204 = {
-  data: void
-  status: 204
-}
-
-export type notificationsControllerReadAllResponseSuccess = (notificationsControllerReadAllResponse204) & {
-  headers: Headers;
-};
-;
-
-export type notificationsControllerReadAllResponse = (notificationsControllerReadAllResponseSuccess)
-
-export const getNotificationsControllerReadAllUrl = () => {
+    export const getNotificationsControllerReadAllUrl = () => {
 
 
 
@@ -408,9 +400,9 @@ export const getNotificationsControllerReadAllUrl = () => {
   return `/notifications/read-all`
 }
 
-export const notificationsControllerReadAll = async ( options?: Parameters<typeof customInstance>[1]): Promise<notificationsControllerReadAllResponse> => {
+export const notificationsControllerReadAll = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<notificationsControllerReadAllResponse>(getNotificationsControllerReadAllUrl(),
+  return customInstance<void>(getNotificationsControllerReadAllUrl(),
   {
     ...options,
     method: 'POST'
@@ -423,89 +415,51 @@ export const notificationsControllerReadAll = async ( options?: Parameters<typeo
 
 
 
-export const getNotificationsControllerReadAllQueryKey = () => {
-    return [
-    'POST', `/notifications/read-all`
-    ] as const;
+export const getNotificationsControllerReadAllMutationKey = () => ['notificationsControllerReadAll'] as const;
+
+export const getNotificationsControllerReadAllMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError,void, TContext> => {
+
+const mutationKey = getNotificationsControllerReadAllMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof notificationsControllerReadAll>>, void> = () => {
+
+
+          return  notificationsControllerReadAll(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type NotificationsControllerReadAllMutationResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerReadAll>>>
+
+    export type NotificationsControllerReadAllMutationError = unknown
+
+
+    export const useNotificationsControllerReadAll = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof notificationsControllerReadAll>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getNotificationsControllerReadAllMutationOptions(options), queryClient);
     }
-
-
-export const getNotificationsControllerReadAllQueryOptions = <TData = Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getNotificationsControllerReadAllQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof notificationsControllerReadAll>>> = ({ signal }) => notificationsControllerReadAll({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type NotificationsControllerReadAllQueryResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerReadAll>>>
-export type NotificationsControllerReadAllQueryError = unknown
-
-
-export function useNotificationsControllerReadAll<TData = Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof notificationsControllerReadAll>>,
-          TError,
-          Awaited<ReturnType<typeof notificationsControllerReadAll>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useNotificationsControllerReadAll<TData = Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof notificationsControllerReadAll>>,
-          TError,
-          Awaited<ReturnType<typeof notificationsControllerReadAll>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useNotificationsControllerReadAll<TData = Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useNotificationsControllerReadAll<TData = Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerReadAll>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getNotificationsControllerReadAllQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type notificationsControllerReadResponse204 = {
-  data: void
-  status: 204
-}
-
-export type notificationsControllerReadResponseSuccess = (notificationsControllerReadResponse204) & {
-  headers: Headers;
-};
-;
-
-export type notificationsControllerReadResponse = (notificationsControllerReadResponseSuccess)
-
-export const getNotificationsControllerReadUrl = (id: string,) => {
+    export const getNotificationsControllerReadUrl = (id: string,) => {
 
 
 
@@ -513,9 +467,9 @@ export const getNotificationsControllerReadUrl = (id: string,) => {
   return `/notifications/${id}/read`
 }
 
-export const notificationsControllerRead = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<notificationsControllerReadResponse> => {
+export const notificationsControllerRead = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<notificationsControllerReadResponse>(getNotificationsControllerReadUrl(id),
+  return customInstance<void>(getNotificationsControllerReadUrl(id),
   {
     ...options,
     method: 'POST'
@@ -528,73 +482,47 @@ export const notificationsControllerRead = async (id: string, options?: Paramete
 
 
 
-export const getNotificationsControllerReadQueryKey = (id: string,) => {
-    return [
-    'POST', `/notifications/${id}/read`
-    ] as const;
+export const getNotificationsControllerReadMutationKey = () => ['notificationsControllerRead'] as const;
+
+export const getNotificationsControllerReadMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerRead>>, TError,NotificationsControllerReadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerRead>>, TError,NotificationsControllerReadMutationVariables, TContext> => {
+
+const mutationKey = getNotificationsControllerReadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof notificationsControllerRead>>, NotificationsControllerReadMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  notificationsControllerRead(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type NotificationsControllerReadMutationResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerRead>>>
+
+    export type NotificationsControllerReadMutationError = unknown
+    export type NotificationsControllerReadMutationVariables = {id: string}
+
+    export const useNotificationsControllerRead = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerRead>>, TError,NotificationsControllerReadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof notificationsControllerRead>>,
+        TError,
+        NotificationsControllerReadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getNotificationsControllerReadMutationOptions(options), queryClient);
     }
-
-
-export const getNotificationsControllerReadQueryOptions = <TData = Awaited<ReturnType<typeof notificationsControllerRead>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerRead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getNotificationsControllerReadQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof notificationsControllerRead>>> = ({ signal }) => notificationsControllerRead(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerRead>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type NotificationsControllerReadQueryResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerRead>>>
-export type NotificationsControllerReadQueryError = unknown
-
-
-export function useNotificationsControllerRead<TData = Awaited<ReturnType<typeof notificationsControllerRead>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerRead>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof notificationsControllerRead>>,
-          TError,
-          Awaited<ReturnType<typeof notificationsControllerRead>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useNotificationsControllerRead<TData = Awaited<ReturnType<typeof notificationsControllerRead>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerRead>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof notificationsControllerRead>>,
-          TError,
-          Awaited<ReturnType<typeof notificationsControllerRead>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useNotificationsControllerRead<TData = Awaited<ReturnType<typeof notificationsControllerRead>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerRead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useNotificationsControllerRead<TData = Awaited<ReturnType<typeof notificationsControllerRead>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerRead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getNotificationsControllerReadQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

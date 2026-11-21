@@ -50,18 +50,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type supportPlatformControllerStartResponse200 = {
-  data: void
-  status: 200
-}
-
-export type supportPlatformControllerStartResponseSuccess = (supportPlatformControllerStartResponse200) & {
-  headers: Headers;
-};
-;
-
-export type supportPlatformControllerStartResponse = (supportPlatformControllerStartResponseSuccess)
-
 export const getSupportPlatformControllerStartUrl = (id: string,) => {
 
 
@@ -70,9 +58,9 @@ export const getSupportPlatformControllerStartUrl = (id: string,) => {
   return `/platform/tenants/${id}/support-session`
 }
 
-export const supportPlatformControllerStart = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<supportPlatformControllerStartResponse> => {
+export const supportPlatformControllerStart = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<supportPlatformControllerStartResponse>(getSupportPlatformControllerStartUrl(id),
+  return customInstance<void>(getSupportPlatformControllerStartUrl(id),
   {
     ...options,
     method: 'POST'
@@ -85,89 +73,51 @@ export const supportPlatformControllerStart = async (id: string, options?: Param
 
 
 
-export const getSupportPlatformControllerStartQueryKey = (id: string,) => {
-    return [
-    'POST', `/platform/tenants/${id}/support-session`
-    ] as const;
+export const getSupportPlatformControllerStartMutationKey = () => ['supportPlatformControllerStart'] as const;
+
+export const getSupportPlatformControllerStartMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError,SupportPlatformControllerStartMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError,SupportPlatformControllerStartMutationVariables, TContext> => {
+
+const mutationKey = getSupportPlatformControllerStartMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof supportPlatformControllerStart>>, SupportPlatformControllerStartMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  supportPlatformControllerStart(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SupportPlatformControllerStartMutationResult = NonNullable<Awaited<ReturnType<typeof supportPlatformControllerStart>>>
+
+    export type SupportPlatformControllerStartMutationError = unknown
+    export type SupportPlatformControllerStartMutationVariables = {id: string}
+
+    export const useSupportPlatformControllerStart = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError,SupportPlatformControllerStartMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof supportPlatformControllerStart>>,
+        TError,
+        SupportPlatformControllerStartMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSupportPlatformControllerStartMutationOptions(options), queryClient);
     }
-
-
-export const getSupportPlatformControllerStartQueryOptions = <TData = Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSupportPlatformControllerStartQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof supportPlatformControllerStart>>> = ({ signal }) => supportPlatformControllerStart(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SupportPlatformControllerStartQueryResult = NonNullable<Awaited<ReturnType<typeof supportPlatformControllerStart>>>
-export type SupportPlatformControllerStartQueryError = unknown
-
-
-export function useSupportPlatformControllerStart<TData = Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof supportPlatformControllerStart>>,
-          TError,
-          Awaited<ReturnType<typeof supportPlatformControllerStart>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportPlatformControllerStart<TData = Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof supportPlatformControllerStart>>,
-          TError,
-          Awaited<ReturnType<typeof supportPlatformControllerStart>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportPlatformControllerStart<TData = Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportPlatformControllerStart<TData = Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerStart>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSupportPlatformControllerStartQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type supportPlatformControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type supportPlatformControllerListResponseSuccess = (supportPlatformControllerListResponse200) & {
-  headers: Headers;
-};
-;
-
-export type supportPlatformControllerListResponse = (supportPlatformControllerListResponseSuccess)
-
-export const getSupportPlatformControllerListUrl = (params: SupportPlatformControllerListParams,) => {
+    export const getSupportPlatformControllerListUrl = (params: SupportPlatformControllerListParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -182,9 +132,9 @@ export const getSupportPlatformControllerListUrl = (params: SupportPlatformContr
   return stringifiedParams.length > 0 ? `/platform/support-sessions?${stringifiedParams}` : `/platform/support-sessions`
 }
 
-export const supportPlatformControllerList = async (params: SupportPlatformControllerListParams, options?: Parameters<typeof customInstance>[1]): Promise<supportPlatformControllerListResponse> => {
+export const supportPlatformControllerList = async (params: SupportPlatformControllerListParams, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<supportPlatformControllerListResponse>(getSupportPlatformControllerListUrl(params),
+  return customInstance<void>(getSupportPlatformControllerListUrl(params),
   {
     ...options,
     method: 'GET'
@@ -197,61 +147,75 @@ export const supportPlatformControllerList = async (params: SupportPlatformContr
 
 
 
-export const getSupportPlatformControllerListMutationKey = () => ['supportPlatformControllerList'] as const;
-
-export const getSupportPlatformControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportPlatformControllerList>>, TError,SupportPlatformControllerListMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof supportPlatformControllerList>>, TError,SupportPlatformControllerListMutationVariables, TContext> => {
-
-const mutationKey = getSupportPlatformControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof supportPlatformControllerList>>, SupportPlatformControllerListMutationVariables> = (props) => {
-          const {params} = props ?? {};
-
-          return  supportPlatformControllerList(params,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type SupportPlatformControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof supportPlatformControllerList>>>
-
-    export type SupportPlatformControllerListMutationError = unknown
-    export type SupportPlatformControllerListMutationVariables = {params: SupportPlatformControllerListParams}
-
-    export const useSupportPlatformControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportPlatformControllerList>>, TError,SupportPlatformControllerListMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof supportPlatformControllerList>>,
-        TError,
-        SupportPlatformControllerListMutationVariables,
-        TContext
-      > => {
-      return useMutation(getSupportPlatformControllerListMutationOptions(options), queryClient);
+export const getSupportPlatformControllerListQueryKey = (params?: SupportPlatformControllerListParams,) => {
+    return [
+    `/platform/support-sessions`, ...(params ? [params] : [])
+    ] as const;
     }
-    export type supportPlatformControllerEndFromPlatformResponse200 = {
-  data: void
-  status: 200
+
+
+export const getSupportPlatformControllerListQueryOptions = <TData = Awaited<ReturnType<typeof supportPlatformControllerList>>, TError = unknown>(params: SupportPlatformControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSupportPlatformControllerListQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof supportPlatformControllerList>>> = ({ signal }) => supportPlatformControllerList(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type supportPlatformControllerEndFromPlatformResponseSuccess = (supportPlatformControllerEndFromPlatformResponse200) & {
-  headers: Headers;
-};
-;
+export type SupportPlatformControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof supportPlatformControllerList>>>
+export type SupportPlatformControllerListQueryError = unknown
 
-export type supportPlatformControllerEndFromPlatformResponse = (supportPlatformControllerEndFromPlatformResponseSuccess)
+
+export function useSupportPlatformControllerList<TData = Awaited<ReturnType<typeof supportPlatformControllerList>>, TError = unknown>(
+ params: SupportPlatformControllerListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof supportPlatformControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof supportPlatformControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSupportPlatformControllerList<TData = Awaited<ReturnType<typeof supportPlatformControllerList>>, TError = unknown>(
+ params: SupportPlatformControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof supportPlatformControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof supportPlatformControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSupportPlatformControllerList<TData = Awaited<ReturnType<typeof supportPlatformControllerList>>, TError = unknown>(
+ params: SupportPlatformControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSupportPlatformControllerList<TData = Awaited<ReturnType<typeof supportPlatformControllerList>>, TError = unknown>(
+ params: SupportPlatformControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getSupportPlatformControllerListQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getSupportPlatformControllerEndFromPlatformUrl = (id: string,) => {
 
@@ -261,9 +225,9 @@ export const getSupportPlatformControllerEndFromPlatformUrl = (id: string,) => {
   return `/platform/support-sessions/${id}/end`
 }
 
-export const supportPlatformControllerEndFromPlatform = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<supportPlatformControllerEndFromPlatformResponse> => {
+export const supportPlatformControllerEndFromPlatform = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<supportPlatformControllerEndFromPlatformResponse>(getSupportPlatformControllerEndFromPlatformUrl(id),
+  return customInstance<void>(getSupportPlatformControllerEndFromPlatformUrl(id),
   {
     ...options,
     method: 'POST'
@@ -276,73 +240,47 @@ export const supportPlatformControllerEndFromPlatform = async (id: string, optio
 
 
 
-export const getSupportPlatformControllerEndFromPlatformQueryKey = (id: string,) => {
-    return [
-    'POST', `/platform/support-sessions/${id}/end`
-    ] as const;
+export const getSupportPlatformControllerEndFromPlatformMutationKey = () => ['supportPlatformControllerEndFromPlatform'] as const;
+
+export const getSupportPlatformControllerEndFromPlatformMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError,SupportPlatformControllerEndFromPlatformMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError,SupportPlatformControllerEndFromPlatformMutationVariables, TContext> => {
+
+const mutationKey = getSupportPlatformControllerEndFromPlatformMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, SupportPlatformControllerEndFromPlatformMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  supportPlatformControllerEndFromPlatform(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SupportPlatformControllerEndFromPlatformMutationResult = NonNullable<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>>
+
+    export type SupportPlatformControllerEndFromPlatformMutationError = unknown
+    export type SupportPlatformControllerEndFromPlatformMutationVariables = {id: string}
+
+    export const useSupportPlatformControllerEndFromPlatform = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError,SupportPlatformControllerEndFromPlatformMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>,
+        TError,
+        SupportPlatformControllerEndFromPlatformMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSupportPlatformControllerEndFromPlatformMutationOptions(options), queryClient);
     }
-
-
-export const getSupportPlatformControllerEndFromPlatformQueryOptions = <TData = Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSupportPlatformControllerEndFromPlatformQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>> = ({ signal }) => supportPlatformControllerEndFromPlatform(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SupportPlatformControllerEndFromPlatformQueryResult = NonNullable<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>>
-export type SupportPlatformControllerEndFromPlatformQueryError = unknown
-
-
-export function useSupportPlatformControllerEndFromPlatform<TData = Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>,
-          TError,
-          Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportPlatformControllerEndFromPlatform<TData = Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>,
-          TError,
-          Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportPlatformControllerEndFromPlatform<TData = Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSupportPlatformControllerEndFromPlatform<TData = Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof supportPlatformControllerEndFromPlatform>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSupportPlatformControllerEndFromPlatformQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

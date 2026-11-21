@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type webhooksControllerEventsResponse200 = {
-  data: void
-  status: 200
-}
-
-export type webhooksControllerEventsResponseSuccess = (webhooksControllerEventsResponse200) & {
-  headers: Headers;
-};
-;
-
-export type webhooksControllerEventsResponse = (webhooksControllerEventsResponseSuccess)
-
 export const getWebhooksControllerEventsUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getWebhooksControllerEventsUrl = () => {
   return `/webhooks/events`
 }
 
-export const webhooksControllerEvents = async ( options?: Parameters<typeof customInstance>[1]): Promise<webhooksControllerEventsResponse> => {
+export const webhooksControllerEvents = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<webhooksControllerEventsResponse>(getWebhooksControllerEventsUrl(),
+  return customInstance<void>(getWebhooksControllerEventsUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const webhooksControllerEvents = async ( options?: Parameters<typeof cust
 
 
 
-export const getWebhooksControllerEventsMutationKey = () => ['webhooksControllerEvents'] as const;
-
-export const getWebhooksControllerEventsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerEvents>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerEvents>>, TError,void, TContext> => {
-
-const mutationKey = getWebhooksControllerEventsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof webhooksControllerEvents>>, void> = () => {
-
-
-          return  webhooksControllerEvents(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type WebhooksControllerEventsMutationResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerEvents>>>
-
-    export type WebhooksControllerEventsMutationError = unknown
-
-
-    export const useWebhooksControllerEvents = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerEvents>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof webhooksControllerEvents>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getWebhooksControllerEventsMutationOptions(options), queryClient);
+export const getWebhooksControllerEventsQueryKey = () => {
+    return [
+    `/webhooks/events`
+    ] as const;
     }
-    export type webhooksControllerListResponse200 = {
-  data: void
-  status: 200
+
+
+export const getWebhooksControllerEventsQueryOptions = <TData = Awaited<ReturnType<typeof webhooksControllerEvents>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerEvents>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getWebhooksControllerEventsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof webhooksControllerEvents>>> = ({ signal }) => webhooksControllerEvents({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerEvents>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type webhooksControllerListResponseSuccess = (webhooksControllerListResponse200) & {
-  headers: Headers;
-};
-;
+export type WebhooksControllerEventsQueryResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerEvents>>>
+export type WebhooksControllerEventsQueryError = unknown
 
-export type webhooksControllerListResponse = (webhooksControllerListResponseSuccess)
+
+export function useWebhooksControllerEvents<TData = Awaited<ReturnType<typeof webhooksControllerEvents>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerEvents>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof webhooksControllerEvents>>,
+          TError,
+          Awaited<ReturnType<typeof webhooksControllerEvents>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerEvents<TData = Awaited<ReturnType<typeof webhooksControllerEvents>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerEvents>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof webhooksControllerEvents>>,
+          TError,
+          Awaited<ReturnType<typeof webhooksControllerEvents>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerEvents<TData = Awaited<ReturnType<typeof webhooksControllerEvents>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerEvents>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerEvents<TData = Awaited<ReturnType<typeof webhooksControllerEvents>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerEvents>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getWebhooksControllerEventsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getWebhooksControllerListUrl = () => {
 
@@ -145,9 +147,9 @@ export const getWebhooksControllerListUrl = () => {
   return `/webhooks/endpoints`
 }
 
-export const webhooksControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<webhooksControllerListResponse> => {
+export const webhooksControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<webhooksControllerListResponse>(getWebhooksControllerListUrl(),
+  return customInstance<void>(getWebhooksControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -160,61 +162,75 @@ export const webhooksControllerList = async ( options?: Parameters<typeof custom
 
 
 
-export const getWebhooksControllerListMutationKey = () => ['webhooksControllerList'] as const;
-
-export const getWebhooksControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getWebhooksControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof webhooksControllerList>>, void> = () => {
-
-
-          return  webhooksControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type WebhooksControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerList>>>
-
-    export type WebhooksControllerListMutationError = unknown
-
-
-    export const useWebhooksControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof webhooksControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getWebhooksControllerListMutationOptions(options), queryClient);
+export const getWebhooksControllerListQueryKey = () => {
+    return [
+    `/webhooks/endpoints`
+    ] as const;
     }
-    export type webhooksControllerCreateResponse201 = {
-  data: void
-  status: 201
+
+
+export const getWebhooksControllerListQueryOptions = <TData = Awaited<ReturnType<typeof webhooksControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getWebhooksControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof webhooksControllerList>>> = ({ signal }) => webhooksControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type webhooksControllerCreateResponseSuccess = (webhooksControllerCreateResponse201) & {
-  headers: Headers;
-};
-;
+export type WebhooksControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerList>>>
+export type WebhooksControllerListQueryError = unknown
 
-export type webhooksControllerCreateResponse = (webhooksControllerCreateResponseSuccess)
+
+export function useWebhooksControllerList<TData = Awaited<ReturnType<typeof webhooksControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof webhooksControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof webhooksControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerList<TData = Awaited<ReturnType<typeof webhooksControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof webhooksControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof webhooksControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerList<TData = Awaited<ReturnType<typeof webhooksControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerList<TData = Awaited<ReturnType<typeof webhooksControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getWebhooksControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getWebhooksControllerCreateUrl = () => {
 
@@ -224,9 +240,9 @@ export const getWebhooksControllerCreateUrl = () => {
   return `/webhooks/endpoints`
 }
 
-export const webhooksControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<webhooksControllerCreateResponse> => {
+export const webhooksControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<webhooksControllerCreateResponse>(getWebhooksControllerCreateUrl(),
+  return customInstance<void>(getWebhooksControllerCreateUrl(),
   {
     ...options,
     method: 'POST'
@@ -239,89 +255,51 @@ export const webhooksControllerCreate = async ( options?: Parameters<typeof cust
 
 
 
-export const getWebhooksControllerCreateQueryKey = () => {
-    return [
-    'POST', `/webhooks/endpoints`
-    ] as const;
+export const getWebhooksControllerCreateMutationKey = () => ['webhooksControllerCreate'] as const;
+
+export const getWebhooksControllerCreateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerCreate>>, TError,void, TContext> => {
+
+const mutationKey = getWebhooksControllerCreateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof webhooksControllerCreate>>, void> = () => {
+
+
+          return  webhooksControllerCreate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type WebhooksControllerCreateMutationResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerCreate>>>
+
+    export type WebhooksControllerCreateMutationError = unknown
+
+
+    export const useWebhooksControllerCreate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof webhooksControllerCreate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getWebhooksControllerCreateMutationOptions(options), queryClient);
     }
-
-
-export const getWebhooksControllerCreateQueryOptions = <TData = Awaited<ReturnType<typeof webhooksControllerCreate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getWebhooksControllerCreateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof webhooksControllerCreate>>> = ({ signal }) => webhooksControllerCreate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerCreate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type WebhooksControllerCreateQueryResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerCreate>>>
-export type WebhooksControllerCreateQueryError = unknown
-
-
-export function useWebhooksControllerCreate<TData = Awaited<ReturnType<typeof webhooksControllerCreate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerCreate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerCreate<TData = Awaited<ReturnType<typeof webhooksControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerCreate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerCreate<TData = Awaited<ReturnType<typeof webhooksControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerCreate<TData = Awaited<ReturnType<typeof webhooksControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getWebhooksControllerCreateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type webhooksControllerUpdateResponse200 = {
-  data: void
-  status: 200
-}
-
-export type webhooksControllerUpdateResponseSuccess = (webhooksControllerUpdateResponse200) & {
-  headers: Headers;
-};
-;
-
-export type webhooksControllerUpdateResponse = (webhooksControllerUpdateResponseSuccess)
-
-export const getWebhooksControllerUpdateUrl = (id: string,) => {
+    export const getWebhooksControllerUpdateUrl = (id: string,) => {
 
 
 
@@ -329,9 +307,9 @@ export const getWebhooksControllerUpdateUrl = (id: string,) => {
   return `/webhooks/endpoints/${id}`
 }
 
-export const webhooksControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<webhooksControllerUpdateResponse> => {
+export const webhooksControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<webhooksControllerUpdateResponse>(getWebhooksControllerUpdateUrl(id),
+  return customInstance<void>(getWebhooksControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH'
@@ -344,89 +322,51 @@ export const webhooksControllerUpdate = async (id: string, options?: Parameters<
 
 
 
-export const getWebhooksControllerUpdateQueryKey = (id: string,) => {
-    return [
-    'PATCH', `/webhooks/endpoints/${id}`
-    ] as const;
+export const getWebhooksControllerUpdateMutationKey = () => ['webhooksControllerUpdate'] as const;
+
+export const getWebhooksControllerUpdateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError,WebhooksControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError,WebhooksControllerUpdateMutationVariables, TContext> => {
+
+const mutationKey = getWebhooksControllerUpdateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof webhooksControllerUpdate>>, WebhooksControllerUpdateMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  webhooksControllerUpdate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type WebhooksControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerUpdate>>>
+
+    export type WebhooksControllerUpdateMutationError = unknown
+    export type WebhooksControllerUpdateMutationVariables = {id: string}
+
+    export const useWebhooksControllerUpdate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError,WebhooksControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof webhooksControllerUpdate>>,
+        TError,
+        WebhooksControllerUpdateMutationVariables,
+        TContext
+      > => {
+      return useMutation(getWebhooksControllerUpdateMutationOptions(options), queryClient);
     }
-
-
-export const getWebhooksControllerUpdateQueryOptions = <TData = Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getWebhooksControllerUpdateQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof webhooksControllerUpdate>>> = ({ signal }) => webhooksControllerUpdate(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type WebhooksControllerUpdateQueryResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerUpdate>>>
-export type WebhooksControllerUpdateQueryError = unknown
-
-
-export function useWebhooksControllerUpdate<TData = Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerUpdate<TData = Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerUpdate<TData = Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerUpdate<TData = Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getWebhooksControllerUpdateQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type webhooksControllerRemoveResponse204 = {
-  data: void
-  status: 204
-}
-
-export type webhooksControllerRemoveResponseSuccess = (webhooksControllerRemoveResponse204) & {
-  headers: Headers;
-};
-;
-
-export type webhooksControllerRemoveResponse = (webhooksControllerRemoveResponseSuccess)
-
-export const getWebhooksControllerRemoveUrl = (id: string,) => {
+    export const getWebhooksControllerRemoveUrl = (id: string,) => {
 
 
 
@@ -434,9 +374,9 @@ export const getWebhooksControllerRemoveUrl = (id: string,) => {
   return `/webhooks/endpoints/${id}`
 }
 
-export const webhooksControllerRemove = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<webhooksControllerRemoveResponse> => {
+export const webhooksControllerRemove = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<webhooksControllerRemoveResponse>(getWebhooksControllerRemoveUrl(id),
+  return customInstance<void>(getWebhooksControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -449,89 +389,51 @@ export const webhooksControllerRemove = async (id: string, options?: Parameters<
 
 
 
-export const getWebhooksControllerRemoveQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/webhooks/endpoints/${id}`
-    ] as const;
+export const getWebhooksControllerRemoveMutationKey = () => ['webhooksControllerRemove'] as const;
+
+export const getWebhooksControllerRemoveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerRemove>>, TError,WebhooksControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerRemove>>, TError,WebhooksControllerRemoveMutationVariables, TContext> => {
+
+const mutationKey = getWebhooksControllerRemoveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof webhooksControllerRemove>>, WebhooksControllerRemoveMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  webhooksControllerRemove(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type WebhooksControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerRemove>>>
+
+    export type WebhooksControllerRemoveMutationError = unknown
+    export type WebhooksControllerRemoveMutationVariables = {id: string}
+
+    export const useWebhooksControllerRemove = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerRemove>>, TError,WebhooksControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof webhooksControllerRemove>>,
+        TError,
+        WebhooksControllerRemoveMutationVariables,
+        TContext
+      > => {
+      return useMutation(getWebhooksControllerRemoveMutationOptions(options), queryClient);
     }
-
-
-export const getWebhooksControllerRemoveQueryOptions = <TData = Awaited<ReturnType<typeof webhooksControllerRemove>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getWebhooksControllerRemoveQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof webhooksControllerRemove>>> = ({ signal }) => webhooksControllerRemove(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRemove>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type WebhooksControllerRemoveQueryResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerRemove>>>
-export type WebhooksControllerRemoveQueryError = unknown
-
-
-export function useWebhooksControllerRemove<TData = Awaited<ReturnType<typeof webhooksControllerRemove>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRemove>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerRemove<TData = Awaited<ReturnType<typeof webhooksControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRemove>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerRemove<TData = Awaited<ReturnType<typeof webhooksControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerRemove<TData = Awaited<ReturnType<typeof webhooksControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getWebhooksControllerRemoveQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type webhooksControllerRotateResponse200 = {
-  data: void
-  status: 200
-}
-
-export type webhooksControllerRotateResponseSuccess = (webhooksControllerRotateResponse200) & {
-  headers: Headers;
-};
-;
-
-export type webhooksControllerRotateResponse = (webhooksControllerRotateResponseSuccess)
-
-export const getWebhooksControllerRotateUrl = (id: string,) => {
+    export const getWebhooksControllerRotateUrl = (id: string,) => {
 
 
 
@@ -539,9 +441,9 @@ export const getWebhooksControllerRotateUrl = (id: string,) => {
   return `/webhooks/endpoints/${id}/rotate-secret`
 }
 
-export const webhooksControllerRotate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<webhooksControllerRotateResponse> => {
+export const webhooksControllerRotate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<webhooksControllerRotateResponse>(getWebhooksControllerRotateUrl(id),
+  return customInstance<void>(getWebhooksControllerRotateUrl(id),
   {
     ...options,
     method: 'POST'
@@ -554,89 +456,51 @@ export const webhooksControllerRotate = async (id: string, options?: Parameters<
 
 
 
-export const getWebhooksControllerRotateQueryKey = (id: string,) => {
-    return [
-    'POST', `/webhooks/endpoints/${id}/rotate-secret`
-    ] as const;
+export const getWebhooksControllerRotateMutationKey = () => ['webhooksControllerRotate'] as const;
+
+export const getWebhooksControllerRotateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerRotate>>, TError,WebhooksControllerRotateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerRotate>>, TError,WebhooksControllerRotateMutationVariables, TContext> => {
+
+const mutationKey = getWebhooksControllerRotateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof webhooksControllerRotate>>, WebhooksControllerRotateMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  webhooksControllerRotate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type WebhooksControllerRotateMutationResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerRotate>>>
+
+    export type WebhooksControllerRotateMutationError = unknown
+    export type WebhooksControllerRotateMutationVariables = {id: string}
+
+    export const useWebhooksControllerRotate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerRotate>>, TError,WebhooksControllerRotateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof webhooksControllerRotate>>,
+        TError,
+        WebhooksControllerRotateMutationVariables,
+        TContext
+      > => {
+      return useMutation(getWebhooksControllerRotateMutationOptions(options), queryClient);
     }
-
-
-export const getWebhooksControllerRotateQueryOptions = <TData = Awaited<ReturnType<typeof webhooksControllerRotate>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRotate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getWebhooksControllerRotateQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof webhooksControllerRotate>>> = ({ signal }) => webhooksControllerRotate(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRotate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type WebhooksControllerRotateQueryResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerRotate>>>
-export type WebhooksControllerRotateQueryError = unknown
-
-
-export function useWebhooksControllerRotate<TData = Awaited<ReturnType<typeof webhooksControllerRotate>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRotate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerRotate>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerRotate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerRotate<TData = Awaited<ReturnType<typeof webhooksControllerRotate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRotate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerRotate>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerRotate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerRotate<TData = Awaited<ReturnType<typeof webhooksControllerRotate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRotate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerRotate<TData = Awaited<ReturnType<typeof webhooksControllerRotate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRotate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getWebhooksControllerRotateQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type webhooksControllerTestResponse200 = {
-  data: void
-  status: 200
-}
-
-export type webhooksControllerTestResponseSuccess = (webhooksControllerTestResponse200) & {
-  headers: Headers;
-};
-;
-
-export type webhooksControllerTestResponse = (webhooksControllerTestResponseSuccess)
-
-export const getWebhooksControllerTestUrl = (id: string,) => {
+    export const getWebhooksControllerTestUrl = (id: string,) => {
 
 
 
@@ -644,9 +508,9 @@ export const getWebhooksControllerTestUrl = (id: string,) => {
   return `/webhooks/endpoints/${id}/test`
 }
 
-export const webhooksControllerTest = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<webhooksControllerTestResponse> => {
+export const webhooksControllerTest = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<webhooksControllerTestResponse>(getWebhooksControllerTestUrl(id),
+  return customInstance<void>(getWebhooksControllerTestUrl(id),
   {
     ...options,
     method: 'POST'
@@ -659,89 +523,51 @@ export const webhooksControllerTest = async (id: string, options?: Parameters<ty
 
 
 
-export const getWebhooksControllerTestQueryKey = (id: string,) => {
-    return [
-    'POST', `/webhooks/endpoints/${id}/test`
-    ] as const;
+export const getWebhooksControllerTestMutationKey = () => ['webhooksControllerTest'] as const;
+
+export const getWebhooksControllerTestMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerTest>>, TError,WebhooksControllerTestMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerTest>>, TError,WebhooksControllerTestMutationVariables, TContext> => {
+
+const mutationKey = getWebhooksControllerTestMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof webhooksControllerTest>>, WebhooksControllerTestMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  webhooksControllerTest(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type WebhooksControllerTestMutationResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerTest>>>
+
+    export type WebhooksControllerTestMutationError = unknown
+    export type WebhooksControllerTestMutationVariables = {id: string}
+
+    export const useWebhooksControllerTest = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerTest>>, TError,WebhooksControllerTestMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof webhooksControllerTest>>,
+        TError,
+        WebhooksControllerTestMutationVariables,
+        TContext
+      > => {
+      return useMutation(getWebhooksControllerTestMutationOptions(options), queryClient);
     }
-
-
-export const getWebhooksControllerTestQueryOptions = <TData = Awaited<ReturnType<typeof webhooksControllerTest>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerTest>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getWebhooksControllerTestQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof webhooksControllerTest>>> = ({ signal }) => webhooksControllerTest(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerTest>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type WebhooksControllerTestQueryResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerTest>>>
-export type WebhooksControllerTestQueryError = unknown
-
-
-export function useWebhooksControllerTest<TData = Awaited<ReturnType<typeof webhooksControllerTest>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerTest>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerTest>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerTest>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerTest<TData = Awaited<ReturnType<typeof webhooksControllerTest>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerTest>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerTest>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerTest>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerTest<TData = Awaited<ReturnType<typeof webhooksControllerTest>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerTest>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerTest<TData = Awaited<ReturnType<typeof webhooksControllerTest>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerTest>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getWebhooksControllerTestQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type webhooksControllerDeliveriesResponse200 = {
-  data: void
-  status: 200
-}
-
-export type webhooksControllerDeliveriesResponseSuccess = (webhooksControllerDeliveriesResponse200) & {
-  headers: Headers;
-};
-;
-
-export type webhooksControllerDeliveriesResponse = (webhooksControllerDeliveriesResponseSuccess)
-
-export const getWebhooksControllerDeliveriesUrl = (id: string,) => {
+    export const getWebhooksControllerDeliveriesUrl = (id: string,) => {
 
 
 
@@ -749,9 +575,9 @@ export const getWebhooksControllerDeliveriesUrl = (id: string,) => {
   return `/webhooks/endpoints/${id}/deliveries`
 }
 
-export const webhooksControllerDeliveries = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<webhooksControllerDeliveriesResponse> => {
+export const webhooksControllerDeliveries = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<webhooksControllerDeliveriesResponse>(getWebhooksControllerDeliveriesUrl(id),
+  return customInstance<void>(getWebhooksControllerDeliveriesUrl(id),
   {
     ...options,
     method: 'GET'
@@ -764,61 +590,75 @@ export const webhooksControllerDeliveries = async (id: string, options?: Paramet
 
 
 
-export const getWebhooksControllerDeliveriesMutationKey = () => ['webhooksControllerDeliveries'] as const;
-
-export const getWebhooksControllerDeliveriesMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError,WebhooksControllerDeliveriesMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError,WebhooksControllerDeliveriesMutationVariables, TContext> => {
-
-const mutationKey = getWebhooksControllerDeliveriesMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof webhooksControllerDeliveries>>, WebhooksControllerDeliveriesMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  webhooksControllerDeliveries(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type WebhooksControllerDeliveriesMutationResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerDeliveries>>>
-
-    export type WebhooksControllerDeliveriesMutationError = unknown
-    export type WebhooksControllerDeliveriesMutationVariables = {id: string}
-
-    export const useWebhooksControllerDeliveries = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError,WebhooksControllerDeliveriesMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof webhooksControllerDeliveries>>,
-        TError,
-        WebhooksControllerDeliveriesMutationVariables,
-        TContext
-      > => {
-      return useMutation(getWebhooksControllerDeliveriesMutationOptions(options), queryClient);
+export const getWebhooksControllerDeliveriesQueryKey = (id: string,) => {
+    return [
+    `/webhooks/endpoints/${id}/deliveries`
+    ] as const;
     }
-    export type webhooksControllerDeliveryResponse200 = {
-  data: void
-  status: 200
+
+
+export const getWebhooksControllerDeliveriesQueryOptions = <TData = Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getWebhooksControllerDeliveriesQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof webhooksControllerDeliveries>>> = ({ signal }) => webhooksControllerDeliveries(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type webhooksControllerDeliveryResponseSuccess = (webhooksControllerDeliveryResponse200) & {
-  headers: Headers;
-};
-;
+export type WebhooksControllerDeliveriesQueryResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerDeliveries>>>
+export type WebhooksControllerDeliveriesQueryError = unknown
 
-export type webhooksControllerDeliveryResponse = (webhooksControllerDeliveryResponseSuccess)
+
+export function useWebhooksControllerDeliveries<TData = Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof webhooksControllerDeliveries>>,
+          TError,
+          Awaited<ReturnType<typeof webhooksControllerDeliveries>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerDeliveries<TData = Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof webhooksControllerDeliveries>>,
+          TError,
+          Awaited<ReturnType<typeof webhooksControllerDeliveries>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerDeliveries<TData = Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerDeliveries<TData = Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDeliveries>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getWebhooksControllerDeliveriesQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getWebhooksControllerDeliveryUrl = (id: string,) => {
 
@@ -828,9 +668,9 @@ export const getWebhooksControllerDeliveryUrl = (id: string,) => {
   return `/webhooks/deliveries/${id}`
 }
 
-export const webhooksControllerDelivery = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<webhooksControllerDeliveryResponse> => {
+export const webhooksControllerDelivery = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<webhooksControllerDeliveryResponse>(getWebhooksControllerDeliveryUrl(id),
+  return customInstance<void>(getWebhooksControllerDeliveryUrl(id),
   {
     ...options,
     method: 'GET'
@@ -843,61 +683,75 @@ export const webhooksControllerDelivery = async (id: string, options?: Parameter
 
 
 
-export const getWebhooksControllerDeliveryMutationKey = () => ['webhooksControllerDelivery'] as const;
-
-export const getWebhooksControllerDeliveryMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError,WebhooksControllerDeliveryMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError,WebhooksControllerDeliveryMutationVariables, TContext> => {
-
-const mutationKey = getWebhooksControllerDeliveryMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof webhooksControllerDelivery>>, WebhooksControllerDeliveryMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  webhooksControllerDelivery(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type WebhooksControllerDeliveryMutationResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerDelivery>>>
-
-    export type WebhooksControllerDeliveryMutationError = unknown
-    export type WebhooksControllerDeliveryMutationVariables = {id: string}
-
-    export const useWebhooksControllerDelivery = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError,WebhooksControllerDeliveryMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof webhooksControllerDelivery>>,
-        TError,
-        WebhooksControllerDeliveryMutationVariables,
-        TContext
-      > => {
-      return useMutation(getWebhooksControllerDeliveryMutationOptions(options), queryClient);
+export const getWebhooksControllerDeliveryQueryKey = (id: string,) => {
+    return [
+    `/webhooks/deliveries/${id}`
+    ] as const;
     }
-    export type webhooksControllerRedeliverResponse200 = {
-  data: void
-  status: 200
+
+
+export const getWebhooksControllerDeliveryQueryOptions = <TData = Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getWebhooksControllerDeliveryQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof webhooksControllerDelivery>>> = ({ signal }) => webhooksControllerDelivery(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type webhooksControllerRedeliverResponseSuccess = (webhooksControllerRedeliverResponse200) & {
-  headers: Headers;
-};
-;
+export type WebhooksControllerDeliveryQueryResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerDelivery>>>
+export type WebhooksControllerDeliveryQueryError = unknown
 
-export type webhooksControllerRedeliverResponse = (webhooksControllerRedeliverResponseSuccess)
+
+export function useWebhooksControllerDelivery<TData = Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof webhooksControllerDelivery>>,
+          TError,
+          Awaited<ReturnType<typeof webhooksControllerDelivery>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerDelivery<TData = Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof webhooksControllerDelivery>>,
+          TError,
+          Awaited<ReturnType<typeof webhooksControllerDelivery>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerDelivery<TData = Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWebhooksControllerDelivery<TData = Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerDelivery>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getWebhooksControllerDeliveryQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getWebhooksControllerRedeliverUrl = (id: string,) => {
 
@@ -907,9 +761,9 @@ export const getWebhooksControllerRedeliverUrl = (id: string,) => {
   return `/webhooks/deliveries/${id}/redeliver`
 }
 
-export const webhooksControllerRedeliver = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<webhooksControllerRedeliverResponse> => {
+export const webhooksControllerRedeliver = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<webhooksControllerRedeliverResponse>(getWebhooksControllerRedeliverUrl(id),
+  return customInstance<void>(getWebhooksControllerRedeliverUrl(id),
   {
     ...options,
     method: 'POST'
@@ -922,73 +776,47 @@ export const webhooksControllerRedeliver = async (id: string, options?: Paramete
 
 
 
-export const getWebhooksControllerRedeliverQueryKey = (id: string,) => {
-    return [
-    'POST', `/webhooks/deliveries/${id}/redeliver`
-    ] as const;
+export const getWebhooksControllerRedeliverMutationKey = () => ['webhooksControllerRedeliver'] as const;
+
+export const getWebhooksControllerRedeliverMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError,WebhooksControllerRedeliverMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError,WebhooksControllerRedeliverMutationVariables, TContext> => {
+
+const mutationKey = getWebhooksControllerRedeliverMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof webhooksControllerRedeliver>>, WebhooksControllerRedeliverMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  webhooksControllerRedeliver(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type WebhooksControllerRedeliverMutationResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerRedeliver>>>
+
+    export type WebhooksControllerRedeliverMutationError = unknown
+    export type WebhooksControllerRedeliverMutationVariables = {id: string}
+
+    export const useWebhooksControllerRedeliver = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError,WebhooksControllerRedeliverMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof webhooksControllerRedeliver>>,
+        TError,
+        WebhooksControllerRedeliverMutationVariables,
+        TContext
+      > => {
+      return useMutation(getWebhooksControllerRedeliverMutationOptions(options), queryClient);
     }
-
-
-export const getWebhooksControllerRedeliverQueryOptions = <TData = Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getWebhooksControllerRedeliverQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof webhooksControllerRedeliver>>> = ({ signal }) => webhooksControllerRedeliver(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type WebhooksControllerRedeliverQueryResult = NonNullable<Awaited<ReturnType<typeof webhooksControllerRedeliver>>>
-export type WebhooksControllerRedeliverQueryError = unknown
-
-
-export function useWebhooksControllerRedeliver<TData = Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerRedeliver>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerRedeliver>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerRedeliver<TData = Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof webhooksControllerRedeliver>>,
-          TError,
-          Awaited<ReturnType<typeof webhooksControllerRedeliver>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerRedeliver<TData = Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWebhooksControllerRedeliver<TData = Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof webhooksControllerRedeliver>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getWebhooksControllerRedeliverQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

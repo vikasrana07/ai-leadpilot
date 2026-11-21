@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type privacyControllerExportResponse200 = {
-  data: void
-  status: 200
-}
-
-export type privacyControllerExportResponseSuccess = (privacyControllerExportResponse200) & {
-  headers: Headers;
-};
-;
-
-export type privacyControllerExportResponse = (privacyControllerExportResponseSuccess)
-
 export const getPrivacyControllerExportUrl = (id: string,) => {
 
 
@@ -66,9 +54,9 @@ export const getPrivacyControllerExportUrl = (id: string,) => {
   return `/privacy/leads/${id}/export`
 }
 
-export const privacyControllerExport = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<privacyControllerExportResponse> => {
+export const privacyControllerExport = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<privacyControllerExportResponse>(getPrivacyControllerExportUrl(id),
+  return customInstance<void>(getPrivacyControllerExportUrl(id),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const privacyControllerExport = async (id: string, options?: Parameters<t
 
 
 
-export const getPrivacyControllerExportMutationKey = () => ['privacyControllerExport'] as const;
-
-export const getPrivacyControllerExportMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof privacyControllerExport>>, TError,PrivacyControllerExportMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof privacyControllerExport>>, TError,PrivacyControllerExportMutationVariables, TContext> => {
-
-const mutationKey = getPrivacyControllerExportMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof privacyControllerExport>>, PrivacyControllerExportMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  privacyControllerExport(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PrivacyControllerExportMutationResult = NonNullable<Awaited<ReturnType<typeof privacyControllerExport>>>
-
-    export type PrivacyControllerExportMutationError = unknown
-    export type PrivacyControllerExportMutationVariables = {id: string}
-
-    export const usePrivacyControllerExport = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof privacyControllerExport>>, TError,PrivacyControllerExportMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof privacyControllerExport>>,
-        TError,
-        PrivacyControllerExportMutationVariables,
-        TContext
-      > => {
-      return useMutation(getPrivacyControllerExportMutationOptions(options), queryClient);
+export const getPrivacyControllerExportQueryKey = (id: string,) => {
+    return [
+    `/privacy/leads/${id}/export`
+    ] as const;
     }
-    export type privacyControllerEraseResponse200 = {
-  data: void
-  status: 200
+
+
+export const getPrivacyControllerExportQueryOptions = <TData = Awaited<ReturnType<typeof privacyControllerExport>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof privacyControllerExport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPrivacyControllerExportQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof privacyControllerExport>>> = ({ signal }) => privacyControllerExport(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof privacyControllerExport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type privacyControllerEraseResponseSuccess = (privacyControllerEraseResponse200) & {
-  headers: Headers;
-};
-;
+export type PrivacyControllerExportQueryResult = NonNullable<Awaited<ReturnType<typeof privacyControllerExport>>>
+export type PrivacyControllerExportQueryError = unknown
 
-export type privacyControllerEraseResponse = (privacyControllerEraseResponseSuccess)
+
+export function usePrivacyControllerExport<TData = Awaited<ReturnType<typeof privacyControllerExport>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof privacyControllerExport>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof privacyControllerExport>>,
+          TError,
+          Awaited<ReturnType<typeof privacyControllerExport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePrivacyControllerExport<TData = Awaited<ReturnType<typeof privacyControllerExport>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof privacyControllerExport>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof privacyControllerExport>>,
+          TError,
+          Awaited<ReturnType<typeof privacyControllerExport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePrivacyControllerExport<TData = Awaited<ReturnType<typeof privacyControllerExport>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof privacyControllerExport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePrivacyControllerExport<TData = Awaited<ReturnType<typeof privacyControllerExport>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof privacyControllerExport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPrivacyControllerExportQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getPrivacyControllerEraseUrl = (id: string,) => {
 
@@ -145,9 +147,9 @@ export const getPrivacyControllerEraseUrl = (id: string,) => {
   return `/privacy/leads/${id}/erase`
 }
 
-export const privacyControllerErase = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<privacyControllerEraseResponse> => {
+export const privacyControllerErase = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<privacyControllerEraseResponse>(getPrivacyControllerEraseUrl(id),
+  return customInstance<void>(getPrivacyControllerEraseUrl(id),
   {
     ...options,
     method: 'POST'
@@ -160,73 +162,47 @@ export const privacyControllerErase = async (id: string, options?: Parameters<ty
 
 
 
-export const getPrivacyControllerEraseQueryKey = (id: string,) => {
-    return [
-    'POST', `/privacy/leads/${id}/erase`
-    ] as const;
+export const getPrivacyControllerEraseMutationKey = () => ['privacyControllerErase'] as const;
+
+export const getPrivacyControllerEraseMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof privacyControllerErase>>, TError,PrivacyControllerEraseMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof privacyControllerErase>>, TError,PrivacyControllerEraseMutationVariables, TContext> => {
+
+const mutationKey = getPrivacyControllerEraseMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof privacyControllerErase>>, PrivacyControllerEraseMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  privacyControllerErase(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PrivacyControllerEraseMutationResult = NonNullable<Awaited<ReturnType<typeof privacyControllerErase>>>
+
+    export type PrivacyControllerEraseMutationError = unknown
+    export type PrivacyControllerEraseMutationVariables = {id: string}
+
+    export const usePrivacyControllerErase = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof privacyControllerErase>>, TError,PrivacyControllerEraseMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof privacyControllerErase>>,
+        TError,
+        PrivacyControllerEraseMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPrivacyControllerEraseMutationOptions(options), queryClient);
     }
-
-
-export const getPrivacyControllerEraseQueryOptions = <TData = Awaited<ReturnType<typeof privacyControllerErase>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof privacyControllerErase>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPrivacyControllerEraseQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof privacyControllerErase>>> = ({ signal }) => privacyControllerErase(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof privacyControllerErase>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PrivacyControllerEraseQueryResult = NonNullable<Awaited<ReturnType<typeof privacyControllerErase>>>
-export type PrivacyControllerEraseQueryError = unknown
-
-
-export function usePrivacyControllerErase<TData = Awaited<ReturnType<typeof privacyControllerErase>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof privacyControllerErase>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof privacyControllerErase>>,
-          TError,
-          Awaited<ReturnType<typeof privacyControllerErase>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePrivacyControllerErase<TData = Awaited<ReturnType<typeof privacyControllerErase>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof privacyControllerErase>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof privacyControllerErase>>,
-          TError,
-          Awaited<ReturnType<typeof privacyControllerErase>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePrivacyControllerErase<TData = Awaited<ReturnType<typeof privacyControllerErase>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof privacyControllerErase>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePrivacyControllerErase<TData = Awaited<ReturnType<typeof privacyControllerErase>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof privacyControllerErase>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPrivacyControllerEraseQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

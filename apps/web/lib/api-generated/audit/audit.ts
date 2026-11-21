@@ -6,13 +6,18 @@
  * OpenAPI spec version: 1.0
  */
 import {
-  useMutation
+  useQuery
 } from '@tanstack/react-query';
 import type {
-  MutationFunction,
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   QueryClient,
-  UseMutationOptions,
-  UseMutationResult
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import { customInstance } from '../../custom-instance';
@@ -22,17 +27,20 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-export type auditControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type auditControllerListResponseSuccess = (auditControllerListResponse200) & {
-  headers: Headers;
+const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+  const result = { queryKey } as T & { queryKey: K };
+  for (const key of Object.keys(query)) {
+    // The explicit queryKey always wins, matching the previous
+    // `{ ...query, queryKey }` spread where it was set last.
+    if (key === 'queryKey') continue;
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      configurable: true,
+      get: () => (query as Record<string, unknown>)[key],
+    });
+  }
+  return result;
 };
-;
-
-export type auditControllerListResponse = (auditControllerListResponseSuccess)
 
 export const getAuditControllerListUrl = () => {
 
@@ -42,9 +50,9 @@ export const getAuditControllerListUrl = () => {
   return `/audit-logs`
 }
 
-export const auditControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<auditControllerListResponse> => {
+export const auditControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<auditControllerListResponse>(getAuditControllerListUrl(),
+  return customInstance<void>(getAuditControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -57,47 +65,73 @@ export const auditControllerList = async ( options?: Parameters<typeof customIns
 
 
 
-export const getAuditControllerListMutationKey = () => ['auditControllerList'] as const;
-
-export const getAuditControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof auditControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof auditControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getAuditControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof auditControllerList>>, void> = () => {
-
-
-          return  auditControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AuditControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof auditControllerList>>>
-
-    export type AuditControllerListMutationError = unknown
-
-
-    export const useAuditControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof auditControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof auditControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAuditControllerListMutationOptions(options), queryClient);
+export const getAuditControllerListQueryKey = () => {
+    return [
+    `/audit-logs`
+    ] as const;
     }
+
+
+export const getAuditControllerListQueryOptions = <TData = Awaited<ReturnType<typeof auditControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAuditControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof auditControllerList>>> = ({ signal }) => auditControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof auditControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AuditControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof auditControllerList>>>
+export type AuditControllerListQueryError = unknown
+
+
+export function useAuditControllerList<TData = Awaited<ReturnType<typeof auditControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof auditControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof auditControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAuditControllerList<TData = Awaited<ReturnType<typeof auditControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof auditControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof auditControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAuditControllerList<TData = Awaited<ReturnType<typeof auditControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAuditControllerList<TData = Awaited<ReturnType<typeof auditControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAuditControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

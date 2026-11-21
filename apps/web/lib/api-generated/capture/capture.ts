@@ -6,18 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 import {
-  useQuery
+  useMutation
 } from '@tanstack/react-query';
 import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseQueryOptions,
-  UseQueryResult
+  UseMutationOptions,
+  UseMutationResult
 } from '@tanstack/react-query';
 
 import { customInstance } from '../../custom-instance';
@@ -27,33 +22,6 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
-  const result = { queryKey } as T & { queryKey: K };
-  for (const key of Object.keys(query)) {
-    // The explicit queryKey always wins, matching the previous
-    // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
-    Object.defineProperty(result, key, {
-      enumerable: true,
-      configurable: true,
-      get: () => (query as Record<string, unknown>)[key],
-    });
-  }
-  return result;
-};
-
-export type captureControllerCreateResponse201 = {
-  data: void
-  status: 201
-}
-
-export type captureControllerCreateResponseSuccess = (captureControllerCreateResponse201) & {
-  headers: Headers;
-};
-;
-
-export type captureControllerCreateResponse = (captureControllerCreateResponseSuccess)
-
 export const getCaptureControllerCreateUrl = () => {
 
 
@@ -62,9 +30,9 @@ export const getCaptureControllerCreateUrl = () => {
   return `/public/leads`
 }
 
-export const captureControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<captureControllerCreateResponse> => {
+export const captureControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<captureControllerCreateResponse>(getCaptureControllerCreateUrl(),
+  return customInstance<void>(getCaptureControllerCreateUrl(),
   {
     ...options,
     method: 'POST'
@@ -77,73 +45,47 @@ export const captureControllerCreate = async ( options?: Parameters<typeof custo
 
 
 
-export const getCaptureControllerCreateQueryKey = () => {
-    return [
-    'POST', `/public/leads`
-    ] as const;
+export const getCaptureControllerCreateMutationKey = () => ['captureControllerCreate'] as const;
+
+export const getCaptureControllerCreateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof captureControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof captureControllerCreate>>, TError,void, TContext> => {
+
+const mutationKey = getCaptureControllerCreateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof captureControllerCreate>>, void> = () => {
+
+
+          return  captureControllerCreate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CaptureControllerCreateMutationResult = NonNullable<Awaited<ReturnType<typeof captureControllerCreate>>>
+
+    export type CaptureControllerCreateMutationError = unknown
+
+
+    export const useCaptureControllerCreate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof captureControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof captureControllerCreate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getCaptureControllerCreateMutationOptions(options), queryClient);
     }
-
-
-export const getCaptureControllerCreateQueryOptions = <TData = Awaited<ReturnType<typeof captureControllerCreate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof captureControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCaptureControllerCreateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof captureControllerCreate>>> = ({ signal }) => captureControllerCreate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof captureControllerCreate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CaptureControllerCreateQueryResult = NonNullable<Awaited<ReturnType<typeof captureControllerCreate>>>
-export type CaptureControllerCreateQueryError = unknown
-
-
-export function useCaptureControllerCreate<TData = Awaited<ReturnType<typeof captureControllerCreate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof captureControllerCreate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof captureControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof captureControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCaptureControllerCreate<TData = Awaited<ReturnType<typeof captureControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof captureControllerCreate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof captureControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof captureControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCaptureControllerCreate<TData = Awaited<ReturnType<typeof captureControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof captureControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCaptureControllerCreate<TData = Awaited<ReturnType<typeof captureControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof captureControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCaptureControllerCreateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

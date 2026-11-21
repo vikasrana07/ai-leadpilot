@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type channelsControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type channelsControllerListResponseSuccess = (channelsControllerListResponse200) & {
-  headers: Headers;
-};
-;
-
-export type channelsControllerListResponse = (channelsControllerListResponseSuccess)
-
 export const getChannelsControllerListUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getChannelsControllerListUrl = () => {
   return `/channels`
 }
 
-export const channelsControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerListResponse> => {
+export const channelsControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerListResponse>(getChannelsControllerListUrl(),
+  return customInstance<void>(getChannelsControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const channelsControllerList = async ( options?: Parameters<typeof custom
 
 
 
-export const getChannelsControllerListMutationKey = () => ['channelsControllerList'] as const;
-
-export const getChannelsControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getChannelsControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerList>>, void> = () => {
-
-
-          return  channelsControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ChannelsControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerList>>>
-
-    export type ChannelsControllerListMutationError = unknown
-
-
-    export const useChannelsControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof channelsControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getChannelsControllerListMutationOptions(options), queryClient);
+export const getChannelsControllerListQueryKey = () => {
+    return [
+    `/channels`
+    ] as const;
     }
-    export type channelsControllerConnectResponse201 = {
-  data: void
-  status: 201
+
+
+export const getChannelsControllerListQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerList>>> = ({ signal }) => channelsControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type channelsControllerConnectResponseSuccess = (channelsControllerConnectResponse201) & {
-  headers: Headers;
-};
-;
+export type ChannelsControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerList>>>
+export type ChannelsControllerListQueryError = unknown
 
-export type channelsControllerConnectResponse = (channelsControllerConnectResponseSuccess)
+
+export function useChannelsControllerList<TData = Awaited<ReturnType<typeof channelsControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof channelsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof channelsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerList<TData = Awaited<ReturnType<typeof channelsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof channelsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof channelsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerList<TData = Awaited<ReturnType<typeof channelsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerList<TData = Awaited<ReturnType<typeof channelsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getChannelsControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getChannelsControllerConnectUrl = () => {
 
@@ -145,9 +147,9 @@ export const getChannelsControllerConnectUrl = () => {
   return `/channels/whatsapp`
 }
 
-export const channelsControllerConnect = async ( options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerConnectResponse> => {
+export const channelsControllerConnect = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerConnectResponse>(getChannelsControllerConnectUrl(),
+  return customInstance<void>(getChannelsControllerConnectUrl(),
   {
     ...options,
     method: 'POST'
@@ -160,89 +162,51 @@ export const channelsControllerConnect = async ( options?: Parameters<typeof cus
 
 
 
-export const getChannelsControllerConnectQueryKey = () => {
-    return [
-    'POST', `/channels/whatsapp`
-    ] as const;
+export const getChannelsControllerConnectMutationKey = () => ['channelsControllerConnect'] as const;
+
+export const getChannelsControllerConnectMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerConnect>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerConnect>>, TError,void, TContext> => {
+
+const mutationKey = getChannelsControllerConnectMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerConnect>>, void> = () => {
+
+
+          return  channelsControllerConnect(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChannelsControllerConnectMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerConnect>>>
+
+    export type ChannelsControllerConnectMutationError = unknown
+
+
+    export const useChannelsControllerConnect = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerConnect>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof channelsControllerConnect>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getChannelsControllerConnectMutationOptions(options), queryClient);
     }
-
-
-export const getChannelsControllerConnectQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerConnect>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnect>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerConnectQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerConnect>>> = ({ signal }) => channelsControllerConnect({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnect>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChannelsControllerConnectQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerConnect>>>
-export type ChannelsControllerConnectQueryError = unknown
-
-
-export function useChannelsControllerConnect<TData = Awaited<ReturnType<typeof channelsControllerConnect>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnect>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerConnect>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerConnect>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerConnect<TData = Awaited<ReturnType<typeof channelsControllerConnect>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnect>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerConnect>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerConnect>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerConnect<TData = Awaited<ReturnType<typeof channelsControllerConnect>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnect>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerConnect<TData = Awaited<ReturnType<typeof channelsControllerConnect>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnect>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getChannelsControllerConnectQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type channelsControllerEmbeddedConfigResponse200 = {
-  data: void
-  status: 200
-}
-
-export type channelsControllerEmbeddedConfigResponseSuccess = (channelsControllerEmbeddedConfigResponse200) & {
-  headers: Headers;
-};
-;
-
-export type channelsControllerEmbeddedConfigResponse = (channelsControllerEmbeddedConfigResponseSuccess)
-
-export const getChannelsControllerEmbeddedConfigUrl = () => {
+    export const getChannelsControllerEmbeddedConfigUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getChannelsControllerEmbeddedConfigUrl = () => {
   return `/channels/embedded-signup`
 }
 
-export const channelsControllerEmbeddedConfig = async ( options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerEmbeddedConfigResponse> => {
+export const channelsControllerEmbeddedConfig = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerEmbeddedConfigResponse>(getChannelsControllerEmbeddedConfigUrl(),
+  return customInstance<void>(getChannelsControllerEmbeddedConfigUrl(),
   {
     ...options,
     method: 'GET'
@@ -265,61 +229,75 @@ export const channelsControllerEmbeddedConfig = async ( options?: Parameters<typ
 
 
 
-export const getChannelsControllerEmbeddedConfigMutationKey = () => ['channelsControllerEmbeddedConfig'] as const;
-
-export const getChannelsControllerEmbeddedConfigMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError,void, TContext> => {
-
-const mutationKey = getChannelsControllerEmbeddedConfigMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, void> = () => {
-
-
-          return  channelsControllerEmbeddedConfig(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ChannelsControllerEmbeddedConfigMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>>
-
-    export type ChannelsControllerEmbeddedConfigMutationError = unknown
-
-
-    export const useChannelsControllerEmbeddedConfig = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getChannelsControllerEmbeddedConfigMutationOptions(options), queryClient);
+export const getChannelsControllerEmbeddedConfigQueryKey = () => {
+    return [
+    `/channels/embedded-signup`
+    ] as const;
     }
-    export type channelsControllerConnectEmbeddedResponse201 = {
-  data: void
-  status: 201
+
+
+export const getChannelsControllerEmbeddedConfigQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerEmbeddedConfigQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>> = ({ signal }) => channelsControllerEmbeddedConfig({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type channelsControllerConnectEmbeddedResponseSuccess = (channelsControllerConnectEmbeddedResponse201) & {
-  headers: Headers;
-};
-;
+export type ChannelsControllerEmbeddedConfigQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>>
+export type ChannelsControllerEmbeddedConfigQueryError = unknown
 
-export type channelsControllerConnectEmbeddedResponse = (channelsControllerConnectEmbeddedResponseSuccess)
+
+export function useChannelsControllerEmbeddedConfig<TData = Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>,
+          TError,
+          Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerEmbeddedConfig<TData = Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>,
+          TError,
+          Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerEmbeddedConfig<TData = Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerEmbeddedConfig<TData = Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerEmbeddedConfig>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getChannelsControllerEmbeddedConfigQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getChannelsControllerConnectEmbeddedUrl = () => {
 
@@ -329,9 +307,9 @@ export const getChannelsControllerConnectEmbeddedUrl = () => {
   return `/channels/whatsapp/embedded`
 }
 
-export const channelsControllerConnectEmbedded = async ( options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerConnectEmbeddedResponse> => {
+export const channelsControllerConnectEmbedded = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerConnectEmbeddedResponse>(getChannelsControllerConnectEmbeddedUrl(),
+  return customInstance<void>(getChannelsControllerConnectEmbeddedUrl(),
   {
     ...options,
     method: 'POST'
@@ -344,89 +322,51 @@ export const channelsControllerConnectEmbedded = async ( options?: Parameters<ty
 
 
 
-export const getChannelsControllerConnectEmbeddedQueryKey = () => {
-    return [
-    'POST', `/channels/whatsapp/embedded`
-    ] as const;
+export const getChannelsControllerConnectEmbeddedMutationKey = () => ['channelsControllerConnectEmbedded'] as const;
+
+export const getChannelsControllerConnectEmbeddedMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError,void, TContext> => {
+
+const mutationKey = getChannelsControllerConnectEmbeddedMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, void> = () => {
+
+
+          return  channelsControllerConnectEmbedded(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChannelsControllerConnectEmbeddedMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>>
+
+    export type ChannelsControllerConnectEmbeddedMutationError = unknown
+
+
+    export const useChannelsControllerConnectEmbedded = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getChannelsControllerConnectEmbeddedMutationOptions(options), queryClient);
     }
-
-
-export const getChannelsControllerConnectEmbeddedQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerConnectEmbeddedQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>> = ({ signal }) => channelsControllerConnectEmbedded({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChannelsControllerConnectEmbeddedQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>>
-export type ChannelsControllerConnectEmbeddedQueryError = unknown
-
-
-export function useChannelsControllerConnectEmbedded<TData = Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerConnectEmbedded<TData = Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerConnectEmbedded<TData = Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerConnectEmbedded<TData = Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerConnectEmbedded>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getChannelsControllerConnectEmbeddedQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type channelsControllerTestResponse200 = {
-  data: void
-  status: 200
-}
-
-export type channelsControllerTestResponseSuccess = (channelsControllerTestResponse200) & {
-  headers: Headers;
-};
-;
-
-export type channelsControllerTestResponse = (channelsControllerTestResponseSuccess)
-
-export const getChannelsControllerTestUrl = (id: string,) => {
+    export const getChannelsControllerTestUrl = (id: string,) => {
 
 
 
@@ -434,9 +374,9 @@ export const getChannelsControllerTestUrl = (id: string,) => {
   return `/channels/${id}/test`
 }
 
-export const channelsControllerTest = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerTestResponse> => {
+export const channelsControllerTest = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerTestResponse>(getChannelsControllerTestUrl(id),
+  return customInstance<void>(getChannelsControllerTestUrl(id),
   {
     ...options,
     method: 'POST'
@@ -449,89 +389,51 @@ export const channelsControllerTest = async (id: string, options?: Parameters<ty
 
 
 
-export const getChannelsControllerTestQueryKey = (id: string,) => {
-    return [
-    'POST', `/channels/${id}/test`
-    ] as const;
+export const getChannelsControllerTestMutationKey = () => ['channelsControllerTest'] as const;
+
+export const getChannelsControllerTestMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerTest>>, TError,ChannelsControllerTestMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerTest>>, TError,ChannelsControllerTestMutationVariables, TContext> => {
+
+const mutationKey = getChannelsControllerTestMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerTest>>, ChannelsControllerTestMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  channelsControllerTest(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChannelsControllerTestMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerTest>>>
+
+    export type ChannelsControllerTestMutationError = unknown
+    export type ChannelsControllerTestMutationVariables = {id: string}
+
+    export const useChannelsControllerTest = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerTest>>, TError,ChannelsControllerTestMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof channelsControllerTest>>,
+        TError,
+        ChannelsControllerTestMutationVariables,
+        TContext
+      > => {
+      return useMutation(getChannelsControllerTestMutationOptions(options), queryClient);
     }
-
-
-export const getChannelsControllerTestQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerTest>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTest>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerTestQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerTest>>> = ({ signal }) => channelsControllerTest(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTest>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChannelsControllerTestQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerTest>>>
-export type ChannelsControllerTestQueryError = unknown
-
-
-export function useChannelsControllerTest<TData = Awaited<ReturnType<typeof channelsControllerTest>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTest>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerTest>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerTest>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerTest<TData = Awaited<ReturnType<typeof channelsControllerTest>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTest>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerTest>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerTest>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerTest<TData = Awaited<ReturnType<typeof channelsControllerTest>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTest>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerTest<TData = Awaited<ReturnType<typeof channelsControllerTest>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTest>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getChannelsControllerTestQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type channelsControllerCredsResponse204 = {
-  data: void
-  status: 204
-}
-
-export type channelsControllerCredsResponseSuccess = (channelsControllerCredsResponse204) & {
-  headers: Headers;
-};
-;
-
-export type channelsControllerCredsResponse = (channelsControllerCredsResponseSuccess)
-
-export const getChannelsControllerCredsUrl = (id: string,) => {
+    export const getChannelsControllerCredsUrl = (id: string,) => {
 
 
 
@@ -539,9 +441,9 @@ export const getChannelsControllerCredsUrl = (id: string,) => {
   return `/channels/${id}/credentials`
 }
 
-export const channelsControllerCreds = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerCredsResponse> => {
+export const channelsControllerCreds = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerCredsResponse>(getChannelsControllerCredsUrl(id),
+  return customInstance<void>(getChannelsControllerCredsUrl(id),
   {
     ...options,
     method: 'PUT'
@@ -554,89 +456,51 @@ export const channelsControllerCreds = async (id: string, options?: Parameters<t
 
 
 
-export const getChannelsControllerCredsQueryKey = (id: string,) => {
-    return [
-    'PUT', `/channels/${id}/credentials`
-    ] as const;
+export const getChannelsControllerCredsMutationKey = () => ['channelsControllerCreds'] as const;
+
+export const getChannelsControllerCredsMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerCreds>>, TError,ChannelsControllerCredsMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerCreds>>, TError,ChannelsControllerCredsMutationVariables, TContext> => {
+
+const mutationKey = getChannelsControllerCredsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerCreds>>, ChannelsControllerCredsMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  channelsControllerCreds(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChannelsControllerCredsMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerCreds>>>
+
+    export type ChannelsControllerCredsMutationError = unknown
+    export type ChannelsControllerCredsMutationVariables = {id: string}
+
+    export const useChannelsControllerCreds = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerCreds>>, TError,ChannelsControllerCredsMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof channelsControllerCreds>>,
+        TError,
+        ChannelsControllerCredsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getChannelsControllerCredsMutationOptions(options), queryClient);
     }
-
-
-export const getChannelsControllerCredsQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerCreds>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerCreds>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerCredsQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerCreds>>> = ({ signal }) => channelsControllerCreds(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerCreds>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChannelsControllerCredsQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerCreds>>>
-export type ChannelsControllerCredsQueryError = unknown
-
-
-export function useChannelsControllerCreds<TData = Awaited<ReturnType<typeof channelsControllerCreds>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerCreds>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerCreds>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerCreds>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerCreds<TData = Awaited<ReturnType<typeof channelsControllerCreds>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerCreds>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerCreds>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerCreds>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerCreds<TData = Awaited<ReturnType<typeof channelsControllerCreds>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerCreds>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerCreds<TData = Awaited<ReturnType<typeof channelsControllerCreds>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerCreds>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getChannelsControllerCredsQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type channelsControllerDisableResponse204 = {
-  data: void
-  status: 204
-}
-
-export type channelsControllerDisableResponseSuccess = (channelsControllerDisableResponse204) & {
-  headers: Headers;
-};
-;
-
-export type channelsControllerDisableResponse = (channelsControllerDisableResponseSuccess)
-
-export const getChannelsControllerDisableUrl = (id: string,) => {
+    export const getChannelsControllerDisableUrl = (id: string,) => {
 
 
 
@@ -644,9 +508,9 @@ export const getChannelsControllerDisableUrl = (id: string,) => {
   return `/channels/${id}`
 }
 
-export const channelsControllerDisable = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerDisableResponse> => {
+export const channelsControllerDisable = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerDisableResponse>(getChannelsControllerDisableUrl(id),
+  return customInstance<void>(getChannelsControllerDisableUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -659,89 +523,51 @@ export const channelsControllerDisable = async (id: string, options?: Parameters
 
 
 
-export const getChannelsControllerDisableQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/channels/${id}`
-    ] as const;
+export const getChannelsControllerDisableMutationKey = () => ['channelsControllerDisable'] as const;
+
+export const getChannelsControllerDisableMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerDisable>>, TError,ChannelsControllerDisableMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerDisable>>, TError,ChannelsControllerDisableMutationVariables, TContext> => {
+
+const mutationKey = getChannelsControllerDisableMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerDisable>>, ChannelsControllerDisableMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  channelsControllerDisable(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChannelsControllerDisableMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerDisable>>>
+
+    export type ChannelsControllerDisableMutationError = unknown
+    export type ChannelsControllerDisableMutationVariables = {id: string}
+
+    export const useChannelsControllerDisable = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerDisable>>, TError,ChannelsControllerDisableMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof channelsControllerDisable>>,
+        TError,
+        ChannelsControllerDisableMutationVariables,
+        TContext
+      > => {
+      return useMutation(getChannelsControllerDisableMutationOptions(options), queryClient);
     }
-
-
-export const getChannelsControllerDisableQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerDisable>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerDisable>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerDisableQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerDisable>>> = ({ signal }) => channelsControllerDisable(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerDisable>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChannelsControllerDisableQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerDisable>>>
-export type ChannelsControllerDisableQueryError = unknown
-
-
-export function useChannelsControllerDisable<TData = Awaited<ReturnType<typeof channelsControllerDisable>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerDisable>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerDisable>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerDisable>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerDisable<TData = Awaited<ReturnType<typeof channelsControllerDisable>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerDisable>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerDisable>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerDisable>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerDisable<TData = Awaited<ReturnType<typeof channelsControllerDisable>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerDisable>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerDisable<TData = Awaited<ReturnType<typeof channelsControllerDisable>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerDisable>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getChannelsControllerDisableQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type channelsControllerTemplatesResponse200 = {
-  data: void
-  status: 200
-}
-
-export type channelsControllerTemplatesResponseSuccess = (channelsControllerTemplatesResponse200) & {
-  headers: Headers;
-};
-;
-
-export type channelsControllerTemplatesResponse = (channelsControllerTemplatesResponseSuccess)
-
-export const getChannelsControllerTemplatesUrl = () => {
+    export const getChannelsControllerTemplatesUrl = () => {
 
 
 
@@ -749,9 +575,9 @@ export const getChannelsControllerTemplatesUrl = () => {
   return `/whatsapp/templates`
 }
 
-export const channelsControllerTemplates = async ( options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerTemplatesResponse> => {
+export const channelsControllerTemplates = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerTemplatesResponse>(getChannelsControllerTemplatesUrl(),
+  return customInstance<void>(getChannelsControllerTemplatesUrl(),
   {
     ...options,
     method: 'GET'
@@ -764,61 +590,75 @@ export const channelsControllerTemplates = async ( options?: Parameters<typeof c
 
 
 
-export const getChannelsControllerTemplatesMutationKey = () => ['channelsControllerTemplates'] as const;
-
-export const getChannelsControllerTemplatesMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerTemplates>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerTemplates>>, TError,void, TContext> => {
-
-const mutationKey = getChannelsControllerTemplatesMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerTemplates>>, void> = () => {
-
-
-          return  channelsControllerTemplates(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ChannelsControllerTemplatesMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerTemplates>>>
-
-    export type ChannelsControllerTemplatesMutationError = unknown
-
-
-    export const useChannelsControllerTemplates = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerTemplates>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof channelsControllerTemplates>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getChannelsControllerTemplatesMutationOptions(options), queryClient);
+export const getChannelsControllerTemplatesQueryKey = () => {
+    return [
+    `/whatsapp/templates`
+    ] as const;
     }
-    export type channelsControllerAddTemplateResponse201 = {
-  data: void
-  status: 201
+
+
+export const getChannelsControllerTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerTemplates>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTemplates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerTemplatesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerTemplates>>> = ({ signal }) => channelsControllerTemplates({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type channelsControllerAddTemplateResponseSuccess = (channelsControllerAddTemplateResponse201) & {
-  headers: Headers;
-};
-;
+export type ChannelsControllerTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerTemplates>>>
+export type ChannelsControllerTemplatesQueryError = unknown
 
-export type channelsControllerAddTemplateResponse = (channelsControllerAddTemplateResponseSuccess)
+
+export function useChannelsControllerTemplates<TData = Awaited<ReturnType<typeof channelsControllerTemplates>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTemplates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof channelsControllerTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof channelsControllerTemplates>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerTemplates<TData = Awaited<ReturnType<typeof channelsControllerTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTemplates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof channelsControllerTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof channelsControllerTemplates>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerTemplates<TData = Awaited<ReturnType<typeof channelsControllerTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTemplates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerTemplates<TData = Awaited<ReturnType<typeof channelsControllerTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerTemplates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getChannelsControllerTemplatesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getChannelsControllerAddTemplateUrl = () => {
 
@@ -828,9 +668,9 @@ export const getChannelsControllerAddTemplateUrl = () => {
   return `/whatsapp/templates`
 }
 
-export const channelsControllerAddTemplate = async ( options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerAddTemplateResponse> => {
+export const channelsControllerAddTemplate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerAddTemplateResponse>(getChannelsControllerAddTemplateUrl(),
+  return customInstance<void>(getChannelsControllerAddTemplateUrl(),
   {
     ...options,
     method: 'POST'
@@ -843,89 +683,51 @@ export const channelsControllerAddTemplate = async ( options?: Parameters<typeof
 
 
 
-export const getChannelsControllerAddTemplateQueryKey = () => {
-    return [
-    'POST', `/whatsapp/templates`
-    ] as const;
+export const getChannelsControllerAddTemplateMutationKey = () => ['channelsControllerAddTemplate'] as const;
+
+export const getChannelsControllerAddTemplateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError,void, TContext> => {
+
+const mutationKey = getChannelsControllerAddTemplateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerAddTemplate>>, void> = () => {
+
+
+          return  channelsControllerAddTemplate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChannelsControllerAddTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerAddTemplate>>>
+
+    export type ChannelsControllerAddTemplateMutationError = unknown
+
+
+    export const useChannelsControllerAddTemplate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof channelsControllerAddTemplate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getChannelsControllerAddTemplateMutationOptions(options), queryClient);
     }
-
-
-export const getChannelsControllerAddTemplateQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerAddTemplateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerAddTemplate>>> = ({ signal }) => channelsControllerAddTemplate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChannelsControllerAddTemplateQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerAddTemplate>>>
-export type ChannelsControllerAddTemplateQueryError = unknown
-
-
-export function useChannelsControllerAddTemplate<TData = Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerAddTemplate>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerAddTemplate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerAddTemplate<TData = Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerAddTemplate>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerAddTemplate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerAddTemplate<TData = Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerAddTemplate<TData = Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerAddTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getChannelsControllerAddTemplateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type channelsControllerSyncTemplatesResponse200 = {
-  data: void
-  status: 200
-}
-
-export type channelsControllerSyncTemplatesResponseSuccess = (channelsControllerSyncTemplatesResponse200) & {
-  headers: Headers;
-};
-;
-
-export type channelsControllerSyncTemplatesResponse = (channelsControllerSyncTemplatesResponseSuccess)
-
-export const getChannelsControllerSyncTemplatesUrl = () => {
+    export const getChannelsControllerSyncTemplatesUrl = () => {
 
 
 
@@ -933,9 +735,9 @@ export const getChannelsControllerSyncTemplatesUrl = () => {
   return `/whatsapp/templates/sync`
 }
 
-export const channelsControllerSyncTemplates = async ( options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerSyncTemplatesResponse> => {
+export const channelsControllerSyncTemplates = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerSyncTemplatesResponse>(getChannelsControllerSyncTemplatesUrl(),
+  return customInstance<void>(getChannelsControllerSyncTemplatesUrl(),
   {
     ...options,
     method: 'POST'
@@ -948,89 +750,51 @@ export const channelsControllerSyncTemplates = async ( options?: Parameters<type
 
 
 
-export const getChannelsControllerSyncTemplatesQueryKey = () => {
-    return [
-    'POST', `/whatsapp/templates/sync`
-    ] as const;
+export const getChannelsControllerSyncTemplatesMutationKey = () => ['channelsControllerSyncTemplates'] as const;
+
+export const getChannelsControllerSyncTemplatesMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError,void, TContext> => {
+
+const mutationKey = getChannelsControllerSyncTemplatesMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, void> = () => {
+
+
+          return  channelsControllerSyncTemplates(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChannelsControllerSyncTemplatesMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>>
+
+    export type ChannelsControllerSyncTemplatesMutationError = unknown
+
+
+    export const useChannelsControllerSyncTemplates = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof channelsControllerSyncTemplates>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getChannelsControllerSyncTemplatesMutationOptions(options), queryClient);
     }
-
-
-export const getChannelsControllerSyncTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerSyncTemplatesQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>> = ({ signal }) => channelsControllerSyncTemplates({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChannelsControllerSyncTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>>
-export type ChannelsControllerSyncTemplatesQueryError = unknown
-
-
-export function useChannelsControllerSyncTemplates<TData = Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerSyncTemplates>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerSyncTemplates>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerSyncTemplates<TData = Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerSyncTemplates>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerSyncTemplates>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerSyncTemplates<TData = Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerSyncTemplates<TData = Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSyncTemplates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getChannelsControllerSyncTemplatesQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type channelsControllerRmTemplateResponse204 = {
-  data: void
-  status: 204
-}
-
-export type channelsControllerRmTemplateResponseSuccess = (channelsControllerRmTemplateResponse204) & {
-  headers: Headers;
-};
-;
-
-export type channelsControllerRmTemplateResponse = (channelsControllerRmTemplateResponseSuccess)
-
-export const getChannelsControllerRmTemplateUrl = (id: string,) => {
+    export const getChannelsControllerRmTemplateUrl = (id: string,) => {
 
 
 
@@ -1038,9 +802,9 @@ export const getChannelsControllerRmTemplateUrl = (id: string,) => {
   return `/whatsapp/templates/${id}`
 }
 
-export const channelsControllerRmTemplate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerRmTemplateResponse> => {
+export const channelsControllerRmTemplate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerRmTemplateResponse>(getChannelsControllerRmTemplateUrl(id),
+  return customInstance<void>(getChannelsControllerRmTemplateUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -1053,89 +817,51 @@ export const channelsControllerRmTemplate = async (id: string, options?: Paramet
 
 
 
-export const getChannelsControllerRmTemplateQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/whatsapp/templates/${id}`
-    ] as const;
+export const getChannelsControllerRmTemplateMutationKey = () => ['channelsControllerRmTemplate'] as const;
+
+export const getChannelsControllerRmTemplateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError,ChannelsControllerRmTemplateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError,ChannelsControllerRmTemplateMutationVariables, TContext> => {
+
+const mutationKey = getChannelsControllerRmTemplateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerRmTemplate>>, ChannelsControllerRmTemplateMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  channelsControllerRmTemplate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChannelsControllerRmTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerRmTemplate>>>
+
+    export type ChannelsControllerRmTemplateMutationError = unknown
+    export type ChannelsControllerRmTemplateMutationVariables = {id: string}
+
+    export const useChannelsControllerRmTemplate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError,ChannelsControllerRmTemplateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof channelsControllerRmTemplate>>,
+        TError,
+        ChannelsControllerRmTemplateMutationVariables,
+        TContext
+      > => {
+      return useMutation(getChannelsControllerRmTemplateMutationOptions(options), queryClient);
     }
-
-
-export const getChannelsControllerRmTemplateQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerRmTemplateQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerRmTemplate>>> = ({ signal }) => channelsControllerRmTemplate(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChannelsControllerRmTemplateQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerRmTemplate>>>
-export type ChannelsControllerRmTemplateQueryError = unknown
-
-
-export function useChannelsControllerRmTemplate<TData = Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerRmTemplate>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerRmTemplate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerRmTemplate<TData = Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerRmTemplate>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerRmTemplate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerRmTemplate<TData = Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerRmTemplate<TData = Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRmTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getChannelsControllerRmTemplateQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type channelsControllerWidgetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type channelsControllerWidgetResponseSuccess = (channelsControllerWidgetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type channelsControllerWidgetResponse = (channelsControllerWidgetResponseSuccess)
-
-export const getChannelsControllerWidgetUrl = () => {
+    export const getChannelsControllerWidgetUrl = () => {
 
 
 
@@ -1143,9 +869,9 @@ export const getChannelsControllerWidgetUrl = () => {
   return `/widget-config`
 }
 
-export const channelsControllerWidget = async ( options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerWidgetResponse> => {
+export const channelsControllerWidget = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerWidgetResponse>(getChannelsControllerWidgetUrl(),
+  return customInstance<void>(getChannelsControllerWidgetUrl(),
   {
     ...options,
     method: 'GET'
@@ -1158,61 +884,75 @@ export const channelsControllerWidget = async ( options?: Parameters<typeof cust
 
 
 
-export const getChannelsControllerWidgetMutationKey = () => ['channelsControllerWidget'] as const;
-
-export const getChannelsControllerWidgetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerWidget>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerWidget>>, TError,void, TContext> => {
-
-const mutationKey = getChannelsControllerWidgetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerWidget>>, void> = () => {
-
-
-          return  channelsControllerWidget(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ChannelsControllerWidgetMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerWidget>>>
-
-    export type ChannelsControllerWidgetMutationError = unknown
-
-
-    export const useChannelsControllerWidget = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerWidget>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof channelsControllerWidget>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getChannelsControllerWidgetMutationOptions(options), queryClient);
+export const getChannelsControllerWidgetQueryKey = () => {
+    return [
+    `/widget-config`
+    ] as const;
     }
-    export type channelsControllerSaveWidgetResponse200 = {
-  data: void
-  status: 200
+
+
+export const getChannelsControllerWidgetQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerWidget>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerWidget>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerWidgetQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerWidget>>> = ({ signal }) => channelsControllerWidget({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerWidget>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type channelsControllerSaveWidgetResponseSuccess = (channelsControllerSaveWidgetResponse200) & {
-  headers: Headers;
-};
-;
+export type ChannelsControllerWidgetQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerWidget>>>
+export type ChannelsControllerWidgetQueryError = unknown
 
-export type channelsControllerSaveWidgetResponse = (channelsControllerSaveWidgetResponseSuccess)
+
+export function useChannelsControllerWidget<TData = Awaited<ReturnType<typeof channelsControllerWidget>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerWidget>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof channelsControllerWidget>>,
+          TError,
+          Awaited<ReturnType<typeof channelsControllerWidget>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerWidget<TData = Awaited<ReturnType<typeof channelsControllerWidget>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerWidget>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof channelsControllerWidget>>,
+          TError,
+          Awaited<ReturnType<typeof channelsControllerWidget>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerWidget<TData = Awaited<ReturnType<typeof channelsControllerWidget>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerWidget>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useChannelsControllerWidget<TData = Awaited<ReturnType<typeof channelsControllerWidget>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerWidget>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getChannelsControllerWidgetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getChannelsControllerSaveWidgetUrl = () => {
 
@@ -1222,9 +962,9 @@ export const getChannelsControllerSaveWidgetUrl = () => {
   return `/widget-config`
 }
 
-export const channelsControllerSaveWidget = async ( options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerSaveWidgetResponse> => {
+export const channelsControllerSaveWidget = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerSaveWidgetResponse>(getChannelsControllerSaveWidgetUrl(),
+  return customInstance<void>(getChannelsControllerSaveWidgetUrl(),
   {
     ...options,
     method: 'PUT'
@@ -1237,89 +977,51 @@ export const channelsControllerSaveWidget = async ( options?: Parameters<typeof 
 
 
 
-export const getChannelsControllerSaveWidgetQueryKey = () => {
-    return [
-    'PUT', `/widget-config`
-    ] as const;
+export const getChannelsControllerSaveWidgetMutationKey = () => ['channelsControllerSaveWidget'] as const;
+
+export const getChannelsControllerSaveWidgetMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError,void, TContext> => {
+
+const mutationKey = getChannelsControllerSaveWidgetMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerSaveWidget>>, void> = () => {
+
+
+          return  channelsControllerSaveWidget(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChannelsControllerSaveWidgetMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerSaveWidget>>>
+
+    export type ChannelsControllerSaveWidgetMutationError = unknown
+
+
+    export const useChannelsControllerSaveWidget = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof channelsControllerSaveWidget>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getChannelsControllerSaveWidgetMutationOptions(options), queryClient);
     }
-
-
-export const getChannelsControllerSaveWidgetQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerSaveWidgetQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerSaveWidget>>> = ({ signal }) => channelsControllerSaveWidget({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChannelsControllerSaveWidgetQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerSaveWidget>>>
-export type ChannelsControllerSaveWidgetQueryError = unknown
-
-
-export function useChannelsControllerSaveWidget<TData = Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerSaveWidget>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerSaveWidget>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerSaveWidget<TData = Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerSaveWidget>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerSaveWidget>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerSaveWidget<TData = Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerSaveWidget<TData = Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerSaveWidget>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getChannelsControllerSaveWidgetQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type channelsControllerRotateResponse200 = {
-  data: void
-  status: 200
-}
-
-export type channelsControllerRotateResponseSuccess = (channelsControllerRotateResponse200) & {
-  headers: Headers;
-};
-;
-
-export type channelsControllerRotateResponse = (channelsControllerRotateResponseSuccess)
-
-export const getChannelsControllerRotateUrl = () => {
+    export const getChannelsControllerRotateUrl = () => {
 
 
 
@@ -1327,9 +1029,9 @@ export const getChannelsControllerRotateUrl = () => {
   return `/widget-config/rotate-key`
 }
 
-export const channelsControllerRotate = async ( options?: Parameters<typeof customInstance>[1]): Promise<channelsControllerRotateResponse> => {
+export const channelsControllerRotate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<channelsControllerRotateResponse>(getChannelsControllerRotateUrl(),
+  return customInstance<void>(getChannelsControllerRotateUrl(),
   {
     ...options,
     method: 'POST'
@@ -1342,73 +1044,47 @@ export const channelsControllerRotate = async ( options?: Parameters<typeof cust
 
 
 
-export const getChannelsControllerRotateQueryKey = () => {
-    return [
-    'POST', `/widget-config/rotate-key`
-    ] as const;
+export const getChannelsControllerRotateMutationKey = () => ['channelsControllerRotate'] as const;
+
+export const getChannelsControllerRotateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerRotate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof channelsControllerRotate>>, TError,void, TContext> => {
+
+const mutationKey = getChannelsControllerRotateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof channelsControllerRotate>>, void> = () => {
+
+
+          return  channelsControllerRotate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChannelsControllerRotateMutationResult = NonNullable<Awaited<ReturnType<typeof channelsControllerRotate>>>
+
+    export type ChannelsControllerRotateMutationError = unknown
+
+
+    export const useChannelsControllerRotate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof channelsControllerRotate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof channelsControllerRotate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getChannelsControllerRotateMutationOptions(options), queryClient);
     }
-
-
-export const getChannelsControllerRotateQueryOptions = <TData = Awaited<ReturnType<typeof channelsControllerRotate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRotate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getChannelsControllerRotateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof channelsControllerRotate>>> = ({ signal }) => channelsControllerRotate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRotate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ChannelsControllerRotateQueryResult = NonNullable<Awaited<ReturnType<typeof channelsControllerRotate>>>
-export type ChannelsControllerRotateQueryError = unknown
-
-
-export function useChannelsControllerRotate<TData = Awaited<ReturnType<typeof channelsControllerRotate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRotate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerRotate>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerRotate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerRotate<TData = Awaited<ReturnType<typeof channelsControllerRotate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRotate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof channelsControllerRotate>>,
-          TError,
-          Awaited<ReturnType<typeof channelsControllerRotate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerRotate<TData = Awaited<ReturnType<typeof channelsControllerRotate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRotate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useChannelsControllerRotate<TData = Awaited<ReturnType<typeof channelsControllerRotate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof channelsControllerRotate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getChannelsControllerRotateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

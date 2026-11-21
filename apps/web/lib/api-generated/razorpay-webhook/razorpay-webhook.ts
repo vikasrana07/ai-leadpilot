@@ -6,18 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 import {
-  useQuery
+  useMutation
 } from '@tanstack/react-query';
 import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseQueryOptions,
-  UseQueryResult
+  UseMutationOptions,
+  UseMutationResult
 } from '@tanstack/react-query';
 
 import { customInstance } from '../../custom-instance';
@@ -27,33 +22,6 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
-  const result = { queryKey } as T & { queryKey: K };
-  for (const key of Object.keys(query)) {
-    // The explicit queryKey always wins, matching the previous
-    // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
-    Object.defineProperty(result, key, {
-      enumerable: true,
-      configurable: true,
-      get: () => (query as Record<string, unknown>)[key],
-    });
-  }
-  return result;
-};
-
-export type razorpayWebhookControllerReceiveResponse200 = {
-  data: void
-  status: 200
-}
-
-export type razorpayWebhookControllerReceiveResponseSuccess = (razorpayWebhookControllerReceiveResponse200) & {
-  headers: Headers;
-};
-;
-
-export type razorpayWebhookControllerReceiveResponse = (razorpayWebhookControllerReceiveResponseSuccess)
-
 export const getRazorpayWebhookControllerReceiveUrl = () => {
 
 
@@ -62,9 +30,9 @@ export const getRazorpayWebhookControllerReceiveUrl = () => {
   return `/webhooks/razorpay`
 }
 
-export const razorpayWebhookControllerReceive = async ( options?: Parameters<typeof customInstance>[1]): Promise<razorpayWebhookControllerReceiveResponse> => {
+export const razorpayWebhookControllerReceive = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<razorpayWebhookControllerReceiveResponse>(getRazorpayWebhookControllerReceiveUrl(),
+  return customInstance<void>(getRazorpayWebhookControllerReceiveUrl(),
   {
     ...options,
     method: 'POST'
@@ -77,73 +45,47 @@ export const razorpayWebhookControllerReceive = async ( options?: Parameters<typ
 
 
 
-export const getRazorpayWebhookControllerReceiveQueryKey = () => {
-    return [
-    'POST', `/webhooks/razorpay`
-    ] as const;
+export const getRazorpayWebhookControllerReceiveMutationKey = () => ['razorpayWebhookControllerReceive'] as const;
+
+export const getRazorpayWebhookControllerReceiveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError,void, TContext> => {
+
+const mutationKey = getRazorpayWebhookControllerReceiveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, void> = () => {
+
+
+          return  razorpayWebhookControllerReceive(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RazorpayWebhookControllerReceiveMutationResult = NonNullable<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>>
+
+    export type RazorpayWebhookControllerReceiveMutationError = unknown
+
+
+    export const useRazorpayWebhookControllerReceive = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRazorpayWebhookControllerReceiveMutationOptions(options), queryClient);
     }
-
-
-export const getRazorpayWebhookControllerReceiveQueryOptions = <TData = Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getRazorpayWebhookControllerReceiveQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>> = ({ signal }) => razorpayWebhookControllerReceive({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type RazorpayWebhookControllerReceiveQueryResult = NonNullable<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>>
-export type RazorpayWebhookControllerReceiveQueryError = unknown
-
-
-export function useRazorpayWebhookControllerReceive<TData = Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>,
-          TError,
-          Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useRazorpayWebhookControllerReceive<TData = Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>,
-          TError,
-          Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useRazorpayWebhookControllerReceive<TData = Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useRazorpayWebhookControllerReceive<TData = Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof razorpayWebhookControllerReceive>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getRazorpayWebhookControllerReceiveQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

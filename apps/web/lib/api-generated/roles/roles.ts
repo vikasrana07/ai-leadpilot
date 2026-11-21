@@ -6,13 +6,18 @@
  * OpenAPI spec version: 1.0
  */
 import {
-  useMutation
+  useQuery
 } from '@tanstack/react-query';
 import type {
-  MutationFunction,
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   QueryClient,
-  UseMutationOptions,
-  UseMutationResult
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import { customInstance } from '../../custom-instance';
@@ -22,17 +27,20 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-export type rolesControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type rolesControllerListResponseSuccess = (rolesControllerListResponse200) & {
-  headers: Headers;
+const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+  const result = { queryKey } as T & { queryKey: K };
+  for (const key of Object.keys(query)) {
+    // The explicit queryKey always wins, matching the previous
+    // `{ ...query, queryKey }` spread where it was set last.
+    if (key === 'queryKey') continue;
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      configurable: true,
+      get: () => (query as Record<string, unknown>)[key],
+    });
+  }
+  return result;
 };
-;
-
-export type rolesControllerListResponse = (rolesControllerListResponseSuccess)
 
 export const getRolesControllerListUrl = () => {
 
@@ -42,9 +50,9 @@ export const getRolesControllerListUrl = () => {
   return `/roles`
 }
 
-export const rolesControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<rolesControllerListResponse> => {
+export const rolesControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<rolesControllerListResponse>(getRolesControllerListUrl(),
+  return customInstance<void>(getRolesControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -57,47 +65,73 @@ export const rolesControllerList = async ( options?: Parameters<typeof customIns
 
 
 
-export const getRolesControllerListMutationKey = () => ['rolesControllerList'] as const;
-
-export const getRolesControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rolesControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof rolesControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getRolesControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rolesControllerList>>, void> = () => {
-
-
-          return  rolesControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type RolesControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof rolesControllerList>>>
-
-    export type RolesControllerListMutationError = unknown
-
-
-    export const useRolesControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rolesControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof rolesControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getRolesControllerListMutationOptions(options), queryClient);
+export const getRolesControllerListQueryKey = () => {
+    return [
+    `/roles`
+    ] as const;
     }
+
+
+export const getRolesControllerListQueryOptions = <TData = Awaited<ReturnType<typeof rolesControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rolesControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getRolesControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof rolesControllerList>>> = ({ signal }) => rolesControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof rolesControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type RolesControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof rolesControllerList>>>
+export type RolesControllerListQueryError = unknown
+
+
+export function useRolesControllerList<TData = Awaited<ReturnType<typeof rolesControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof rolesControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof rolesControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof rolesControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRolesControllerList<TData = Awaited<ReturnType<typeof rolesControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rolesControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof rolesControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof rolesControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRolesControllerList<TData = Awaited<ReturnType<typeof rolesControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rolesControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRolesControllerList<TData = Awaited<ReturnType<typeof rolesControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rolesControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getRolesControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

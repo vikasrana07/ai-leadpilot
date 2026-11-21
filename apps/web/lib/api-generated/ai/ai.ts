@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type aiControllerAssistantResponse200 = {
-  data: void
-  status: 200
-}
-
-export type aiControllerAssistantResponseSuccess = (aiControllerAssistantResponse200) & {
-  headers: Headers;
-};
-;
-
-export type aiControllerAssistantResponse = (aiControllerAssistantResponseSuccess)
-
 export const getAiControllerAssistantUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getAiControllerAssistantUrl = () => {
   return `/ai/assistant`
 }
 
-export const aiControllerAssistant = async ( options?: Parameters<typeof customInstance>[1]): Promise<aiControllerAssistantResponse> => {
+export const aiControllerAssistant = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<aiControllerAssistantResponse>(getAiControllerAssistantUrl(),
+  return customInstance<void>(getAiControllerAssistantUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const aiControllerAssistant = async ( options?: Parameters<typeof customI
 
 
 
-export const getAiControllerAssistantMutationKey = () => ['aiControllerAssistant'] as const;
-
-export const getAiControllerAssistantMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerAssistant>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof aiControllerAssistant>>, TError,void, TContext> => {
-
-const mutationKey = getAiControllerAssistantMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof aiControllerAssistant>>, void> = () => {
-
-
-          return  aiControllerAssistant(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AiControllerAssistantMutationResult = NonNullable<Awaited<ReturnType<typeof aiControllerAssistant>>>
-
-    export type AiControllerAssistantMutationError = unknown
-
-
-    export const useAiControllerAssistant = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerAssistant>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof aiControllerAssistant>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAiControllerAssistantMutationOptions(options), queryClient);
+export const getAiControllerAssistantQueryKey = () => {
+    return [
+    `/ai/assistant`
+    ] as const;
     }
-    export type aiControllerSaveResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAiControllerAssistantQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerAssistant>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerAssistant>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAiControllerAssistantQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerAssistant>>> = ({ signal }) => aiControllerAssistant({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerAssistant>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type aiControllerSaveResponseSuccess = (aiControllerSaveResponse200) & {
-  headers: Headers;
-};
-;
+export type AiControllerAssistantQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerAssistant>>>
+export type AiControllerAssistantQueryError = unknown
 
-export type aiControllerSaveResponse = (aiControllerSaveResponseSuccess)
+
+export function useAiControllerAssistant<TData = Awaited<ReturnType<typeof aiControllerAssistant>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerAssistant>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerAssistant>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerAssistant>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerAssistant<TData = Awaited<ReturnType<typeof aiControllerAssistant>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerAssistant>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerAssistant>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerAssistant>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerAssistant<TData = Awaited<ReturnType<typeof aiControllerAssistant>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerAssistant>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerAssistant<TData = Awaited<ReturnType<typeof aiControllerAssistant>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerAssistant>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAiControllerAssistantQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAiControllerSaveUrl = () => {
 
@@ -145,9 +147,9 @@ export const getAiControllerSaveUrl = () => {
   return `/ai/assistant`
 }
 
-export const aiControllerSave = async ( options?: Parameters<typeof customInstance>[1]): Promise<aiControllerSaveResponse> => {
+export const aiControllerSave = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<aiControllerSaveResponse>(getAiControllerSaveUrl(),
+  return customInstance<void>(getAiControllerSaveUrl(),
   {
     ...options,
     method: 'PUT'
@@ -160,89 +162,51 @@ export const aiControllerSave = async ( options?: Parameters<typeof customInstan
 
 
 
-export const getAiControllerSaveQueryKey = () => {
-    return [
-    'PUT', `/ai/assistant`
-    ] as const;
+export const getAiControllerSaveMutationKey = () => ['aiControllerSave'] as const;
+
+export const getAiControllerSaveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerSave>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof aiControllerSave>>, TError,void, TContext> => {
+
+const mutationKey = getAiControllerSaveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof aiControllerSave>>, void> = () => {
+
+
+          return  aiControllerSave(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AiControllerSaveMutationResult = NonNullable<Awaited<ReturnType<typeof aiControllerSave>>>
+
+    export type AiControllerSaveMutationError = unknown
+
+
+    export const useAiControllerSave = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerSave>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof aiControllerSave>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAiControllerSaveMutationOptions(options), queryClient);
     }
-
-
-export const getAiControllerSaveQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerSave>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerSave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAiControllerSaveQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerSave>>> = ({ signal }) => aiControllerSave({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerSave>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AiControllerSaveQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerSave>>>
-export type AiControllerSaveQueryError = unknown
-
-
-export function useAiControllerSave<TData = Awaited<ReturnType<typeof aiControllerSave>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerSave>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof aiControllerSave>>,
-          TError,
-          Awaited<ReturnType<typeof aiControllerSave>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerSave<TData = Awaited<ReturnType<typeof aiControllerSave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerSave>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof aiControllerSave>>,
-          TError,
-          Awaited<ReturnType<typeof aiControllerSave>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerSave<TData = Awaited<ReturnType<typeof aiControllerSave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerSave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerSave<TData = Awaited<ReturnType<typeof aiControllerSave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerSave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAiControllerSaveQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type aiControllerUsageResponse200 = {
-  data: void
-  status: 200
-}
-
-export type aiControllerUsageResponseSuccess = (aiControllerUsageResponse200) & {
-  headers: Headers;
-};
-;
-
-export type aiControllerUsageResponse = (aiControllerUsageResponseSuccess)
-
-export const getAiControllerUsageUrl = () => {
+    export const getAiControllerUsageUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getAiControllerUsageUrl = () => {
   return `/ai/usage`
 }
 
-export const aiControllerUsage = async ( options?: Parameters<typeof customInstance>[1]): Promise<aiControllerUsageResponse> => {
+export const aiControllerUsage = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<aiControllerUsageResponse>(getAiControllerUsageUrl(),
+  return customInstance<void>(getAiControllerUsageUrl(),
   {
     ...options,
     method: 'GET'
@@ -265,61 +229,75 @@ export const aiControllerUsage = async ( options?: Parameters<typeof customInsta
 
 
 
-export const getAiControllerUsageMutationKey = () => ['aiControllerUsage'] as const;
-
-export const getAiControllerUsageMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerUsage>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof aiControllerUsage>>, TError,void, TContext> => {
-
-const mutationKey = getAiControllerUsageMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof aiControllerUsage>>, void> = () => {
-
-
-          return  aiControllerUsage(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AiControllerUsageMutationResult = NonNullable<Awaited<ReturnType<typeof aiControllerUsage>>>
-
-    export type AiControllerUsageMutationError = unknown
-
-
-    export const useAiControllerUsage = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerUsage>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof aiControllerUsage>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAiControllerUsageMutationOptions(options), queryClient);
+export const getAiControllerUsageQueryKey = () => {
+    return [
+    `/ai/usage`
+    ] as const;
     }
-    export type aiControllerRunsResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAiControllerUsageQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerUsage>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerUsage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAiControllerUsageQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerUsage>>> = ({ signal }) => aiControllerUsage({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerUsage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type aiControllerRunsResponseSuccess = (aiControllerRunsResponse200) & {
-  headers: Headers;
-};
-;
+export type AiControllerUsageQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerUsage>>>
+export type AiControllerUsageQueryError = unknown
 
-export type aiControllerRunsResponse = (aiControllerRunsResponseSuccess)
+
+export function useAiControllerUsage<TData = Awaited<ReturnType<typeof aiControllerUsage>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerUsage>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerUsage>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerUsage>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerUsage<TData = Awaited<ReturnType<typeof aiControllerUsage>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerUsage>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerUsage>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerUsage>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerUsage<TData = Awaited<ReturnType<typeof aiControllerUsage>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerUsage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerUsage<TData = Awaited<ReturnType<typeof aiControllerUsage>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerUsage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAiControllerUsageQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAiControllerRunsUrl = () => {
 
@@ -329,9 +307,9 @@ export const getAiControllerRunsUrl = () => {
   return `/ai/runs`
 }
 
-export const aiControllerRuns = async ( options?: Parameters<typeof customInstance>[1]): Promise<aiControllerRunsResponse> => {
+export const aiControllerRuns = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<aiControllerRunsResponse>(getAiControllerRunsUrl(),
+  return customInstance<void>(getAiControllerRunsUrl(),
   {
     ...options,
     method: 'GET'
@@ -344,61 +322,75 @@ export const aiControllerRuns = async ( options?: Parameters<typeof customInstan
 
 
 
-export const getAiControllerRunsMutationKey = () => ['aiControllerRuns'] as const;
-
-export const getAiControllerRunsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerRuns>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof aiControllerRuns>>, TError,void, TContext> => {
-
-const mutationKey = getAiControllerRunsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof aiControllerRuns>>, void> = () => {
-
-
-          return  aiControllerRuns(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AiControllerRunsMutationResult = NonNullable<Awaited<ReturnType<typeof aiControllerRuns>>>
-
-    export type AiControllerRunsMutationError = unknown
-
-
-    export const useAiControllerRuns = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerRuns>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof aiControllerRuns>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAiControllerRunsMutationOptions(options), queryClient);
+export const getAiControllerRunsQueryKey = () => {
+    return [
+    `/ai/runs`
+    ] as const;
     }
-    export type aiControllerRulesResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAiControllerRunsQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerRuns>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerRuns>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAiControllerRunsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerRuns>>> = ({ signal }) => aiControllerRuns({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerRuns>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type aiControllerRulesResponseSuccess = (aiControllerRulesResponse200) & {
-  headers: Headers;
-};
-;
+export type AiControllerRunsQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerRuns>>>
+export type AiControllerRunsQueryError = unknown
 
-export type aiControllerRulesResponse = (aiControllerRulesResponseSuccess)
+
+export function useAiControllerRuns<TData = Awaited<ReturnType<typeof aiControllerRuns>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerRuns>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerRuns>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerRuns>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerRuns<TData = Awaited<ReturnType<typeof aiControllerRuns>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerRuns>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerRuns>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerRuns>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerRuns<TData = Awaited<ReturnType<typeof aiControllerRuns>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerRuns>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerRuns<TData = Awaited<ReturnType<typeof aiControllerRuns>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerRuns>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAiControllerRunsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAiControllerRulesUrl = () => {
 
@@ -408,9 +400,9 @@ export const getAiControllerRulesUrl = () => {
   return `/scoring/rules`
 }
 
-export const aiControllerRules = async ( options?: Parameters<typeof customInstance>[1]): Promise<aiControllerRulesResponse> => {
+export const aiControllerRules = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<aiControllerRulesResponse>(getAiControllerRulesUrl(),
+  return customInstance<void>(getAiControllerRulesUrl(),
   {
     ...options,
     method: 'GET'
@@ -423,61 +415,75 @@ export const aiControllerRules = async ( options?: Parameters<typeof customInsta
 
 
 
-export const getAiControllerRulesMutationKey = () => ['aiControllerRules'] as const;
-
-export const getAiControllerRulesMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerRules>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof aiControllerRules>>, TError,void, TContext> => {
-
-const mutationKey = getAiControllerRulesMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof aiControllerRules>>, void> = () => {
-
-
-          return  aiControllerRules(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AiControllerRulesMutationResult = NonNullable<Awaited<ReturnType<typeof aiControllerRules>>>
-
-    export type AiControllerRulesMutationError = unknown
-
-
-    export const useAiControllerRules = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerRules>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof aiControllerRules>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAiControllerRulesMutationOptions(options), queryClient);
+export const getAiControllerRulesQueryKey = () => {
+    return [
+    `/scoring/rules`
+    ] as const;
     }
-    export type aiControllerSaveRulesResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAiControllerRulesQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerRules>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerRules>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAiControllerRulesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerRules>>> = ({ signal }) => aiControllerRules({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerRules>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type aiControllerSaveRulesResponseSuccess = (aiControllerSaveRulesResponse200) & {
-  headers: Headers;
-};
-;
+export type AiControllerRulesQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerRules>>>
+export type AiControllerRulesQueryError = unknown
 
-export type aiControllerSaveRulesResponse = (aiControllerSaveRulesResponseSuccess)
+
+export function useAiControllerRules<TData = Awaited<ReturnType<typeof aiControllerRules>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerRules>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerRules>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerRules>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerRules<TData = Awaited<ReturnType<typeof aiControllerRules>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerRules>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerRules>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerRules>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerRules<TData = Awaited<ReturnType<typeof aiControllerRules>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerRules>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerRules<TData = Awaited<ReturnType<typeof aiControllerRules>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerRules>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAiControllerRulesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAiControllerSaveRulesUrl = () => {
 
@@ -487,9 +493,9 @@ export const getAiControllerSaveRulesUrl = () => {
   return `/scoring/rules`
 }
 
-export const aiControllerSaveRules = async ( options?: Parameters<typeof customInstance>[1]): Promise<aiControllerSaveRulesResponse> => {
+export const aiControllerSaveRules = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<aiControllerSaveRulesResponse>(getAiControllerSaveRulesUrl(),
+  return customInstance<void>(getAiControllerSaveRulesUrl(),
   {
     ...options,
     method: 'PUT'
@@ -502,89 +508,51 @@ export const aiControllerSaveRules = async ( options?: Parameters<typeof customI
 
 
 
-export const getAiControllerSaveRulesQueryKey = () => {
-    return [
-    'PUT', `/scoring/rules`
-    ] as const;
+export const getAiControllerSaveRulesMutationKey = () => ['aiControllerSaveRules'] as const;
+
+export const getAiControllerSaveRulesMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerSaveRules>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof aiControllerSaveRules>>, TError,void, TContext> => {
+
+const mutationKey = getAiControllerSaveRulesMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof aiControllerSaveRules>>, void> = () => {
+
+
+          return  aiControllerSaveRules(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AiControllerSaveRulesMutationResult = NonNullable<Awaited<ReturnType<typeof aiControllerSaveRules>>>
+
+    export type AiControllerSaveRulesMutationError = unknown
+
+
+    export const useAiControllerSaveRules = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerSaveRules>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof aiControllerSaveRules>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAiControllerSaveRulesMutationOptions(options), queryClient);
     }
-
-
-export const getAiControllerSaveRulesQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerSaveRules>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerSaveRules>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAiControllerSaveRulesQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerSaveRules>>> = ({ signal }) => aiControllerSaveRules({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerSaveRules>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AiControllerSaveRulesQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerSaveRules>>>
-export type AiControllerSaveRulesQueryError = unknown
-
-
-export function useAiControllerSaveRules<TData = Awaited<ReturnType<typeof aiControllerSaveRules>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerSaveRules>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof aiControllerSaveRules>>,
-          TError,
-          Awaited<ReturnType<typeof aiControllerSaveRules>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerSaveRules<TData = Awaited<ReturnType<typeof aiControllerSaveRules>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerSaveRules>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof aiControllerSaveRules>>,
-          TError,
-          Awaited<ReturnType<typeof aiControllerSaveRules>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerSaveRules<TData = Awaited<ReturnType<typeof aiControllerSaveRules>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerSaveRules>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerSaveRules<TData = Awaited<ReturnType<typeof aiControllerSaveRules>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerSaveRules>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAiControllerSaveRulesQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type aiControllerLeadScoreResponse200 = {
-  data: void
-  status: 200
-}
-
-export type aiControllerLeadScoreResponseSuccess = (aiControllerLeadScoreResponse200) & {
-  headers: Headers;
-};
-;
-
-export type aiControllerLeadScoreResponse = (aiControllerLeadScoreResponseSuccess)
-
-export const getAiControllerLeadScoreUrl = (id: string,) => {
+    export const getAiControllerLeadScoreUrl = (id: string,) => {
 
 
 
@@ -592,9 +560,9 @@ export const getAiControllerLeadScoreUrl = (id: string,) => {
   return `/leads/${id}/score`
 }
 
-export const aiControllerLeadScore = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<aiControllerLeadScoreResponse> => {
+export const aiControllerLeadScore = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<aiControllerLeadScoreResponse>(getAiControllerLeadScoreUrl(id),
+  return customInstance<void>(getAiControllerLeadScoreUrl(id),
   {
     ...options,
     method: 'GET'
@@ -607,61 +575,75 @@ export const aiControllerLeadScore = async (id: string, options?: Parameters<typ
 
 
 
-export const getAiControllerLeadScoreMutationKey = () => ['aiControllerLeadScore'] as const;
-
-export const getAiControllerLeadScoreMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerLeadScore>>, TError,AiControllerLeadScoreMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof aiControllerLeadScore>>, TError,AiControllerLeadScoreMutationVariables, TContext> => {
-
-const mutationKey = getAiControllerLeadScoreMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof aiControllerLeadScore>>, AiControllerLeadScoreMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  aiControllerLeadScore(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AiControllerLeadScoreMutationResult = NonNullable<Awaited<ReturnType<typeof aiControllerLeadScore>>>
-
-    export type AiControllerLeadScoreMutationError = unknown
-    export type AiControllerLeadScoreMutationVariables = {id: string}
-
-    export const useAiControllerLeadScore = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerLeadScore>>, TError,AiControllerLeadScoreMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof aiControllerLeadScore>>,
-        TError,
-        AiControllerLeadScoreMutationVariables,
-        TContext
-      > => {
-      return useMutation(getAiControllerLeadScoreMutationOptions(options), queryClient);
+export const getAiControllerLeadScoreQueryKey = (id: string,) => {
+    return [
+    `/leads/${id}/score`
+    ] as const;
     }
-    export type aiControllerOverrideResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAiControllerLeadScoreQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerLeadScore>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerLeadScore>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAiControllerLeadScoreQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerLeadScore>>> = ({ signal }) => aiControllerLeadScore(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerLeadScore>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type aiControllerOverrideResponseSuccess = (aiControllerOverrideResponse200) & {
-  headers: Headers;
-};
-;
+export type AiControllerLeadScoreQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerLeadScore>>>
+export type AiControllerLeadScoreQueryError = unknown
 
-export type aiControllerOverrideResponse = (aiControllerOverrideResponseSuccess)
+
+export function useAiControllerLeadScore<TData = Awaited<ReturnType<typeof aiControllerLeadScore>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerLeadScore>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerLeadScore>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerLeadScore>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerLeadScore<TData = Awaited<ReturnType<typeof aiControllerLeadScore>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerLeadScore>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerLeadScore>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerLeadScore>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerLeadScore<TData = Awaited<ReturnType<typeof aiControllerLeadScore>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerLeadScore>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerLeadScore<TData = Awaited<ReturnType<typeof aiControllerLeadScore>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerLeadScore>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAiControllerLeadScoreQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAiControllerOverrideUrl = (id: string,) => {
 
@@ -671,9 +653,9 @@ export const getAiControllerOverrideUrl = (id: string,) => {
   return `/leads/${id}/score/override`
 }
 
-export const aiControllerOverride = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<aiControllerOverrideResponse> => {
+export const aiControllerOverride = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<aiControllerOverrideResponse>(getAiControllerOverrideUrl(id),
+  return customInstance<void>(getAiControllerOverrideUrl(id),
   {
     ...options,
     method: 'POST'
@@ -686,89 +668,51 @@ export const aiControllerOverride = async (id: string, options?: Parameters<type
 
 
 
-export const getAiControllerOverrideQueryKey = (id: string,) => {
-    return [
-    'POST', `/leads/${id}/score/override`
-    ] as const;
+export const getAiControllerOverrideMutationKey = () => ['aiControllerOverride'] as const;
+
+export const getAiControllerOverrideMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerOverride>>, TError,AiControllerOverrideMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof aiControllerOverride>>, TError,AiControllerOverrideMutationVariables, TContext> => {
+
+const mutationKey = getAiControllerOverrideMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof aiControllerOverride>>, AiControllerOverrideMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  aiControllerOverride(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AiControllerOverrideMutationResult = NonNullable<Awaited<ReturnType<typeof aiControllerOverride>>>
+
+    export type AiControllerOverrideMutationError = unknown
+    export type AiControllerOverrideMutationVariables = {id: string}
+
+    export const useAiControllerOverride = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerOverride>>, TError,AiControllerOverrideMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof aiControllerOverride>>,
+        TError,
+        AiControllerOverrideMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAiControllerOverrideMutationOptions(options), queryClient);
     }
-
-
-export const getAiControllerOverrideQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerOverride>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerOverride>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAiControllerOverrideQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerOverride>>> = ({ signal }) => aiControllerOverride(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerOverride>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AiControllerOverrideQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerOverride>>>
-export type AiControllerOverrideQueryError = unknown
-
-
-export function useAiControllerOverride<TData = Awaited<ReturnType<typeof aiControllerOverride>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerOverride>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof aiControllerOverride>>,
-          TError,
-          Awaited<ReturnType<typeof aiControllerOverride>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerOverride<TData = Awaited<ReturnType<typeof aiControllerOverride>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerOverride>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof aiControllerOverride>>,
-          TError,
-          Awaited<ReturnType<typeof aiControllerOverride>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerOverride<TData = Awaited<ReturnType<typeof aiControllerOverride>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerOverride>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerOverride<TData = Awaited<ReturnType<typeof aiControllerOverride>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerOverride>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAiControllerOverrideQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type aiControllerClearResponse200 = {
-  data: void
-  status: 200
-}
-
-export type aiControllerClearResponseSuccess = (aiControllerClearResponse200) & {
-  headers: Headers;
-};
-;
-
-export type aiControllerClearResponse = (aiControllerClearResponseSuccess)
-
-export const getAiControllerClearUrl = (id: string,) => {
+    export const getAiControllerClearUrl = (id: string,) => {
 
 
 
@@ -776,9 +720,9 @@ export const getAiControllerClearUrl = (id: string,) => {
   return `/leads/${id}/score/override`
 }
 
-export const aiControllerClear = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<aiControllerClearResponse> => {
+export const aiControllerClear = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<aiControllerClearResponse>(getAiControllerClearUrl(id),
+  return customInstance<void>(getAiControllerClearUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -791,73 +735,47 @@ export const aiControllerClear = async (id: string, options?: Parameters<typeof 
 
 
 
-export const getAiControllerClearQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/leads/${id}/score/override`
-    ] as const;
+export const getAiControllerClearMutationKey = () => ['aiControllerClear'] as const;
+
+export const getAiControllerClearMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerClear>>, TError,AiControllerClearMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof aiControllerClear>>, TError,AiControllerClearMutationVariables, TContext> => {
+
+const mutationKey = getAiControllerClearMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof aiControllerClear>>, AiControllerClearMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  aiControllerClear(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AiControllerClearMutationResult = NonNullable<Awaited<ReturnType<typeof aiControllerClear>>>
+
+    export type AiControllerClearMutationError = unknown
+    export type AiControllerClearMutationVariables = {id: string}
+
+    export const useAiControllerClear = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerClear>>, TError,AiControllerClearMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof aiControllerClear>>,
+        TError,
+        AiControllerClearMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAiControllerClearMutationOptions(options), queryClient);
     }
-
-
-export const getAiControllerClearQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerClear>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerClear>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAiControllerClearQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerClear>>> = ({ signal }) => aiControllerClear(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerClear>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AiControllerClearQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerClear>>>
-export type AiControllerClearQueryError = unknown
-
-
-export function useAiControllerClear<TData = Awaited<ReturnType<typeof aiControllerClear>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerClear>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof aiControllerClear>>,
-          TError,
-          Awaited<ReturnType<typeof aiControllerClear>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerClear<TData = Awaited<ReturnType<typeof aiControllerClear>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerClear>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof aiControllerClear>>,
-          TError,
-          Awaited<ReturnType<typeof aiControllerClear>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerClear<TData = Awaited<ReturnType<typeof aiControllerClear>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerClear>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAiControllerClear<TData = Awaited<ReturnType<typeof aiControllerClear>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerClear>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAiControllerClearQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

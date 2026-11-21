@@ -3,12 +3,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PROPERTY_STATUSES } from '@leadpilot/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Building2, Pencil, Plus, Search, Trash2, Upload } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Building2, Layers, Pencil, Plus, Search, Trash2, Upload } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { ImportDialog } from '@/components/crm/import-dialog';
+import { DataTableToolbar, useTablePreferences, type ColumnDef, type FilterDimension } from '@/components/data-table';
 import { PageHeader } from '@/components/page/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { cn } from '@/lib/cn';
 import { qs } from '@/lib/crm';
 import { formatINR } from '@/lib/format';
 import { handleApiError } from '@/lib/forms';
@@ -228,6 +230,79 @@ export default function PropertiesPage() {
     onError: (e) => handleApiError(e),
   });
 
+  const columns: ColumnDef[] = useMemo(
+    () => [
+      { id: 'property', label: 'Property', alwaysVisible: true },
+      { id: 'location', label: 'Location' },
+      { id: 'type', label: 'Type' },
+      { id: 'price', label: 'Price' },
+      { id: 'status', label: 'Status' },
+    ],
+    []
+  );
+
+  const {
+    isColumnVisible,
+    toggleColumn,
+    resetColumns,
+    showAllColumns,
+    density,
+    setDensity,
+    densityCellClass,
+    densityHeaderClass,
+  } = useTablePreferences('properties', columns);
+
+  const dimensions: FilterDimension[] = useMemo(
+    () => [
+      {
+        id: 'status',
+        label: 'Status',
+        icon: Building2,
+        mode: 'single',
+        options: PROPERTY_STATUSES.map((s) => ({
+          value: s,
+          label: s[0] + s.slice(1).toLowerCase(),
+          dotColor: s === 'AVAILABLE' ? '#146c36' : s === 'HELD' ? '#9a4506' : '#5b6578',
+        })),
+      },
+      {
+        id: 'type',
+        label: 'Property Type',
+        icon: Layers,
+        mode: 'single',
+        options: [
+          { value: 'Apartment', label: 'Apartment' },
+          { value: 'Villa', label: 'Villa' },
+          { value: 'Plot', label: 'Plot' },
+          { value: 'Commercial', label: 'Commercial' },
+          { value: 'Penthouse', label: 'Penthouse' },
+        ],
+      },
+    ],
+    []
+  );
+
+  const activeFilters = useMemo(
+    () => ({
+      status: status ? [status] : [],
+      type: type ? [type] : [],
+    }),
+    [status, type]
+  );
+
+  const handleFilterChange = (dimId: string, values: string[]) => {
+    if (dimId === 'status') setStatus(values[0] ?? '');
+    if (dimId === 'type') setType(values[0] ?? '');
+    setPage(1);
+  };
+
+  const handleClearAll = () => {
+    setSearch('');
+    setStatus('');
+    setType('');
+    setPage(1);
+  };
+
   const editable = can('lead:write:all');
 
   return (
@@ -257,115 +332,115 @@ export default function PropertiesPage() {
         }
       />
 
-      <Card className="mb-4 p-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-48 flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden />
-            <Input
-              aria-label="Search properties"
-              placeholder="Search project, unit or location…"
-              className="pl-8"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+      <Card className="mb-4 overflow-hidden">
+        <DataTableToolbar
+          search={search}
+          onSearchChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          searchPlaceholder="Search project, unit or location…"
+          dimensions={dimensions}
+          activeFilters={activeFilters}
+          onFilterChange={handleFilterChange}
+          onClearAllFilters={handleClearAll}
+          columns={columns}
+          isColumnVisible={isColumnVisible}
+          onToggleColumn={toggleColumn}
+          onResetColumns={resetColumns}
+          onShowAllColumns={showAllColumns}
+          density={density}
+          onDensityChange={setDensity}
+        />
+
+        {list.isPending ? (
+          <div className="p-4 space-y-2">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-12" />
+            ))}
+          </div>
+        ) : list.data && list.data.items.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-muted-foreground shadow-xs">
+                <tr>
+                  {isColumnVisible('property') && <th className={cn('font-medium', densityHeaderClass)}>Property</th>}
+                  {isColumnVisible('location') && <th className={cn('font-medium', densityHeaderClass)}>Location</th>}
+                  {isColumnVisible('type') && <th className={cn('font-medium', densityHeaderClass)}>Type</th>}
+                  {isColumnVisible('price') && <th className={cn('font-medium text-right', densityHeaderClass)}>Price</th>}
+                  {isColumnVisible('status') && <th className={cn('font-medium', densityHeaderClass)}>Status</th>}
+                  {editable ? <th className={cn('font-medium', densityHeaderClass)} /> : null}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {list.data.items.map((p) => (
+                  <tr key={p.id} className="hover:bg-muted/30 transition-colors">
+                    {isColumnVisible('property') && (
+                      <td className={densityCellClass}>
+                        <p className="font-medium text-foreground">{p.title}</p>
+                        <p className="text-helper">
+                          {p.bedrooms ? `${p.bedrooms} BHK · ` : ''}
+                          {p.areaSqft ? `${p.areaSqft.toLocaleString('en-IN')} sq ft` : ''}
+                        </p>
+                      </td>
+                    )}
+                    {isColumnVisible('location') && (
+                      <td className={cn('text-muted-foreground', densityCellClass)}>{p.location}</td>
+                    )}
+                    {isColumnVisible('type') && (
+                      <td className={densityCellClass}>{p.propertyType}</td>
+                    )}
+                    {isColumnVisible('price') && (
+                      <td className={cn('num text-right font-medium', densityCellClass)}>{formatINR(p.price)}</td>
+                    )}
+                    {isColumnVisible('status') && (
+                      <td className={densityCellClass}>
+                        <Badge tone={TONE[p.status]}>{p.status.toLowerCase()}</Badge>
+                      </td>
+                    )}
+                    {editable ? (
+                      <td className={cn('text-right', densityCellClass)}>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label={`Edit ${p.title}`}
+                            onClick={() => {
+                              setEditing(p);
+                              setOpen(true);
+                            }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label={`Delete ${p.title}`}
+                            onClick={() => setToDelete(p)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-danger" />
+                          </Button>
+                        </div>
+                      </td>
+                    ) : null}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <Pagination
+              page={list.data.page}
+              total={list.data.total}
+              pageSize={list.data.pageSize}
+              onPage={setPage}
             />
           </div>
-          <Select
-            aria-label="Filter status"
-            className="w-auto"
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">All statuses</option>
-            {PROPERTY_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s[0]}{s.slice(1).toLowerCase()}
-              </option>
-            ))}
-          </Select>
-        </div>
-      </Card>
-
-      {list.isPending ? (
-        <Skeleton className="h-64" />
-      ) : list.data && list.data.items.length > 0 ? (
-        <Card className="overflow-hidden">
-          <table className="w-full text-[13px]">
-            <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-left text-muted-foreground shadow-xs">
-              <tr>
-                <th className="px-4 py-2.5 font-medium">Property</th>
-                <th className="px-4 py-2.5 font-medium">Location</th>
-                <th className="px-4 py-2.5 font-medium">Type</th>
-                <th className="px-4 py-2.5 font-medium text-right">Price</th>
-                <th className="px-4 py-2.5 font-medium">Status</th>
-                {editable ? <th className="px-4 py-2.5 font-medium" /> : null}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {list.data.items.map((p) => (
-                <tr key={p.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-2.5">
-                    <p className="font-medium text-foreground">{p.title}</p>
-                    <p className="text-helper">
-                      {p.bedrooms ? `${p.bedrooms} BHK · ` : ''}
-                      {p.areaSqft ? `${p.areaSqft.toLocaleString('en-IN')} sq ft` : ''}
-                    </p>
-                  </td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{p.location}</td>
-                  <td className="px-4 py-2.5">{p.propertyType}</td>
-                  <td className="num px-4 py-2.5 text-right font-medium">{formatINR(p.price)}</td>
-                  <td className="px-4 py-2.5">
-                    <Badge tone={TONE[p.status]}>{p.status.toLowerCase()}</Badge>
-                  </td>
-                  {editable ? (
-                    <td className="px-4 py-2.5 text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Edit ${p.title}`}
-                          onClick={() => {
-                            setEditing(p);
-                            setOpen(true);
-                          }}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Delete ${p.title}`}
-                          onClick={() => setToDelete(p)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-danger" />
-                        </Button>
-                      </div>
-                    </td>
-                  ) : null}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <Pagination
-            page={list.data.page}
-            total={list.data.total}
-            pageSize={list.data.pageSize}
-            onPage={setPage}
-          />
-        </Card>
-      ) : (
-        <Card>
+        ) : (
           <EmptyState
             icon={Building2}
-            title="No properties yet"
-            description="Add your units or upload a CSV to match properties with buyers."
+            title={search || status || type ? "No properties match these filters" : "No properties yet"}
+            description={search || status || type ? "Try clearing a filter or searching for something else." : "Add your units or upload a CSV to match properties with buyers."}
             action={
-              editable ? (
+              editable && !search && !status && !type ? (
                 <Button
                   variant="primary"
                   onClick={() => {
@@ -373,13 +448,14 @@ export default function PropertiesPage() {
                     setOpen(true);
                   }}
                 >
+                  <Plus className="h-4 w-4" aria-hidden />
                   Add property
                 </Button>
               ) : undefined
             }
           />
-        </Card>
-      )}
+        )}
+      </Card>
 
       <PropertyDialog
         open={open}

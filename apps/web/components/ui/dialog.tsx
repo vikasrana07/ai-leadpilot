@@ -35,6 +35,7 @@ export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 
 export type DrawerSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+export type DialogVariant = 'drawer' | 'modal';
 
 const sizeMap: Record<DrawerSize, string> = {
   sm: 'sm:max-w-sm',
@@ -51,6 +52,7 @@ export function DialogContent({
   children,
   footer,
   size = 'lg',
+  variant = 'drawer',
   className,
 }: {
   title: string;
@@ -58,23 +60,27 @@ export function DialogContent({
   children: ReactNode;
   footer?: ReactNode;
   size?: DrawerSize;
+  variant?: DialogVariant;
   className?: string;
 }) {
   const open = useContext(OpenContext);
   const returnTo = useContext(ReturnFocusContext);
   const reduce = useReducedMotion();
+  const isModal = variant === 'modal';
 
-  // Strip legacy center-modal positioning / max-h classes if passed by caller
-  const cleanClassName = className
-    ?.replace(/\bmax-h-\[[^\]]+\]/g, '')
-    .replace(/\bmax-h-\w+/g, '')
-    .replace(/\b-translate-[xy]-1\/2\b/g, '')
-    .replace(/\btop-1\/2\b/g, '')
-    .replace(/\bleft-1\/2\b/g, '')
-    .trim();
+  // Strip legacy center-modal positioning / max-h classes if passed by caller in drawer mode
+  const cleanClassName = isModal
+    ? className
+    : className
+        ?.replace(/\bmax-h-\[[^\]]+\]/g, '')
+        .replace(/\bmax-h-\w+/g, '')
+        .replace(/\b-translate-[xy]-1\/2\b/g, '')
+        .replace(/\btop-1\/2\b/g, '')
+        .replace(/\bleft-1\/2\b/g, '')
+        .trim();
 
   const hasCustomWidth = cleanClassName && /\b(sm:)?max-w-\w+\b/.test(cleanClassName);
-  const widthClass = hasCustomWidth ? '' : (sizeMap[size] ?? 'sm:max-w-lg');
+  const widthClass = hasCustomWidth ? '' : (sizeMap[size] ?? (isModal ? 'sm:max-w-md' : 'sm:max-w-lg'));
 
   return (
     <AnimatePresence>
@@ -103,14 +109,37 @@ export function DialogContent({
           >
             <motion.div
               className={cn(
-                'fixed inset-y-0 right-0 z-50 flex h-dvh w-full flex-col border-l border-border bg-card shadow-2xl outline-none',
+                isModal
+                  ? 'fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh-2.5rem)] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-border bg-card shadow-2xl outline-none overflow-hidden'
+                  : 'fixed inset-y-0 right-0 z-50 flex h-dvh w-full flex-col border-l border-border bg-card shadow-2xl outline-none',
                 widthClass,
                 cleanClassName,
               )}
-              initial={reduce ? { opacity: 0 } : { x: '100%' }}
-              animate={reduce ? { opacity: 1 } : { x: 0 }}
-              exit={reduce ? { opacity: 0 } : { x: '100%' }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              initial={
+                reduce
+                  ? { opacity: 0 }
+                  : isModal
+                    ? { opacity: 0, scale: 0.95, y: -8 }
+                    : { x: '100%' }
+              }
+              animate={
+                reduce
+                  ? { opacity: 1 }
+                  : isModal
+                    ? { opacity: 1, scale: 1, y: 0 }
+                    : { x: 0 }
+              }
+              exit={
+                reduce
+                  ? { opacity: 0 }
+                  : isModal
+                    ? { opacity: 0, scale: 0.97, y: -4 }
+                    : { x: '100%' }
+              }
+              transition={{
+                duration: isModal ? 0.15 : 0.2,
+                ease: [0.16, 1, 0.3, 1],
+              }}
             >
               <div className="flex shrink-0 items-start justify-between border-b border-border px-5 py-4">
                 <div className="min-w-0 pr-2">
@@ -151,4 +180,12 @@ export const Drawer = Dialog;
 export const DrawerTrigger = DialogTrigger;
 export const DrawerClose = DialogClose;
 export const DrawerContent = DialogContent;
+
+// Aliases for modal usage
+export const Modal = Dialog;
+export const ModalTrigger = DialogTrigger;
+export const ModalClose = DialogClose;
+export function ModalContent(props: Omit<Parameters<typeof DialogContent>[0], 'variant'>) {
+  return <DialogContent {...props} variant="modal" />;
+}
 export { FormErrorAlert, type FormErrorAlertProps } from './form-error-alert';

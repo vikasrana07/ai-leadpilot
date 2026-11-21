@@ -112,7 +112,7 @@ function AssistantForm({ data }: { data: Assistant }) {
                 {DAYS.map(([k, label]) => { const d = f.workingHours.days[k]; return (
                   <li key={k} className="flex items-center gap-2 text-[13px]">
                     <label className="flex w-28 items-center gap-2"><input type="checkbox" checked={d !== null} onChange={(e) => set('workingHours', { ...f.workingHours, days: { ...f.workingHours.days, [k]: e.target.checked ? { start: '10:00', end: '19:00' } : null } })} />{label}</label>
-                    {d ? <><Input aria-label={`${label} opens`} type="time" className="h-8 w-28" value={d.start} onChange={(e) => set('workingHours', { ...f.workingHours, days: { ...f.workingHours.days, [k]: { ...d, start: e.target.value } } })} /><span className="text-muted-foreground">to</span><Input aria-label={`${label} closes`} type="time" className="h-8 w-28" value={d.end} onChange={(e) => set('workingHours', { ...f.workingHours, days: { ...f.workingHours.days, [k]: { ...d, end: e.target.value } } })} /></> : <span className="text-helper">Closed</span>}
+                    {d ? <div className="flex items-center gap-2"><Input aria-label={`${label} opens`} type="time" className="h-8 w-36 px-2.5" value={d.start} onChange={(e) => set('workingHours', { ...f.workingHours, days: { ...f.workingHours.days, [k]: { ...d, start: e.target.value } } })} /><span className="text-muted-foreground">to</span><Input aria-label={`${label} closes`} type="time" className="h-8 w-36 px-2.5" value={d.end} onChange={(e) => set('workingHours', { ...f.workingHours, days: { ...f.workingHours.days, [k]: { ...d, end: e.target.value } } })} /></div> : <span className="text-helper">Closed</span>}
                   </li>
                 ); })}
               </ul>

@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type lifecycleControllerRetentionResponse200 = {
-  data: void
-  status: 200
-}
-
-export type lifecycleControllerRetentionResponseSuccess = (lifecycleControllerRetentionResponse200) & {
-  headers: Headers;
-};
-;
-
-export type lifecycleControllerRetentionResponse = (lifecycleControllerRetentionResponseSuccess)
-
 export const getLifecycleControllerRetentionUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getLifecycleControllerRetentionUrl = () => {
   return `/privacy/retention`
 }
 
-export const lifecycleControllerRetention = async ( options?: Parameters<typeof customInstance>[1]): Promise<lifecycleControllerRetentionResponse> => {
+export const lifecycleControllerRetention = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<lifecycleControllerRetentionResponse>(getLifecycleControllerRetentionUrl(),
+  return customInstance<void>(getLifecycleControllerRetentionUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const lifecycleControllerRetention = async ( options?: Parameters<typeof 
 
 
 
-export const getLifecycleControllerRetentionMutationKey = () => ['lifecycleControllerRetention'] as const;
-
-export const getLifecycleControllerRetentionMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError,void, TContext> => {
-
-const mutationKey = getLifecycleControllerRetentionMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lifecycleControllerRetention>>, void> = () => {
-
-
-          return  lifecycleControllerRetention(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LifecycleControllerRetentionMutationResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerRetention>>>
-
-    export type LifecycleControllerRetentionMutationError = unknown
-
-
-    export const useLifecycleControllerRetention = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof lifecycleControllerRetention>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getLifecycleControllerRetentionMutationOptions(options), queryClient);
+export const getLifecycleControllerRetentionQueryKey = () => {
+    return [
+    `/privacy/retention`
+    ] as const;
     }
-    export type lifecycleControllerSaveResponse200 = {
-  data: void
-  status: 200
+
+
+export const getLifecycleControllerRetentionQueryOptions = <TData = Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLifecycleControllerRetentionQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof lifecycleControllerRetention>>> = ({ signal }) => lifecycleControllerRetention({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type lifecycleControllerSaveResponseSuccess = (lifecycleControllerSaveResponse200) & {
-  headers: Headers;
-};
-;
+export type LifecycleControllerRetentionQueryResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerRetention>>>
+export type LifecycleControllerRetentionQueryError = unknown
 
-export type lifecycleControllerSaveResponse = (lifecycleControllerSaveResponseSuccess)
+
+export function useLifecycleControllerRetention<TData = Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof lifecycleControllerRetention>>,
+          TError,
+          Awaited<ReturnType<typeof lifecycleControllerRetention>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerRetention<TData = Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof lifecycleControllerRetention>>,
+          TError,
+          Awaited<ReturnType<typeof lifecycleControllerRetention>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerRetention<TData = Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerRetention<TData = Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRetention>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLifecycleControllerRetentionQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLifecycleControllerSaveUrl = () => {
 
@@ -145,9 +147,9 @@ export const getLifecycleControllerSaveUrl = () => {
   return `/privacy/retention`
 }
 
-export const lifecycleControllerSave = async ( options?: Parameters<typeof customInstance>[1]): Promise<lifecycleControllerSaveResponse> => {
+export const lifecycleControllerSave = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<lifecycleControllerSaveResponse>(getLifecycleControllerSaveUrl(),
+  return customInstance<void>(getLifecycleControllerSaveUrl(),
   {
     ...options,
     method: 'PUT'
@@ -160,89 +162,51 @@ export const lifecycleControllerSave = async ( options?: Parameters<typeof custo
 
 
 
-export const getLifecycleControllerSaveQueryKey = () => {
-    return [
-    'PUT', `/privacy/retention`
-    ] as const;
+export const getLifecycleControllerSaveMutationKey = () => ['lifecycleControllerSave'] as const;
+
+export const getLifecycleControllerSaveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerSave>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerSave>>, TError,void, TContext> => {
+
+const mutationKey = getLifecycleControllerSaveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lifecycleControllerSave>>, void> = () => {
+
+
+          return  lifecycleControllerSave(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LifecycleControllerSaveMutationResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerSave>>>
+
+    export type LifecycleControllerSaveMutationError = unknown
+
+
+    export const useLifecycleControllerSave = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerSave>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof lifecycleControllerSave>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLifecycleControllerSaveMutationOptions(options), queryClient);
     }
-
-
-export const getLifecycleControllerSaveQueryOptions = <TData = Awaited<ReturnType<typeof lifecycleControllerSave>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerSave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLifecycleControllerSaveQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof lifecycleControllerSave>>> = ({ signal }) => lifecycleControllerSave({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerSave>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LifecycleControllerSaveQueryResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerSave>>>
-export type LifecycleControllerSaveQueryError = unknown
-
-
-export function useLifecycleControllerSave<TData = Awaited<ReturnType<typeof lifecycleControllerSave>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerSave>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof lifecycleControllerSave>>,
-          TError,
-          Awaited<ReturnType<typeof lifecycleControllerSave>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerSave<TData = Awaited<ReturnType<typeof lifecycleControllerSave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerSave>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof lifecycleControllerSave>>,
-          TError,
-          Awaited<ReturnType<typeof lifecycleControllerSave>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerSave<TData = Awaited<ReturnType<typeof lifecycleControllerSave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerSave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerSave<TData = Awaited<ReturnType<typeof lifecycleControllerSave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerSave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLifecycleControllerSaveQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type lifecycleControllerPreviewResponse200 = {
-  data: void
-  status: 200
-}
-
-export type lifecycleControllerPreviewResponseSuccess = (lifecycleControllerPreviewResponse200) & {
-  headers: Headers;
-};
-;
-
-export type lifecycleControllerPreviewResponse = (lifecycleControllerPreviewResponseSuccess)
-
-export const getLifecycleControllerPreviewUrl = () => {
+    export const getLifecycleControllerPreviewUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getLifecycleControllerPreviewUrl = () => {
   return `/privacy/retention/preview`
 }
 
-export const lifecycleControllerPreview = async ( options?: Parameters<typeof customInstance>[1]): Promise<lifecycleControllerPreviewResponse> => {
+export const lifecycleControllerPreview = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<lifecycleControllerPreviewResponse>(getLifecycleControllerPreviewUrl(),
+  return customInstance<void>(getLifecycleControllerPreviewUrl(),
   {
     ...options,
     method: 'POST'
@@ -265,89 +229,51 @@ export const lifecycleControllerPreview = async ( options?: Parameters<typeof cu
 
 
 
-export const getLifecycleControllerPreviewQueryKey = () => {
-    return [
-    'POST', `/privacy/retention/preview`
-    ] as const;
+export const getLifecycleControllerPreviewMutationKey = () => ['lifecycleControllerPreview'] as const;
+
+export const getLifecycleControllerPreviewMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError,void, TContext> => {
+
+const mutationKey = getLifecycleControllerPreviewMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lifecycleControllerPreview>>, void> = () => {
+
+
+          return  lifecycleControllerPreview(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LifecycleControllerPreviewMutationResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerPreview>>>
+
+    export type LifecycleControllerPreviewMutationError = unknown
+
+
+    export const useLifecycleControllerPreview = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof lifecycleControllerPreview>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLifecycleControllerPreviewMutationOptions(options), queryClient);
     }
-
-
-export const getLifecycleControllerPreviewQueryOptions = <TData = Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLifecycleControllerPreviewQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof lifecycleControllerPreview>>> = ({ signal }) => lifecycleControllerPreview({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LifecycleControllerPreviewQueryResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerPreview>>>
-export type LifecycleControllerPreviewQueryError = unknown
-
-
-export function useLifecycleControllerPreview<TData = Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof lifecycleControllerPreview>>,
-          TError,
-          Awaited<ReturnType<typeof lifecycleControllerPreview>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerPreview<TData = Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof lifecycleControllerPreview>>,
-          TError,
-          Awaited<ReturnType<typeof lifecycleControllerPreview>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerPreview<TData = Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerPreview<TData = Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerPreview>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLifecycleControllerPreviewQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type lifecycleControllerExportsResponse200 = {
-  data: void
-  status: 200
-}
-
-export type lifecycleControllerExportsResponseSuccess = (lifecycleControllerExportsResponse200) & {
-  headers: Headers;
-};
-;
-
-export type lifecycleControllerExportsResponse = (lifecycleControllerExportsResponseSuccess)
-
-export const getLifecycleControllerExportsUrl = () => {
+    export const getLifecycleControllerExportsUrl = () => {
 
 
 
@@ -355,9 +281,9 @@ export const getLifecycleControllerExportsUrl = () => {
   return `/privacy/exports`
 }
 
-export const lifecycleControllerExports = async ( options?: Parameters<typeof customInstance>[1]): Promise<lifecycleControllerExportsResponse> => {
+export const lifecycleControllerExports = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<lifecycleControllerExportsResponse>(getLifecycleControllerExportsUrl(),
+  return customInstance<void>(getLifecycleControllerExportsUrl(),
   {
     ...options,
     method: 'GET'
@@ -370,61 +296,75 @@ export const lifecycleControllerExports = async ( options?: Parameters<typeof cu
 
 
 
-export const getLifecycleControllerExportsMutationKey = () => ['lifecycleControllerExports'] as const;
-
-export const getLifecycleControllerExportsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerExports>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerExports>>, TError,void, TContext> => {
-
-const mutationKey = getLifecycleControllerExportsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lifecycleControllerExports>>, void> = () => {
-
-
-          return  lifecycleControllerExports(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LifecycleControllerExportsMutationResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerExports>>>
-
-    export type LifecycleControllerExportsMutationError = unknown
-
-
-    export const useLifecycleControllerExports = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerExports>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof lifecycleControllerExports>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getLifecycleControllerExportsMutationOptions(options), queryClient);
+export const getLifecycleControllerExportsQueryKey = () => {
+    return [
+    `/privacy/exports`
+    ] as const;
     }
-    export type lifecycleControllerRequestResponse202 = {
-  data: void
-  status: 202
+
+
+export const getLifecycleControllerExportsQueryOptions = <TData = Awaited<ReturnType<typeof lifecycleControllerExports>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerExports>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLifecycleControllerExportsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof lifecycleControllerExports>>> = ({ signal }) => lifecycleControllerExports({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerExports>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type lifecycleControllerRequestResponseSuccess = (lifecycleControllerRequestResponse202) & {
-  headers: Headers;
-};
-;
+export type LifecycleControllerExportsQueryResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerExports>>>
+export type LifecycleControllerExportsQueryError = unknown
 
-export type lifecycleControllerRequestResponse = (lifecycleControllerRequestResponseSuccess)
+
+export function useLifecycleControllerExports<TData = Awaited<ReturnType<typeof lifecycleControllerExports>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerExports>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof lifecycleControllerExports>>,
+          TError,
+          Awaited<ReturnType<typeof lifecycleControllerExports>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerExports<TData = Awaited<ReturnType<typeof lifecycleControllerExports>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerExports>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof lifecycleControllerExports>>,
+          TError,
+          Awaited<ReturnType<typeof lifecycleControllerExports>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerExports<TData = Awaited<ReturnType<typeof lifecycleControllerExports>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerExports>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerExports<TData = Awaited<ReturnType<typeof lifecycleControllerExports>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerExports>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLifecycleControllerExportsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLifecycleControllerRequestUrl = () => {
 
@@ -434,9 +374,9 @@ export const getLifecycleControllerRequestUrl = () => {
   return `/privacy/exports`
 }
 
-export const lifecycleControllerRequest = async ( options?: Parameters<typeof customInstance>[1]): Promise<lifecycleControllerRequestResponse> => {
+export const lifecycleControllerRequest = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<lifecycleControllerRequestResponse>(getLifecycleControllerRequestUrl(),
+  return customInstance<void>(getLifecycleControllerRequestUrl(),
   {
     ...options,
     method: 'POST'
@@ -449,89 +389,51 @@ export const lifecycleControllerRequest = async ( options?: Parameters<typeof cu
 
 
 
-export const getLifecycleControllerRequestQueryKey = () => {
-    return [
-    'POST', `/privacy/exports`
-    ] as const;
+export const getLifecycleControllerRequestMutationKey = () => ['lifecycleControllerRequest'] as const;
+
+export const getLifecycleControllerRequestMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError,void, TContext> => {
+
+const mutationKey = getLifecycleControllerRequestMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lifecycleControllerRequest>>, void> = () => {
+
+
+          return  lifecycleControllerRequest(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LifecycleControllerRequestMutationResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerRequest>>>
+
+    export type LifecycleControllerRequestMutationError = unknown
+
+
+    export const useLifecycleControllerRequest = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof lifecycleControllerRequest>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLifecycleControllerRequestMutationOptions(options), queryClient);
     }
-
-
-export const getLifecycleControllerRequestQueryOptions = <TData = Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLifecycleControllerRequestQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof lifecycleControllerRequest>>> = ({ signal }) => lifecycleControllerRequest({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LifecycleControllerRequestQueryResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerRequest>>>
-export type LifecycleControllerRequestQueryError = unknown
-
-
-export function useLifecycleControllerRequest<TData = Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof lifecycleControllerRequest>>,
-          TError,
-          Awaited<ReturnType<typeof lifecycleControllerRequest>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerRequest<TData = Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof lifecycleControllerRequest>>,
-          TError,
-          Awaited<ReturnType<typeof lifecycleControllerRequest>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerRequest<TData = Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerRequest<TData = Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequest>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLifecycleControllerRequestQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type lifecycleControllerDownloadResponse200 = {
-  data: void
-  status: 200
-}
-
-export type lifecycleControllerDownloadResponseSuccess = (lifecycleControllerDownloadResponse200) & {
-  headers: Headers;
-};
-;
-
-export type lifecycleControllerDownloadResponse = (lifecycleControllerDownloadResponseSuccess)
-
-export const getLifecycleControllerDownloadUrl = (id: string,) => {
+    export const getLifecycleControllerDownloadUrl = (id: string,) => {
 
 
 
@@ -539,9 +441,9 @@ export const getLifecycleControllerDownloadUrl = (id: string,) => {
   return `/privacy/exports/${id}/download`
 }
 
-export const lifecycleControllerDownload = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<lifecycleControllerDownloadResponse> => {
+export const lifecycleControllerDownload = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<lifecycleControllerDownloadResponse>(getLifecycleControllerDownloadUrl(id),
+  return customInstance<void>(getLifecycleControllerDownloadUrl(id),
   {
     ...options,
     method: 'GET'
@@ -554,61 +456,75 @@ export const lifecycleControllerDownload = async (id: string, options?: Paramete
 
 
 
-export const getLifecycleControllerDownloadMutationKey = () => ['lifecycleControllerDownload'] as const;
-
-export const getLifecycleControllerDownloadMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError,LifecycleControllerDownloadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError,LifecycleControllerDownloadMutationVariables, TContext> => {
-
-const mutationKey = getLifecycleControllerDownloadMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lifecycleControllerDownload>>, LifecycleControllerDownloadMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  lifecycleControllerDownload(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LifecycleControllerDownloadMutationResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerDownload>>>
-
-    export type LifecycleControllerDownloadMutationError = unknown
-    export type LifecycleControllerDownloadMutationVariables = {id: string}
-
-    export const useLifecycleControllerDownload = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError,LifecycleControllerDownloadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof lifecycleControllerDownload>>,
-        TError,
-        LifecycleControllerDownloadMutationVariables,
-        TContext
-      > => {
-      return useMutation(getLifecycleControllerDownloadMutationOptions(options), queryClient);
+export const getLifecycleControllerDownloadQueryKey = (id: string,) => {
+    return [
+    `/privacy/exports/${id}/download`
+    ] as const;
     }
-    export type lifecycleControllerStateResponse200 = {
-  data: void
-  status: 200
+
+
+export const getLifecycleControllerDownloadQueryOptions = <TData = Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLifecycleControllerDownloadQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof lifecycleControllerDownload>>> = ({ signal }) => lifecycleControllerDownload(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type lifecycleControllerStateResponseSuccess = (lifecycleControllerStateResponse200) & {
-  headers: Headers;
-};
-;
+export type LifecycleControllerDownloadQueryResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerDownload>>>
+export type LifecycleControllerDownloadQueryError = unknown
 
-export type lifecycleControllerStateResponse = (lifecycleControllerStateResponseSuccess)
+
+export function useLifecycleControllerDownload<TData = Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof lifecycleControllerDownload>>,
+          TError,
+          Awaited<ReturnType<typeof lifecycleControllerDownload>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerDownload<TData = Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof lifecycleControllerDownload>>,
+          TError,
+          Awaited<ReturnType<typeof lifecycleControllerDownload>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerDownload<TData = Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerDownload<TData = Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerDownload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLifecycleControllerDownloadQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLifecycleControllerStateUrl = () => {
 
@@ -618,9 +534,9 @@ export const getLifecycleControllerStateUrl = () => {
   return `/privacy/workspace/deletion`
 }
 
-export const lifecycleControllerState = async ( options?: Parameters<typeof customInstance>[1]): Promise<lifecycleControllerStateResponse> => {
+export const lifecycleControllerState = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<lifecycleControllerStateResponse>(getLifecycleControllerStateUrl(),
+  return customInstance<void>(getLifecycleControllerStateUrl(),
   {
     ...options,
     method: 'GET'
@@ -633,61 +549,75 @@ export const lifecycleControllerState = async ( options?: Parameters<typeof cust
 
 
 
-export const getLifecycleControllerStateMutationKey = () => ['lifecycleControllerState'] as const;
-
-export const getLifecycleControllerStateMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerState>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerState>>, TError,void, TContext> => {
-
-const mutationKey = getLifecycleControllerStateMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lifecycleControllerState>>, void> = () => {
-
-
-          return  lifecycleControllerState(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LifecycleControllerStateMutationResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerState>>>
-
-    export type LifecycleControllerStateMutationError = unknown
-
-
-    export const useLifecycleControllerState = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerState>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof lifecycleControllerState>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getLifecycleControllerStateMutationOptions(options), queryClient);
+export const getLifecycleControllerStateQueryKey = () => {
+    return [
+    `/privacy/workspace/deletion`
+    ] as const;
     }
-    export type lifecycleControllerRequestDeletionResponse200 = {
-  data: void
-  status: 200
+
+
+export const getLifecycleControllerStateQueryOptions = <TData = Awaited<ReturnType<typeof lifecycleControllerState>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerState>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLifecycleControllerStateQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof lifecycleControllerState>>> = ({ signal }) => lifecycleControllerState({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerState>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type lifecycleControllerRequestDeletionResponseSuccess = (lifecycleControllerRequestDeletionResponse200) & {
-  headers: Headers;
-};
-;
+export type LifecycleControllerStateQueryResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerState>>>
+export type LifecycleControllerStateQueryError = unknown
 
-export type lifecycleControllerRequestDeletionResponse = (lifecycleControllerRequestDeletionResponseSuccess)
+
+export function useLifecycleControllerState<TData = Awaited<ReturnType<typeof lifecycleControllerState>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerState>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof lifecycleControllerState>>,
+          TError,
+          Awaited<ReturnType<typeof lifecycleControllerState>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerState<TData = Awaited<ReturnType<typeof lifecycleControllerState>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerState>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof lifecycleControllerState>>,
+          TError,
+          Awaited<ReturnType<typeof lifecycleControllerState>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerState<TData = Awaited<ReturnType<typeof lifecycleControllerState>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerState>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLifecycleControllerState<TData = Awaited<ReturnType<typeof lifecycleControllerState>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerState>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLifecycleControllerStateQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLifecycleControllerRequestDeletionUrl = () => {
 
@@ -697,9 +627,9 @@ export const getLifecycleControllerRequestDeletionUrl = () => {
   return `/privacy/workspace/deletion`
 }
 
-export const lifecycleControllerRequestDeletion = async ( options?: Parameters<typeof customInstance>[1]): Promise<lifecycleControllerRequestDeletionResponse> => {
+export const lifecycleControllerRequestDeletion = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<lifecycleControllerRequestDeletionResponse>(getLifecycleControllerRequestDeletionUrl(),
+  return customInstance<void>(getLifecycleControllerRequestDeletionUrl(),
   {
     ...options,
     method: 'POST'
@@ -712,89 +642,51 @@ export const lifecycleControllerRequestDeletion = async ( options?: Parameters<t
 
 
 
-export const getLifecycleControllerRequestDeletionQueryKey = () => {
-    return [
-    'POST', `/privacy/workspace/deletion`
-    ] as const;
+export const getLifecycleControllerRequestDeletionMutationKey = () => ['lifecycleControllerRequestDeletion'] as const;
+
+export const getLifecycleControllerRequestDeletionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError,void, TContext> => {
+
+const mutationKey = getLifecycleControllerRequestDeletionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, void> = () => {
+
+
+          return  lifecycleControllerRequestDeletion(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LifecycleControllerRequestDeletionMutationResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>>
+
+    export type LifecycleControllerRequestDeletionMutationError = unknown
+
+
+    export const useLifecycleControllerRequestDeletion = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLifecycleControllerRequestDeletionMutationOptions(options), queryClient);
     }
-
-
-export const getLifecycleControllerRequestDeletionQueryOptions = <TData = Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLifecycleControllerRequestDeletionQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>> = ({ signal }) => lifecycleControllerRequestDeletion({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LifecycleControllerRequestDeletionQueryResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>>
-export type LifecycleControllerRequestDeletionQueryError = unknown
-
-
-export function useLifecycleControllerRequestDeletion<TData = Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>,
-          TError,
-          Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerRequestDeletion<TData = Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>,
-          TError,
-          Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerRequestDeletion<TData = Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerRequestDeletion<TData = Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerRequestDeletion>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLifecycleControllerRequestDeletionQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type lifecycleControllerCancelResponse200 = {
-  data: void
-  status: 200
-}
-
-export type lifecycleControllerCancelResponseSuccess = (lifecycleControllerCancelResponse200) & {
-  headers: Headers;
-};
-;
-
-export type lifecycleControllerCancelResponse = (lifecycleControllerCancelResponseSuccess)
-
-export const getLifecycleControllerCancelUrl = () => {
+    export const getLifecycleControllerCancelUrl = () => {
 
 
 
@@ -802,9 +694,9 @@ export const getLifecycleControllerCancelUrl = () => {
   return `/privacy/workspace/deletion/cancel`
 }
 
-export const lifecycleControllerCancel = async ( options?: Parameters<typeof customInstance>[1]): Promise<lifecycleControllerCancelResponse> => {
+export const lifecycleControllerCancel = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<lifecycleControllerCancelResponse>(getLifecycleControllerCancelUrl(),
+  return customInstance<void>(getLifecycleControllerCancelUrl(),
   {
     ...options,
     method: 'POST'
@@ -817,73 +709,47 @@ export const lifecycleControllerCancel = async ( options?: Parameters<typeof cus
 
 
 
-export const getLifecycleControllerCancelQueryKey = () => {
-    return [
-    'POST', `/privacy/workspace/deletion/cancel`
-    ] as const;
+export const getLifecycleControllerCancelMutationKey = () => ['lifecycleControllerCancel'] as const;
+
+export const getLifecycleControllerCancelMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError,void, TContext> => {
+
+const mutationKey = getLifecycleControllerCancelMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lifecycleControllerCancel>>, void> = () => {
+
+
+          return  lifecycleControllerCancel(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LifecycleControllerCancelMutationResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerCancel>>>
+
+    export type LifecycleControllerCancelMutationError = unknown
+
+
+    export const useLifecycleControllerCancel = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof lifecycleControllerCancel>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLifecycleControllerCancelMutationOptions(options), queryClient);
     }
-
-
-export const getLifecycleControllerCancelQueryOptions = <TData = Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLifecycleControllerCancelQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof lifecycleControllerCancel>>> = ({ signal }) => lifecycleControllerCancel({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LifecycleControllerCancelQueryResult = NonNullable<Awaited<ReturnType<typeof lifecycleControllerCancel>>>
-export type LifecycleControllerCancelQueryError = unknown
-
-
-export function useLifecycleControllerCancel<TData = Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof lifecycleControllerCancel>>,
-          TError,
-          Awaited<ReturnType<typeof lifecycleControllerCancel>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerCancel<TData = Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof lifecycleControllerCancel>>,
-          TError,
-          Awaited<ReturnType<typeof lifecycleControllerCancel>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerCancel<TData = Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLifecycleControllerCancel<TData = Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lifecycleControllerCancel>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLifecycleControllerCancelQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

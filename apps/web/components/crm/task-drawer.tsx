@@ -15,6 +15,7 @@ import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useDebounce } from '@/hooks/use-debounce';
 import { api } from '@/lib/api';
+import { tasksControllerCreate, tasksControllerUpdate } from '@/lib/api-generated/tasks/tasks';
 import { useAuth } from '@/lib/auth';
 import { qs, useMembers } from '@/lib/crm';
 import { handleApiError } from '@/lib/forms';
@@ -127,17 +128,11 @@ export function TaskDrawer({ open, onOpenChange, taskToEdit, onSuccess }: TaskDr
       };
 
       if (taskToEdit) {
-        await api<TaskItem>(`/tasks/${taskToEdit.id}`, {
-          method: 'PATCH',
-          body: payload,
-        });
+        await tasksControllerUpdate(taskToEdit.id, payload);
       } else {
-        await api<TaskItem>('/tasks', {
-          method: 'POST',
-          body: {
-            ...payload,
-            leadId: selectedLead?.id || null,
-          },
+        await tasksControllerCreate({
+          ...payload,
+          leadId: selectedLead?.id || null,
         });
       }
 

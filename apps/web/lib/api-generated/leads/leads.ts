@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type leadsControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type leadsControllerListResponseSuccess = (leadsControllerListResponse200) & {
-  headers: Headers;
-};
-;
-
-export type leadsControllerListResponse = (leadsControllerListResponseSuccess)
-
 export const getLeadsControllerListUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getLeadsControllerListUrl = () => {
   return `/leads`
 }
 
-export const leadsControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerListResponse> => {
+export const leadsControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerListResponse>(getLeadsControllerListUrl(),
+  return customInstance<void>(getLeadsControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const leadsControllerList = async ( options?: Parameters<typeof customIns
 
 
 
-export const getLeadsControllerListMutationKey = () => ['leadsControllerList'] as const;
-
-export const getLeadsControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getLeadsControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerList>>, void> = () => {
-
-
-          return  leadsControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LeadsControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerList>>>
-
-    export type LeadsControllerListMutationError = unknown
-
-
-    export const useLeadsControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof leadsControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getLeadsControllerListMutationOptions(options), queryClient);
+export const getLeadsControllerListQueryKey = () => {
+    return [
+    `/leads`
+    ] as const;
     }
-    export type leadsControllerCreateResponse201 = {
-  data: void
-  status: 201
+
+
+export const getLeadsControllerListQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerList>>> = ({ signal }) => leadsControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type leadsControllerCreateResponseSuccess = (leadsControllerCreateResponse201) & {
-  headers: Headers;
-};
-;
+export type LeadsControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerList>>>
+export type LeadsControllerListQueryError = unknown
 
-export type leadsControllerCreateResponse = (leadsControllerCreateResponseSuccess)
+
+export function useLeadsControllerList<TData = Awaited<ReturnType<typeof leadsControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerList<TData = Awaited<ReturnType<typeof leadsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerList<TData = Awaited<ReturnType<typeof leadsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerList<TData = Awaited<ReturnType<typeof leadsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLeadsControllerCreateUrl = () => {
 
@@ -145,9 +147,9 @@ export const getLeadsControllerCreateUrl = () => {
   return `/leads`
 }
 
-export const leadsControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerCreateResponse> => {
+export const leadsControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerCreateResponse>(getLeadsControllerCreateUrl(),
+  return customInstance<void>(getLeadsControllerCreateUrl(),
   {
     ...options,
     method: 'POST'
@@ -160,89 +162,51 @@ export const leadsControllerCreate = async ( options?: Parameters<typeof customI
 
 
 
-export const getLeadsControllerCreateQueryKey = () => {
-    return [
-    'POST', `/leads`
-    ] as const;
+export const getLeadsControllerCreateMutationKey = () => ['leadsControllerCreate'] as const;
+
+export const getLeadsControllerCreateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerCreate>>, TError,void, TContext> => {
+
+const mutationKey = getLeadsControllerCreateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerCreate>>, void> = () => {
+
+
+          return  leadsControllerCreate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerCreateMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerCreate>>>
+
+    export type LeadsControllerCreateMutationError = unknown
+
+
+    export const useLeadsControllerCreate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerCreate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerCreateMutationOptions(options), queryClient);
     }
-
-
-export const getLeadsControllerCreateQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerCreate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerCreateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerCreate>>> = ({ signal }) => leadsControllerCreate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCreate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LeadsControllerCreateQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerCreate>>>
-export type LeadsControllerCreateQueryError = unknown
-
-
-export function useLeadsControllerCreate<TData = Awaited<ReturnType<typeof leadsControllerCreate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCreate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerCreate<TData = Awaited<ReturnType<typeof leadsControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCreate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerCreate<TData = Awaited<ReturnType<typeof leadsControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerCreate<TData = Awaited<ReturnType<typeof leadsControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLeadsControllerCreateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type leadsControllerMetaResponse200 = {
-  data: void
-  status: 200
-}
-
-export type leadsControllerMetaResponseSuccess = (leadsControllerMetaResponse200) & {
-  headers: Headers;
-};
-;
-
-export type leadsControllerMetaResponse = (leadsControllerMetaResponseSuccess)
-
-export const getLeadsControllerMetaUrl = () => {
+    export const getLeadsControllerMetaUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getLeadsControllerMetaUrl = () => {
   return `/leads/meta`
 }
 
-export const leadsControllerMeta = async ( options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerMetaResponse> => {
+export const leadsControllerMeta = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerMetaResponse>(getLeadsControllerMetaUrl(),
+  return customInstance<void>(getLeadsControllerMetaUrl(),
   {
     ...options,
     method: 'GET'
@@ -265,61 +229,75 @@ export const leadsControllerMeta = async ( options?: Parameters<typeof customIns
 
 
 
-export const getLeadsControllerMetaMutationKey = () => ['leadsControllerMeta'] as const;
-
-export const getLeadsControllerMetaMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerMeta>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerMeta>>, TError,void, TContext> => {
-
-const mutationKey = getLeadsControllerMetaMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerMeta>>, void> = () => {
-
-
-          return  leadsControllerMeta(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LeadsControllerMetaMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerMeta>>>
-
-    export type LeadsControllerMetaMutationError = unknown
-
-
-    export const useLeadsControllerMeta = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerMeta>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof leadsControllerMeta>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getLeadsControllerMetaMutationOptions(options), queryClient);
+export const getLeadsControllerMetaQueryKey = () => {
+    return [
+    `/leads/meta`
+    ] as const;
     }
-    export type leadsControllerTagsResponse200 = {
-  data: void
-  status: 200
+
+
+export const getLeadsControllerMetaQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerMeta>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMeta>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerMetaQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerMeta>>> = ({ signal }) => leadsControllerMeta({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMeta>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type leadsControllerTagsResponseSuccess = (leadsControllerTagsResponse200) & {
-  headers: Headers;
-};
-;
+export type LeadsControllerMetaQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerMeta>>>
+export type LeadsControllerMetaQueryError = unknown
 
-export type leadsControllerTagsResponse = (leadsControllerTagsResponseSuccess)
+
+export function useLeadsControllerMeta<TData = Awaited<ReturnType<typeof leadsControllerMeta>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMeta>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerMeta>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerMeta>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerMeta<TData = Awaited<ReturnType<typeof leadsControllerMeta>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMeta>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerMeta>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerMeta>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerMeta<TData = Awaited<ReturnType<typeof leadsControllerMeta>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMeta>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerMeta<TData = Awaited<ReturnType<typeof leadsControllerMeta>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMeta>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerMetaQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLeadsControllerTagsUrl = () => {
 
@@ -329,9 +307,9 @@ export const getLeadsControllerTagsUrl = () => {
   return `/leads/tags`
 }
 
-export const leadsControllerTags = async ( options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerTagsResponse> => {
+export const leadsControllerTags = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerTagsResponse>(getLeadsControllerTagsUrl(),
+  return customInstance<void>(getLeadsControllerTagsUrl(),
   {
     ...options,
     method: 'GET'
@@ -344,61 +322,75 @@ export const leadsControllerTags = async ( options?: Parameters<typeof customIns
 
 
 
-export const getLeadsControllerTagsMutationKey = () => ['leadsControllerTags'] as const;
-
-export const getLeadsControllerTagsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerTags>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerTags>>, TError,void, TContext> => {
-
-const mutationKey = getLeadsControllerTagsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerTags>>, void> = () => {
-
-
-          return  leadsControllerTags(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LeadsControllerTagsMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerTags>>>
-
-    export type LeadsControllerTagsMutationError = unknown
-
-
-    export const useLeadsControllerTags = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerTags>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof leadsControllerTags>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getLeadsControllerTagsMutationOptions(options), queryClient);
+export const getLeadsControllerTagsQueryKey = () => {
+    return [
+    `/leads/tags`
+    ] as const;
     }
-    export type leadsControllerCheckResponse200 = {
-  data: void
-  status: 200
+
+
+export const getLeadsControllerTagsQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerTags>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTags>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerTagsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerTags>>> = ({ signal }) => leadsControllerTags({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTags>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type leadsControllerCheckResponseSuccess = (leadsControllerCheckResponse200) & {
-  headers: Headers;
-};
-;
+export type LeadsControllerTagsQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerTags>>>
+export type LeadsControllerTagsQueryError = unknown
 
-export type leadsControllerCheckResponse = (leadsControllerCheckResponseSuccess)
+
+export function useLeadsControllerTags<TData = Awaited<ReturnType<typeof leadsControllerTags>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTags>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerTags>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerTags>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerTags<TData = Awaited<ReturnType<typeof leadsControllerTags>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTags>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerTags>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerTags>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerTags<TData = Awaited<ReturnType<typeof leadsControllerTags>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTags>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerTags<TData = Awaited<ReturnType<typeof leadsControllerTags>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTags>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerTagsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLeadsControllerCheckUrl = () => {
 
@@ -408,9 +400,9 @@ export const getLeadsControllerCheckUrl = () => {
   return `/leads/check-duplicates`
 }
 
-export const leadsControllerCheck = async ( options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerCheckResponse> => {
+export const leadsControllerCheck = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerCheckResponse>(getLeadsControllerCheckUrl(),
+  return customInstance<void>(getLeadsControllerCheckUrl(),
   {
     ...options,
     method: 'POST'
@@ -423,89 +415,51 @@ export const leadsControllerCheck = async ( options?: Parameters<typeof customIn
 
 
 
-export const getLeadsControllerCheckQueryKey = () => {
-    return [
-    'POST', `/leads/check-duplicates`
-    ] as const;
+export const getLeadsControllerCheckMutationKey = () => ['leadsControllerCheck'] as const;
+
+export const getLeadsControllerCheckMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerCheck>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerCheck>>, TError,void, TContext> => {
+
+const mutationKey = getLeadsControllerCheckMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerCheck>>, void> = () => {
+
+
+          return  leadsControllerCheck(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerCheckMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerCheck>>>
+
+    export type LeadsControllerCheckMutationError = unknown
+
+
+    export const useLeadsControllerCheck = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerCheck>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerCheck>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerCheckMutationOptions(options), queryClient);
     }
-
-
-export const getLeadsControllerCheckQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerCheck>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerCheckQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerCheck>>> = ({ signal }) => leadsControllerCheck({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCheck>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LeadsControllerCheckQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerCheck>>>
-export type LeadsControllerCheckQueryError = unknown
-
-
-export function useLeadsControllerCheck<TData = Awaited<ReturnType<typeof leadsControllerCheck>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCheck>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerCheck>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerCheck>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerCheck<TData = Awaited<ReturnType<typeof leadsControllerCheck>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCheck>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerCheck>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerCheck>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerCheck<TData = Awaited<ReturnType<typeof leadsControllerCheck>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerCheck<TData = Awaited<ReturnType<typeof leadsControllerCheck>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLeadsControllerCheckQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type leadsControllerBulkResponse200 = {
-  data: void
-  status: 200
-}
-
-export type leadsControllerBulkResponseSuccess = (leadsControllerBulkResponse200) & {
-  headers: Headers;
-};
-;
-
-export type leadsControllerBulkResponse = (leadsControllerBulkResponseSuccess)
-
-export const getLeadsControllerBulkUrl = () => {
+    export const getLeadsControllerBulkUrl = () => {
 
 
 
@@ -513,9 +467,9 @@ export const getLeadsControllerBulkUrl = () => {
   return `/leads/bulk`
 }
 
-export const leadsControllerBulk = async ( options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerBulkResponse> => {
+export const leadsControllerBulk = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerBulkResponse>(getLeadsControllerBulkUrl(),
+  return customInstance<void>(getLeadsControllerBulkUrl(),
   {
     ...options,
     method: 'POST'
@@ -528,89 +482,51 @@ export const leadsControllerBulk = async ( options?: Parameters<typeof customIns
 
 
 
-export const getLeadsControllerBulkQueryKey = () => {
-    return [
-    'POST', `/leads/bulk`
-    ] as const;
+export const getLeadsControllerBulkMutationKey = () => ['leadsControllerBulk'] as const;
+
+export const getLeadsControllerBulkMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerBulk>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerBulk>>, TError,void, TContext> => {
+
+const mutationKey = getLeadsControllerBulkMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerBulk>>, void> = () => {
+
+
+          return  leadsControllerBulk(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerBulkMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerBulk>>>
+
+    export type LeadsControllerBulkMutationError = unknown
+
+
+    export const useLeadsControllerBulk = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerBulk>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerBulk>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerBulkMutationOptions(options), queryClient);
     }
-
-
-export const getLeadsControllerBulkQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerBulk>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerBulk>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerBulkQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerBulk>>> = ({ signal }) => leadsControllerBulk({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerBulk>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LeadsControllerBulkQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerBulk>>>
-export type LeadsControllerBulkQueryError = unknown
-
-
-export function useLeadsControllerBulk<TData = Awaited<ReturnType<typeof leadsControllerBulk>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerBulk>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerBulk>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerBulk>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerBulk<TData = Awaited<ReturnType<typeof leadsControllerBulk>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerBulk>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerBulk>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerBulk>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerBulk<TData = Awaited<ReturnType<typeof leadsControllerBulk>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerBulk>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerBulk<TData = Awaited<ReturnType<typeof leadsControllerBulk>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerBulk>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLeadsControllerBulkQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type leadsControllerImportResponse200 = {
-  data: void
-  status: 200
-}
-
-export type leadsControllerImportResponseSuccess = (leadsControllerImportResponse200) & {
-  headers: Headers;
-};
-;
-
-export type leadsControllerImportResponse = (leadsControllerImportResponseSuccess)
-
-export const getLeadsControllerImportUrl = () => {
+    export const getLeadsControllerImportUrl = () => {
 
 
 
@@ -618,9 +534,9 @@ export const getLeadsControllerImportUrl = () => {
   return `/leads/import`
 }
 
-export const leadsControllerImport = async ( options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerImportResponse> => {
+export const leadsControllerImport = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerImportResponse>(getLeadsControllerImportUrl(),
+  return customInstance<void>(getLeadsControllerImportUrl(),
   {
     ...options,
     method: 'POST'
@@ -633,89 +549,51 @@ export const leadsControllerImport = async ( options?: Parameters<typeof customI
 
 
 
-export const getLeadsControllerImportQueryKey = () => {
-    return [
-    'POST', `/leads/import`
-    ] as const;
+export const getLeadsControllerImportMutationKey = () => ['leadsControllerImport'] as const;
+
+export const getLeadsControllerImportMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerImport>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerImport>>, TError,void, TContext> => {
+
+const mutationKey = getLeadsControllerImportMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerImport>>, void> = () => {
+
+
+          return  leadsControllerImport(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerImportMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerImport>>>
+
+    export type LeadsControllerImportMutationError = unknown
+
+
+    export const useLeadsControllerImport = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerImport>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerImport>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerImportMutationOptions(options), queryClient);
     }
-
-
-export const getLeadsControllerImportQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerImport>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerImport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerImportQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerImport>>> = ({ signal }) => leadsControllerImport({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerImport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LeadsControllerImportQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerImport>>>
-export type LeadsControllerImportQueryError = unknown
-
-
-export function useLeadsControllerImport<TData = Awaited<ReturnType<typeof leadsControllerImport>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerImport>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerImport>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerImport>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerImport<TData = Awaited<ReturnType<typeof leadsControllerImport>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerImport>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerImport>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerImport>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerImport<TData = Awaited<ReturnType<typeof leadsControllerImport>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerImport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerImport<TData = Awaited<ReturnType<typeof leadsControllerImport>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerImport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLeadsControllerImportQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type leadsControllerExportResponse200 = {
-  data: void
-  status: 200
-}
-
-export type leadsControllerExportResponseSuccess = (leadsControllerExportResponse200) & {
-  headers: Headers;
-};
-;
-
-export type leadsControllerExportResponse = (leadsControllerExportResponseSuccess)
-
-export const getLeadsControllerExportUrl = () => {
+    export const getLeadsControllerExportUrl = () => {
 
 
 
@@ -723,9 +601,9 @@ export const getLeadsControllerExportUrl = () => {
   return `/leads/export`
 }
 
-export const leadsControllerExport = async ( options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerExportResponse> => {
+export const leadsControllerExport = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerExportResponse>(getLeadsControllerExportUrl(),
+  return customInstance<void>(getLeadsControllerExportUrl(),
   {
     ...options,
     method: 'GET'
@@ -738,61 +616,75 @@ export const leadsControllerExport = async ( options?: Parameters<typeof customI
 
 
 
-export const getLeadsControllerExportMutationKey = () => ['leadsControllerExport'] as const;
-
-export const getLeadsControllerExportMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerExport>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerExport>>, TError,void, TContext> => {
-
-const mutationKey = getLeadsControllerExportMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerExport>>, void> = () => {
-
-
-          return  leadsControllerExport(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LeadsControllerExportMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerExport>>>
-
-    export type LeadsControllerExportMutationError = unknown
-
-
-    export const useLeadsControllerExport = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerExport>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof leadsControllerExport>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getLeadsControllerExportMutationOptions(options), queryClient);
+export const getLeadsControllerExportQueryKey = () => {
+    return [
+    `/leads/export`
+    ] as const;
     }
-    export type leadsControllerGetResponse200 = {
-  data: void
-  status: 200
+
+
+export const getLeadsControllerExportQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerExport>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerExport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerExportQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerExport>>> = ({ signal }) => leadsControllerExport({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerExport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type leadsControllerGetResponseSuccess = (leadsControllerGetResponse200) & {
-  headers: Headers;
-};
-;
+export type LeadsControllerExportQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerExport>>>
+export type LeadsControllerExportQueryError = unknown
 
-export type leadsControllerGetResponse = (leadsControllerGetResponseSuccess)
+
+export function useLeadsControllerExport<TData = Awaited<ReturnType<typeof leadsControllerExport>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerExport>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerExport>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerExport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerExport<TData = Awaited<ReturnType<typeof leadsControllerExport>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerExport>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerExport>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerExport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerExport<TData = Awaited<ReturnType<typeof leadsControllerExport>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerExport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerExport<TData = Awaited<ReturnType<typeof leadsControllerExport>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerExport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerExportQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLeadsControllerGetUrl = (id: string,) => {
 
@@ -802,9 +694,9 @@ export const getLeadsControllerGetUrl = (id: string,) => {
   return `/leads/${id}`
 }
 
-export const leadsControllerGet = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerGetResponse> => {
+export const leadsControllerGet = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerGetResponse>(getLeadsControllerGetUrl(id),
+  return customInstance<void>(getLeadsControllerGetUrl(id),
   {
     ...options,
     method: 'GET'
@@ -817,61 +709,75 @@ export const leadsControllerGet = async (id: string, options?: Parameters<typeof
 
 
 
-export const getLeadsControllerGetMutationKey = () => ['leadsControllerGet'] as const;
-
-export const getLeadsControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerGet>>, TError,LeadsControllerGetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerGet>>, TError,LeadsControllerGetMutationVariables, TContext> => {
-
-const mutationKey = getLeadsControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerGet>>, LeadsControllerGetMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  leadsControllerGet(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LeadsControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerGet>>>
-
-    export type LeadsControllerGetMutationError = unknown
-    export type LeadsControllerGetMutationVariables = {id: string}
-
-    export const useLeadsControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerGet>>, TError,LeadsControllerGetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof leadsControllerGet>>,
-        TError,
-        LeadsControllerGetMutationVariables,
-        TContext
-      > => {
-      return useMutation(getLeadsControllerGetMutationOptions(options), queryClient);
+export const getLeadsControllerGetQueryKey = (id: string,) => {
+    return [
+    `/leads/${id}`
+    ] as const;
     }
-    export type leadsControllerUpdateResponse200 = {
-  data: void
-  status: 200
+
+
+export const getLeadsControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerGet>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerGetQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerGet>>> = ({ signal }) => leadsControllerGet(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type leadsControllerUpdateResponseSuccess = (leadsControllerUpdateResponse200) & {
-  headers: Headers;
-};
-;
+export type LeadsControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerGet>>>
+export type LeadsControllerGetQueryError = unknown
 
-export type leadsControllerUpdateResponse = (leadsControllerUpdateResponseSuccess)
+
+export function useLeadsControllerGet<TData = Awaited<ReturnType<typeof leadsControllerGet>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerGet<TData = Awaited<ReturnType<typeof leadsControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerGet<TData = Awaited<ReturnType<typeof leadsControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerGet<TData = Awaited<ReturnType<typeof leadsControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerGetQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLeadsControllerUpdateUrl = (id: string,) => {
 
@@ -881,9 +787,9 @@ export const getLeadsControllerUpdateUrl = (id: string,) => {
   return `/leads/${id}`
 }
 
-export const leadsControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerUpdateResponse> => {
+export const leadsControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerUpdateResponse>(getLeadsControllerUpdateUrl(id),
+  return customInstance<void>(getLeadsControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH'
@@ -896,89 +802,51 @@ export const leadsControllerUpdate = async (id: string, options?: Parameters<typ
 
 
 
-export const getLeadsControllerUpdateQueryKey = (id: string,) => {
-    return [
-    'PATCH', `/leads/${id}`
-    ] as const;
+export const getLeadsControllerUpdateMutationKey = () => ['leadsControllerUpdate'] as const;
+
+export const getLeadsControllerUpdateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerUpdate>>, TError,LeadsControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerUpdate>>, TError,LeadsControllerUpdateMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerUpdateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerUpdate>>, LeadsControllerUpdateMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  leadsControllerUpdate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerUpdate>>>
+
+    export type LeadsControllerUpdateMutationError = unknown
+    export type LeadsControllerUpdateMutationVariables = {id: string}
+
+    export const useLeadsControllerUpdate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerUpdate>>, TError,LeadsControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerUpdate>>,
+        TError,
+        LeadsControllerUpdateMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerUpdateMutationOptions(options), queryClient);
     }
-
-
-export const getLeadsControllerUpdateQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerUpdate>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerUpdateQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerUpdate>>> = ({ signal }) => leadsControllerUpdate(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerUpdate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LeadsControllerUpdateQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerUpdate>>>
-export type LeadsControllerUpdateQueryError = unknown
-
-
-export function useLeadsControllerUpdate<TData = Awaited<ReturnType<typeof leadsControllerUpdate>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerUpdate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerUpdate<TData = Awaited<ReturnType<typeof leadsControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerUpdate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerUpdate<TData = Awaited<ReturnType<typeof leadsControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerUpdate<TData = Awaited<ReturnType<typeof leadsControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLeadsControllerUpdateQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type leadsControllerRemoveResponse204 = {
-  data: void
-  status: 204
-}
-
-export type leadsControllerRemoveResponseSuccess = (leadsControllerRemoveResponse204) & {
-  headers: Headers;
-};
-;
-
-export type leadsControllerRemoveResponse = (leadsControllerRemoveResponseSuccess)
-
-export const getLeadsControllerRemoveUrl = (id: string,) => {
+    export const getLeadsControllerRemoveUrl = (id: string,) => {
 
 
 
@@ -986,9 +854,9 @@ export const getLeadsControllerRemoveUrl = (id: string,) => {
   return `/leads/${id}`
 }
 
-export const leadsControllerRemove = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerRemoveResponse> => {
+export const leadsControllerRemove = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerRemoveResponse>(getLeadsControllerRemoveUrl(id),
+  return customInstance<void>(getLeadsControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -1001,89 +869,51 @@ export const leadsControllerRemove = async (id: string, options?: Parameters<typ
 
 
 
-export const getLeadsControllerRemoveQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/leads/${id}`
-    ] as const;
+export const getLeadsControllerRemoveMutationKey = () => ['leadsControllerRemove'] as const;
+
+export const getLeadsControllerRemoveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerRemove>>, TError,LeadsControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerRemove>>, TError,LeadsControllerRemoveMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerRemoveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerRemove>>, LeadsControllerRemoveMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  leadsControllerRemove(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerRemove>>>
+
+    export type LeadsControllerRemoveMutationError = unknown
+    export type LeadsControllerRemoveMutationVariables = {id: string}
+
+    export const useLeadsControllerRemove = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerRemove>>, TError,LeadsControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerRemove>>,
+        TError,
+        LeadsControllerRemoveMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerRemoveMutationOptions(options), queryClient);
     }
-
-
-export const getLeadsControllerRemoveQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerRemove>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerRemoveQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerRemove>>> = ({ signal }) => leadsControllerRemove(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerRemove>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LeadsControllerRemoveQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerRemove>>>
-export type LeadsControllerRemoveQueryError = unknown
-
-
-export function useLeadsControllerRemove<TData = Awaited<ReturnType<typeof leadsControllerRemove>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerRemove>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerRemove<TData = Awaited<ReturnType<typeof leadsControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerRemove>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerRemove<TData = Awaited<ReturnType<typeof leadsControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerRemove<TData = Awaited<ReturnType<typeof leadsControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLeadsControllerRemoveQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type leadsControllerStageResponse200 = {
-  data: void
-  status: 200
-}
-
-export type leadsControllerStageResponseSuccess = (leadsControllerStageResponse200) & {
-  headers: Headers;
-};
-;
-
-export type leadsControllerStageResponse = (leadsControllerStageResponseSuccess)
-
-export const getLeadsControllerStageUrl = (id: string,) => {
+    export const getLeadsControllerStageUrl = (id: string,) => {
 
 
 
@@ -1091,9 +921,9 @@ export const getLeadsControllerStageUrl = (id: string,) => {
   return `/leads/${id}/stage`
 }
 
-export const leadsControllerStage = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerStageResponse> => {
+export const leadsControllerStage = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerStageResponse>(getLeadsControllerStageUrl(id),
+  return customInstance<void>(getLeadsControllerStageUrl(id),
   {
     ...options,
     method: 'POST'
@@ -1106,89 +936,51 @@ export const leadsControllerStage = async (id: string, options?: Parameters<type
 
 
 
-export const getLeadsControllerStageQueryKey = (id: string,) => {
-    return [
-    'POST', `/leads/${id}/stage`
-    ] as const;
+export const getLeadsControllerStageMutationKey = () => ['leadsControllerStage'] as const;
+
+export const getLeadsControllerStageMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerStage>>, TError,LeadsControllerStageMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerStage>>, TError,LeadsControllerStageMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerStageMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerStage>>, LeadsControllerStageMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  leadsControllerStage(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerStageMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerStage>>>
+
+    export type LeadsControllerStageMutationError = unknown
+    export type LeadsControllerStageMutationVariables = {id: string}
+
+    export const useLeadsControllerStage = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerStage>>, TError,LeadsControllerStageMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerStage>>,
+        TError,
+        LeadsControllerStageMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerStageMutationOptions(options), queryClient);
     }
-
-
-export const getLeadsControllerStageQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerStage>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerStage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerStageQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerStage>>> = ({ signal }) => leadsControllerStage(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerStage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LeadsControllerStageQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerStage>>>
-export type LeadsControllerStageQueryError = unknown
-
-
-export function useLeadsControllerStage<TData = Awaited<ReturnType<typeof leadsControllerStage>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerStage>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerStage>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerStage>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerStage<TData = Awaited<ReturnType<typeof leadsControllerStage>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerStage>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerStage>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerStage>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerStage<TData = Awaited<ReturnType<typeof leadsControllerStage>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerStage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerStage<TData = Awaited<ReturnType<typeof leadsControllerStage>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerStage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLeadsControllerStageQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type leadsControllerTagsSetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type leadsControllerTagsSetResponseSuccess = (leadsControllerTagsSetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type leadsControllerTagsSetResponse = (leadsControllerTagsSetResponseSuccess)
-
-export const getLeadsControllerTagsSetUrl = (id: string,) => {
+    export const getLeadsControllerTagsSetUrl = (id: string,) => {
 
 
 
@@ -1196,9 +988,9 @@ export const getLeadsControllerTagsSetUrl = (id: string,) => {
   return `/leads/${id}/tags`
 }
 
-export const leadsControllerTagsSet = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerTagsSetResponse> => {
+export const leadsControllerTagsSet = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerTagsSetResponse>(getLeadsControllerTagsSetUrl(id),
+  return customInstance<void>(getLeadsControllerTagsSetUrl(id),
   {
     ...options,
     method: 'PUT'
@@ -1211,89 +1003,51 @@ export const leadsControllerTagsSet = async (id: string, options?: Parameters<ty
 
 
 
-export const getLeadsControllerTagsSetQueryKey = (id: string,) => {
-    return [
-    'PUT', `/leads/${id}/tags`
-    ] as const;
+export const getLeadsControllerTagsSetMutationKey = () => ['leadsControllerTagsSet'] as const;
+
+export const getLeadsControllerTagsSetMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError,LeadsControllerTagsSetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError,LeadsControllerTagsSetMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerTagsSetMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerTagsSet>>, LeadsControllerTagsSetMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  leadsControllerTagsSet(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerTagsSetMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerTagsSet>>>
+
+    export type LeadsControllerTagsSetMutationError = unknown
+    export type LeadsControllerTagsSetMutationVariables = {id: string}
+
+    export const useLeadsControllerTagsSet = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError,LeadsControllerTagsSetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerTagsSet>>,
+        TError,
+        LeadsControllerTagsSetMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerTagsSetMutationOptions(options), queryClient);
     }
-
-
-export const getLeadsControllerTagsSetQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerTagsSetQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerTagsSet>>> = ({ signal }) => leadsControllerTagsSet(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LeadsControllerTagsSetQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerTagsSet>>>
-export type LeadsControllerTagsSetQueryError = unknown
-
-
-export function useLeadsControllerTagsSet<TData = Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerTagsSet>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerTagsSet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerTagsSet<TData = Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerTagsSet>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerTagsSet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerTagsSet<TData = Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerTagsSet<TData = Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerTagsSet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLeadsControllerTagsSetQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type leadsControllerNotesResponse200 = {
-  data: void
-  status: 200
-}
-
-export type leadsControllerNotesResponseSuccess = (leadsControllerNotesResponse200) & {
-  headers: Headers;
-};
-;
-
-export type leadsControllerNotesResponse = (leadsControllerNotesResponseSuccess)
-
-export const getLeadsControllerNotesUrl = (id: string,) => {
+    export const getLeadsControllerNotesUrl = (id: string,) => {
 
 
 
@@ -1301,9 +1055,9 @@ export const getLeadsControllerNotesUrl = (id: string,) => {
   return `/leads/${id}/notes`
 }
 
-export const leadsControllerNotes = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerNotesResponse> => {
+export const leadsControllerNotes = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerNotesResponse>(getLeadsControllerNotesUrl(id),
+  return customInstance<void>(getLeadsControllerNotesUrl(id),
   {
     ...options,
     method: 'GET'
@@ -1316,61 +1070,75 @@ export const leadsControllerNotes = async (id: string, options?: Parameters<type
 
 
 
-export const getLeadsControllerNotesMutationKey = () => ['leadsControllerNotes'] as const;
-
-export const getLeadsControllerNotesMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerNotes>>, TError,LeadsControllerNotesMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerNotes>>, TError,LeadsControllerNotesMutationVariables, TContext> => {
-
-const mutationKey = getLeadsControllerNotesMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerNotes>>, LeadsControllerNotesMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  leadsControllerNotes(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LeadsControllerNotesMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerNotes>>>
-
-    export type LeadsControllerNotesMutationError = unknown
-    export type LeadsControllerNotesMutationVariables = {id: string}
-
-    export const useLeadsControllerNotes = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerNotes>>, TError,LeadsControllerNotesMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof leadsControllerNotes>>,
-        TError,
-        LeadsControllerNotesMutationVariables,
-        TContext
-      > => {
-      return useMutation(getLeadsControllerNotesMutationOptions(options), queryClient);
+export const getLeadsControllerNotesQueryKey = (id: string,) => {
+    return [
+    `/leads/${id}/notes`
+    ] as const;
     }
-    export type leadsControllerAddNoteResponse201 = {
-  data: void
-  status: 201
+
+
+export const getLeadsControllerNotesQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerNotes>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerNotes>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerNotesQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerNotes>>> = ({ signal }) => leadsControllerNotes(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerNotes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type leadsControllerAddNoteResponseSuccess = (leadsControllerAddNoteResponse201) & {
-  headers: Headers;
-};
-;
+export type LeadsControllerNotesQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerNotes>>>
+export type LeadsControllerNotesQueryError = unknown
 
-export type leadsControllerAddNoteResponse = (leadsControllerAddNoteResponseSuccess)
+
+export function useLeadsControllerNotes<TData = Awaited<ReturnType<typeof leadsControllerNotes>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerNotes>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerNotes>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerNotes>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerNotes<TData = Awaited<ReturnType<typeof leadsControllerNotes>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerNotes>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerNotes>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerNotes>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerNotes<TData = Awaited<ReturnType<typeof leadsControllerNotes>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerNotes>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerNotes<TData = Awaited<ReturnType<typeof leadsControllerNotes>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerNotes>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerNotesQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLeadsControllerAddNoteUrl = (id: string,) => {
 
@@ -1380,9 +1148,9 @@ export const getLeadsControllerAddNoteUrl = (id: string,) => {
   return `/leads/${id}/notes`
 }
 
-export const leadsControllerAddNote = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerAddNoteResponse> => {
+export const leadsControllerAddNote = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerAddNoteResponse>(getLeadsControllerAddNoteUrl(id),
+  return customInstance<void>(getLeadsControllerAddNoteUrl(id),
   {
     ...options,
     method: 'POST'
@@ -1395,89 +1163,51 @@ export const leadsControllerAddNote = async (id: string, options?: Parameters<ty
 
 
 
-export const getLeadsControllerAddNoteQueryKey = (id: string,) => {
-    return [
-    'POST', `/leads/${id}/notes`
-    ] as const;
+export const getLeadsControllerAddNoteMutationKey = () => ['leadsControllerAddNote'] as const;
+
+export const getLeadsControllerAddNoteMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerAddNote>>, TError,LeadsControllerAddNoteMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerAddNote>>, TError,LeadsControllerAddNoteMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerAddNoteMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerAddNote>>, LeadsControllerAddNoteMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  leadsControllerAddNote(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerAddNoteMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerAddNote>>>
+
+    export type LeadsControllerAddNoteMutationError = unknown
+    export type LeadsControllerAddNoteMutationVariables = {id: string}
+
+    export const useLeadsControllerAddNote = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerAddNote>>, TError,LeadsControllerAddNoteMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerAddNote>>,
+        TError,
+        LeadsControllerAddNoteMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerAddNoteMutationOptions(options), queryClient);
     }
-
-
-export const getLeadsControllerAddNoteQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerAddNote>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerAddNote>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerAddNoteQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerAddNote>>> = ({ signal }) => leadsControllerAddNote(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerAddNote>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LeadsControllerAddNoteQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerAddNote>>>
-export type LeadsControllerAddNoteQueryError = unknown
-
-
-export function useLeadsControllerAddNote<TData = Awaited<ReturnType<typeof leadsControllerAddNote>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerAddNote>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerAddNote>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerAddNote>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerAddNote<TData = Awaited<ReturnType<typeof leadsControllerAddNote>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerAddNote>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerAddNote>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerAddNote>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerAddNote<TData = Awaited<ReturnType<typeof leadsControllerAddNote>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerAddNote>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerAddNote<TData = Awaited<ReturnType<typeof leadsControllerAddNote>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerAddNote>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLeadsControllerAddNoteQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type leadsControllerActivityResponse200 = {
-  data: void
-  status: 200
-}
-
-export type leadsControllerActivityResponseSuccess = (leadsControllerActivityResponse200) & {
-  headers: Headers;
-};
-;
-
-export type leadsControllerActivityResponse = (leadsControllerActivityResponseSuccess)
-
-export const getLeadsControllerActivityUrl = (id: string,) => {
+    export const getLeadsControllerActivityUrl = (id: string,) => {
 
 
 
@@ -1485,9 +1215,9 @@ export const getLeadsControllerActivityUrl = (id: string,) => {
   return `/leads/${id}/activity`
 }
 
-export const leadsControllerActivity = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerActivityResponse> => {
+export const leadsControllerActivity = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerActivityResponse>(getLeadsControllerActivityUrl(id),
+  return customInstance<void>(getLeadsControllerActivityUrl(id),
   {
     ...options,
     method: 'GET'
@@ -1500,61 +1230,75 @@ export const leadsControllerActivity = async (id: string, options?: Parameters<t
 
 
 
-export const getLeadsControllerActivityMutationKey = () => ['leadsControllerActivity'] as const;
-
-export const getLeadsControllerActivityMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerActivity>>, TError,LeadsControllerActivityMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerActivity>>, TError,LeadsControllerActivityMutationVariables, TContext> => {
-
-const mutationKey = getLeadsControllerActivityMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerActivity>>, LeadsControllerActivityMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  leadsControllerActivity(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LeadsControllerActivityMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerActivity>>>
-
-    export type LeadsControllerActivityMutationError = unknown
-    export type LeadsControllerActivityMutationVariables = {id: string}
-
-    export const useLeadsControllerActivity = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerActivity>>, TError,LeadsControllerActivityMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof leadsControllerActivity>>,
-        TError,
-        LeadsControllerActivityMutationVariables,
-        TContext
-      > => {
-      return useMutation(getLeadsControllerActivityMutationOptions(options), queryClient);
+export const getLeadsControllerActivityQueryKey = (id: string,) => {
+    return [
+    `/leads/${id}/activity`
+    ] as const;
     }
-    export type leadsControllerMergeResponse200 = {
-  data: void
-  status: 200
+
+
+export const getLeadsControllerActivityQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerActivity>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerActivity>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerActivityQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerActivity>>> = ({ signal }) => leadsControllerActivity(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerActivity>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type leadsControllerMergeResponseSuccess = (leadsControllerMergeResponse200) & {
-  headers: Headers;
-};
-;
+export type LeadsControllerActivityQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerActivity>>>
+export type LeadsControllerActivityQueryError = unknown
 
-export type leadsControllerMergeResponse = (leadsControllerMergeResponseSuccess)
+
+export function useLeadsControllerActivity<TData = Awaited<ReturnType<typeof leadsControllerActivity>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerActivity>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerActivity>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerActivity>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerActivity<TData = Awaited<ReturnType<typeof leadsControllerActivity>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerActivity>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerActivity>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerActivity>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerActivity<TData = Awaited<ReturnType<typeof leadsControllerActivity>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerActivity>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerActivity<TData = Awaited<ReturnType<typeof leadsControllerActivity>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerActivity>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerActivityQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getLeadsControllerMergeUrl = (id: string,) => {
 
@@ -1564,9 +1308,9 @@ export const getLeadsControllerMergeUrl = (id: string,) => {
   return `/leads/${id}/merge`
 }
 
-export const leadsControllerMerge = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<leadsControllerMergeResponse> => {
+export const leadsControllerMerge = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<leadsControllerMergeResponse>(getLeadsControllerMergeUrl(id),
+  return customInstance<void>(getLeadsControllerMergeUrl(id),
   {
     ...options,
     method: 'POST'
@@ -1579,73 +1323,47 @@ export const leadsControllerMerge = async (id: string, options?: Parameters<type
 
 
 
-export const getLeadsControllerMergeQueryKey = (id: string,) => {
-    return [
-    'POST', `/leads/${id}/merge`
-    ] as const;
+export const getLeadsControllerMergeMutationKey = () => ['leadsControllerMerge'] as const;
+
+export const getLeadsControllerMergeMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerMerge>>, TError,LeadsControllerMergeMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerMerge>>, TError,LeadsControllerMergeMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerMergeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerMerge>>, LeadsControllerMergeMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  leadsControllerMerge(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerMergeMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerMerge>>>
+
+    export type LeadsControllerMergeMutationError = unknown
+    export type LeadsControllerMergeMutationVariables = {id: string}
+
+    export const useLeadsControllerMerge = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerMerge>>, TError,LeadsControllerMergeMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerMerge>>,
+        TError,
+        LeadsControllerMergeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerMergeMutationOptions(options), queryClient);
     }
-
-
-export const getLeadsControllerMergeQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerMerge>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMerge>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerMergeQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerMerge>>> = ({ signal }) => leadsControllerMerge(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMerge>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type LeadsControllerMergeQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerMerge>>>
-export type LeadsControllerMergeQueryError = unknown
-
-
-export function useLeadsControllerMerge<TData = Awaited<ReturnType<typeof leadsControllerMerge>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMerge>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerMerge>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerMerge>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerMerge<TData = Awaited<ReturnType<typeof leadsControllerMerge>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMerge>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof leadsControllerMerge>>,
-          TError,
-          Awaited<ReturnType<typeof leadsControllerMerge>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerMerge<TData = Awaited<ReturnType<typeof leadsControllerMerge>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMerge>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useLeadsControllerMerge<TData = Awaited<ReturnType<typeof leadsControllerMerge>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerMerge>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getLeadsControllerMergeQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

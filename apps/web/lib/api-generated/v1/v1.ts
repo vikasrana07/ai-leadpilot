@@ -50,18 +50,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type v1ControllerMeResponse200 = {
-  data: void
-  status: 200
-}
-
-export type v1ControllerMeResponseSuccess = (v1ControllerMeResponse200) & {
-  headers: Headers;
-};
-;
-
-export type v1ControllerMeResponse = (v1ControllerMeResponseSuccess)
-
 export const getV1ControllerMeUrl = () => {
 
 
@@ -70,9 +58,9 @@ export const getV1ControllerMeUrl = () => {
   return `/v1/me`
 }
 
-export const v1ControllerMe = async ( options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerMeResponse> => {
+export const v1ControllerMe = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerMeResponse>(getV1ControllerMeUrl(),
+  return customInstance<void>(getV1ControllerMeUrl(),
   {
     ...options,
     method: 'GET'
@@ -85,61 +73,75 @@ export const v1ControllerMe = async ( options?: Parameters<typeof customInstance
 
 
 
-export const getV1ControllerMeMutationKey = () => ['v1ControllerMe'] as const;
-
-export const getV1ControllerMeMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerMe>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerMe>>, TError,void, TContext> => {
-
-const mutationKey = getV1ControllerMeMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerMe>>, void> = () => {
-
-
-          return  v1ControllerMe(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1ControllerMeMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerMe>>>
-
-    export type V1ControllerMeMutationError = unknown
-
-
-    export const useV1ControllerMe = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerMe>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1ControllerMe>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getV1ControllerMeMutationOptions(options), queryClient);
+export const getV1ControllerMeQueryKey = () => {
+    return [
+    `/v1/me`
+    ] as const;
     }
-    export type v1ControllerMetaResponse200 = {
-  data: void
-  status: 200
+
+
+export const getV1ControllerMeQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerMe>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getV1ControllerMeQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerMe>>> = ({ signal }) => v1ControllerMe({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type v1ControllerMetaResponseSuccess = (v1ControllerMetaResponse200) & {
-  headers: Headers;
-};
-;
+export type V1ControllerMeQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerMe>>>
+export type V1ControllerMeQueryError = unknown
 
-export type v1ControllerMetaResponse = (v1ControllerMetaResponseSuccess)
+
+export function useV1ControllerMe<TData = Awaited<ReturnType<typeof v1ControllerMe>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMe>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerMe>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerMe>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerMe<TData = Awaited<ReturnType<typeof v1ControllerMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMe>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerMe>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerMe>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerMe<TData = Awaited<ReturnType<typeof v1ControllerMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerMe<TData = Awaited<ReturnType<typeof v1ControllerMe>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getV1ControllerMeQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getV1ControllerMetaUrl = () => {
 
@@ -149,9 +151,9 @@ export const getV1ControllerMetaUrl = () => {
   return `/v1/meta`
 }
 
-export const v1ControllerMeta = async ( options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerMetaResponse> => {
+export const v1ControllerMeta = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerMetaResponse>(getV1ControllerMetaUrl(),
+  return customInstance<void>(getV1ControllerMetaUrl(),
   {
     ...options,
     method: 'GET'
@@ -164,61 +166,75 @@ export const v1ControllerMeta = async ( options?: Parameters<typeof customInstan
 
 
 
-export const getV1ControllerMetaMutationKey = () => ['v1ControllerMeta'] as const;
-
-export const getV1ControllerMetaMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerMeta>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerMeta>>, TError,void, TContext> => {
-
-const mutationKey = getV1ControllerMetaMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerMeta>>, void> = () => {
-
-
-          return  v1ControllerMeta(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1ControllerMetaMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerMeta>>>
-
-    export type V1ControllerMetaMutationError = unknown
-
-
-    export const useV1ControllerMeta = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerMeta>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1ControllerMeta>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getV1ControllerMetaMutationOptions(options), queryClient);
+export const getV1ControllerMetaQueryKey = () => {
+    return [
+    `/v1/meta`
+    ] as const;
     }
-    export type v1ControllerListLeadsResponse200 = {
-  data: void
-  status: 200
+
+
+export const getV1ControllerMetaQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerMeta>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMeta>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getV1ControllerMetaQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerMeta>>> = ({ signal }) => v1ControllerMeta({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMeta>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type v1ControllerListLeadsResponseSuccess = (v1ControllerListLeadsResponse200) & {
-  headers: Headers;
-};
-;
+export type V1ControllerMetaQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerMeta>>>
+export type V1ControllerMetaQueryError = unknown
 
-export type v1ControllerListLeadsResponse = (v1ControllerListLeadsResponseSuccess)
+
+export function useV1ControllerMeta<TData = Awaited<ReturnType<typeof v1ControllerMeta>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMeta>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerMeta>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerMeta>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerMeta<TData = Awaited<ReturnType<typeof v1ControllerMeta>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMeta>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerMeta>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerMeta>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerMeta<TData = Awaited<ReturnType<typeof v1ControllerMeta>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMeta>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerMeta<TData = Awaited<ReturnType<typeof v1ControllerMeta>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMeta>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getV1ControllerMetaQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getV1ControllerListLeadsUrl = () => {
 
@@ -228,9 +244,9 @@ export const getV1ControllerListLeadsUrl = () => {
   return `/v1/leads`
 }
 
-export const v1ControllerListLeads = async ( options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerListLeadsResponse> => {
+export const v1ControllerListLeads = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerListLeadsResponse>(getV1ControllerListLeadsUrl(),
+  return customInstance<void>(getV1ControllerListLeadsUrl(),
   {
     ...options,
     method: 'GET'
@@ -243,61 +259,75 @@ export const v1ControllerListLeads = async ( options?: Parameters<typeof customI
 
 
 
-export const getV1ControllerListLeadsMutationKey = () => ['v1ControllerListLeads'] as const;
-
-export const getV1ControllerListLeadsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerListLeads>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerListLeads>>, TError,void, TContext> => {
-
-const mutationKey = getV1ControllerListLeadsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerListLeads>>, void> = () => {
-
-
-          return  v1ControllerListLeads(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1ControllerListLeadsMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerListLeads>>>
-
-    export type V1ControllerListLeadsMutationError = unknown
-
-
-    export const useV1ControllerListLeads = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerListLeads>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1ControllerListLeads>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getV1ControllerListLeadsMutationOptions(options), queryClient);
+export const getV1ControllerListLeadsQueryKey = () => {
+    return [
+    `/v1/leads`
+    ] as const;
     }
-    export type v1ControllerCreateLeadResponse201 = {
-  data: void
-  status: 201
+
+
+export const getV1ControllerListLeadsQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerListLeads>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListLeads>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getV1ControllerListLeadsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerListLeads>>> = ({ signal }) => v1ControllerListLeads({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListLeads>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type v1ControllerCreateLeadResponseSuccess = (v1ControllerCreateLeadResponse201) & {
-  headers: Headers;
-};
-;
+export type V1ControllerListLeadsQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerListLeads>>>
+export type V1ControllerListLeadsQueryError = unknown
 
-export type v1ControllerCreateLeadResponse = (v1ControllerCreateLeadResponseSuccess)
+
+export function useV1ControllerListLeads<TData = Awaited<ReturnType<typeof v1ControllerListLeads>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListLeads>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerListLeads>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerListLeads>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerListLeads<TData = Awaited<ReturnType<typeof v1ControllerListLeads>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListLeads>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerListLeads>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerListLeads>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerListLeads<TData = Awaited<ReturnType<typeof v1ControllerListLeads>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListLeads>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerListLeads<TData = Awaited<ReturnType<typeof v1ControllerListLeads>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListLeads>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getV1ControllerListLeadsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getV1ControllerCreateLeadUrl = () => {
 
@@ -307,9 +337,9 @@ export const getV1ControllerCreateLeadUrl = () => {
   return `/v1/leads`
 }
 
-export const v1ControllerCreateLead = async ( options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerCreateLeadResponse> => {
+export const v1ControllerCreateLead = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerCreateLeadResponse>(getV1ControllerCreateLeadUrl(),
+  return customInstance<void>(getV1ControllerCreateLeadUrl(),
   {
     ...options,
     method: 'POST'
@@ -322,89 +352,51 @@ export const v1ControllerCreateLead = async ( options?: Parameters<typeof custom
 
 
 
-export const getV1ControllerCreateLeadQueryKey = () => {
-    return [
-    'POST', `/v1/leads`
-    ] as const;
+export const getV1ControllerCreateLeadMutationKey = () => ['v1ControllerCreateLead'] as const;
+
+export const getV1ControllerCreateLeadMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError,void, TContext> => {
+
+const mutationKey = getV1ControllerCreateLeadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerCreateLead>>, void> = () => {
+
+
+          return  v1ControllerCreateLead(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type V1ControllerCreateLeadMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerCreateLead>>>
+
+    export type V1ControllerCreateLeadMutationError = unknown
+
+
+    export const useV1ControllerCreateLead = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof v1ControllerCreateLead>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getV1ControllerCreateLeadMutationOptions(options), queryClient);
     }
-
-
-export const getV1ControllerCreateLeadQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getV1ControllerCreateLeadQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerCreateLead>>> = ({ signal }) => v1ControllerCreateLead({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type V1ControllerCreateLeadQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerCreateLead>>>
-export type V1ControllerCreateLeadQueryError = unknown
-
-
-export function useV1ControllerCreateLead<TData = Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerCreateLead>>,
-          TError,
-          Awaited<ReturnType<typeof v1ControllerCreateLead>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerCreateLead<TData = Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerCreateLead>>,
-          TError,
-          Awaited<ReturnType<typeof v1ControllerCreateLead>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerCreateLead<TData = Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerCreateLead<TData = Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getV1ControllerCreateLeadQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type v1ControllerGetLeadResponse200 = {
-  data: void
-  status: 200
-}
-
-export type v1ControllerGetLeadResponseSuccess = (v1ControllerGetLeadResponse200) & {
-  headers: Headers;
-};
-;
-
-export type v1ControllerGetLeadResponse = (v1ControllerGetLeadResponseSuccess)
-
-export const getV1ControllerGetLeadUrl = (id: string,) => {
+    export const getV1ControllerGetLeadUrl = (id: string,) => {
 
 
 
@@ -412,9 +404,9 @@ export const getV1ControllerGetLeadUrl = (id: string,) => {
   return `/v1/leads/${id}`
 }
 
-export const v1ControllerGetLead = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerGetLeadResponse> => {
+export const v1ControllerGetLead = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerGetLeadResponse>(getV1ControllerGetLeadUrl(id),
+  return customInstance<void>(getV1ControllerGetLeadUrl(id),
   {
     ...options,
     method: 'GET'
@@ -427,61 +419,75 @@ export const v1ControllerGetLead = async (id: string, options?: Parameters<typeo
 
 
 
-export const getV1ControllerGetLeadMutationKey = () => ['v1ControllerGetLead'] as const;
-
-export const getV1ControllerGetLeadMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerGetLead>>, TError,V1ControllerGetLeadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerGetLead>>, TError,V1ControllerGetLeadMutationVariables, TContext> => {
-
-const mutationKey = getV1ControllerGetLeadMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerGetLead>>, V1ControllerGetLeadMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  v1ControllerGetLead(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1ControllerGetLeadMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerGetLead>>>
-
-    export type V1ControllerGetLeadMutationError = unknown
-    export type V1ControllerGetLeadMutationVariables = {id: string}
-
-    export const useV1ControllerGetLead = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerGetLead>>, TError,V1ControllerGetLeadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1ControllerGetLead>>,
-        TError,
-        V1ControllerGetLeadMutationVariables,
-        TContext
-      > => {
-      return useMutation(getV1ControllerGetLeadMutationOptions(options), queryClient);
+export const getV1ControllerGetLeadQueryKey = (id: string,) => {
+    return [
+    `/v1/leads/${id}`
+    ] as const;
     }
-    export type v1ControllerUpdateLeadResponse200 = {
-  data: void
-  status: 200
+
+
+export const getV1ControllerGetLeadQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerGetLead>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getV1ControllerGetLeadQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerGetLead>>> = ({ signal }) => v1ControllerGetLead(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetLead>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type v1ControllerUpdateLeadResponseSuccess = (v1ControllerUpdateLeadResponse200) & {
-  headers: Headers;
-};
-;
+export type V1ControllerGetLeadQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerGetLead>>>
+export type V1ControllerGetLeadQueryError = unknown
 
-export type v1ControllerUpdateLeadResponse = (v1ControllerUpdateLeadResponseSuccess)
+
+export function useV1ControllerGetLead<TData = Awaited<ReturnType<typeof v1ControllerGetLead>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetLead>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerGetLead>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerGetLead>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerGetLead<TData = Awaited<ReturnType<typeof v1ControllerGetLead>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetLead>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerGetLead>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerGetLead>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerGetLead<TData = Awaited<ReturnType<typeof v1ControllerGetLead>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerGetLead<TData = Awaited<ReturnType<typeof v1ControllerGetLead>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getV1ControllerGetLeadQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getV1ControllerUpdateLeadUrl = (id: string,) => {
 
@@ -491,9 +497,9 @@ export const getV1ControllerUpdateLeadUrl = (id: string,) => {
   return `/v1/leads/${id}`
 }
 
-export const v1ControllerUpdateLead = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerUpdateLeadResponse> => {
+export const v1ControllerUpdateLead = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerUpdateLeadResponse>(getV1ControllerUpdateLeadUrl(id),
+  return customInstance<void>(getV1ControllerUpdateLeadUrl(id),
   {
     ...options,
     method: 'PATCH'
@@ -506,89 +512,51 @@ export const v1ControllerUpdateLead = async (id: string, options?: Parameters<ty
 
 
 
-export const getV1ControllerUpdateLeadQueryKey = (id: string,) => {
-    return [
-    'PATCH', `/v1/leads/${id}`
-    ] as const;
+export const getV1ControllerUpdateLeadMutationKey = () => ['v1ControllerUpdateLead'] as const;
+
+export const getV1ControllerUpdateLeadMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError,V1ControllerUpdateLeadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError,V1ControllerUpdateLeadMutationVariables, TContext> => {
+
+const mutationKey = getV1ControllerUpdateLeadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerUpdateLead>>, V1ControllerUpdateLeadMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  v1ControllerUpdateLead(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type V1ControllerUpdateLeadMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerUpdateLead>>>
+
+    export type V1ControllerUpdateLeadMutationError = unknown
+    export type V1ControllerUpdateLeadMutationVariables = {id: string}
+
+    export const useV1ControllerUpdateLead = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError,V1ControllerUpdateLeadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof v1ControllerUpdateLead>>,
+        TError,
+        V1ControllerUpdateLeadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getV1ControllerUpdateLeadMutationOptions(options), queryClient);
     }
-
-
-export const getV1ControllerUpdateLeadQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getV1ControllerUpdateLeadQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerUpdateLead>>> = ({ signal }) => v1ControllerUpdateLead(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type V1ControllerUpdateLeadQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerUpdateLead>>>
-export type V1ControllerUpdateLeadQueryError = unknown
-
-
-export function useV1ControllerUpdateLead<TData = Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerUpdateLead>>,
-          TError,
-          Awaited<ReturnType<typeof v1ControllerUpdateLead>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerUpdateLead<TData = Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerUpdateLead>>,
-          TError,
-          Awaited<ReturnType<typeof v1ControllerUpdateLead>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerUpdateLead<TData = Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerUpdateLead<TData = Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerUpdateLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getV1ControllerUpdateLeadQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type v1ControllerDeleteLeadResponse204 = {
-  data: void
-  status: 204
-}
-
-export type v1ControllerDeleteLeadResponseSuccess = (v1ControllerDeleteLeadResponse204) & {
-  headers: Headers;
-};
-;
-
-export type v1ControllerDeleteLeadResponse = (v1ControllerDeleteLeadResponseSuccess)
-
-export const getV1ControllerDeleteLeadUrl = (id: string,) => {
+    export const getV1ControllerDeleteLeadUrl = (id: string,) => {
 
 
 
@@ -596,9 +564,9 @@ export const getV1ControllerDeleteLeadUrl = (id: string,) => {
   return `/v1/leads/${id}`
 }
 
-export const v1ControllerDeleteLead = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerDeleteLeadResponse> => {
+export const v1ControllerDeleteLead = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerDeleteLeadResponse>(getV1ControllerDeleteLeadUrl(id),
+  return customInstance<void>(getV1ControllerDeleteLeadUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -611,89 +579,51 @@ export const v1ControllerDeleteLead = async (id: string, options?: Parameters<ty
 
 
 
-export const getV1ControllerDeleteLeadQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/v1/leads/${id}`
-    ] as const;
+export const getV1ControllerDeleteLeadMutationKey = () => ['v1ControllerDeleteLead'] as const;
+
+export const getV1ControllerDeleteLeadMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError,V1ControllerDeleteLeadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError,V1ControllerDeleteLeadMutationVariables, TContext> => {
+
+const mutationKey = getV1ControllerDeleteLeadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerDeleteLead>>, V1ControllerDeleteLeadMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  v1ControllerDeleteLead(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type V1ControllerDeleteLeadMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerDeleteLead>>>
+
+    export type V1ControllerDeleteLeadMutationError = unknown
+    export type V1ControllerDeleteLeadMutationVariables = {id: string}
+
+    export const useV1ControllerDeleteLead = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError,V1ControllerDeleteLeadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof v1ControllerDeleteLead>>,
+        TError,
+        V1ControllerDeleteLeadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getV1ControllerDeleteLeadMutationOptions(options), queryClient);
     }
-
-
-export const getV1ControllerDeleteLeadQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getV1ControllerDeleteLeadQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerDeleteLead>>> = ({ signal }) => v1ControllerDeleteLead(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type V1ControllerDeleteLeadQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerDeleteLead>>>
-export type V1ControllerDeleteLeadQueryError = unknown
-
-
-export function useV1ControllerDeleteLead<TData = Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerDeleteLead>>,
-          TError,
-          Awaited<ReturnType<typeof v1ControllerDeleteLead>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerDeleteLead<TData = Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerDeleteLead>>,
-          TError,
-          Awaited<ReturnType<typeof v1ControllerDeleteLead>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerDeleteLead<TData = Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerDeleteLead<TData = Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerDeleteLead>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getV1ControllerDeleteLeadQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type v1ControllerChangeStageResponse200 = {
-  data: void
-  status: 200
-}
-
-export type v1ControllerChangeStageResponseSuccess = (v1ControllerChangeStageResponse200) & {
-  headers: Headers;
-};
-;
-
-export type v1ControllerChangeStageResponse = (v1ControllerChangeStageResponseSuccess)
-
-export const getV1ControllerChangeStageUrl = (id: string,) => {
+    export const getV1ControllerChangeStageUrl = (id: string,) => {
 
 
 
@@ -701,9 +631,9 @@ export const getV1ControllerChangeStageUrl = (id: string,) => {
   return `/v1/leads/${id}/stage`
 }
 
-export const v1ControllerChangeStage = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerChangeStageResponse> => {
+export const v1ControllerChangeStage = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerChangeStageResponse>(getV1ControllerChangeStageUrl(id),
+  return customInstance<void>(getV1ControllerChangeStageUrl(id),
   {
     ...options,
     method: 'POST'
@@ -716,89 +646,51 @@ export const v1ControllerChangeStage = async (id: string, options?: Parameters<t
 
 
 
-export const getV1ControllerChangeStageQueryKey = (id: string,) => {
-    return [
-    'POST', `/v1/leads/${id}/stage`
-    ] as const;
+export const getV1ControllerChangeStageMutationKey = () => ['v1ControllerChangeStage'] as const;
+
+export const getV1ControllerChangeStageMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError,V1ControllerChangeStageMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError,V1ControllerChangeStageMutationVariables, TContext> => {
+
+const mutationKey = getV1ControllerChangeStageMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerChangeStage>>, V1ControllerChangeStageMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  v1ControllerChangeStage(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type V1ControllerChangeStageMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerChangeStage>>>
+
+    export type V1ControllerChangeStageMutationError = unknown
+    export type V1ControllerChangeStageMutationVariables = {id: string}
+
+    export const useV1ControllerChangeStage = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError,V1ControllerChangeStageMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof v1ControllerChangeStage>>,
+        TError,
+        V1ControllerChangeStageMutationVariables,
+        TContext
+      > => {
+      return useMutation(getV1ControllerChangeStageMutationOptions(options), queryClient);
     }
-
-
-export const getV1ControllerChangeStageQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getV1ControllerChangeStageQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerChangeStage>>> = ({ signal }) => v1ControllerChangeStage(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type V1ControllerChangeStageQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerChangeStage>>>
-export type V1ControllerChangeStageQueryError = unknown
-
-
-export function useV1ControllerChangeStage<TData = Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerChangeStage>>,
-          TError,
-          Awaited<ReturnType<typeof v1ControllerChangeStage>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerChangeStage<TData = Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerChangeStage>>,
-          TError,
-          Awaited<ReturnType<typeof v1ControllerChangeStage>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerChangeStage<TData = Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerChangeStage<TData = Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerChangeStage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getV1ControllerChangeStageQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type v1ControllerNotesResponse200 = {
-  data: void
-  status: 200
-}
-
-export type v1ControllerNotesResponseSuccess = (v1ControllerNotesResponse200) & {
-  headers: Headers;
-};
-;
-
-export type v1ControllerNotesResponse = (v1ControllerNotesResponseSuccess)
-
-export const getV1ControllerNotesUrl = (id: string,) => {
+    export const getV1ControllerNotesUrl = (id: string,) => {
 
 
 
@@ -806,9 +698,9 @@ export const getV1ControllerNotesUrl = (id: string,) => {
   return `/v1/leads/${id}/notes`
 }
 
-export const v1ControllerNotes = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerNotesResponse> => {
+export const v1ControllerNotes = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerNotesResponse>(getV1ControllerNotesUrl(id),
+  return customInstance<void>(getV1ControllerNotesUrl(id),
   {
     ...options,
     method: 'GET'
@@ -821,61 +713,75 @@ export const v1ControllerNotes = async (id: string, options?: Parameters<typeof 
 
 
 
-export const getV1ControllerNotesMutationKey = () => ['v1ControllerNotes'] as const;
-
-export const getV1ControllerNotesMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerNotes>>, TError,V1ControllerNotesMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerNotes>>, TError,V1ControllerNotesMutationVariables, TContext> => {
-
-const mutationKey = getV1ControllerNotesMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerNotes>>, V1ControllerNotesMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  v1ControllerNotes(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1ControllerNotesMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerNotes>>>
-
-    export type V1ControllerNotesMutationError = unknown
-    export type V1ControllerNotesMutationVariables = {id: string}
-
-    export const useV1ControllerNotes = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerNotes>>, TError,V1ControllerNotesMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1ControllerNotes>>,
-        TError,
-        V1ControllerNotesMutationVariables,
-        TContext
-      > => {
-      return useMutation(getV1ControllerNotesMutationOptions(options), queryClient);
+export const getV1ControllerNotesQueryKey = (id: string,) => {
+    return [
+    `/v1/leads/${id}/notes`
+    ] as const;
     }
-    export type v1ControllerAddNoteResponse201 = {
-  data: void
-  status: 201
+
+
+export const getV1ControllerNotesQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerNotes>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerNotes>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getV1ControllerNotesQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerNotes>>> = ({ signal }) => v1ControllerNotes(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerNotes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type v1ControllerAddNoteResponseSuccess = (v1ControllerAddNoteResponse201) & {
-  headers: Headers;
-};
-;
+export type V1ControllerNotesQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerNotes>>>
+export type V1ControllerNotesQueryError = unknown
 
-export type v1ControllerAddNoteResponse = (v1ControllerAddNoteResponseSuccess)
+
+export function useV1ControllerNotes<TData = Awaited<ReturnType<typeof v1ControllerNotes>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerNotes>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerNotes>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerNotes>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerNotes<TData = Awaited<ReturnType<typeof v1ControllerNotes>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerNotes>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerNotes>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerNotes>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerNotes<TData = Awaited<ReturnType<typeof v1ControllerNotes>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerNotes>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerNotes<TData = Awaited<ReturnType<typeof v1ControllerNotes>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerNotes>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getV1ControllerNotesQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getV1ControllerAddNoteUrl = (id: string,) => {
 
@@ -885,9 +791,9 @@ export const getV1ControllerAddNoteUrl = (id: string,) => {
   return `/v1/leads/${id}/notes`
 }
 
-export const v1ControllerAddNote = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerAddNoteResponse> => {
+export const v1ControllerAddNote = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerAddNoteResponse>(getV1ControllerAddNoteUrl(id),
+  return customInstance<void>(getV1ControllerAddNoteUrl(id),
   {
     ...options,
     method: 'POST'
@@ -900,65 +806,132 @@ export const v1ControllerAddNote = async (id: string, options?: Parameters<typeo
 
 
 
-export const getV1ControllerAddNoteQueryKey = (id: string,) => {
+export const getV1ControllerAddNoteMutationKey = () => ['v1ControllerAddNote'] as const;
+
+export const getV1ControllerAddNoteMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerAddNote>>, TError,V1ControllerAddNoteMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerAddNote>>, TError,V1ControllerAddNoteMutationVariables, TContext> => {
+
+const mutationKey = getV1ControllerAddNoteMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerAddNote>>, V1ControllerAddNoteMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  v1ControllerAddNote(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type V1ControllerAddNoteMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerAddNote>>>
+
+    export type V1ControllerAddNoteMutationError = unknown
+    export type V1ControllerAddNoteMutationVariables = {id: string}
+
+    export const useV1ControllerAddNote = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerAddNote>>, TError,V1ControllerAddNoteMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof v1ControllerAddNote>>,
+        TError,
+        V1ControllerAddNoteMutationVariables,
+        TContext
+      > => {
+      return useMutation(getV1ControllerAddNoteMutationOptions(options), queryClient);
+    }
+    export const getV1ControllerListConversationsUrl = () => {
+
+
+
+
+  return `/v1/conversations`
+}
+
+export const v1ControllerListConversations = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getV1ControllerListConversationsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getV1ControllerListConversationsQueryKey = () => {
     return [
-    'POST', `/v1/leads/${id}/notes`
+    `/v1/conversations`
     ] as const;
     }
 
 
-export const getV1ControllerAddNoteQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerAddNote>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerAddNote>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getV1ControllerListConversationsQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerListConversations>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListConversations>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getV1ControllerAddNoteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getV1ControllerListConversationsQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerAddNote>>> = ({ signal }) => v1ControllerAddNote(id, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerListConversations>>> = ({ signal }) => v1ControllerListConversations({ signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerAddNote>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListConversations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type V1ControllerAddNoteQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerAddNote>>>
-export type V1ControllerAddNoteQueryError = unknown
+export type V1ControllerListConversationsQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerListConversations>>>
+export type V1ControllerListConversationsQueryError = unknown
 
 
-export function useV1ControllerAddNote<TData = Awaited<ReturnType<typeof v1ControllerAddNote>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerAddNote>>, TError, TData>> & Pick<
+export function useV1ControllerListConversations<TData = Awaited<ReturnType<typeof v1ControllerListConversations>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListConversations>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerAddNote>>,
+          Awaited<ReturnType<typeof v1ControllerListConversations>>,
           TError,
-          Awaited<ReturnType<typeof v1ControllerAddNote>>
+          Awaited<ReturnType<typeof v1ControllerListConversations>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerAddNote<TData = Awaited<ReturnType<typeof v1ControllerAddNote>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerAddNote>>, TError, TData>> & Pick<
+export function useV1ControllerListConversations<TData = Awaited<ReturnType<typeof v1ControllerListConversations>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListConversations>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerAddNote>>,
+          Awaited<ReturnType<typeof v1ControllerListConversations>>,
           TError,
-          Awaited<ReturnType<typeof v1ControllerAddNote>>
+          Awaited<ReturnType<typeof v1ControllerListConversations>>
         > , 'initialData'
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerAddNote<TData = Awaited<ReturnType<typeof v1ControllerAddNote>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerAddNote>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useV1ControllerListConversations<TData = Awaited<ReturnType<typeof v1ControllerListConversations>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListConversations>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerAddNote<TData = Awaited<ReturnType<typeof v1ControllerAddNote>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerAddNote>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function useV1ControllerListConversations<TData = Awaited<ReturnType<typeof v1ControllerListConversations>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListConversations>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getV1ControllerAddNoteQueryOptions(id,options)
+  const queryOptions = getV1ControllerListConversationsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -970,97 +943,6 @@ export function useV1ControllerAddNote<TData = Awaited<ReturnType<typeof v1Contr
 
 
 
-export type v1ControllerListConversationsResponse200 = {
-  data: void
-  status: 200
-}
-
-export type v1ControllerListConversationsResponseSuccess = (v1ControllerListConversationsResponse200) & {
-  headers: Headers;
-};
-;
-
-export type v1ControllerListConversationsResponse = (v1ControllerListConversationsResponseSuccess)
-
-export const getV1ControllerListConversationsUrl = () => {
-
-
-
-
-  return `/v1/conversations`
-}
-
-export const v1ControllerListConversations = async ( options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerListConversationsResponse> => {
-
-  return customInstance<v1ControllerListConversationsResponse>(getV1ControllerListConversationsUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getV1ControllerListConversationsMutationKey = () => ['v1ControllerListConversations'] as const;
-
-export const getV1ControllerListConversationsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerListConversations>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerListConversations>>, TError,void, TContext> => {
-
-const mutationKey = getV1ControllerListConversationsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerListConversations>>, void> = () => {
-
-
-          return  v1ControllerListConversations(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1ControllerListConversationsMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerListConversations>>>
-
-    export type V1ControllerListConversationsMutationError = unknown
-
-
-    export const useV1ControllerListConversations = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerListConversations>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1ControllerListConversations>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getV1ControllerListConversationsMutationOptions(options), queryClient);
-    }
-    export type v1ControllerGetConversationResponse200 = {
-  data: void
-  status: 200
-}
-
-export type v1ControllerGetConversationResponseSuccess = (v1ControllerGetConversationResponse200) & {
-  headers: Headers;
-};
-;
-
-export type v1ControllerGetConversationResponse = (v1ControllerGetConversationResponseSuccess)
-
 export const getV1ControllerGetConversationUrl = (id: string,) => {
 
 
@@ -1069,9 +951,9 @@ export const getV1ControllerGetConversationUrl = (id: string,) => {
   return `/v1/conversations/${id}`
 }
 
-export const v1ControllerGetConversation = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerGetConversationResponse> => {
+export const v1ControllerGetConversation = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerGetConversationResponse>(getV1ControllerGetConversationUrl(id),
+  return customInstance<void>(getV1ControllerGetConversationUrl(id),
   {
     ...options,
     method: 'GET'
@@ -1084,61 +966,75 @@ export const v1ControllerGetConversation = async (id: string, options?: Paramete
 
 
 
-export const getV1ControllerGetConversationMutationKey = () => ['v1ControllerGetConversation'] as const;
-
-export const getV1ControllerGetConversationMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError,V1ControllerGetConversationMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError,V1ControllerGetConversationMutationVariables, TContext> => {
-
-const mutationKey = getV1ControllerGetConversationMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerGetConversation>>, V1ControllerGetConversationMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  v1ControllerGetConversation(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1ControllerGetConversationMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerGetConversation>>>
-
-    export type V1ControllerGetConversationMutationError = unknown
-    export type V1ControllerGetConversationMutationVariables = {id: string}
-
-    export const useV1ControllerGetConversation = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError,V1ControllerGetConversationMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1ControllerGetConversation>>,
-        TError,
-        V1ControllerGetConversationMutationVariables,
-        TContext
-      > => {
-      return useMutation(getV1ControllerGetConversationMutationOptions(options), queryClient);
+export const getV1ControllerGetConversationQueryKey = (id: string,) => {
+    return [
+    `/v1/conversations/${id}`
+    ] as const;
     }
-    export type v1ControllerMessagesResponse200 = {
-  data: void
-  status: 200
+
+
+export const getV1ControllerGetConversationQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getV1ControllerGetConversationQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerGetConversation>>> = ({ signal }) => v1ControllerGetConversation(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type v1ControllerMessagesResponseSuccess = (v1ControllerMessagesResponse200) & {
-  headers: Headers;
-};
-;
+export type V1ControllerGetConversationQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerGetConversation>>>
+export type V1ControllerGetConversationQueryError = unknown
 
-export type v1ControllerMessagesResponse = (v1ControllerMessagesResponseSuccess)
+
+export function useV1ControllerGetConversation<TData = Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerGetConversation>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerGetConversation>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerGetConversation<TData = Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerGetConversation>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerGetConversation>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerGetConversation<TData = Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerGetConversation<TData = Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetConversation>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getV1ControllerGetConversationQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getV1ControllerMessagesUrl = (id: string,
     params: V1ControllerMessagesParams,) => {
@@ -1157,9 +1053,9 @@ export const getV1ControllerMessagesUrl = (id: string,
 }
 
 export const v1ControllerMessages = async (id: string,
-    params: V1ControllerMessagesParams, options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerMessagesResponse> => {
+    params: V1ControllerMessagesParams, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerMessagesResponse>(getV1ControllerMessagesUrl(id,params),
+  return customInstance<void>(getV1ControllerMessagesUrl(id,params),
   {
     ...options,
     method: 'GET'
@@ -1172,61 +1068,81 @@ export const v1ControllerMessages = async (id: string,
 
 
 
-export const getV1ControllerMessagesMutationKey = () => ['v1ControllerMessages'] as const;
-
-export const getV1ControllerMessagesMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerMessages>>, TError,V1ControllerMessagesMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerMessages>>, TError,V1ControllerMessagesMutationVariables, TContext> => {
-
-const mutationKey = getV1ControllerMessagesMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerMessages>>, V1ControllerMessagesMutationVariables> = (props) => {
-          const {id,params} = props ?? {};
-
-          return  v1ControllerMessages(id,params,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1ControllerMessagesMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerMessages>>>
-
-    export type V1ControllerMessagesMutationError = unknown
-    export type V1ControllerMessagesMutationVariables = {id: string;params: V1ControllerMessagesParams}
-
-    export const useV1ControllerMessages = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerMessages>>, TError,V1ControllerMessagesMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1ControllerMessages>>,
-        TError,
-        V1ControllerMessagesMutationVariables,
-        TContext
-      > => {
-      return useMutation(getV1ControllerMessagesMutationOptions(options), queryClient);
+export const getV1ControllerMessagesQueryKey = (id: string,
+    params?: V1ControllerMessagesParams,) => {
+    return [
+    `/v1/conversations/${id}/messages`, ...(params ? [params] : [])
+    ] as const;
     }
-    export type v1ControllerListAppointmentsResponse200 = {
-  data: void
-  status: 200
+
+
+export const getV1ControllerMessagesQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerMessages>>, TError = unknown>(id: string,
+    params: V1ControllerMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMessages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getV1ControllerMessagesQueryKey(id,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerMessages>>> = ({ signal }) => v1ControllerMessages(id,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMessages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type v1ControllerListAppointmentsResponseSuccess = (v1ControllerListAppointmentsResponse200) & {
-  headers: Headers;
-};
-;
+export type V1ControllerMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerMessages>>>
+export type V1ControllerMessagesQueryError = unknown
 
-export type v1ControllerListAppointmentsResponse = (v1ControllerListAppointmentsResponseSuccess)
+
+export function useV1ControllerMessages<TData = Awaited<ReturnType<typeof v1ControllerMessages>>, TError = unknown>(
+ id: string,
+    params: V1ControllerMessagesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMessages>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerMessages>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerMessages>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerMessages<TData = Awaited<ReturnType<typeof v1ControllerMessages>>, TError = unknown>(
+ id: string,
+    params: V1ControllerMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMessages>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerMessages>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerMessages>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerMessages<TData = Awaited<ReturnType<typeof v1ControllerMessages>>, TError = unknown>(
+ id: string,
+    params: V1ControllerMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMessages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerMessages<TData = Awaited<ReturnType<typeof v1ControllerMessages>>, TError = unknown>(
+ id: string,
+    params: V1ControllerMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerMessages>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getV1ControllerMessagesQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getV1ControllerListAppointmentsUrl = () => {
 
@@ -1236,9 +1152,9 @@ export const getV1ControllerListAppointmentsUrl = () => {
   return `/v1/appointments`
 }
 
-export const v1ControllerListAppointments = async ( options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerListAppointmentsResponse> => {
+export const v1ControllerListAppointments = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerListAppointmentsResponse>(getV1ControllerListAppointmentsUrl(),
+  return customInstance<void>(getV1ControllerListAppointmentsUrl(),
   {
     ...options,
     method: 'GET'
@@ -1251,61 +1167,75 @@ export const v1ControllerListAppointments = async ( options?: Parameters<typeof 
 
 
 
-export const getV1ControllerListAppointmentsMutationKey = () => ['v1ControllerListAppointments'] as const;
-
-export const getV1ControllerListAppointmentsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError,void, TContext> => {
-
-const mutationKey = getV1ControllerListAppointmentsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerListAppointments>>, void> = () => {
-
-
-          return  v1ControllerListAppointments(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1ControllerListAppointmentsMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerListAppointments>>>
-
-    export type V1ControllerListAppointmentsMutationError = unknown
-
-
-    export const useV1ControllerListAppointments = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1ControllerListAppointments>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getV1ControllerListAppointmentsMutationOptions(options), queryClient);
+export const getV1ControllerListAppointmentsQueryKey = () => {
+    return [
+    `/v1/appointments`
+    ] as const;
     }
-    export type v1ControllerCreateAppointmentResponse201 = {
-  data: void
-  status: 201
+
+
+export const getV1ControllerListAppointmentsQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getV1ControllerListAppointmentsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerListAppointments>>> = ({ signal }) => v1ControllerListAppointments({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type v1ControllerCreateAppointmentResponseSuccess = (v1ControllerCreateAppointmentResponse201) & {
-  headers: Headers;
-};
-;
+export type V1ControllerListAppointmentsQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerListAppointments>>>
+export type V1ControllerListAppointmentsQueryError = unknown
 
-export type v1ControllerCreateAppointmentResponse = (v1ControllerCreateAppointmentResponseSuccess)
+
+export function useV1ControllerListAppointments<TData = Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerListAppointments>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerListAppointments>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerListAppointments<TData = Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerListAppointments>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerListAppointments>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerListAppointments<TData = Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerListAppointments<TData = Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerListAppointments>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getV1ControllerListAppointmentsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getV1ControllerCreateAppointmentUrl = () => {
 
@@ -1315,9 +1245,9 @@ export const getV1ControllerCreateAppointmentUrl = () => {
   return `/v1/appointments`
 }
 
-export const v1ControllerCreateAppointment = async ( options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerCreateAppointmentResponse> => {
+export const v1ControllerCreateAppointment = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerCreateAppointmentResponse>(getV1ControllerCreateAppointmentUrl(),
+  return customInstance<void>(getV1ControllerCreateAppointmentUrl(),
   {
     ...options,
     method: 'POST'
@@ -1330,89 +1260,51 @@ export const v1ControllerCreateAppointment = async ( options?: Parameters<typeof
 
 
 
-export const getV1ControllerCreateAppointmentQueryKey = () => {
-    return [
-    'POST', `/v1/appointments`
-    ] as const;
+export const getV1ControllerCreateAppointmentMutationKey = () => ['v1ControllerCreateAppointment'] as const;
+
+export const getV1ControllerCreateAppointmentMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError,void, TContext> => {
+
+const mutationKey = getV1ControllerCreateAppointmentMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, void> = () => {
+
+
+          return  v1ControllerCreateAppointment(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type V1ControllerCreateAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>>
+
+    export type V1ControllerCreateAppointmentMutationError = unknown
+
+
+    export const useV1ControllerCreateAppointment = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof v1ControllerCreateAppointment>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getV1ControllerCreateAppointmentMutationOptions(options), queryClient);
     }
-
-
-export const getV1ControllerCreateAppointmentQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getV1ControllerCreateAppointmentQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>> = ({ signal }) => v1ControllerCreateAppointment({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type V1ControllerCreateAppointmentQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>>
-export type V1ControllerCreateAppointmentQueryError = unknown
-
-
-export function useV1ControllerCreateAppointment<TData = Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerCreateAppointment>>,
-          TError,
-          Awaited<ReturnType<typeof v1ControllerCreateAppointment>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerCreateAppointment<TData = Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof v1ControllerCreateAppointment>>,
-          TError,
-          Awaited<ReturnType<typeof v1ControllerCreateAppointment>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerCreateAppointment<TData = Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useV1ControllerCreateAppointment<TData = Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerCreateAppointment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getV1ControllerCreateAppointmentQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type v1ControllerGetAppointmentResponse200 = {
-  data: void
-  status: 200
-}
-
-export type v1ControllerGetAppointmentResponseSuccess = (v1ControllerGetAppointmentResponse200) & {
-  headers: Headers;
-};
-;
-
-export type v1ControllerGetAppointmentResponse = (v1ControllerGetAppointmentResponseSuccess)
-
-export const getV1ControllerGetAppointmentUrl = (id: string,) => {
+    export const getV1ControllerGetAppointmentUrl = (id: string,) => {
 
 
 
@@ -1420,9 +1312,9 @@ export const getV1ControllerGetAppointmentUrl = (id: string,) => {
   return `/v1/appointments/${id}`
 }
 
-export const v1ControllerGetAppointment = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<v1ControllerGetAppointmentResponse> => {
+export const v1ControllerGetAppointment = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1ControllerGetAppointmentResponse>(getV1ControllerGetAppointmentUrl(id),
+  return customInstance<void>(getV1ControllerGetAppointmentUrl(id),
   {
     ...options,
     method: 'GET'
@@ -1435,47 +1327,73 @@ export const v1ControllerGetAppointment = async (id: string, options?: Parameter
 
 
 
-export const getV1ControllerGetAppointmentMutationKey = () => ['v1ControllerGetAppointment'] as const;
-
-export const getV1ControllerGetAppointmentMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError,V1ControllerGetAppointmentMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError,V1ControllerGetAppointmentMutationVariables, TContext> => {
-
-const mutationKey = getV1ControllerGetAppointmentMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1ControllerGetAppointment>>, V1ControllerGetAppointmentMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  v1ControllerGetAppointment(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1ControllerGetAppointmentMutationResult = NonNullable<Awaited<ReturnType<typeof v1ControllerGetAppointment>>>
-
-    export type V1ControllerGetAppointmentMutationError = unknown
-    export type V1ControllerGetAppointmentMutationVariables = {id: string}
-
-    export const useV1ControllerGetAppointment = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError,V1ControllerGetAppointmentMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1ControllerGetAppointment>>,
-        TError,
-        V1ControllerGetAppointmentMutationVariables,
-        TContext
-      > => {
-      return useMutation(getV1ControllerGetAppointmentMutationOptions(options), queryClient);
+export const getV1ControllerGetAppointmentQueryKey = (id: string,) => {
+    return [
+    `/v1/appointments/${id}`
+    ] as const;
     }
+
+
+export const getV1ControllerGetAppointmentQueryOptions = <TData = Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getV1ControllerGetAppointmentQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1ControllerGetAppointment>>> = ({ signal }) => v1ControllerGetAppointment(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type V1ControllerGetAppointmentQueryResult = NonNullable<Awaited<ReturnType<typeof v1ControllerGetAppointment>>>
+export type V1ControllerGetAppointmentQueryError = unknown
+
+
+export function useV1ControllerGetAppointment<TData = Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerGetAppointment>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerGetAppointment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerGetAppointment<TData = Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1ControllerGetAppointment>>,
+          TError,
+          Awaited<ReturnType<typeof v1ControllerGetAppointment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerGetAppointment<TData = Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1ControllerGetAppointment<TData = Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1ControllerGetAppointment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getV1ControllerGetAppointmentQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

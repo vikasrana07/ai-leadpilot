@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type teamControllerMembersResponse200 = {
-  data: void
-  status: 200
-}
-
-export type teamControllerMembersResponseSuccess = (teamControllerMembersResponse200) & {
-  headers: Headers;
-};
-;
-
-export type teamControllerMembersResponse = (teamControllerMembersResponseSuccess)
-
 export const getTeamControllerMembersUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getTeamControllerMembersUrl = () => {
   return `/team/members`
 }
 
-export const teamControllerMembers = async ( options?: Parameters<typeof customInstance>[1]): Promise<teamControllerMembersResponse> => {
+export const teamControllerMembers = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<teamControllerMembersResponse>(getTeamControllerMembersUrl(),
+  return customInstance<void>(getTeamControllerMembersUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const teamControllerMembers = async ( options?: Parameters<typeof customI
 
 
 
-export const getTeamControllerMembersMutationKey = () => ['teamControllerMembers'] as const;
-
-export const getTeamControllerMembersMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerMembers>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof teamControllerMembers>>, TError,void, TContext> => {
-
-const mutationKey = getTeamControllerMembersMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof teamControllerMembers>>, void> = () => {
-
-
-          return  teamControllerMembers(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type TeamControllerMembersMutationResult = NonNullable<Awaited<ReturnType<typeof teamControllerMembers>>>
-
-    export type TeamControllerMembersMutationError = unknown
-
-
-    export const useTeamControllerMembers = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerMembers>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof teamControllerMembers>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getTeamControllerMembersMutationOptions(options), queryClient);
+export const getTeamControllerMembersQueryKey = () => {
+    return [
+    `/team/members`
+    ] as const;
     }
-    export type teamControllerInvitationsResponse200 = {
-  data: void
-  status: 200
+
+
+export const getTeamControllerMembersQueryOptions = <TData = Awaited<ReturnType<typeof teamControllerMembers>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerMembers>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getTeamControllerMembersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof teamControllerMembers>>> = ({ signal }) => teamControllerMembers({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof teamControllerMembers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type teamControllerInvitationsResponseSuccess = (teamControllerInvitationsResponse200) & {
-  headers: Headers;
-};
-;
+export type TeamControllerMembersQueryResult = NonNullable<Awaited<ReturnType<typeof teamControllerMembers>>>
+export type TeamControllerMembersQueryError = unknown
 
-export type teamControllerInvitationsResponse = (teamControllerInvitationsResponseSuccess)
+
+export function useTeamControllerMembers<TData = Awaited<ReturnType<typeof teamControllerMembers>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerMembers>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof teamControllerMembers>>,
+          TError,
+          Awaited<ReturnType<typeof teamControllerMembers>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTeamControllerMembers<TData = Awaited<ReturnType<typeof teamControllerMembers>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerMembers>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof teamControllerMembers>>,
+          TError,
+          Awaited<ReturnType<typeof teamControllerMembers>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTeamControllerMembers<TData = Awaited<ReturnType<typeof teamControllerMembers>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerMembers>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTeamControllerMembers<TData = Awaited<ReturnType<typeof teamControllerMembers>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerMembers>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getTeamControllerMembersQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getTeamControllerInvitationsUrl = () => {
 
@@ -145,9 +147,9 @@ export const getTeamControllerInvitationsUrl = () => {
   return `/team/invitations`
 }
 
-export const teamControllerInvitations = async ( options?: Parameters<typeof customInstance>[1]): Promise<teamControllerInvitationsResponse> => {
+export const teamControllerInvitations = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<teamControllerInvitationsResponse>(getTeamControllerInvitationsUrl(),
+  return customInstance<void>(getTeamControllerInvitationsUrl(),
   {
     ...options,
     method: 'GET'
@@ -160,61 +162,75 @@ export const teamControllerInvitations = async ( options?: Parameters<typeof cus
 
 
 
-export const getTeamControllerInvitationsMutationKey = () => ['teamControllerInvitations'] as const;
-
-export const getTeamControllerInvitationsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerInvitations>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof teamControllerInvitations>>, TError,void, TContext> => {
-
-const mutationKey = getTeamControllerInvitationsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof teamControllerInvitations>>, void> = () => {
-
-
-          return  teamControllerInvitations(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type TeamControllerInvitationsMutationResult = NonNullable<Awaited<ReturnType<typeof teamControllerInvitations>>>
-
-    export type TeamControllerInvitationsMutationError = unknown
-
-
-    export const useTeamControllerInvitations = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerInvitations>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof teamControllerInvitations>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getTeamControllerInvitationsMutationOptions(options), queryClient);
+export const getTeamControllerInvitationsQueryKey = () => {
+    return [
+    `/team/invitations`
+    ] as const;
     }
-    export type teamControllerInviteResponse201 = {
-  data: void
-  status: 201
+
+
+export const getTeamControllerInvitationsQueryOptions = <TData = Awaited<ReturnType<typeof teamControllerInvitations>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvitations>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getTeamControllerInvitationsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof teamControllerInvitations>>> = ({ signal }) => teamControllerInvitations({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvitations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type teamControllerInviteResponseSuccess = (teamControllerInviteResponse201) & {
-  headers: Headers;
-};
-;
+export type TeamControllerInvitationsQueryResult = NonNullable<Awaited<ReturnType<typeof teamControllerInvitations>>>
+export type TeamControllerInvitationsQueryError = unknown
 
-export type teamControllerInviteResponse = (teamControllerInviteResponseSuccess)
+
+export function useTeamControllerInvitations<TData = Awaited<ReturnType<typeof teamControllerInvitations>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvitations>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof teamControllerInvitations>>,
+          TError,
+          Awaited<ReturnType<typeof teamControllerInvitations>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTeamControllerInvitations<TData = Awaited<ReturnType<typeof teamControllerInvitations>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvitations>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof teamControllerInvitations>>,
+          TError,
+          Awaited<ReturnType<typeof teamControllerInvitations>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTeamControllerInvitations<TData = Awaited<ReturnType<typeof teamControllerInvitations>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvitations>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTeamControllerInvitations<TData = Awaited<ReturnType<typeof teamControllerInvitations>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvitations>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getTeamControllerInvitationsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getTeamControllerInviteUrl = () => {
 
@@ -224,9 +240,9 @@ export const getTeamControllerInviteUrl = () => {
   return `/team/invitations`
 }
 
-export const teamControllerInvite = async ( options?: Parameters<typeof customInstance>[1]): Promise<teamControllerInviteResponse> => {
+export const teamControllerInvite = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<teamControllerInviteResponse>(getTeamControllerInviteUrl(),
+  return customInstance<void>(getTeamControllerInviteUrl(),
   {
     ...options,
     method: 'POST'
@@ -239,89 +255,51 @@ export const teamControllerInvite = async ( options?: Parameters<typeof customIn
 
 
 
-export const getTeamControllerInviteQueryKey = () => {
-    return [
-    'POST', `/team/invitations`
-    ] as const;
+export const getTeamControllerInviteMutationKey = () => ['teamControllerInvite'] as const;
+
+export const getTeamControllerInviteMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerInvite>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof teamControllerInvite>>, TError,void, TContext> => {
+
+const mutationKey = getTeamControllerInviteMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof teamControllerInvite>>, void> = () => {
+
+
+          return  teamControllerInvite(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TeamControllerInviteMutationResult = NonNullable<Awaited<ReturnType<typeof teamControllerInvite>>>
+
+    export type TeamControllerInviteMutationError = unknown
+
+
+    export const useTeamControllerInvite = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerInvite>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof teamControllerInvite>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getTeamControllerInviteMutationOptions(options), queryClient);
     }
-
-
-export const getTeamControllerInviteQueryOptions = <TData = Awaited<ReturnType<typeof teamControllerInvite>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvite>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getTeamControllerInviteQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof teamControllerInvite>>> = ({ signal }) => teamControllerInvite({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvite>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type TeamControllerInviteQueryResult = NonNullable<Awaited<ReturnType<typeof teamControllerInvite>>>
-export type TeamControllerInviteQueryError = unknown
-
-
-export function useTeamControllerInvite<TData = Awaited<ReturnType<typeof teamControllerInvite>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvite>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof teamControllerInvite>>,
-          TError,
-          Awaited<ReturnType<typeof teamControllerInvite>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerInvite<TData = Awaited<ReturnType<typeof teamControllerInvite>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvite>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof teamControllerInvite>>,
-          TError,
-          Awaited<ReturnType<typeof teamControllerInvite>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerInvite<TData = Awaited<ReturnType<typeof teamControllerInvite>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvite>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerInvite<TData = Awaited<ReturnType<typeof teamControllerInvite>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerInvite>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getTeamControllerInviteQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type teamControllerRevokeResponse204 = {
-  data: void
-  status: 204
-}
-
-export type teamControllerRevokeResponseSuccess = (teamControllerRevokeResponse204) & {
-  headers: Headers;
-};
-;
-
-export type teamControllerRevokeResponse = (teamControllerRevokeResponseSuccess)
-
-export const getTeamControllerRevokeUrl = (id: string,) => {
+    export const getTeamControllerRevokeUrl = (id: string,) => {
 
 
 
@@ -329,9 +307,9 @@ export const getTeamControllerRevokeUrl = (id: string,) => {
   return `/team/invitations/${id}`
 }
 
-export const teamControllerRevoke = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<teamControllerRevokeResponse> => {
+export const teamControllerRevoke = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<teamControllerRevokeResponse>(getTeamControllerRevokeUrl(id),
+  return customInstance<void>(getTeamControllerRevokeUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -344,89 +322,51 @@ export const teamControllerRevoke = async (id: string, options?: Parameters<type
 
 
 
-export const getTeamControllerRevokeQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/team/invitations/${id}`
-    ] as const;
+export const getTeamControllerRevokeMutationKey = () => ['teamControllerRevoke'] as const;
+
+export const getTeamControllerRevokeMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerRevoke>>, TError,TeamControllerRevokeMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof teamControllerRevoke>>, TError,TeamControllerRevokeMutationVariables, TContext> => {
+
+const mutationKey = getTeamControllerRevokeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof teamControllerRevoke>>, TeamControllerRevokeMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  teamControllerRevoke(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TeamControllerRevokeMutationResult = NonNullable<Awaited<ReturnType<typeof teamControllerRevoke>>>
+
+    export type TeamControllerRevokeMutationError = unknown
+    export type TeamControllerRevokeMutationVariables = {id: string}
+
+    export const useTeamControllerRevoke = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerRevoke>>, TError,TeamControllerRevokeMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof teamControllerRevoke>>,
+        TError,
+        TeamControllerRevokeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getTeamControllerRevokeMutationOptions(options), queryClient);
     }
-
-
-export const getTeamControllerRevokeQueryOptions = <TData = Awaited<ReturnType<typeof teamControllerRevoke>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerRevoke>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getTeamControllerRevokeQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof teamControllerRevoke>>> = ({ signal }) => teamControllerRevoke(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof teamControllerRevoke>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type TeamControllerRevokeQueryResult = NonNullable<Awaited<ReturnType<typeof teamControllerRevoke>>>
-export type TeamControllerRevokeQueryError = unknown
-
-
-export function useTeamControllerRevoke<TData = Awaited<ReturnType<typeof teamControllerRevoke>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerRevoke>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof teamControllerRevoke>>,
-          TError,
-          Awaited<ReturnType<typeof teamControllerRevoke>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerRevoke<TData = Awaited<ReturnType<typeof teamControllerRevoke>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerRevoke>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof teamControllerRevoke>>,
-          TError,
-          Awaited<ReturnType<typeof teamControllerRevoke>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerRevoke<TData = Awaited<ReturnType<typeof teamControllerRevoke>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerRevoke>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerRevoke<TData = Awaited<ReturnType<typeof teamControllerRevoke>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerRevoke>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getTeamControllerRevokeQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type teamControllerRoleResponse200 = {
-  data: void
-  status: 200
-}
-
-export type teamControllerRoleResponseSuccess = (teamControllerRoleResponse200) & {
-  headers: Headers;
-};
-;
-
-export type teamControllerRoleResponse = (teamControllerRoleResponseSuccess)
-
-export const getTeamControllerRoleUrl = (id: string,) => {
+    export const getTeamControllerRoleUrl = (id: string,) => {
 
 
 
@@ -434,9 +374,9 @@ export const getTeamControllerRoleUrl = (id: string,) => {
   return `/team/members/${id}/role`
 }
 
-export const teamControllerRole = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<teamControllerRoleResponse> => {
+export const teamControllerRole = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<teamControllerRoleResponse>(getTeamControllerRoleUrl(id),
+  return customInstance<void>(getTeamControllerRoleUrl(id),
   {
     ...options,
     method: 'PATCH'
@@ -449,89 +389,51 @@ export const teamControllerRole = async (id: string, options?: Parameters<typeof
 
 
 
-export const getTeamControllerRoleQueryKey = (id: string,) => {
-    return [
-    'PATCH', `/team/members/${id}/role`
-    ] as const;
+export const getTeamControllerRoleMutationKey = () => ['teamControllerRole'] as const;
+
+export const getTeamControllerRoleMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerRole>>, TError,TeamControllerRoleMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof teamControllerRole>>, TError,TeamControllerRoleMutationVariables, TContext> => {
+
+const mutationKey = getTeamControllerRoleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof teamControllerRole>>, TeamControllerRoleMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  teamControllerRole(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TeamControllerRoleMutationResult = NonNullable<Awaited<ReturnType<typeof teamControllerRole>>>
+
+    export type TeamControllerRoleMutationError = unknown
+    export type TeamControllerRoleMutationVariables = {id: string}
+
+    export const useTeamControllerRole = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerRole>>, TError,TeamControllerRoleMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof teamControllerRole>>,
+        TError,
+        TeamControllerRoleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getTeamControllerRoleMutationOptions(options), queryClient);
     }
-
-
-export const getTeamControllerRoleQueryOptions = <TData = Awaited<ReturnType<typeof teamControllerRole>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerRole>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getTeamControllerRoleQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof teamControllerRole>>> = ({ signal }) => teamControllerRole(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof teamControllerRole>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type TeamControllerRoleQueryResult = NonNullable<Awaited<ReturnType<typeof teamControllerRole>>>
-export type TeamControllerRoleQueryError = unknown
-
-
-export function useTeamControllerRole<TData = Awaited<ReturnType<typeof teamControllerRole>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerRole>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof teamControllerRole>>,
-          TError,
-          Awaited<ReturnType<typeof teamControllerRole>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerRole<TData = Awaited<ReturnType<typeof teamControllerRole>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerRole>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof teamControllerRole>>,
-          TError,
-          Awaited<ReturnType<typeof teamControllerRole>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerRole<TData = Awaited<ReturnType<typeof teamControllerRole>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerRole>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerRole<TData = Awaited<ReturnType<typeof teamControllerRole>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerRole>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getTeamControllerRoleQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type teamControllerStatusResponse200 = {
-  data: void
-  status: 200
-}
-
-export type teamControllerStatusResponseSuccess = (teamControllerStatusResponse200) & {
-  headers: Headers;
-};
-;
-
-export type teamControllerStatusResponse = (teamControllerStatusResponseSuccess)
-
-export const getTeamControllerStatusUrl = (id: string,) => {
+    export const getTeamControllerStatusUrl = (id: string,) => {
 
 
 
@@ -539,9 +441,9 @@ export const getTeamControllerStatusUrl = (id: string,) => {
   return `/team/members/${id}/status`
 }
 
-export const teamControllerStatus = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<teamControllerStatusResponse> => {
+export const teamControllerStatus = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<teamControllerStatusResponse>(getTeamControllerStatusUrl(id),
+  return customInstance<void>(getTeamControllerStatusUrl(id),
   {
     ...options,
     method: 'PATCH'
@@ -554,89 +456,51 @@ export const teamControllerStatus = async (id: string, options?: Parameters<type
 
 
 
-export const getTeamControllerStatusQueryKey = (id: string,) => {
-    return [
-    'PATCH', `/team/members/${id}/status`
-    ] as const;
+export const getTeamControllerStatusMutationKey = () => ['teamControllerStatus'] as const;
+
+export const getTeamControllerStatusMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerStatus>>, TError,TeamControllerStatusMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof teamControllerStatus>>, TError,TeamControllerStatusMutationVariables, TContext> => {
+
+const mutationKey = getTeamControllerStatusMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof teamControllerStatus>>, TeamControllerStatusMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  teamControllerStatus(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TeamControllerStatusMutationResult = NonNullable<Awaited<ReturnType<typeof teamControllerStatus>>>
+
+    export type TeamControllerStatusMutationError = unknown
+    export type TeamControllerStatusMutationVariables = {id: string}
+
+    export const useTeamControllerStatus = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerStatus>>, TError,TeamControllerStatusMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof teamControllerStatus>>,
+        TError,
+        TeamControllerStatusMutationVariables,
+        TContext
+      > => {
+      return useMutation(getTeamControllerStatusMutationOptions(options), queryClient);
     }
-
-
-export const getTeamControllerStatusQueryOptions = <TData = Awaited<ReturnType<typeof teamControllerStatus>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getTeamControllerStatusQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof teamControllerStatus>>> = ({ signal }) => teamControllerStatus(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof teamControllerStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type TeamControllerStatusQueryResult = NonNullable<Awaited<ReturnType<typeof teamControllerStatus>>>
-export type TeamControllerStatusQueryError = unknown
-
-
-export function useTeamControllerStatus<TData = Awaited<ReturnType<typeof teamControllerStatus>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerStatus>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof teamControllerStatus>>,
-          TError,
-          Awaited<ReturnType<typeof teamControllerStatus>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerStatus<TData = Awaited<ReturnType<typeof teamControllerStatus>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerStatus>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof teamControllerStatus>>,
-          TError,
-          Awaited<ReturnType<typeof teamControllerStatus>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerStatus<TData = Awaited<ReturnType<typeof teamControllerStatus>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerStatus<TData = Awaited<ReturnType<typeof teamControllerStatus>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getTeamControllerStatusQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type teamControllerMfaResetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type teamControllerMfaResetResponseSuccess = (teamControllerMfaResetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type teamControllerMfaResetResponse = (teamControllerMfaResetResponseSuccess)
-
-export const getTeamControllerMfaResetUrl = (id: string,) => {
+    export const getTeamControllerMfaResetUrl = (id: string,) => {
 
 
 
@@ -644,9 +508,9 @@ export const getTeamControllerMfaResetUrl = (id: string,) => {
   return `/team/members/${id}/mfa-reset`
 }
 
-export const teamControllerMfaReset = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<teamControllerMfaResetResponse> => {
+export const teamControllerMfaReset = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<teamControllerMfaResetResponse>(getTeamControllerMfaResetUrl(id),
+  return customInstance<void>(getTeamControllerMfaResetUrl(id),
   {
     ...options,
     method: 'POST'
@@ -659,73 +523,47 @@ export const teamControllerMfaReset = async (id: string, options?: Parameters<ty
 
 
 
-export const getTeamControllerMfaResetQueryKey = (id: string,) => {
-    return [
-    'POST', `/team/members/${id}/mfa-reset`
-    ] as const;
+export const getTeamControllerMfaResetMutationKey = () => ['teamControllerMfaReset'] as const;
+
+export const getTeamControllerMfaResetMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerMfaReset>>, TError,TeamControllerMfaResetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof teamControllerMfaReset>>, TError,TeamControllerMfaResetMutationVariables, TContext> => {
+
+const mutationKey = getTeamControllerMfaResetMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof teamControllerMfaReset>>, TeamControllerMfaResetMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  teamControllerMfaReset(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TeamControllerMfaResetMutationResult = NonNullable<Awaited<ReturnType<typeof teamControllerMfaReset>>>
+
+    export type TeamControllerMfaResetMutationError = unknown
+    export type TeamControllerMfaResetMutationVariables = {id: string}
+
+    export const useTeamControllerMfaReset = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof teamControllerMfaReset>>, TError,TeamControllerMfaResetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof teamControllerMfaReset>>,
+        TError,
+        TeamControllerMfaResetMutationVariables,
+        TContext
+      > => {
+      return useMutation(getTeamControllerMfaResetMutationOptions(options), queryClient);
     }
-
-
-export const getTeamControllerMfaResetQueryOptions = <TData = Awaited<ReturnType<typeof teamControllerMfaReset>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerMfaReset>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getTeamControllerMfaResetQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof teamControllerMfaReset>>> = ({ signal }) => teamControllerMfaReset(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof teamControllerMfaReset>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type TeamControllerMfaResetQueryResult = NonNullable<Awaited<ReturnType<typeof teamControllerMfaReset>>>
-export type TeamControllerMfaResetQueryError = unknown
-
-
-export function useTeamControllerMfaReset<TData = Awaited<ReturnType<typeof teamControllerMfaReset>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerMfaReset>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof teamControllerMfaReset>>,
-          TError,
-          Awaited<ReturnType<typeof teamControllerMfaReset>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerMfaReset<TData = Awaited<ReturnType<typeof teamControllerMfaReset>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerMfaReset>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof teamControllerMfaReset>>,
-          TError,
-          Awaited<ReturnType<typeof teamControllerMfaReset>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerMfaReset<TData = Awaited<ReturnType<typeof teamControllerMfaReset>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerMfaReset>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useTeamControllerMfaReset<TData = Awaited<ReturnType<typeof teamControllerMfaReset>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof teamControllerMfaReset>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getTeamControllerMfaResetQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

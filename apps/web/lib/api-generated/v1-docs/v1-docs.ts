@@ -6,13 +6,18 @@
  * OpenAPI spec version: 1.0
  */
 import {
-  useMutation
+  useQuery
 } from '@tanstack/react-query';
 import type {
-  MutationFunction,
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   QueryClient,
-  UseMutationOptions,
-  UseMutationResult
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import { customInstance } from '../../custom-instance';
@@ -22,17 +27,20 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-export type v1DocsControllerSpecResponse200 = {
-  data: void
-  status: 200
-}
-
-export type v1DocsControllerSpecResponseSuccess = (v1DocsControllerSpecResponse200) & {
-  headers: Headers;
+const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+  const result = { queryKey } as T & { queryKey: K };
+  for (const key of Object.keys(query)) {
+    // The explicit queryKey always wins, matching the previous
+    // `{ ...query, queryKey }` spread where it was set last.
+    if (key === 'queryKey') continue;
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      configurable: true,
+      get: () => (query as Record<string, unknown>)[key],
+    });
+  }
+  return result;
 };
-;
-
-export type v1DocsControllerSpecResponse = (v1DocsControllerSpecResponseSuccess)
 
 export const getV1DocsControllerSpecUrl = () => {
 
@@ -42,9 +50,9 @@ export const getV1DocsControllerSpecUrl = () => {
   return `/v1/openapi.json`
 }
 
-export const v1DocsControllerSpec = async ( options?: Parameters<typeof customInstance>[1]): Promise<v1DocsControllerSpecResponse> => {
+export const v1DocsControllerSpec = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<v1DocsControllerSpecResponse>(getV1DocsControllerSpecUrl(),
+  return customInstance<void>(getV1DocsControllerSpecUrl(),
   {
     ...options,
     method: 'GET'
@@ -57,47 +65,73 @@ export const v1DocsControllerSpec = async ( options?: Parameters<typeof customIn
 
 
 
-export const getV1DocsControllerSpecMutationKey = () => ['v1DocsControllerSpec'] as const;
-
-export const getV1DocsControllerSpecMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError,void, TContext> => {
-
-const mutationKey = getV1DocsControllerSpecMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof v1DocsControllerSpec>>, void> = () => {
-
-
-          return  v1DocsControllerSpec(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type V1DocsControllerSpecMutationResult = NonNullable<Awaited<ReturnType<typeof v1DocsControllerSpec>>>
-
-    export type V1DocsControllerSpecMutationError = unknown
-
-
-    export const useV1DocsControllerSpec = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof v1DocsControllerSpec>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getV1DocsControllerSpecMutationOptions(options), queryClient);
+export const getV1DocsControllerSpecQueryKey = () => {
+    return [
+    `/v1/openapi.json`
+    ] as const;
     }
+
+
+export const getV1DocsControllerSpecQueryOptions = <TData = Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getV1DocsControllerSpecQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof v1DocsControllerSpec>>> = ({ signal }) => v1DocsControllerSpec({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type V1DocsControllerSpecQueryResult = NonNullable<Awaited<ReturnType<typeof v1DocsControllerSpec>>>
+export type V1DocsControllerSpecQueryError = unknown
+
+
+export function useV1DocsControllerSpec<TData = Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1DocsControllerSpec>>,
+          TError,
+          Awaited<ReturnType<typeof v1DocsControllerSpec>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1DocsControllerSpec<TData = Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof v1DocsControllerSpec>>,
+          TError,
+          Awaited<ReturnType<typeof v1DocsControllerSpec>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1DocsControllerSpec<TData = Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useV1DocsControllerSpec<TData = Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof v1DocsControllerSpec>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getV1DocsControllerSpecQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

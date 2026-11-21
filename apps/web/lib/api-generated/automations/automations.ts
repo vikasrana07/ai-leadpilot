@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type automationsControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type automationsControllerListResponseSuccess = (automationsControllerListResponse200) & {
-  headers: Headers;
-};
-;
-
-export type automationsControllerListResponse = (automationsControllerListResponseSuccess)
-
 export const getAutomationsControllerListUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getAutomationsControllerListUrl = () => {
   return `/automations`
 }
 
-export const automationsControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerListResponse> => {
+export const automationsControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerListResponse>(getAutomationsControllerListUrl(),
+  return customInstance<void>(getAutomationsControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const automationsControllerList = async ( options?: Parameters<typeof cus
 
 
 
-export const getAutomationsControllerListMutationKey = () => ['automationsControllerList'] as const;
-
-export const getAutomationsControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getAutomationsControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerList>>, void> = () => {
-
-
-          return  automationsControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AutomationsControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerList>>>
-
-    export type AutomationsControllerListMutationError = unknown
-
-
-    export const useAutomationsControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof automationsControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAutomationsControllerListMutationOptions(options), queryClient);
+export const getAutomationsControllerListQueryKey = () => {
+    return [
+    `/automations`
+    ] as const;
     }
-    export type automationsControllerCreateResponse201 = {
-  data: void
-  status: 201
+
+
+export const getAutomationsControllerListQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerList>>> = ({ signal }) => automationsControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type automationsControllerCreateResponseSuccess = (automationsControllerCreateResponse201) & {
-  headers: Headers;
-};
-;
+export type AutomationsControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerList>>>
+export type AutomationsControllerListQueryError = unknown
 
-export type automationsControllerCreateResponse = (automationsControllerCreateResponseSuccess)
+
+export function useAutomationsControllerList<TData = Awaited<ReturnType<typeof automationsControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerList<TData = Awaited<ReturnType<typeof automationsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerList<TData = Awaited<ReturnType<typeof automationsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerList<TData = Awaited<ReturnType<typeof automationsControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAutomationsControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAutomationsControllerCreateUrl = () => {
 
@@ -145,9 +147,9 @@ export const getAutomationsControllerCreateUrl = () => {
   return `/automations`
 }
 
-export const automationsControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerCreateResponse> => {
+export const automationsControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerCreateResponse>(getAutomationsControllerCreateUrl(),
+  return customInstance<void>(getAutomationsControllerCreateUrl(),
   {
     ...options,
     method: 'POST'
@@ -160,89 +162,51 @@ export const automationsControllerCreate = async ( options?: Parameters<typeof c
 
 
 
-export const getAutomationsControllerCreateQueryKey = () => {
-    return [
-    'POST', `/automations`
-    ] as const;
+export const getAutomationsControllerCreateMutationKey = () => ['automationsControllerCreate'] as const;
+
+export const getAutomationsControllerCreateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerCreate>>, TError,void, TContext> => {
+
+const mutationKey = getAutomationsControllerCreateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerCreate>>, void> = () => {
+
+
+          return  automationsControllerCreate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutomationsControllerCreateMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerCreate>>>
+
+    export type AutomationsControllerCreateMutationError = unknown
+
+
+    export const useAutomationsControllerCreate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof automationsControllerCreate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAutomationsControllerCreateMutationOptions(options), queryClient);
     }
-
-
-export const getAutomationsControllerCreateQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerCreate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerCreateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerCreate>>> = ({ signal }) => automationsControllerCreate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerCreate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AutomationsControllerCreateQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerCreate>>>
-export type AutomationsControllerCreateQueryError = unknown
-
-
-export function useAutomationsControllerCreate<TData = Awaited<ReturnType<typeof automationsControllerCreate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerCreate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerCreate<TData = Awaited<ReturnType<typeof automationsControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerCreate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerCreate<TData = Awaited<ReturnType<typeof automationsControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerCreate<TData = Awaited<ReturnType<typeof automationsControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAutomationsControllerCreateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type automationsControllerTemplatesResponse200 = {
-  data: void
-  status: 200
-}
-
-export type automationsControllerTemplatesResponseSuccess = (automationsControllerTemplatesResponse200) & {
-  headers: Headers;
-};
-;
-
-export type automationsControllerTemplatesResponse = (automationsControllerTemplatesResponseSuccess)
-
-export const getAutomationsControllerTemplatesUrl = () => {
+    export const getAutomationsControllerTemplatesUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getAutomationsControllerTemplatesUrl = () => {
   return `/automations/templates`
 }
 
-export const automationsControllerTemplates = async ( options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerTemplatesResponse> => {
+export const automationsControllerTemplates = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerTemplatesResponse>(getAutomationsControllerTemplatesUrl(),
+  return customInstance<void>(getAutomationsControllerTemplatesUrl(),
   {
     ...options,
     method: 'GET'
@@ -265,61 +229,75 @@ export const automationsControllerTemplates = async ( options?: Parameters<typeo
 
 
 
-export const getAutomationsControllerTemplatesMutationKey = () => ['automationsControllerTemplates'] as const;
-
-export const getAutomationsControllerTemplatesMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerTemplates>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerTemplates>>, TError,void, TContext> => {
-
-const mutationKey = getAutomationsControllerTemplatesMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerTemplates>>, void> = () => {
-
-
-          return  automationsControllerTemplates(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AutomationsControllerTemplatesMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerTemplates>>>
-
-    export type AutomationsControllerTemplatesMutationError = unknown
-
-
-    export const useAutomationsControllerTemplates = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerTemplates>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof automationsControllerTemplates>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAutomationsControllerTemplatesMutationOptions(options), queryClient);
+export const getAutomationsControllerTemplatesQueryKey = () => {
+    return [
+    `/automations/templates`
+    ] as const;
     }
-    export type automationsControllerRunsResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAutomationsControllerTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerTemplates>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerTemplates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerTemplatesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerTemplates>>> = ({ signal }) => automationsControllerTemplates({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type automationsControllerRunsResponseSuccess = (automationsControllerRunsResponse200) & {
-  headers: Headers;
-};
-;
+export type AutomationsControllerTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerTemplates>>>
+export type AutomationsControllerTemplatesQueryError = unknown
 
-export type automationsControllerRunsResponse = (automationsControllerRunsResponseSuccess)
+
+export function useAutomationsControllerTemplates<TData = Awaited<ReturnType<typeof automationsControllerTemplates>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerTemplates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerTemplates>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerTemplates<TData = Awaited<ReturnType<typeof automationsControllerTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerTemplates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerTemplates>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerTemplates<TData = Awaited<ReturnType<typeof automationsControllerTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerTemplates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerTemplates<TData = Awaited<ReturnType<typeof automationsControllerTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerTemplates>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAutomationsControllerTemplatesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAutomationsControllerRunsUrl = () => {
 
@@ -329,9 +307,9 @@ export const getAutomationsControllerRunsUrl = () => {
   return `/automations/runs`
 }
 
-export const automationsControllerRuns = async ( options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerRunsResponse> => {
+export const automationsControllerRuns = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerRunsResponse>(getAutomationsControllerRunsUrl(),
+  return customInstance<void>(getAutomationsControllerRunsUrl(),
   {
     ...options,
     method: 'GET'
@@ -344,61 +322,75 @@ export const automationsControllerRuns = async ( options?: Parameters<typeof cus
 
 
 
-export const getAutomationsControllerRunsMutationKey = () => ['automationsControllerRuns'] as const;
-
-export const getAutomationsControllerRunsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRuns>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRuns>>, TError,void, TContext> => {
-
-const mutationKey = getAutomationsControllerRunsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerRuns>>, void> = () => {
-
-
-          return  automationsControllerRuns(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AutomationsControllerRunsMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerRuns>>>
-
-    export type AutomationsControllerRunsMutationError = unknown
-
-
-    export const useAutomationsControllerRuns = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRuns>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof automationsControllerRuns>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAutomationsControllerRunsMutationOptions(options), queryClient);
+export const getAutomationsControllerRunsQueryKey = () => {
+    return [
+    `/automations/runs`
+    ] as const;
     }
-    export type automationsControllerRunResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAutomationsControllerRunsQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerRuns>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRuns>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerRunsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerRuns>>> = ({ signal }) => automationsControllerRuns({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRuns>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type automationsControllerRunResponseSuccess = (automationsControllerRunResponse200) & {
-  headers: Headers;
-};
-;
+export type AutomationsControllerRunsQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerRuns>>>
+export type AutomationsControllerRunsQueryError = unknown
 
-export type automationsControllerRunResponse = (automationsControllerRunResponseSuccess)
+
+export function useAutomationsControllerRuns<TData = Awaited<ReturnType<typeof automationsControllerRuns>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRuns>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerRuns>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerRuns>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerRuns<TData = Awaited<ReturnType<typeof automationsControllerRuns>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRuns>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerRuns>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerRuns>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerRuns<TData = Awaited<ReturnType<typeof automationsControllerRuns>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRuns>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerRuns<TData = Awaited<ReturnType<typeof automationsControllerRuns>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRuns>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAutomationsControllerRunsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAutomationsControllerRunUrl = (id: string,) => {
 
@@ -408,9 +400,9 @@ export const getAutomationsControllerRunUrl = (id: string,) => {
   return `/automations/runs/${id}`
 }
 
-export const automationsControllerRun = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerRunResponse> => {
+export const automationsControllerRun = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerRunResponse>(getAutomationsControllerRunUrl(id),
+  return customInstance<void>(getAutomationsControllerRunUrl(id),
   {
     ...options,
     method: 'GET'
@@ -423,61 +415,75 @@ export const automationsControllerRun = async (id: string, options?: Parameters<
 
 
 
-export const getAutomationsControllerRunMutationKey = () => ['automationsControllerRun'] as const;
-
-export const getAutomationsControllerRunMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRun>>, TError,AutomationsControllerRunMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRun>>, TError,AutomationsControllerRunMutationVariables, TContext> => {
-
-const mutationKey = getAutomationsControllerRunMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerRun>>, AutomationsControllerRunMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  automationsControllerRun(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AutomationsControllerRunMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerRun>>>
-
-    export type AutomationsControllerRunMutationError = unknown
-    export type AutomationsControllerRunMutationVariables = {id: string}
-
-    export const useAutomationsControllerRun = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRun>>, TError,AutomationsControllerRunMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof automationsControllerRun>>,
-        TError,
-        AutomationsControllerRunMutationVariables,
-        TContext
-      > => {
-      return useMutation(getAutomationsControllerRunMutationOptions(options), queryClient);
+export const getAutomationsControllerRunQueryKey = (id: string,) => {
+    return [
+    `/automations/runs/${id}`
+    ] as const;
     }
-    export type automationsControllerRetryResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAutomationsControllerRunQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerRun>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRun>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerRunQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerRun>>> = ({ signal }) => automationsControllerRun(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRun>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type automationsControllerRetryResponseSuccess = (automationsControllerRetryResponse200) & {
-  headers: Headers;
-};
-;
+export type AutomationsControllerRunQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerRun>>>
+export type AutomationsControllerRunQueryError = unknown
 
-export type automationsControllerRetryResponse = (automationsControllerRetryResponseSuccess)
+
+export function useAutomationsControllerRun<TData = Awaited<ReturnType<typeof automationsControllerRun>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRun>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerRun>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerRun>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerRun<TData = Awaited<ReturnType<typeof automationsControllerRun>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRun>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerRun>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerRun>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerRun<TData = Awaited<ReturnType<typeof automationsControllerRun>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRun>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerRun<TData = Awaited<ReturnType<typeof automationsControllerRun>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRun>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAutomationsControllerRunQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAutomationsControllerRetryUrl = (id: string,) => {
 
@@ -487,9 +493,9 @@ export const getAutomationsControllerRetryUrl = (id: string,) => {
   return `/automations/runs/${id}/retry`
 }
 
-export const automationsControllerRetry = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerRetryResponse> => {
+export const automationsControllerRetry = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerRetryResponse>(getAutomationsControllerRetryUrl(id),
+  return customInstance<void>(getAutomationsControllerRetryUrl(id),
   {
     ...options,
     method: 'POST'
@@ -502,89 +508,51 @@ export const automationsControllerRetry = async (id: string, options?: Parameter
 
 
 
-export const getAutomationsControllerRetryQueryKey = (id: string,) => {
-    return [
-    'POST', `/automations/runs/${id}/retry`
-    ] as const;
+export const getAutomationsControllerRetryMutationKey = () => ['automationsControllerRetry'] as const;
+
+export const getAutomationsControllerRetryMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRetry>>, TError,AutomationsControllerRetryMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRetry>>, TError,AutomationsControllerRetryMutationVariables, TContext> => {
+
+const mutationKey = getAutomationsControllerRetryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerRetry>>, AutomationsControllerRetryMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  automationsControllerRetry(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutomationsControllerRetryMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerRetry>>>
+
+    export type AutomationsControllerRetryMutationError = unknown
+    export type AutomationsControllerRetryMutationVariables = {id: string}
+
+    export const useAutomationsControllerRetry = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRetry>>, TError,AutomationsControllerRetryMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof automationsControllerRetry>>,
+        TError,
+        AutomationsControllerRetryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAutomationsControllerRetryMutationOptions(options), queryClient);
     }
-
-
-export const getAutomationsControllerRetryQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerRetry>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRetry>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerRetryQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerRetry>>> = ({ signal }) => automationsControllerRetry(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRetry>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AutomationsControllerRetryQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerRetry>>>
-export type AutomationsControllerRetryQueryError = unknown
-
-
-export function useAutomationsControllerRetry<TData = Awaited<ReturnType<typeof automationsControllerRetry>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRetry>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerRetry>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerRetry>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerRetry<TData = Awaited<ReturnType<typeof automationsControllerRetry>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRetry>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerRetry>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerRetry>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerRetry<TData = Awaited<ReturnType<typeof automationsControllerRetry>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRetry>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerRetry<TData = Awaited<ReturnType<typeof automationsControllerRetry>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRetry>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAutomationsControllerRetryQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type automationsControllerFromTemplateResponse201 = {
-  data: void
-  status: 201
-}
-
-export type automationsControllerFromTemplateResponseSuccess = (automationsControllerFromTemplateResponse201) & {
-  headers: Headers;
-};
-;
-
-export type automationsControllerFromTemplateResponse = (automationsControllerFromTemplateResponseSuccess)
-
-export const getAutomationsControllerFromTemplateUrl = () => {
+    export const getAutomationsControllerFromTemplateUrl = () => {
 
 
 
@@ -592,9 +560,9 @@ export const getAutomationsControllerFromTemplateUrl = () => {
   return `/automations/from-template`
 }
 
-export const automationsControllerFromTemplate = async ( options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerFromTemplateResponse> => {
+export const automationsControllerFromTemplate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerFromTemplateResponse>(getAutomationsControllerFromTemplateUrl(),
+  return customInstance<void>(getAutomationsControllerFromTemplateUrl(),
   {
     ...options,
     method: 'POST'
@@ -607,89 +575,51 @@ export const automationsControllerFromTemplate = async ( options?: Parameters<ty
 
 
 
-export const getAutomationsControllerFromTemplateQueryKey = () => {
-    return [
-    'POST', `/automations/from-template`
-    ] as const;
+export const getAutomationsControllerFromTemplateMutationKey = () => ['automationsControllerFromTemplate'] as const;
+
+export const getAutomationsControllerFromTemplateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError,void, TContext> => {
+
+const mutationKey = getAutomationsControllerFromTemplateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerFromTemplate>>, void> = () => {
+
+
+          return  automationsControllerFromTemplate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutomationsControllerFromTemplateMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerFromTemplate>>>
+
+    export type AutomationsControllerFromTemplateMutationError = unknown
+
+
+    export const useAutomationsControllerFromTemplate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof automationsControllerFromTemplate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAutomationsControllerFromTemplateMutationOptions(options), queryClient);
     }
-
-
-export const getAutomationsControllerFromTemplateQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerFromTemplateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerFromTemplate>>> = ({ signal }) => automationsControllerFromTemplate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AutomationsControllerFromTemplateQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerFromTemplate>>>
-export type AutomationsControllerFromTemplateQueryError = unknown
-
-
-export function useAutomationsControllerFromTemplate<TData = Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerFromTemplate>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerFromTemplate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerFromTemplate<TData = Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerFromTemplate>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerFromTemplate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerFromTemplate<TData = Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerFromTemplate<TData = Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerFromTemplate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAutomationsControllerFromTemplateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type automationsControllerValidateResponse200 = {
-  data: void
-  status: 200
-}
-
-export type automationsControllerValidateResponseSuccess = (automationsControllerValidateResponse200) & {
-  headers: Headers;
-};
-;
-
-export type automationsControllerValidateResponse = (automationsControllerValidateResponseSuccess)
-
-export const getAutomationsControllerValidateUrl = () => {
+    export const getAutomationsControllerValidateUrl = () => {
 
 
 
@@ -697,9 +627,9 @@ export const getAutomationsControllerValidateUrl = () => {
   return `/automations/validate`
 }
 
-export const automationsControllerValidate = async ( options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerValidateResponse> => {
+export const automationsControllerValidate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerValidateResponse>(getAutomationsControllerValidateUrl(),
+  return customInstance<void>(getAutomationsControllerValidateUrl(),
   {
     ...options,
     method: 'POST'
@@ -712,89 +642,51 @@ export const automationsControllerValidate = async ( options?: Parameters<typeof
 
 
 
-export const getAutomationsControllerValidateQueryKey = () => {
-    return [
-    'POST', `/automations/validate`
-    ] as const;
+export const getAutomationsControllerValidateMutationKey = () => ['automationsControllerValidate'] as const;
+
+export const getAutomationsControllerValidateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerValidate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerValidate>>, TError,void, TContext> => {
+
+const mutationKey = getAutomationsControllerValidateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerValidate>>, void> = () => {
+
+
+          return  automationsControllerValidate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutomationsControllerValidateMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerValidate>>>
+
+    export type AutomationsControllerValidateMutationError = unknown
+
+
+    export const useAutomationsControllerValidate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerValidate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof automationsControllerValidate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAutomationsControllerValidateMutationOptions(options), queryClient);
     }
-
-
-export const getAutomationsControllerValidateQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerValidate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerValidate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerValidateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerValidate>>> = ({ signal }) => automationsControllerValidate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerValidate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AutomationsControllerValidateQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerValidate>>>
-export type AutomationsControllerValidateQueryError = unknown
-
-
-export function useAutomationsControllerValidate<TData = Awaited<ReturnType<typeof automationsControllerValidate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerValidate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerValidate>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerValidate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerValidate<TData = Awaited<ReturnType<typeof automationsControllerValidate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerValidate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerValidate>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerValidate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerValidate<TData = Awaited<ReturnType<typeof automationsControllerValidate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerValidate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerValidate<TData = Awaited<ReturnType<typeof automationsControllerValidate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerValidate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAutomationsControllerValidateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type automationsControllerGetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type automationsControllerGetResponseSuccess = (automationsControllerGetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type automationsControllerGetResponse = (automationsControllerGetResponseSuccess)
-
-export const getAutomationsControllerGetUrl = (id: string,) => {
+    export const getAutomationsControllerGetUrl = (id: string,) => {
 
 
 
@@ -802,9 +694,9 @@ export const getAutomationsControllerGetUrl = (id: string,) => {
   return `/automations/${id}`
 }
 
-export const automationsControllerGet = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerGetResponse> => {
+export const automationsControllerGet = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerGetResponse>(getAutomationsControllerGetUrl(id),
+  return customInstance<void>(getAutomationsControllerGetUrl(id),
   {
     ...options,
     method: 'GET'
@@ -817,61 +709,75 @@ export const automationsControllerGet = async (id: string, options?: Parameters<
 
 
 
-export const getAutomationsControllerGetMutationKey = () => ['automationsControllerGet'] as const;
-
-export const getAutomationsControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerGet>>, TError,AutomationsControllerGetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerGet>>, TError,AutomationsControllerGetMutationVariables, TContext> => {
-
-const mutationKey = getAutomationsControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerGet>>, AutomationsControllerGetMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  automationsControllerGet(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AutomationsControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerGet>>>
-
-    export type AutomationsControllerGetMutationError = unknown
-    export type AutomationsControllerGetMutationVariables = {id: string}
-
-    export const useAutomationsControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerGet>>, TError,AutomationsControllerGetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof automationsControllerGet>>,
-        TError,
-        AutomationsControllerGetMutationVariables,
-        TContext
-      > => {
-      return useMutation(getAutomationsControllerGetMutationOptions(options), queryClient);
+export const getAutomationsControllerGetQueryKey = (id: string,) => {
+    return [
+    `/automations/${id}`
+    ] as const;
     }
-    export type automationsControllerUpdateResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAutomationsControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerGet>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerGetQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerGet>>> = ({ signal }) => automationsControllerGet(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type automationsControllerUpdateResponseSuccess = (automationsControllerUpdateResponse200) & {
-  headers: Headers;
-};
-;
+export type AutomationsControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerGet>>>
+export type AutomationsControllerGetQueryError = unknown
 
-export type automationsControllerUpdateResponse = (automationsControllerUpdateResponseSuccess)
+
+export function useAutomationsControllerGet<TData = Awaited<ReturnType<typeof automationsControllerGet>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerGet<TData = Awaited<ReturnType<typeof automationsControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerGet<TData = Awaited<ReturnType<typeof automationsControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerGet<TData = Awaited<ReturnType<typeof automationsControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAutomationsControllerGetQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAutomationsControllerUpdateUrl = (id: string,) => {
 
@@ -881,9 +787,9 @@ export const getAutomationsControllerUpdateUrl = (id: string,) => {
   return `/automations/${id}`
 }
 
-export const automationsControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerUpdateResponse> => {
+export const automationsControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerUpdateResponse>(getAutomationsControllerUpdateUrl(id),
+  return customInstance<void>(getAutomationsControllerUpdateUrl(id),
   {
     ...options,
     method: 'PUT'
@@ -896,89 +802,51 @@ export const automationsControllerUpdate = async (id: string, options?: Paramete
 
 
 
-export const getAutomationsControllerUpdateQueryKey = (id: string,) => {
-    return [
-    'PUT', `/automations/${id}`
-    ] as const;
+export const getAutomationsControllerUpdateMutationKey = () => ['automationsControllerUpdate'] as const;
+
+export const getAutomationsControllerUpdateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerUpdate>>, TError,AutomationsControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerUpdate>>, TError,AutomationsControllerUpdateMutationVariables, TContext> => {
+
+const mutationKey = getAutomationsControllerUpdateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerUpdate>>, AutomationsControllerUpdateMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  automationsControllerUpdate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutomationsControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerUpdate>>>
+
+    export type AutomationsControllerUpdateMutationError = unknown
+    export type AutomationsControllerUpdateMutationVariables = {id: string}
+
+    export const useAutomationsControllerUpdate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerUpdate>>, TError,AutomationsControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof automationsControllerUpdate>>,
+        TError,
+        AutomationsControllerUpdateMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAutomationsControllerUpdateMutationOptions(options), queryClient);
     }
-
-
-export const getAutomationsControllerUpdateQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerUpdate>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerUpdateQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerUpdate>>> = ({ signal }) => automationsControllerUpdate(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerUpdate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AutomationsControllerUpdateQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerUpdate>>>
-export type AutomationsControllerUpdateQueryError = unknown
-
-
-export function useAutomationsControllerUpdate<TData = Awaited<ReturnType<typeof automationsControllerUpdate>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerUpdate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerUpdate<TData = Awaited<ReturnType<typeof automationsControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerUpdate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerUpdate<TData = Awaited<ReturnType<typeof automationsControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerUpdate<TData = Awaited<ReturnType<typeof automationsControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAutomationsControllerUpdateQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type automationsControllerRemoveResponse204 = {
-  data: void
-  status: 204
-}
-
-export type automationsControllerRemoveResponseSuccess = (automationsControllerRemoveResponse204) & {
-  headers: Headers;
-};
-;
-
-export type automationsControllerRemoveResponse = (automationsControllerRemoveResponseSuccess)
-
-export const getAutomationsControllerRemoveUrl = (id: string,) => {
+    export const getAutomationsControllerRemoveUrl = (id: string,) => {
 
 
 
@@ -986,9 +854,9 @@ export const getAutomationsControllerRemoveUrl = (id: string,) => {
   return `/automations/${id}`
 }
 
-export const automationsControllerRemove = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerRemoveResponse> => {
+export const automationsControllerRemove = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerRemoveResponse>(getAutomationsControllerRemoveUrl(id),
+  return customInstance<void>(getAutomationsControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -1001,89 +869,51 @@ export const automationsControllerRemove = async (id: string, options?: Paramete
 
 
 
-export const getAutomationsControllerRemoveQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/automations/${id}`
-    ] as const;
+export const getAutomationsControllerRemoveMutationKey = () => ['automationsControllerRemove'] as const;
+
+export const getAutomationsControllerRemoveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRemove>>, TError,AutomationsControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRemove>>, TError,AutomationsControllerRemoveMutationVariables, TContext> => {
+
+const mutationKey = getAutomationsControllerRemoveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerRemove>>, AutomationsControllerRemoveMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  automationsControllerRemove(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutomationsControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerRemove>>>
+
+    export type AutomationsControllerRemoveMutationError = unknown
+    export type AutomationsControllerRemoveMutationVariables = {id: string}
+
+    export const useAutomationsControllerRemove = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerRemove>>, TError,AutomationsControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof automationsControllerRemove>>,
+        TError,
+        AutomationsControllerRemoveMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAutomationsControllerRemoveMutationOptions(options), queryClient);
     }
-
-
-export const getAutomationsControllerRemoveQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerRemove>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerRemoveQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerRemove>>> = ({ signal }) => automationsControllerRemove(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRemove>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AutomationsControllerRemoveQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerRemove>>>
-export type AutomationsControllerRemoveQueryError = unknown
-
-
-export function useAutomationsControllerRemove<TData = Awaited<ReturnType<typeof automationsControllerRemove>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRemove>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerRemove<TData = Awaited<ReturnType<typeof automationsControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRemove>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerRemove<TData = Awaited<ReturnType<typeof automationsControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerRemove<TData = Awaited<ReturnType<typeof automationsControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAutomationsControllerRemoveQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type automationsControllerVersionsResponse200 = {
-  data: void
-  status: 200
-}
-
-export type automationsControllerVersionsResponseSuccess = (automationsControllerVersionsResponse200) & {
-  headers: Headers;
-};
-;
-
-export type automationsControllerVersionsResponse = (automationsControllerVersionsResponseSuccess)
-
-export const getAutomationsControllerVersionsUrl = (id: string,) => {
+    export const getAutomationsControllerVersionsUrl = (id: string,) => {
 
 
 
@@ -1091,9 +921,9 @@ export const getAutomationsControllerVersionsUrl = (id: string,) => {
   return `/automations/${id}/versions`
 }
 
-export const automationsControllerVersions = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerVersionsResponse> => {
+export const automationsControllerVersions = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerVersionsResponse>(getAutomationsControllerVersionsUrl(id),
+  return customInstance<void>(getAutomationsControllerVersionsUrl(id),
   {
     ...options,
     method: 'GET'
@@ -1106,61 +936,75 @@ export const automationsControllerVersions = async (id: string, options?: Parame
 
 
 
-export const getAutomationsControllerVersionsMutationKey = () => ['automationsControllerVersions'] as const;
-
-export const getAutomationsControllerVersionsMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerVersions>>, TError,AutomationsControllerVersionsMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerVersions>>, TError,AutomationsControllerVersionsMutationVariables, TContext> => {
-
-const mutationKey = getAutomationsControllerVersionsMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerVersions>>, AutomationsControllerVersionsMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  automationsControllerVersions(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AutomationsControllerVersionsMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerVersions>>>
-
-    export type AutomationsControllerVersionsMutationError = unknown
-    export type AutomationsControllerVersionsMutationVariables = {id: string}
-
-    export const useAutomationsControllerVersions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerVersions>>, TError,AutomationsControllerVersionsMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof automationsControllerVersions>>,
-        TError,
-        AutomationsControllerVersionsMutationVariables,
-        TContext
-      > => {
-      return useMutation(getAutomationsControllerVersionsMutationOptions(options), queryClient);
+export const getAutomationsControllerVersionsQueryKey = (id: string,) => {
+    return [
+    `/automations/${id}/versions`
+    ] as const;
     }
-    export type automationsControllerEnableResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAutomationsControllerVersionsQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerVersions>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerVersions>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerVersionsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerVersions>>> = ({ signal }) => automationsControllerVersions(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerVersions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type automationsControllerEnableResponseSuccess = (automationsControllerEnableResponse200) & {
-  headers: Headers;
-};
-;
+export type AutomationsControllerVersionsQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerVersions>>>
+export type AutomationsControllerVersionsQueryError = unknown
 
-export type automationsControllerEnableResponse = (automationsControllerEnableResponseSuccess)
+
+export function useAutomationsControllerVersions<TData = Awaited<ReturnType<typeof automationsControllerVersions>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerVersions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerVersions>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerVersions>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerVersions<TData = Awaited<ReturnType<typeof automationsControllerVersions>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerVersions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof automationsControllerVersions>>,
+          TError,
+          Awaited<ReturnType<typeof automationsControllerVersions>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerVersions<TData = Awaited<ReturnType<typeof automationsControllerVersions>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerVersions>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAutomationsControllerVersions<TData = Awaited<ReturnType<typeof automationsControllerVersions>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerVersions>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAutomationsControllerVersionsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAutomationsControllerEnableUrl = (id: string,) => {
 
@@ -1170,9 +1014,9 @@ export const getAutomationsControllerEnableUrl = (id: string,) => {
   return `/automations/${id}/enable`
 }
 
-export const automationsControllerEnable = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerEnableResponse> => {
+export const automationsControllerEnable = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerEnableResponse>(getAutomationsControllerEnableUrl(id),
+  return customInstance<void>(getAutomationsControllerEnableUrl(id),
   {
     ...options,
     method: 'POST'
@@ -1185,89 +1029,51 @@ export const automationsControllerEnable = async (id: string, options?: Paramete
 
 
 
-export const getAutomationsControllerEnableQueryKey = (id: string,) => {
-    return [
-    'POST', `/automations/${id}/enable`
-    ] as const;
+export const getAutomationsControllerEnableMutationKey = () => ['automationsControllerEnable'] as const;
+
+export const getAutomationsControllerEnableMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerEnable>>, TError,AutomationsControllerEnableMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerEnable>>, TError,AutomationsControllerEnableMutationVariables, TContext> => {
+
+const mutationKey = getAutomationsControllerEnableMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerEnable>>, AutomationsControllerEnableMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  automationsControllerEnable(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutomationsControllerEnableMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerEnable>>>
+
+    export type AutomationsControllerEnableMutationError = unknown
+    export type AutomationsControllerEnableMutationVariables = {id: string}
+
+    export const useAutomationsControllerEnable = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerEnable>>, TError,AutomationsControllerEnableMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof automationsControllerEnable>>,
+        TError,
+        AutomationsControllerEnableMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAutomationsControllerEnableMutationOptions(options), queryClient);
     }
-
-
-export const getAutomationsControllerEnableQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerEnable>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerEnable>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerEnableQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerEnable>>> = ({ signal }) => automationsControllerEnable(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerEnable>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AutomationsControllerEnableQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerEnable>>>
-export type AutomationsControllerEnableQueryError = unknown
-
-
-export function useAutomationsControllerEnable<TData = Awaited<ReturnType<typeof automationsControllerEnable>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerEnable>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerEnable>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerEnable>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerEnable<TData = Awaited<ReturnType<typeof automationsControllerEnable>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerEnable>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerEnable>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerEnable>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerEnable<TData = Awaited<ReturnType<typeof automationsControllerEnable>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerEnable>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerEnable<TData = Awaited<ReturnType<typeof automationsControllerEnable>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerEnable>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAutomationsControllerEnableQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type automationsControllerDryResponse200 = {
-  data: void
-  status: 200
-}
-
-export type automationsControllerDryResponseSuccess = (automationsControllerDryResponse200) & {
-  headers: Headers;
-};
-;
-
-export type automationsControllerDryResponse = (automationsControllerDryResponseSuccess)
-
-export const getAutomationsControllerDryUrl = (id: string,) => {
+    export const getAutomationsControllerDryUrl = (id: string,) => {
 
 
 
@@ -1275,9 +1081,9 @@ export const getAutomationsControllerDryUrl = (id: string,) => {
   return `/automations/${id}/dry-run`
 }
 
-export const automationsControllerDry = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<automationsControllerDryResponse> => {
+export const automationsControllerDry = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<automationsControllerDryResponse>(getAutomationsControllerDryUrl(id),
+  return customInstance<void>(getAutomationsControllerDryUrl(id),
   {
     ...options,
     method: 'POST'
@@ -1290,73 +1096,47 @@ export const automationsControllerDry = async (id: string, options?: Parameters<
 
 
 
-export const getAutomationsControllerDryQueryKey = (id: string,) => {
-    return [
-    'POST', `/automations/${id}/dry-run`
-    ] as const;
+export const getAutomationsControllerDryMutationKey = () => ['automationsControllerDry'] as const;
+
+export const getAutomationsControllerDryMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerDry>>, TError,AutomationsControllerDryMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof automationsControllerDry>>, TError,AutomationsControllerDryMutationVariables, TContext> => {
+
+const mutationKey = getAutomationsControllerDryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof automationsControllerDry>>, AutomationsControllerDryMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  automationsControllerDry(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutomationsControllerDryMutationResult = NonNullable<Awaited<ReturnType<typeof automationsControllerDry>>>
+
+    export type AutomationsControllerDryMutationError = unknown
+    export type AutomationsControllerDryMutationVariables = {id: string}
+
+    export const useAutomationsControllerDry = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof automationsControllerDry>>, TError,AutomationsControllerDryMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof automationsControllerDry>>,
+        TError,
+        AutomationsControllerDryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAutomationsControllerDryMutationOptions(options), queryClient);
     }
-
-
-export const getAutomationsControllerDryQueryOptions = <TData = Awaited<ReturnType<typeof automationsControllerDry>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerDry>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getAutomationsControllerDryQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof automationsControllerDry>>> = ({ signal }) => automationsControllerDry(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof automationsControllerDry>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AutomationsControllerDryQueryResult = NonNullable<Awaited<ReturnType<typeof automationsControllerDry>>>
-export type AutomationsControllerDryQueryError = unknown
-
-
-export function useAutomationsControllerDry<TData = Awaited<ReturnType<typeof automationsControllerDry>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerDry>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerDry>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerDry>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerDry<TData = Awaited<ReturnType<typeof automationsControllerDry>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerDry>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof automationsControllerDry>>,
-          TError,
-          Awaited<ReturnType<typeof automationsControllerDry>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerDry<TData = Awaited<ReturnType<typeof automationsControllerDry>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerDry>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutomationsControllerDry<TData = Awaited<ReturnType<typeof automationsControllerDry>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof automationsControllerDry>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getAutomationsControllerDryQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

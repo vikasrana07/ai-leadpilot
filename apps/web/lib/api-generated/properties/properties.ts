@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type propertiesControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type propertiesControllerListResponseSuccess = (propertiesControllerListResponse200) & {
-  headers: Headers;
-};
-;
-
-export type propertiesControllerListResponse = (propertiesControllerListResponseSuccess)
-
 export const getPropertiesControllerListUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getPropertiesControllerListUrl = () => {
   return `/properties`
 }
 
-export const propertiesControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<propertiesControllerListResponse> => {
+export const propertiesControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<propertiesControllerListResponse>(getPropertiesControllerListUrl(),
+  return customInstance<void>(getPropertiesControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const propertiesControllerList = async ( options?: Parameters<typeof cust
 
 
 
-export const getPropertiesControllerListMutationKey = () => ['propertiesControllerList'] as const;
-
-export const getPropertiesControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getPropertiesControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof propertiesControllerList>>, void> = () => {
-
-
-          return  propertiesControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PropertiesControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof propertiesControllerList>>>
-
-    export type PropertiesControllerListMutationError = unknown
-
-
-    export const usePropertiesControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof propertiesControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getPropertiesControllerListMutationOptions(options), queryClient);
+export const getPropertiesControllerListQueryKey = () => {
+    return [
+    `/properties`
+    ] as const;
     }
-    export type propertiesControllerCreateResponse201 = {
-  data: void
-  status: 201
+
+
+export const getPropertiesControllerListQueryOptions = <TData = Awaited<ReturnType<typeof propertiesControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPropertiesControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof propertiesControllerList>>> = ({ signal }) => propertiesControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type propertiesControllerCreateResponseSuccess = (propertiesControllerCreateResponse201) & {
-  headers: Headers;
-};
-;
+export type PropertiesControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof propertiesControllerList>>>
+export type PropertiesControllerListQueryError = unknown
 
-export type propertiesControllerCreateResponse = (propertiesControllerCreateResponseSuccess)
+
+export function usePropertiesControllerList<TData = Awaited<ReturnType<typeof propertiesControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof propertiesControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof propertiesControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePropertiesControllerList<TData = Awaited<ReturnType<typeof propertiesControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof propertiesControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof propertiesControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePropertiesControllerList<TData = Awaited<ReturnType<typeof propertiesControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePropertiesControllerList<TData = Awaited<ReturnType<typeof propertiesControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPropertiesControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getPropertiesControllerCreateUrl = () => {
 
@@ -145,9 +147,9 @@ export const getPropertiesControllerCreateUrl = () => {
   return `/properties`
 }
 
-export const propertiesControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<propertiesControllerCreateResponse> => {
+export const propertiesControllerCreate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<propertiesControllerCreateResponse>(getPropertiesControllerCreateUrl(),
+  return customInstance<void>(getPropertiesControllerCreateUrl(),
   {
     ...options,
     method: 'POST'
@@ -160,89 +162,51 @@ export const propertiesControllerCreate = async ( options?: Parameters<typeof cu
 
 
 
-export const getPropertiesControllerCreateQueryKey = () => {
-    return [
-    'POST', `/properties`
-    ] as const;
+export const getPropertiesControllerCreateMutationKey = () => ['propertiesControllerCreate'] as const;
+
+export const getPropertiesControllerCreateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerCreate>>, TError,void, TContext> => {
+
+const mutationKey = getPropertiesControllerCreateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof propertiesControllerCreate>>, void> = () => {
+
+
+          return  propertiesControllerCreate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PropertiesControllerCreateMutationResult = NonNullable<Awaited<ReturnType<typeof propertiesControllerCreate>>>
+
+    export type PropertiesControllerCreateMutationError = unknown
+
+
+    export const usePropertiesControllerCreate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerCreate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof propertiesControllerCreate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getPropertiesControllerCreateMutationOptions(options), queryClient);
     }
-
-
-export const getPropertiesControllerCreateQueryOptions = <TData = Awaited<ReturnType<typeof propertiesControllerCreate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPropertiesControllerCreateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof propertiesControllerCreate>>> = ({ signal }) => propertiesControllerCreate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerCreate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PropertiesControllerCreateQueryResult = NonNullable<Awaited<ReturnType<typeof propertiesControllerCreate>>>
-export type PropertiesControllerCreateQueryError = unknown
-
-
-export function usePropertiesControllerCreate<TData = Awaited<ReturnType<typeof propertiesControllerCreate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerCreate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof propertiesControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof propertiesControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerCreate<TData = Awaited<ReturnType<typeof propertiesControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerCreate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof propertiesControllerCreate>>,
-          TError,
-          Awaited<ReturnType<typeof propertiesControllerCreate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerCreate<TData = Awaited<ReturnType<typeof propertiesControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerCreate<TData = Awaited<ReturnType<typeof propertiesControllerCreate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerCreate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPropertiesControllerCreateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type propertiesControllerImportResponse200 = {
-  data: void
-  status: 200
-}
-
-export type propertiesControllerImportResponseSuccess = (propertiesControllerImportResponse200) & {
-  headers: Headers;
-};
-;
-
-export type propertiesControllerImportResponse = (propertiesControllerImportResponseSuccess)
-
-export const getPropertiesControllerImportUrl = () => {
+    export const getPropertiesControllerImportUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getPropertiesControllerImportUrl = () => {
   return `/properties/import`
 }
 
-export const propertiesControllerImport = async ( options?: Parameters<typeof customInstance>[1]): Promise<propertiesControllerImportResponse> => {
+export const propertiesControllerImport = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<propertiesControllerImportResponse>(getPropertiesControllerImportUrl(),
+  return customInstance<void>(getPropertiesControllerImportUrl(),
   {
     ...options,
     method: 'POST'
@@ -265,89 +229,51 @@ export const propertiesControllerImport = async ( options?: Parameters<typeof cu
 
 
 
-export const getPropertiesControllerImportQueryKey = () => {
-    return [
-    'POST', `/properties/import`
-    ] as const;
+export const getPropertiesControllerImportMutationKey = () => ['propertiesControllerImport'] as const;
+
+export const getPropertiesControllerImportMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerImport>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerImport>>, TError,void, TContext> => {
+
+const mutationKey = getPropertiesControllerImportMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof propertiesControllerImport>>, void> = () => {
+
+
+          return  propertiesControllerImport(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PropertiesControllerImportMutationResult = NonNullable<Awaited<ReturnType<typeof propertiesControllerImport>>>
+
+    export type PropertiesControllerImportMutationError = unknown
+
+
+    export const usePropertiesControllerImport = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerImport>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof propertiesControllerImport>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getPropertiesControllerImportMutationOptions(options), queryClient);
     }
-
-
-export const getPropertiesControllerImportQueryOptions = <TData = Awaited<ReturnType<typeof propertiesControllerImport>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerImport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPropertiesControllerImportQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof propertiesControllerImport>>> = ({ signal }) => propertiesControllerImport({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerImport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PropertiesControllerImportQueryResult = NonNullable<Awaited<ReturnType<typeof propertiesControllerImport>>>
-export type PropertiesControllerImportQueryError = unknown
-
-
-export function usePropertiesControllerImport<TData = Awaited<ReturnType<typeof propertiesControllerImport>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerImport>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof propertiesControllerImport>>,
-          TError,
-          Awaited<ReturnType<typeof propertiesControllerImport>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerImport<TData = Awaited<ReturnType<typeof propertiesControllerImport>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerImport>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof propertiesControllerImport>>,
-          TError,
-          Awaited<ReturnType<typeof propertiesControllerImport>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerImport<TData = Awaited<ReturnType<typeof propertiesControllerImport>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerImport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerImport<TData = Awaited<ReturnType<typeof propertiesControllerImport>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerImport>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPropertiesControllerImportQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type propertiesControllerUpdateResponse200 = {
-  data: void
-  status: 200
-}
-
-export type propertiesControllerUpdateResponseSuccess = (propertiesControllerUpdateResponse200) & {
-  headers: Headers;
-};
-;
-
-export type propertiesControllerUpdateResponse = (propertiesControllerUpdateResponseSuccess)
-
-export const getPropertiesControllerUpdateUrl = (id: string,) => {
+    export const getPropertiesControllerUpdateUrl = (id: string,) => {
 
 
 
@@ -355,9 +281,9 @@ export const getPropertiesControllerUpdateUrl = (id: string,) => {
   return `/properties/${id}`
 }
 
-export const propertiesControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<propertiesControllerUpdateResponse> => {
+export const propertiesControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<propertiesControllerUpdateResponse>(getPropertiesControllerUpdateUrl(id),
+  return customInstance<void>(getPropertiesControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH'
@@ -370,89 +296,51 @@ export const propertiesControllerUpdate = async (id: string, options?: Parameter
 
 
 
-export const getPropertiesControllerUpdateQueryKey = (id: string,) => {
-    return [
-    'PATCH', `/properties/${id}`
-    ] as const;
+export const getPropertiesControllerUpdateMutationKey = () => ['propertiesControllerUpdate'] as const;
+
+export const getPropertiesControllerUpdateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError,PropertiesControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError,PropertiesControllerUpdateMutationVariables, TContext> => {
+
+const mutationKey = getPropertiesControllerUpdateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof propertiesControllerUpdate>>, PropertiesControllerUpdateMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  propertiesControllerUpdate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PropertiesControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof propertiesControllerUpdate>>>
+
+    export type PropertiesControllerUpdateMutationError = unknown
+    export type PropertiesControllerUpdateMutationVariables = {id: string}
+
+    export const usePropertiesControllerUpdate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError,PropertiesControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof propertiesControllerUpdate>>,
+        TError,
+        PropertiesControllerUpdateMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPropertiesControllerUpdateMutationOptions(options), queryClient);
     }
-
-
-export const getPropertiesControllerUpdateQueryOptions = <TData = Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPropertiesControllerUpdateQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof propertiesControllerUpdate>>> = ({ signal }) => propertiesControllerUpdate(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PropertiesControllerUpdateQueryResult = NonNullable<Awaited<ReturnType<typeof propertiesControllerUpdate>>>
-export type PropertiesControllerUpdateQueryError = unknown
-
-
-export function usePropertiesControllerUpdate<TData = Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof propertiesControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof propertiesControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerUpdate<TData = Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof propertiesControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof propertiesControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerUpdate<TData = Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerUpdate<TData = Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPropertiesControllerUpdateQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type propertiesControllerRemoveResponse204 = {
-  data: void
-  status: 204
-}
-
-export type propertiesControllerRemoveResponseSuccess = (propertiesControllerRemoveResponse204) & {
-  headers: Headers;
-};
-;
-
-export type propertiesControllerRemoveResponse = (propertiesControllerRemoveResponseSuccess)
-
-export const getPropertiesControllerRemoveUrl = (id: string,) => {
+    export const getPropertiesControllerRemoveUrl = (id: string,) => {
 
 
 
@@ -460,9 +348,9 @@ export const getPropertiesControllerRemoveUrl = (id: string,) => {
   return `/properties/${id}`
 }
 
-export const propertiesControllerRemove = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<propertiesControllerRemoveResponse> => {
+export const propertiesControllerRemove = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<propertiesControllerRemoveResponse>(getPropertiesControllerRemoveUrl(id),
+  return customInstance<void>(getPropertiesControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -475,73 +363,47 @@ export const propertiesControllerRemove = async (id: string, options?: Parameter
 
 
 
-export const getPropertiesControllerRemoveQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/properties/${id}`
-    ] as const;
+export const getPropertiesControllerRemoveMutationKey = () => ['propertiesControllerRemove'] as const;
+
+export const getPropertiesControllerRemoveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerRemove>>, TError,PropertiesControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerRemove>>, TError,PropertiesControllerRemoveMutationVariables, TContext> => {
+
+const mutationKey = getPropertiesControllerRemoveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof propertiesControllerRemove>>, PropertiesControllerRemoveMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  propertiesControllerRemove(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PropertiesControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof propertiesControllerRemove>>>
+
+    export type PropertiesControllerRemoveMutationError = unknown
+    export type PropertiesControllerRemoveMutationVariables = {id: string}
+
+    export const usePropertiesControllerRemove = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof propertiesControllerRemove>>, TError,PropertiesControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof propertiesControllerRemove>>,
+        TError,
+        PropertiesControllerRemoveMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPropertiesControllerRemoveMutationOptions(options), queryClient);
     }
-
-
-export const getPropertiesControllerRemoveQueryOptions = <TData = Awaited<ReturnType<typeof propertiesControllerRemove>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPropertiesControllerRemoveQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof propertiesControllerRemove>>> = ({ signal }) => propertiesControllerRemove(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerRemove>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PropertiesControllerRemoveQueryResult = NonNullable<Awaited<ReturnType<typeof propertiesControllerRemove>>>
-export type PropertiesControllerRemoveQueryError = unknown
-
-
-export function usePropertiesControllerRemove<TData = Awaited<ReturnType<typeof propertiesControllerRemove>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerRemove>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof propertiesControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof propertiesControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerRemove<TData = Awaited<ReturnType<typeof propertiesControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerRemove>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof propertiesControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof propertiesControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerRemove<TData = Awaited<ReturnType<typeof propertiesControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePropertiesControllerRemove<TData = Awaited<ReturnType<typeof propertiesControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof propertiesControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPropertiesControllerRemoveQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type slaControllerGetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type slaControllerGetResponseSuccess = (slaControllerGetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type slaControllerGetResponse = (slaControllerGetResponseSuccess)
-
 export const getSlaControllerGetUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getSlaControllerGetUrl = () => {
   return `/sla`
 }
 
-export const slaControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<slaControllerGetResponse> => {
+export const slaControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<slaControllerGetResponse>(getSlaControllerGetUrl(),
+  return customInstance<void>(getSlaControllerGetUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const slaControllerGet = async ( options?: Parameters<typeof customInstan
 
 
 
-export const getSlaControllerGetMutationKey = () => ['slaControllerGet'] as const;
-
-export const getSlaControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof slaControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof slaControllerGet>>, TError,void, TContext> => {
-
-const mutationKey = getSlaControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof slaControllerGet>>, void> = () => {
-
-
-          return  slaControllerGet(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type SlaControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof slaControllerGet>>>
-
-    export type SlaControllerGetMutationError = unknown
-
-
-    export const useSlaControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof slaControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof slaControllerGet>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getSlaControllerGetMutationOptions(options), queryClient);
+export const getSlaControllerGetQueryKey = () => {
+    return [
+    `/sla`
+    ] as const;
     }
-    export type slaControllerPutResponse200 = {
-  data: void
-  status: 200
+
+
+export const getSlaControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof slaControllerGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof slaControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSlaControllerGetQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof slaControllerGet>>> = ({ signal }) => slaControllerGet({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof slaControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type slaControllerPutResponseSuccess = (slaControllerPutResponse200) & {
-  headers: Headers;
-};
-;
+export type SlaControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof slaControllerGet>>>
+export type SlaControllerGetQueryError = unknown
 
-export type slaControllerPutResponse = (slaControllerPutResponseSuccess)
+
+export function useSlaControllerGet<TData = Awaited<ReturnType<typeof slaControllerGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof slaControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof slaControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof slaControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSlaControllerGet<TData = Awaited<ReturnType<typeof slaControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof slaControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof slaControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof slaControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSlaControllerGet<TData = Awaited<ReturnType<typeof slaControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof slaControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSlaControllerGet<TData = Awaited<ReturnType<typeof slaControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof slaControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getSlaControllerGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getSlaControllerPutUrl = () => {
 
@@ -145,9 +147,9 @@ export const getSlaControllerPutUrl = () => {
   return `/sla`
 }
 
-export const slaControllerPut = async ( options?: Parameters<typeof customInstance>[1]): Promise<slaControllerPutResponse> => {
+export const slaControllerPut = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<slaControllerPutResponse>(getSlaControllerPutUrl(),
+  return customInstance<void>(getSlaControllerPutUrl(),
   {
     ...options,
     method: 'PUT'
@@ -160,73 +162,47 @@ export const slaControllerPut = async ( options?: Parameters<typeof customInstan
 
 
 
-export const getSlaControllerPutQueryKey = () => {
-    return [
-    'PUT', `/sla`
-    ] as const;
+export const getSlaControllerPutMutationKey = () => ['slaControllerPut'] as const;
+
+export const getSlaControllerPutMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof slaControllerPut>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof slaControllerPut>>, TError,void, TContext> => {
+
+const mutationKey = getSlaControllerPutMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof slaControllerPut>>, void> = () => {
+
+
+          return  slaControllerPut(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SlaControllerPutMutationResult = NonNullable<Awaited<ReturnType<typeof slaControllerPut>>>
+
+    export type SlaControllerPutMutationError = unknown
+
+
+    export const useSlaControllerPut = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof slaControllerPut>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof slaControllerPut>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getSlaControllerPutMutationOptions(options), queryClient);
     }
-
-
-export const getSlaControllerPutQueryOptions = <TData = Awaited<ReturnType<typeof slaControllerPut>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof slaControllerPut>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getSlaControllerPutQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof slaControllerPut>>> = ({ signal }) => slaControllerPut({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof slaControllerPut>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type SlaControllerPutQueryResult = NonNullable<Awaited<ReturnType<typeof slaControllerPut>>>
-export type SlaControllerPutQueryError = unknown
-
-
-export function useSlaControllerPut<TData = Awaited<ReturnType<typeof slaControllerPut>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof slaControllerPut>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof slaControllerPut>>,
-          TError,
-          Awaited<ReturnType<typeof slaControllerPut>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSlaControllerPut<TData = Awaited<ReturnType<typeof slaControllerPut>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof slaControllerPut>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof slaControllerPut>>,
-          TError,
-          Awaited<ReturnType<typeof slaControllerPut>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSlaControllerPut<TData = Awaited<ReturnType<typeof slaControllerPut>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof slaControllerPut>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSlaControllerPut<TData = Awaited<ReturnType<typeof slaControllerPut>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof slaControllerPut>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getSlaControllerPutQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

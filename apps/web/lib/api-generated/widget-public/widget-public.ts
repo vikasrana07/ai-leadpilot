@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type widgetPublicControllerScriptResponse200 = {
-  data: void
-  status: 200
-}
-
-export type widgetPublicControllerScriptResponseSuccess = (widgetPublicControllerScriptResponse200) & {
-  headers: Headers;
-};
-;
-
-export type widgetPublicControllerScriptResponse = (widgetPublicControllerScriptResponseSuccess)
-
 export const getWidgetPublicControllerScriptUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getWidgetPublicControllerScriptUrl = () => {
   return `/widget.js`
 }
 
-export const widgetPublicControllerScript = async ( options?: Parameters<typeof customInstance>[1]): Promise<widgetPublicControllerScriptResponse> => {
+export const widgetPublicControllerScript = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<widgetPublicControllerScriptResponse>(getWidgetPublicControllerScriptUrl(),
+  return customInstance<void>(getWidgetPublicControllerScriptUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const widgetPublicControllerScript = async ( options?: Parameters<typeof 
 
 
 
-export const getWidgetPublicControllerScriptMutationKey = () => ['widgetPublicControllerScript'] as const;
-
-export const getWidgetPublicControllerScriptMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError,void, TContext> => {
-
-const mutationKey = getWidgetPublicControllerScriptMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof widgetPublicControllerScript>>, void> = () => {
-
-
-          return  widgetPublicControllerScript(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type WidgetPublicControllerScriptMutationResult = NonNullable<Awaited<ReturnType<typeof widgetPublicControllerScript>>>
-
-    export type WidgetPublicControllerScriptMutationError = unknown
-
-
-    export const useWidgetPublicControllerScript = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof widgetPublicControllerScript>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getWidgetPublicControllerScriptMutationOptions(options), queryClient);
+export const getWidgetPublicControllerScriptQueryKey = () => {
+    return [
+    `/widget.js`
+    ] as const;
     }
-    export type widgetPublicControllerConfigResponse200 = {
-  data: void
-  status: 200
+
+
+export const getWidgetPublicControllerScriptQueryOptions = <TData = Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getWidgetPublicControllerScriptQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof widgetPublicControllerScript>>> = ({ signal }) => widgetPublicControllerScript({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type widgetPublicControllerConfigResponseSuccess = (widgetPublicControllerConfigResponse200) & {
-  headers: Headers;
-};
-;
+export type WidgetPublicControllerScriptQueryResult = NonNullable<Awaited<ReturnType<typeof widgetPublicControllerScript>>>
+export type WidgetPublicControllerScriptQueryError = unknown
 
-export type widgetPublicControllerConfigResponse = (widgetPublicControllerConfigResponseSuccess)
+
+export function useWidgetPublicControllerScript<TData = Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof widgetPublicControllerScript>>,
+          TError,
+          Awaited<ReturnType<typeof widgetPublicControllerScript>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWidgetPublicControllerScript<TData = Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof widgetPublicControllerScript>>,
+          TError,
+          Awaited<ReturnType<typeof widgetPublicControllerScript>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWidgetPublicControllerScript<TData = Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWidgetPublicControllerScript<TData = Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerScript>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getWidgetPublicControllerScriptQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getWidgetPublicControllerConfigUrl = () => {
 
@@ -145,9 +147,9 @@ export const getWidgetPublicControllerConfigUrl = () => {
   return `/widget/config`
 }
 
-export const widgetPublicControllerConfig = async ( options?: Parameters<typeof customInstance>[1]): Promise<widgetPublicControllerConfigResponse> => {
+export const widgetPublicControllerConfig = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<widgetPublicControllerConfigResponse>(getWidgetPublicControllerConfigUrl(),
+  return customInstance<void>(getWidgetPublicControllerConfigUrl(),
   {
     ...options,
     method: 'GET'
@@ -160,61 +162,75 @@ export const widgetPublicControllerConfig = async ( options?: Parameters<typeof 
 
 
 
-export const getWidgetPublicControllerConfigMutationKey = () => ['widgetPublicControllerConfig'] as const;
-
-export const getWidgetPublicControllerConfigMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError,void, TContext> => {
-
-const mutationKey = getWidgetPublicControllerConfigMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof widgetPublicControllerConfig>>, void> = () => {
-
-
-          return  widgetPublicControllerConfig(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type WidgetPublicControllerConfigMutationResult = NonNullable<Awaited<ReturnType<typeof widgetPublicControllerConfig>>>
-
-    export type WidgetPublicControllerConfigMutationError = unknown
-
-
-    export const useWidgetPublicControllerConfig = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof widgetPublicControllerConfig>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getWidgetPublicControllerConfigMutationOptions(options), queryClient);
+export const getWidgetPublicControllerConfigQueryKey = () => {
+    return [
+    `/widget/config`
+    ] as const;
     }
-    export type widgetPublicControllerSessionResponse201 = {
-  data: void
-  status: 201
+
+
+export const getWidgetPublicControllerConfigQueryOptions = <TData = Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getWidgetPublicControllerConfigQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof widgetPublicControllerConfig>>> = ({ signal }) => widgetPublicControllerConfig({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type widgetPublicControllerSessionResponseSuccess = (widgetPublicControllerSessionResponse201) & {
-  headers: Headers;
-};
-;
+export type WidgetPublicControllerConfigQueryResult = NonNullable<Awaited<ReturnType<typeof widgetPublicControllerConfig>>>
+export type WidgetPublicControllerConfigQueryError = unknown
 
-export type widgetPublicControllerSessionResponse = (widgetPublicControllerSessionResponseSuccess)
+
+export function useWidgetPublicControllerConfig<TData = Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof widgetPublicControllerConfig>>,
+          TError,
+          Awaited<ReturnType<typeof widgetPublicControllerConfig>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWidgetPublicControllerConfig<TData = Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof widgetPublicControllerConfig>>,
+          TError,
+          Awaited<ReturnType<typeof widgetPublicControllerConfig>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWidgetPublicControllerConfig<TData = Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWidgetPublicControllerConfig<TData = Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerConfig>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getWidgetPublicControllerConfigQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getWidgetPublicControllerSessionUrl = () => {
 
@@ -224,9 +240,9 @@ export const getWidgetPublicControllerSessionUrl = () => {
   return `/widget/sessions`
 }
 
-export const widgetPublicControllerSession = async ( options?: Parameters<typeof customInstance>[1]): Promise<widgetPublicControllerSessionResponse> => {
+export const widgetPublicControllerSession = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<widgetPublicControllerSessionResponse>(getWidgetPublicControllerSessionUrl(),
+  return customInstance<void>(getWidgetPublicControllerSessionUrl(),
   {
     ...options,
     method: 'POST'
@@ -239,89 +255,51 @@ export const widgetPublicControllerSession = async ( options?: Parameters<typeof
 
 
 
-export const getWidgetPublicControllerSessionQueryKey = () => {
-    return [
-    'POST', `/widget/sessions`
-    ] as const;
+export const getWidgetPublicControllerSessionMutationKey = () => ['widgetPublicControllerSession'] as const;
+
+export const getWidgetPublicControllerSessionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError,void, TContext> => {
+
+const mutationKey = getWidgetPublicControllerSessionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof widgetPublicControllerSession>>, void> = () => {
+
+
+          return  widgetPublicControllerSession(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type WidgetPublicControllerSessionMutationResult = NonNullable<Awaited<ReturnType<typeof widgetPublicControllerSession>>>
+
+    export type WidgetPublicControllerSessionMutationError = unknown
+
+
+    export const useWidgetPublicControllerSession = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof widgetPublicControllerSession>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getWidgetPublicControllerSessionMutationOptions(options), queryClient);
     }
-
-
-export const getWidgetPublicControllerSessionQueryOptions = <TData = Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getWidgetPublicControllerSessionQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof widgetPublicControllerSession>>> = ({ signal }) => widgetPublicControllerSession({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type WidgetPublicControllerSessionQueryResult = NonNullable<Awaited<ReturnType<typeof widgetPublicControllerSession>>>
-export type WidgetPublicControllerSessionQueryError = unknown
-
-
-export function useWidgetPublicControllerSession<TData = Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof widgetPublicControllerSession>>,
-          TError,
-          Awaited<ReturnType<typeof widgetPublicControllerSession>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWidgetPublicControllerSession<TData = Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof widgetPublicControllerSession>>,
-          TError,
-          Awaited<ReturnType<typeof widgetPublicControllerSession>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWidgetPublicControllerSession<TData = Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWidgetPublicControllerSession<TData = Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerSession>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getWidgetPublicControllerSessionQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type widgetPublicControllerPostResponse201 = {
-  data: void
-  status: 201
-}
-
-export type widgetPublicControllerPostResponseSuccess = (widgetPublicControllerPostResponse201) & {
-  headers: Headers;
-};
-;
-
-export type widgetPublicControllerPostResponse = (widgetPublicControllerPostResponseSuccess)
-
-export const getWidgetPublicControllerPostUrl = () => {
+    export const getWidgetPublicControllerPostUrl = () => {
 
 
 
@@ -329,9 +307,9 @@ export const getWidgetPublicControllerPostUrl = () => {
   return `/widget/messages`
 }
 
-export const widgetPublicControllerPost = async ( options?: Parameters<typeof customInstance>[1]): Promise<widgetPublicControllerPostResponse> => {
+export const widgetPublicControllerPost = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<widgetPublicControllerPostResponse>(getWidgetPublicControllerPostUrl(),
+  return customInstance<void>(getWidgetPublicControllerPostUrl(),
   {
     ...options,
     method: 'POST'
@@ -344,89 +322,51 @@ export const widgetPublicControllerPost = async ( options?: Parameters<typeof cu
 
 
 
-export const getWidgetPublicControllerPostQueryKey = () => {
-    return [
-    'POST', `/widget/messages`
-    ] as const;
+export const getWidgetPublicControllerPostMutationKey = () => ['widgetPublicControllerPost'] as const;
+
+export const getWidgetPublicControllerPostMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError,void, TContext> => {
+
+const mutationKey = getWidgetPublicControllerPostMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof widgetPublicControllerPost>>, void> = () => {
+
+
+          return  widgetPublicControllerPost(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type WidgetPublicControllerPostMutationResult = NonNullable<Awaited<ReturnType<typeof widgetPublicControllerPost>>>
+
+    export type WidgetPublicControllerPostMutationError = unknown
+
+
+    export const useWidgetPublicControllerPost = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof widgetPublicControllerPost>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getWidgetPublicControllerPostMutationOptions(options), queryClient);
     }
-
-
-export const getWidgetPublicControllerPostQueryOptions = <TData = Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getWidgetPublicControllerPostQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof widgetPublicControllerPost>>> = ({ signal }) => widgetPublicControllerPost({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type WidgetPublicControllerPostQueryResult = NonNullable<Awaited<ReturnType<typeof widgetPublicControllerPost>>>
-export type WidgetPublicControllerPostQueryError = unknown
-
-
-export function useWidgetPublicControllerPost<TData = Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof widgetPublicControllerPost>>,
-          TError,
-          Awaited<ReturnType<typeof widgetPublicControllerPost>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWidgetPublicControllerPost<TData = Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof widgetPublicControllerPost>>,
-          TError,
-          Awaited<ReturnType<typeof widgetPublicControllerPost>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWidgetPublicControllerPost<TData = Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWidgetPublicControllerPost<TData = Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerPost>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getWidgetPublicControllerPostQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type widgetPublicControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type widgetPublicControllerListResponseSuccess = (widgetPublicControllerListResponse200) & {
-  headers: Headers;
-};
-;
-
-export type widgetPublicControllerListResponse = (widgetPublicControllerListResponseSuccess)
-
-export const getWidgetPublicControllerListUrl = () => {
+    export const getWidgetPublicControllerListUrl = () => {
 
 
 
@@ -434,9 +374,9 @@ export const getWidgetPublicControllerListUrl = () => {
   return `/widget/messages`
 }
 
-export const widgetPublicControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<widgetPublicControllerListResponse> => {
+export const widgetPublicControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<widgetPublicControllerListResponse>(getWidgetPublicControllerListUrl(),
+  return customInstance<void>(getWidgetPublicControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -449,47 +389,73 @@ export const widgetPublicControllerList = async ( options?: Parameters<typeof cu
 
 
 
-export const getWidgetPublicControllerListMutationKey = () => ['widgetPublicControllerList'] as const;
-
-export const getWidgetPublicControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getWidgetPublicControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof widgetPublicControllerList>>, void> = () => {
-
-
-          return  widgetPublicControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type WidgetPublicControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof widgetPublicControllerList>>>
-
-    export type WidgetPublicControllerListMutationError = unknown
-
-
-    export const useWidgetPublicControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof widgetPublicControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof widgetPublicControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getWidgetPublicControllerListMutationOptions(options), queryClient);
+export const getWidgetPublicControllerListQueryKey = () => {
+    return [
+    `/widget/messages`
+    ] as const;
     }
+
+
+export const getWidgetPublicControllerListQueryOptions = <TData = Awaited<ReturnType<typeof widgetPublicControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getWidgetPublicControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof widgetPublicControllerList>>> = ({ signal }) => widgetPublicControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type WidgetPublicControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof widgetPublicControllerList>>>
+export type WidgetPublicControllerListQueryError = unknown
+
+
+export function useWidgetPublicControllerList<TData = Awaited<ReturnType<typeof widgetPublicControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof widgetPublicControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof widgetPublicControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWidgetPublicControllerList<TData = Awaited<ReturnType<typeof widgetPublicControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof widgetPublicControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof widgetPublicControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWidgetPublicControllerList<TData = Awaited<ReturnType<typeof widgetPublicControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useWidgetPublicControllerList<TData = Awaited<ReturnType<typeof widgetPublicControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof widgetPublicControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getWidgetPublicControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

@@ -8,7 +8,7 @@ export function ConfirmDialog({ open, onOpenChange, title, description, confirmL
   const [busy, setBusy] = useState(false);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title={title} description={description}>
+      <DialogContent title={title} description={description} variant="modal" size="md">
         {children}
         <div className="mt-5 flex justify-end gap-2">
           <Button onClick={() => onOpenChange(false)}>Cancel</Button>

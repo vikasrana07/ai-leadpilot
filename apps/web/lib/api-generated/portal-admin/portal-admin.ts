@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type portalAdminControllerGetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type portalAdminControllerGetResponseSuccess = (portalAdminControllerGetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type portalAdminControllerGetResponse = (portalAdminControllerGetResponseSuccess)
-
 export const getPortalAdminControllerGetUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getPortalAdminControllerGetUrl = () => {
   return `/portal-config`
 }
 
-export const portalAdminControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<portalAdminControllerGetResponse> => {
+export const portalAdminControllerGet = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<portalAdminControllerGetResponse>(getPortalAdminControllerGetUrl(),
+  return customInstance<void>(getPortalAdminControllerGetUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const portalAdminControllerGet = async ( options?: Parameters<typeof cust
 
 
 
-export const getPortalAdminControllerGetMutationKey = () => ['portalAdminControllerGet'] as const;
-
-export const getPortalAdminControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalAdminControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof portalAdminControllerGet>>, TError,void, TContext> => {
-
-const mutationKey = getPortalAdminControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof portalAdminControllerGet>>, void> = () => {
-
-
-          return  portalAdminControllerGet(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PortalAdminControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof portalAdminControllerGet>>>
-
-    export type PortalAdminControllerGetMutationError = unknown
-
-
-    export const usePortalAdminControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalAdminControllerGet>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof portalAdminControllerGet>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getPortalAdminControllerGetMutationOptions(options), queryClient);
+export const getPortalAdminControllerGetQueryKey = () => {
+    return [
+    `/portal-config`
+    ] as const;
     }
-    export type portalAdminControllerSaveResponse200 = {
-  data: void
-  status: 200
+
+
+export const getPortalAdminControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof portalAdminControllerGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPortalAdminControllerGetQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof portalAdminControllerGet>>> = ({ signal }) => portalAdminControllerGet({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type portalAdminControllerSaveResponseSuccess = (portalAdminControllerSaveResponse200) & {
-  headers: Headers;
-};
-;
+export type PortalAdminControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof portalAdminControllerGet>>>
+export type PortalAdminControllerGetQueryError = unknown
 
-export type portalAdminControllerSaveResponse = (portalAdminControllerSaveResponseSuccess)
+
+export function usePortalAdminControllerGet<TData = Awaited<ReturnType<typeof portalAdminControllerGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof portalAdminControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof portalAdminControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalAdminControllerGet<TData = Awaited<ReturnType<typeof portalAdminControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof portalAdminControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof portalAdminControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalAdminControllerGet<TData = Awaited<ReturnType<typeof portalAdminControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePortalAdminControllerGet<TData = Awaited<ReturnType<typeof portalAdminControllerGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPortalAdminControllerGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getPortalAdminControllerSaveUrl = () => {
 
@@ -145,9 +147,9 @@ export const getPortalAdminControllerSaveUrl = () => {
   return `/portal-config`
 }
 
-export const portalAdminControllerSave = async ( options?: Parameters<typeof customInstance>[1]): Promise<portalAdminControllerSaveResponse> => {
+export const portalAdminControllerSave = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<portalAdminControllerSaveResponse>(getPortalAdminControllerSaveUrl(),
+  return customInstance<void>(getPortalAdminControllerSaveUrl(),
   {
     ...options,
     method: 'PUT'
@@ -160,89 +162,51 @@ export const portalAdminControllerSave = async ( options?: Parameters<typeof cus
 
 
 
-export const getPortalAdminControllerSaveQueryKey = () => {
-    return [
-    'PUT', `/portal-config`
-    ] as const;
+export const getPortalAdminControllerSaveMutationKey = () => ['portalAdminControllerSave'] as const;
+
+export const getPortalAdminControllerSaveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalAdminControllerSave>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof portalAdminControllerSave>>, TError,void, TContext> => {
+
+const mutationKey = getPortalAdminControllerSaveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof portalAdminControllerSave>>, void> = () => {
+
+
+          return  portalAdminControllerSave(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PortalAdminControllerSaveMutationResult = NonNullable<Awaited<ReturnType<typeof portalAdminControllerSave>>>
+
+    export type PortalAdminControllerSaveMutationError = unknown
+
+
+    export const usePortalAdminControllerSave = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalAdminControllerSave>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof portalAdminControllerSave>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getPortalAdminControllerSaveMutationOptions(options), queryClient);
     }
-
-
-export const getPortalAdminControllerSaveQueryOptions = <TData = Awaited<ReturnType<typeof portalAdminControllerSave>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerSave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPortalAdminControllerSaveQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof portalAdminControllerSave>>> = ({ signal }) => portalAdminControllerSave({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerSave>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PortalAdminControllerSaveQueryResult = NonNullable<Awaited<ReturnType<typeof portalAdminControllerSave>>>
-export type PortalAdminControllerSaveQueryError = unknown
-
-
-export function usePortalAdminControllerSave<TData = Awaited<ReturnType<typeof portalAdminControllerSave>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerSave>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof portalAdminControllerSave>>,
-          TError,
-          Awaited<ReturnType<typeof portalAdminControllerSave>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalAdminControllerSave<TData = Awaited<ReturnType<typeof portalAdminControllerSave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerSave>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof portalAdminControllerSave>>,
-          TError,
-          Awaited<ReturnType<typeof portalAdminControllerSave>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalAdminControllerSave<TData = Awaited<ReturnType<typeof portalAdminControllerSave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerSave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalAdminControllerSave<TData = Awaited<ReturnType<typeof portalAdminControllerSave>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerSave>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPortalAdminControllerSaveQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type portalAdminControllerRotateResponse200 = {
-  data: void
-  status: 200
-}
-
-export type portalAdminControllerRotateResponseSuccess = (portalAdminControllerRotateResponse200) & {
-  headers: Headers;
-};
-;
-
-export type portalAdminControllerRotateResponse = (portalAdminControllerRotateResponseSuccess)
-
-export const getPortalAdminControllerRotateUrl = () => {
+    export const getPortalAdminControllerRotateUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getPortalAdminControllerRotateUrl = () => {
   return `/portal-config/rotate-key`
 }
 
-export const portalAdminControllerRotate = async ( options?: Parameters<typeof customInstance>[1]): Promise<portalAdminControllerRotateResponse> => {
+export const portalAdminControllerRotate = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<portalAdminControllerRotateResponse>(getPortalAdminControllerRotateUrl(),
+  return customInstance<void>(getPortalAdminControllerRotateUrl(),
   {
     ...options,
     method: 'POST'
@@ -265,73 +229,47 @@ export const portalAdminControllerRotate = async ( options?: Parameters<typeof c
 
 
 
-export const getPortalAdminControllerRotateQueryKey = () => {
-    return [
-    'POST', `/portal-config/rotate-key`
-    ] as const;
+export const getPortalAdminControllerRotateMutationKey = () => ['portalAdminControllerRotate'] as const;
+
+export const getPortalAdminControllerRotateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError,void, TContext> => {
+
+const mutationKey = getPortalAdminControllerRotateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof portalAdminControllerRotate>>, void> = () => {
+
+
+          return  portalAdminControllerRotate(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PortalAdminControllerRotateMutationResult = NonNullable<Awaited<ReturnType<typeof portalAdminControllerRotate>>>
+
+    export type PortalAdminControllerRotateMutationError = unknown
+
+
+    export const usePortalAdminControllerRotate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof portalAdminControllerRotate>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getPortalAdminControllerRotateMutationOptions(options), queryClient);
     }
-
-
-export const getPortalAdminControllerRotateQueryOptions = <TData = Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getPortalAdminControllerRotateQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof portalAdminControllerRotate>>> = ({ signal }) => portalAdminControllerRotate({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type PortalAdminControllerRotateQueryResult = NonNullable<Awaited<ReturnType<typeof portalAdminControllerRotate>>>
-export type PortalAdminControllerRotateQueryError = unknown
-
-
-export function usePortalAdminControllerRotate<TData = Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof portalAdminControllerRotate>>,
-          TError,
-          Awaited<ReturnType<typeof portalAdminControllerRotate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalAdminControllerRotate<TData = Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof portalAdminControllerRotate>>,
-          TError,
-          Awaited<ReturnType<typeof portalAdminControllerRotate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalAdminControllerRotate<TData = Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePortalAdminControllerRotate<TData = Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof portalAdminControllerRotate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getPortalAdminControllerRotateQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-

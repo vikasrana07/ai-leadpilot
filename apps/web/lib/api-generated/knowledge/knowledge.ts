@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type knowledgeControllerListResponse200 = {
-  data: void
-  status: 200
-}
-
-export type knowledgeControllerListResponseSuccess = (knowledgeControllerListResponse200) & {
-  headers: Headers;
-};
-;
-
-export type knowledgeControllerListResponse = (knowledgeControllerListResponseSuccess)
-
 export const getKnowledgeControllerListUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getKnowledgeControllerListUrl = () => {
   return `/knowledge/documents`
 }
 
-export const knowledgeControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<knowledgeControllerListResponse> => {
+export const knowledgeControllerList = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<knowledgeControllerListResponse>(getKnowledgeControllerListUrl(),
+  return customInstance<void>(getKnowledgeControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -81,61 +69,75 @@ export const knowledgeControllerList = async ( options?: Parameters<typeof custo
 
 
 
-export const getKnowledgeControllerListMutationKey = () => ['knowledgeControllerList'] as const;
-
-export const getKnowledgeControllerListMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerList>>, TError,void, TContext> => {
-
-const mutationKey = getKnowledgeControllerListMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof knowledgeControllerList>>, void> = () => {
-
-
-          return  knowledgeControllerList(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type KnowledgeControllerListMutationResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerList>>>
-
-    export type KnowledgeControllerListMutationError = unknown
-
-
-    export const useKnowledgeControllerList = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerList>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof knowledgeControllerList>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getKnowledgeControllerListMutationOptions(options), queryClient);
+export const getKnowledgeControllerListQueryKey = () => {
+    return [
+    `/knowledge/documents`
+    ] as const;
     }
-    export type knowledgeControllerUploadResponse201 = {
-  data: void
-  status: 201
+
+
+export const getKnowledgeControllerListQueryOptions = <TData = Awaited<ReturnType<typeof knowledgeControllerList>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getKnowledgeControllerListQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof knowledgeControllerList>>> = ({ signal }) => knowledgeControllerList({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerList>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type knowledgeControllerUploadResponseSuccess = (knowledgeControllerUploadResponse201) & {
-  headers: Headers;
-};
-;
+export type KnowledgeControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerList>>>
+export type KnowledgeControllerListQueryError = unknown
 
-export type knowledgeControllerUploadResponse = (knowledgeControllerUploadResponseSuccess)
+
+export function useKnowledgeControllerList<TData = Awaited<ReturnType<typeof knowledgeControllerList>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerList>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof knowledgeControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof knowledgeControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useKnowledgeControllerList<TData = Awaited<ReturnType<typeof knowledgeControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerList>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof knowledgeControllerList>>,
+          TError,
+          Awaited<ReturnType<typeof knowledgeControllerList>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useKnowledgeControllerList<TData = Awaited<ReturnType<typeof knowledgeControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useKnowledgeControllerList<TData = Awaited<ReturnType<typeof knowledgeControllerList>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getKnowledgeControllerListQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getKnowledgeControllerUploadUrl = () => {
 
@@ -145,9 +147,9 @@ export const getKnowledgeControllerUploadUrl = () => {
   return `/knowledge/documents`
 }
 
-export const knowledgeControllerUpload = async ( options?: Parameters<typeof customInstance>[1]): Promise<knowledgeControllerUploadResponse> => {
+export const knowledgeControllerUpload = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<knowledgeControllerUploadResponse>(getKnowledgeControllerUploadUrl(),
+  return customInstance<void>(getKnowledgeControllerUploadUrl(),
   {
     ...options,
     method: 'POST'
@@ -160,89 +162,51 @@ export const knowledgeControllerUpload = async ( options?: Parameters<typeof cus
 
 
 
-export const getKnowledgeControllerUploadQueryKey = () => {
-    return [
-    'POST', `/knowledge/documents`
-    ] as const;
+export const getKnowledgeControllerUploadMutationKey = () => ['knowledgeControllerUpload'] as const;
+
+export const getKnowledgeControllerUploadMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError,void, TContext> => {
+
+const mutationKey = getKnowledgeControllerUploadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof knowledgeControllerUpload>>, void> = () => {
+
+
+          return  knowledgeControllerUpload(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type KnowledgeControllerUploadMutationResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerUpload>>>
+
+    export type KnowledgeControllerUploadMutationError = unknown
+
+
+    export const useKnowledgeControllerUpload = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof knowledgeControllerUpload>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getKnowledgeControllerUploadMutationOptions(options), queryClient);
     }
-
-
-export const getKnowledgeControllerUploadQueryOptions = <TData = Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getKnowledgeControllerUploadQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof knowledgeControllerUpload>>> = ({ signal }) => knowledgeControllerUpload({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type KnowledgeControllerUploadQueryResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerUpload>>>
-export type KnowledgeControllerUploadQueryError = unknown
-
-
-export function useKnowledgeControllerUpload<TData = Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof knowledgeControllerUpload>>,
-          TError,
-          Awaited<ReturnType<typeof knowledgeControllerUpload>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerUpload<TData = Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof knowledgeControllerUpload>>,
-          TError,
-          Awaited<ReturnType<typeof knowledgeControllerUpload>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerUpload<TData = Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerUpload<TData = Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getKnowledgeControllerUploadQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type knowledgeControllerSearchResponse200 = {
-  data: void
-  status: 200
-}
-
-export type knowledgeControllerSearchResponseSuccess = (knowledgeControllerSearchResponse200) & {
-  headers: Headers;
-};
-;
-
-export type knowledgeControllerSearchResponse = (knowledgeControllerSearchResponseSuccess)
-
-export const getKnowledgeControllerSearchUrl = () => {
+    export const getKnowledgeControllerSearchUrl = () => {
 
 
 
@@ -250,9 +214,9 @@ export const getKnowledgeControllerSearchUrl = () => {
   return `/knowledge/search`
 }
 
-export const knowledgeControllerSearch = async ( options?: Parameters<typeof customInstance>[1]): Promise<knowledgeControllerSearchResponse> => {
+export const knowledgeControllerSearch = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<knowledgeControllerSearchResponse>(getKnowledgeControllerSearchUrl(),
+  return customInstance<void>(getKnowledgeControllerSearchUrl(),
   {
     ...options,
     method: 'POST'
@@ -265,89 +229,51 @@ export const knowledgeControllerSearch = async ( options?: Parameters<typeof cus
 
 
 
-export const getKnowledgeControllerSearchQueryKey = () => {
-    return [
-    'POST', `/knowledge/search`
-    ] as const;
+export const getKnowledgeControllerSearchMutationKey = () => ['knowledgeControllerSearch'] as const;
+
+export const getKnowledgeControllerSearchMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError,void, TContext> => {
+
+const mutationKey = getKnowledgeControllerSearchMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof knowledgeControllerSearch>>, void> = () => {
+
+
+          return  knowledgeControllerSearch(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type KnowledgeControllerSearchMutationResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerSearch>>>
+
+    export type KnowledgeControllerSearchMutationError = unknown
+
+
+    export const useKnowledgeControllerSearch = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof knowledgeControllerSearch>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getKnowledgeControllerSearchMutationOptions(options), queryClient);
     }
-
-
-export const getKnowledgeControllerSearchQueryOptions = <TData = Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getKnowledgeControllerSearchQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof knowledgeControllerSearch>>> = ({ signal }) => knowledgeControllerSearch({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type KnowledgeControllerSearchQueryResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerSearch>>>
-export type KnowledgeControllerSearchQueryError = unknown
-
-
-export function useKnowledgeControllerSearch<TData = Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof knowledgeControllerSearch>>,
-          TError,
-          Awaited<ReturnType<typeof knowledgeControllerSearch>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerSearch<TData = Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof knowledgeControllerSearch>>,
-          TError,
-          Awaited<ReturnType<typeof knowledgeControllerSearch>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerSearch<TData = Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerSearch<TData = Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerSearch>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getKnowledgeControllerSearchQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type knowledgeControllerGetResponse200 = {
-  data: void
-  status: 200
-}
-
-export type knowledgeControllerGetResponseSuccess = (knowledgeControllerGetResponse200) & {
-  headers: Headers;
-};
-;
-
-export type knowledgeControllerGetResponse = (knowledgeControllerGetResponseSuccess)
-
-export const getKnowledgeControllerGetUrl = (id: string,) => {
+    export const getKnowledgeControllerGetUrl = (id: string,) => {
 
 
 
@@ -355,9 +281,9 @@ export const getKnowledgeControllerGetUrl = (id: string,) => {
   return `/knowledge/documents/${id}`
 }
 
-export const knowledgeControllerGet = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<knowledgeControllerGetResponse> => {
+export const knowledgeControllerGet = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<knowledgeControllerGetResponse>(getKnowledgeControllerGetUrl(id),
+  return customInstance<void>(getKnowledgeControllerGetUrl(id),
   {
     ...options,
     method: 'GET'
@@ -370,61 +296,75 @@ export const knowledgeControllerGet = async (id: string, options?: Parameters<ty
 
 
 
-export const getKnowledgeControllerGetMutationKey = () => ['knowledgeControllerGet'] as const;
-
-export const getKnowledgeControllerGetMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerGet>>, TError,KnowledgeControllerGetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerGet>>, TError,KnowledgeControllerGetMutationVariables, TContext> => {
-
-const mutationKey = getKnowledgeControllerGetMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof knowledgeControllerGet>>, KnowledgeControllerGetMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  knowledgeControllerGet(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type KnowledgeControllerGetMutationResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerGet>>>
-
-    export type KnowledgeControllerGetMutationError = unknown
-    export type KnowledgeControllerGetMutationVariables = {id: string}
-
-    export const useKnowledgeControllerGet = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerGet>>, TError,KnowledgeControllerGetMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof knowledgeControllerGet>>,
-        TError,
-        KnowledgeControllerGetMutationVariables,
-        TContext
-      > => {
-      return useMutation(getKnowledgeControllerGetMutationOptions(options), queryClient);
+export const getKnowledgeControllerGetQueryKey = (id: string,) => {
+    return [
+    `/knowledge/documents/${id}`
+    ] as const;
     }
-    export type knowledgeControllerUpdateResponse200 = {
-  data: void
-  status: 200
+
+
+export const getKnowledgeControllerGetQueryOptions = <TData = Awaited<ReturnType<typeof knowledgeControllerGet>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getKnowledgeControllerGetQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof knowledgeControllerGet>>> = ({ signal }) => knowledgeControllerGet(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type knowledgeControllerUpdateResponseSuccess = (knowledgeControllerUpdateResponse200) & {
-  headers: Headers;
-};
-;
+export type KnowledgeControllerGetQueryResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerGet>>>
+export type KnowledgeControllerGetQueryError = unknown
 
-export type knowledgeControllerUpdateResponse = (knowledgeControllerUpdateResponseSuccess)
+
+export function useKnowledgeControllerGet<TData = Awaited<ReturnType<typeof knowledgeControllerGet>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof knowledgeControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof knowledgeControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useKnowledgeControllerGet<TData = Awaited<ReturnType<typeof knowledgeControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof knowledgeControllerGet>>,
+          TError,
+          Awaited<ReturnType<typeof knowledgeControllerGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useKnowledgeControllerGet<TData = Awaited<ReturnType<typeof knowledgeControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useKnowledgeControllerGet<TData = Awaited<ReturnType<typeof knowledgeControllerGet>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getKnowledgeControllerGetQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getKnowledgeControllerUpdateUrl = (id: string,) => {
 
@@ -434,9 +374,9 @@ export const getKnowledgeControllerUpdateUrl = (id: string,) => {
   return `/knowledge/documents/${id}`
 }
 
-export const knowledgeControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<knowledgeControllerUpdateResponse> => {
+export const knowledgeControllerUpdate = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<knowledgeControllerUpdateResponse>(getKnowledgeControllerUpdateUrl(id),
+  return customInstance<void>(getKnowledgeControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH'
@@ -449,89 +389,51 @@ export const knowledgeControllerUpdate = async (id: string, options?: Parameters
 
 
 
-export const getKnowledgeControllerUpdateQueryKey = (id: string,) => {
-    return [
-    'PATCH', `/knowledge/documents/${id}`
-    ] as const;
+export const getKnowledgeControllerUpdateMutationKey = () => ['knowledgeControllerUpdate'] as const;
+
+export const getKnowledgeControllerUpdateMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError,KnowledgeControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError,KnowledgeControllerUpdateMutationVariables, TContext> => {
+
+const mutationKey = getKnowledgeControllerUpdateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof knowledgeControllerUpdate>>, KnowledgeControllerUpdateMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  knowledgeControllerUpdate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type KnowledgeControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerUpdate>>>
+
+    export type KnowledgeControllerUpdateMutationError = unknown
+    export type KnowledgeControllerUpdateMutationVariables = {id: string}
+
+    export const useKnowledgeControllerUpdate = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError,KnowledgeControllerUpdateMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof knowledgeControllerUpdate>>,
+        TError,
+        KnowledgeControllerUpdateMutationVariables,
+        TContext
+      > => {
+      return useMutation(getKnowledgeControllerUpdateMutationOptions(options), queryClient);
     }
-
-
-export const getKnowledgeControllerUpdateQueryOptions = <TData = Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getKnowledgeControllerUpdateQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof knowledgeControllerUpdate>>> = ({ signal }) => knowledgeControllerUpdate(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type KnowledgeControllerUpdateQueryResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerUpdate>>>
-export type KnowledgeControllerUpdateQueryError = unknown
-
-
-export function useKnowledgeControllerUpdate<TData = Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof knowledgeControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof knowledgeControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerUpdate<TData = Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof knowledgeControllerUpdate>>,
-          TError,
-          Awaited<ReturnType<typeof knowledgeControllerUpdate>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerUpdate<TData = Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerUpdate<TData = Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerUpdate>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getKnowledgeControllerUpdateQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type knowledgeControllerRemoveResponse204 = {
-  data: void
-  status: 204
-}
-
-export type knowledgeControllerRemoveResponseSuccess = (knowledgeControllerRemoveResponse204) & {
-  headers: Headers;
-};
-;
-
-export type knowledgeControllerRemoveResponse = (knowledgeControllerRemoveResponseSuccess)
-
-export const getKnowledgeControllerRemoveUrl = (id: string,) => {
+    export const getKnowledgeControllerRemoveUrl = (id: string,) => {
 
 
 
@@ -539,9 +441,9 @@ export const getKnowledgeControllerRemoveUrl = (id: string,) => {
   return `/knowledge/documents/${id}`
 }
 
-export const knowledgeControllerRemove = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<knowledgeControllerRemoveResponse> => {
+export const knowledgeControllerRemove = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<knowledgeControllerRemoveResponse>(getKnowledgeControllerRemoveUrl(id),
+  return customInstance<void>(getKnowledgeControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -554,89 +456,51 @@ export const knowledgeControllerRemove = async (id: string, options?: Parameters
 
 
 
-export const getKnowledgeControllerRemoveQueryKey = (id: string,) => {
-    return [
-    'DELETE', `/knowledge/documents/${id}`
-    ] as const;
+export const getKnowledgeControllerRemoveMutationKey = () => ['knowledgeControllerRemove'] as const;
+
+export const getKnowledgeControllerRemoveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError,KnowledgeControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError,KnowledgeControllerRemoveMutationVariables, TContext> => {
+
+const mutationKey = getKnowledgeControllerRemoveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof knowledgeControllerRemove>>, KnowledgeControllerRemoveMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  knowledgeControllerRemove(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type KnowledgeControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerRemove>>>
+
+    export type KnowledgeControllerRemoveMutationError = unknown
+    export type KnowledgeControllerRemoveMutationVariables = {id: string}
+
+    export const useKnowledgeControllerRemove = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError,KnowledgeControllerRemoveMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof knowledgeControllerRemove>>,
+        TError,
+        KnowledgeControllerRemoveMutationVariables,
+        TContext
+      > => {
+      return useMutation(getKnowledgeControllerRemoveMutationOptions(options), queryClient);
     }
-
-
-export const getKnowledgeControllerRemoveQueryOptions = <TData = Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getKnowledgeControllerRemoveQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof knowledgeControllerRemove>>> = ({ signal }) => knowledgeControllerRemove(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type KnowledgeControllerRemoveQueryResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerRemove>>>
-export type KnowledgeControllerRemoveQueryError = unknown
-
-
-export function useKnowledgeControllerRemove<TData = Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof knowledgeControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof knowledgeControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerRemove<TData = Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof knowledgeControllerRemove>>,
-          TError,
-          Awaited<ReturnType<typeof knowledgeControllerRemove>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerRemove<TData = Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerRemove<TData = Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerRemove>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getKnowledgeControllerRemoveQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type knowledgeControllerReprocessResponse202 = {
-  data: void
-  status: 202
-}
-
-export type knowledgeControllerReprocessResponseSuccess = (knowledgeControllerReprocessResponse202) & {
-  headers: Headers;
-};
-;
-
-export type knowledgeControllerReprocessResponse = (knowledgeControllerReprocessResponseSuccess)
-
-export const getKnowledgeControllerReprocessUrl = (id: string,) => {
+    export const getKnowledgeControllerReprocessUrl = (id: string,) => {
 
 
 
@@ -644,9 +508,9 @@ export const getKnowledgeControllerReprocessUrl = (id: string,) => {
   return `/knowledge/documents/${id}/reprocess`
 }
 
-export const knowledgeControllerReprocess = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<knowledgeControllerReprocessResponse> => {
+export const knowledgeControllerReprocess = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<knowledgeControllerReprocessResponse>(getKnowledgeControllerReprocessUrl(id),
+  return customInstance<void>(getKnowledgeControllerReprocessUrl(id),
   {
     ...options,
     method: 'POST'
@@ -659,89 +523,51 @@ export const knowledgeControllerReprocess = async (id: string, options?: Paramet
 
 
 
-export const getKnowledgeControllerReprocessQueryKey = (id: string,) => {
-    return [
-    'POST', `/knowledge/documents/${id}/reprocess`
-    ] as const;
+export const getKnowledgeControllerReprocessMutationKey = () => ['knowledgeControllerReprocess'] as const;
+
+export const getKnowledgeControllerReprocessMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError,KnowledgeControllerReprocessMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError,KnowledgeControllerReprocessMutationVariables, TContext> => {
+
+const mutationKey = getKnowledgeControllerReprocessMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof knowledgeControllerReprocess>>, KnowledgeControllerReprocessMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  knowledgeControllerReprocess(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type KnowledgeControllerReprocessMutationResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerReprocess>>>
+
+    export type KnowledgeControllerReprocessMutationError = unknown
+    export type KnowledgeControllerReprocessMutationVariables = {id: string}
+
+    export const useKnowledgeControllerReprocess = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError,KnowledgeControllerReprocessMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof knowledgeControllerReprocess>>,
+        TError,
+        KnowledgeControllerReprocessMutationVariables,
+        TContext
+      > => {
+      return useMutation(getKnowledgeControllerReprocessMutationOptions(options), queryClient);
     }
-
-
-export const getKnowledgeControllerReprocessQueryOptions = <TData = Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getKnowledgeControllerReprocessQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof knowledgeControllerReprocess>>> = ({ signal }) => knowledgeControllerReprocess(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type KnowledgeControllerReprocessQueryResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerReprocess>>>
-export type KnowledgeControllerReprocessQueryError = unknown
-
-
-export function useKnowledgeControllerReprocess<TData = Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof knowledgeControllerReprocess>>,
-          TError,
-          Awaited<ReturnType<typeof knowledgeControllerReprocess>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerReprocess<TData = Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof knowledgeControllerReprocess>>,
-          TError,
-          Awaited<ReturnType<typeof knowledgeControllerReprocess>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerReprocess<TData = Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useKnowledgeControllerReprocess<TData = Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerReprocess>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getKnowledgeControllerReprocessQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type knowledgeControllerDownloadResponse200 = {
-  data: void
-  status: 200
-}
-
-export type knowledgeControllerDownloadResponseSuccess = (knowledgeControllerDownloadResponse200) & {
-  headers: Headers;
-};
-;
-
-export type knowledgeControllerDownloadResponse = (knowledgeControllerDownloadResponseSuccess)
-
-export const getKnowledgeControllerDownloadUrl = (id: string,) => {
+    export const getKnowledgeControllerDownloadUrl = (id: string,) => {
 
 
 
@@ -749,9 +575,9 @@ export const getKnowledgeControllerDownloadUrl = (id: string,) => {
   return `/knowledge/documents/${id}/download`
 }
 
-export const knowledgeControllerDownload = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<knowledgeControllerDownloadResponse> => {
+export const knowledgeControllerDownload = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<knowledgeControllerDownloadResponse>(getKnowledgeControllerDownloadUrl(id),
+  return customInstance<void>(getKnowledgeControllerDownloadUrl(id),
   {
     ...options,
     method: 'GET'
@@ -764,47 +590,73 @@ export const knowledgeControllerDownload = async (id: string, options?: Paramete
 
 
 
-export const getKnowledgeControllerDownloadMutationKey = () => ['knowledgeControllerDownload'] as const;
-
-export const getKnowledgeControllerDownloadMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError,KnowledgeControllerDownloadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError,KnowledgeControllerDownloadMutationVariables, TContext> => {
-
-const mutationKey = getKnowledgeControllerDownloadMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof knowledgeControllerDownload>>, KnowledgeControllerDownloadMutationVariables> = (props) => {
-          const {id} = props ?? {};
-
-          return  knowledgeControllerDownload(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type KnowledgeControllerDownloadMutationResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerDownload>>>
-
-    export type KnowledgeControllerDownloadMutationError = unknown
-    export type KnowledgeControllerDownloadMutationVariables = {id: string}
-
-    export const useKnowledgeControllerDownload = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError,KnowledgeControllerDownloadMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof knowledgeControllerDownload>>,
-        TError,
-        KnowledgeControllerDownloadMutationVariables,
-        TContext
-      > => {
-      return useMutation(getKnowledgeControllerDownloadMutationOptions(options), queryClient);
+export const getKnowledgeControllerDownloadQueryKey = (id: string,) => {
+    return [
+    `/knowledge/documents/${id}/download`
+    ] as const;
     }
+
+
+export const getKnowledgeControllerDownloadQueryOptions = <TData = Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getKnowledgeControllerDownloadQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof knowledgeControllerDownload>>> = ({ signal }) => knowledgeControllerDownload(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type KnowledgeControllerDownloadQueryResult = NonNullable<Awaited<ReturnType<typeof knowledgeControllerDownload>>>
+export type KnowledgeControllerDownloadQueryError = unknown
+
+
+export function useKnowledgeControllerDownload<TData = Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof knowledgeControllerDownload>>,
+          TError,
+          Awaited<ReturnType<typeof knowledgeControllerDownload>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useKnowledgeControllerDownload<TData = Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof knowledgeControllerDownload>>,
+          TError,
+          Awaited<ReturnType<typeof knowledgeControllerDownload>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useKnowledgeControllerDownload<TData = Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useKnowledgeControllerDownload<TData = Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof knowledgeControllerDownload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getKnowledgeControllerDownloadQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

@@ -40,9 +40,10 @@ async function parse<T>(res: Response): Promise<T> {
 }
 
 /** Cookie-authenticated JSON request. On 401 it tries one silent refresh, then retries once. */
-export async function api<T>(path: string, init: { method?: string; body?: unknown; headers?: Record<string, string> } = {}, retry = true): Promise<T> {
+export async function api<T>(path: string, init: { method?: string; body?: unknown; headers?: Record<string, string>; signal?: AbortSignal | null } = {}, retry = true): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     method: init.method ?? 'GET',
+    signal: init.signal,
     credentials: 'include',
     headers: init.body !== undefined || init.headers ? { ...(init.body !== undefined ? { 'content-type': 'application/json' } : {}), ...init.headers } : undefined,
     body: init.body !== undefined ? JSON.stringify(init.body) : undefined,

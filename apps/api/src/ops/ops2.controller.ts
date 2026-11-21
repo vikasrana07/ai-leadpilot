@@ -1,12 +1,13 @@
 import { RequireFeature } from '../common/billing-meta.js';
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post, Put, Query, type PipeTransform } from '@nestjs/common';
 import {
-  automationDryRunSchema, automationGraphInputSchema, automationValidateSchema, automationEnableSchema, automationFromTemplateSchema, automationInputSchema, automationRunsQuerySchema, slaSettingsSchema, taskCreateSchema, taskListQuerySchema, taskUpdateSchema,
+  automationDryRunSchema, automationGraphInputSchema, automationValidateSchema, automationEnableSchema, automationFromTemplateSchema, automationInputSchema, automationRunsQuerySchema, slaSettingsSchema, taskCreateSchema, taskItemSchema, taskListQuerySchema, taskListResponseSchema, taskUpdateSchema,
 } from '@leadpilot/validation';
 import { z } from 'zod';
 import { actorFrom } from '../common/actor.js';
 import { CurrentTenant, RequirePermissions } from '../common/decorators.js';
 import type { TenantRequestContext } from '../common/request-context.js';
+import { ApiZodBody, ApiZodOk, ApiZodQuery } from '../common/openapi-zod.js';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { AutomationsService, type WriteInput } from './automations.service.js';
 import { SlaService } from './sla.service.js';
@@ -38,9 +39,9 @@ export class AutomationsController {
 @Controller('tasks')
 export class TasksController {
   constructor(@Inject(TasksService) private readonly svc: TasksService) {}
-  @Get() list(@CurrentTenant() c: TenantRequestContext, @Query(new ZodPipe(taskListQuerySchema)) q: z.infer<typeof taskListQuerySchema>) { return this.svc.list(actorFrom(c), q); }
-  @Post() @HttpCode(201) create(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(taskCreateSchema)) b: z.infer<typeof taskCreateSchema>) { return this.svc.create(actorFrom(c), b); }
-  @Patch(':id') update(@CurrentTenant() c: TenantRequestContext, @Param('id', uuid()) id: string, @Body(new ZodPipe(taskUpdateSchema)) b: z.infer<typeof taskUpdateSchema>) { return this.svc.update(actorFrom(c), id, b); }
+  @Get() @ApiZodQuery(taskListQuerySchema) @ApiZodOk(taskListResponseSchema) list(@CurrentTenant() c: TenantRequestContext, @Query(new ZodPipe(taskListQuerySchema)) q: z.infer<typeof taskListQuerySchema>) { return this.svc.list(actorFrom(c), q); }
+  @Post() @HttpCode(201) @ApiZodBody(taskCreateSchema) @ApiZodOk(taskItemSchema, true) create(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(taskCreateSchema)) b: z.infer<typeof taskCreateSchema>) { return this.svc.create(actorFrom(c), b); }
+  @Patch(':id') @ApiZodBody(taskUpdateSchema) @ApiZodOk(taskItemSchema) update(@CurrentTenant() c: TenantRequestContext, @Param('id', uuid()) id: string, @Body(new ZodPipe(taskUpdateSchema)) b: z.infer<typeof taskUpdateSchema>) { return this.svc.update(actorFrom(c), id, b); }
   @Delete(':id') @HttpCode(204) remove(@CurrentTenant() c: TenantRequestContext, @Param('id', uuid()) id: string) { return this.svc.remove(actorFrom(c), id); }
 }
 

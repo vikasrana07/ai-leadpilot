@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
   Bot,
@@ -29,9 +29,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { api } from '@/lib/api';
+import { useTasksControllerList, useTasksControllerRemove, tasksControllerUpdate } from '@/lib/api-generated/tasks/tasks';
 import { useAuth } from '@/lib/auth';
-import { qs, useMembers } from '@/lib/crm';
+import { useMembers } from '@/lib/crm';
 import { handleApiError } from '@/lib/forms';
 import { cn } from '@/lib/cn';
 import type { TaskItem } from '@/lib/ops';
@@ -111,19 +111,16 @@ export default function TasksPage() {
   const [taskToDelete, setTaskToDelete] = useState<TaskItem | null>(null);
 
   // Queries
-  const list = useQuery({
-    queryKey: ['tasks', mine],
-    queryFn: () => api<{ items: TaskItem[] }>(`/tasks${qs({ mine: mine ? 'true' : 'false', limit: 200 })}`),
-  });
+  const list = useTasksControllerList(
+    { mine: mine ? 'true' : 'false', limit: 200 },
+    { query: { queryKey: ['tasks', mine] } },
+  );
 
   const refresh = () => qc.invalidateQueries({ queryKey: ['tasks'] });
 
   const toggle = useMutation({
     mutationFn: (t: TaskItem) =>
-      api(`/tasks/${t.id}`, {
-        method: 'PATCH',
-        body: { status: t.status === 'OPEN' ? 'DONE' : 'OPEN' },
-      }),
+      tasksControllerUpdate(t.id, { status: t.status === 'OPEN' ? 'DONE' : 'OPEN' }),
     onMutate: async (t: TaskItem) => {
       await qc.cancelQueries({ queryKey: ['tasks'] });
       const previous = qc.getQueriesData<{ items: TaskItem[] }>({ queryKey: ['tasks'] });
@@ -160,36 +157,37 @@ export default function TasksPage() {
     },
   });
 
-  const remove = useMutation({
-    mutationFn: (id: string) => api(`/tasks/${id}`, { method: 'DELETE' }),
-    onMutate: async (id: string) => {
-      await qc.cancelQueries({ queryKey: ['tasks'] });
-      const previous = qc.getQueriesData<{ items: TaskItem[] }>({ queryKey: ['tasks'] });
+  const remove = useTasksControllerRemove({
+    mutation: {
+      onMutate: async ({ id }: { id: string }) => {
+        await qc.cancelQueries({ queryKey: ['tasks'] });
+        const previous = qc.getQueriesData<{ items: TaskItem[] }>({ queryKey: ['tasks'] });
 
-      qc.setQueriesData<{ items: TaskItem[] }>({ queryKey: ['tasks'] }, (old) => {
-        if (!old?.items) return old;
-        return {
-          ...old,
-          items: old.items.filter((item) => item.id !== id),
-        };
-      });
+        qc.setQueriesData<{ items: TaskItem[] }>({ queryKey: ['tasks'] }, (old) => {
+          if (!old?.items) return old;
+          return {
+            ...old,
+            items: old.items.filter((item) => item.id !== id),
+          };
+        });
 
-      return { previous };
-    },
-    onError: (e, _id, context) => {
-      if (context?.previous) {
-        for (const [key, data] of context.previous) {
-          qc.setQueryData(key, data);
+        return { previous };
+      },
+      onError: (e, _vars, context) => {
+        if (context?.previous) {
+          for (const [key, data] of context.previous) {
+            qc.setQueryData(key, data);
+          }
         }
-      }
-      handleApiError(e);
-    },
-    onSuccess: () => {
-      toast.success('Task deleted');
-      setTaskToDelete(null);
-    },
-    onSettled: () => {
-      void refresh();
+        handleApiError(e);
+      },
+      onSuccess: () => {
+        toast.success('Task deleted');
+        setTaskToDelete(null);
+      },
+      onSettled: () => {
+        void refresh();
+      },
     },
   });
 
@@ -678,7 +676,7 @@ export default function TasksPage() {
         danger
         onConfirm={async () => {
           if (taskToDelete) {
-            await remove.mutateAsync(taskToDelete.id);
+            await remove.mutateAsync({ id: taskToDelete.id });
           }
         }}
       />

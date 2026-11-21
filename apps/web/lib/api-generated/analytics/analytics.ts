@@ -6,13 +6,18 @@
  * OpenAPI spec version: 1.0
  */
 import {
-  useMutation
+  useQuery
 } from '@tanstack/react-query';
 import type {
-  MutationFunction,
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   QueryClient,
-  UseMutationOptions,
-  UseMutationResult
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import { customInstance } from '../../custom-instance';
@@ -22,17 +27,20 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
-export type analyticsControllerOverviewResponse200 = {
-  data: void
-  status: 200
-}
-
-export type analyticsControllerOverviewResponseSuccess = (analyticsControllerOverviewResponse200) & {
-  headers: Headers;
+const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+  const result = { queryKey } as T & { queryKey: K };
+  for (const key of Object.keys(query)) {
+    // The explicit queryKey always wins, matching the previous
+    // `{ ...query, queryKey }` spread where it was set last.
+    if (key === 'queryKey') continue;
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      configurable: true,
+      get: () => (query as Record<string, unknown>)[key],
+    });
+  }
+  return result;
 };
-;
-
-export type analyticsControllerOverviewResponse = (analyticsControllerOverviewResponseSuccess)
 
 export const getAnalyticsControllerOverviewUrl = () => {
 
@@ -42,9 +50,9 @@ export const getAnalyticsControllerOverviewUrl = () => {
   return `/analytics/overview`
 }
 
-export const analyticsControllerOverview = async ( options?: Parameters<typeof customInstance>[1]): Promise<analyticsControllerOverviewResponse> => {
+export const analyticsControllerOverview = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<analyticsControllerOverviewResponse>(getAnalyticsControllerOverviewUrl(),
+  return customInstance<void>(getAnalyticsControllerOverviewUrl(),
   {
     ...options,
     method: 'GET'
@@ -57,61 +65,75 @@ export const analyticsControllerOverview = async ( options?: Parameters<typeof c
 
 
 
-export const getAnalyticsControllerOverviewMutationKey = () => ['analyticsControllerOverview'] as const;
-
-export const getAnalyticsControllerOverviewMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyticsControllerOverview>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof analyticsControllerOverview>>, TError,void, TContext> => {
-
-const mutationKey = getAnalyticsControllerOverviewMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyticsControllerOverview>>, void> = () => {
-
-
-          return  analyticsControllerOverview(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AnalyticsControllerOverviewMutationResult = NonNullable<Awaited<ReturnType<typeof analyticsControllerOverview>>>
-
-    export type AnalyticsControllerOverviewMutationError = unknown
-
-
-    export const useAnalyticsControllerOverview = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyticsControllerOverview>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof analyticsControllerOverview>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAnalyticsControllerOverviewMutationOptions(options), queryClient);
+export const getAnalyticsControllerOverviewQueryKey = () => {
+    return [
+    `/analytics/overview`
+    ] as const;
     }
-    export type analyticsControllerWorkloadResponse200 = {
-  data: void
-  status: 200
+
+
+export const getAnalyticsControllerOverviewQueryOptions = <TData = Awaited<ReturnType<typeof analyticsControllerOverview>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerOverview>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAnalyticsControllerOverviewQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof analyticsControllerOverview>>> = ({ signal }) => analyticsControllerOverview({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerOverview>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type analyticsControllerWorkloadResponseSuccess = (analyticsControllerWorkloadResponse200) & {
-  headers: Headers;
-};
-;
+export type AnalyticsControllerOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof analyticsControllerOverview>>>
+export type AnalyticsControllerOverviewQueryError = unknown
 
-export type analyticsControllerWorkloadResponse = (analyticsControllerWorkloadResponseSuccess)
+
+export function useAnalyticsControllerOverview<TData = Awaited<ReturnType<typeof analyticsControllerOverview>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerOverview>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof analyticsControllerOverview>>,
+          TError,
+          Awaited<ReturnType<typeof analyticsControllerOverview>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerOverview<TData = Awaited<ReturnType<typeof analyticsControllerOverview>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerOverview>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof analyticsControllerOverview>>,
+          TError,
+          Awaited<ReturnType<typeof analyticsControllerOverview>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerOverview<TData = Awaited<ReturnType<typeof analyticsControllerOverview>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerOverview>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerOverview<TData = Awaited<ReturnType<typeof analyticsControllerOverview>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerOverview>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAnalyticsControllerOverviewQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getAnalyticsControllerWorkloadUrl = () => {
 
@@ -121,9 +143,9 @@ export const getAnalyticsControllerWorkloadUrl = () => {
   return `/team/workload`
 }
 
-export const analyticsControllerWorkload = async ( options?: Parameters<typeof customInstance>[1]): Promise<analyticsControllerWorkloadResponse> => {
+export const analyticsControllerWorkload = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<analyticsControllerWorkloadResponse>(getAnalyticsControllerWorkloadUrl(),
+  return customInstance<void>(getAnalyticsControllerWorkloadUrl(),
   {
     ...options,
     method: 'GET'
@@ -136,47 +158,73 @@ export const analyticsControllerWorkload = async ( options?: Parameters<typeof c
 
 
 
-export const getAnalyticsControllerWorkloadMutationKey = () => ['analyticsControllerWorkload'] as const;
-
-export const getAnalyticsControllerWorkloadMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError,void, TContext> => {
-
-const mutationKey = getAnalyticsControllerWorkloadMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyticsControllerWorkload>>, void> = () => {
-
-
-          return  analyticsControllerWorkload(requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AnalyticsControllerWorkloadMutationResult = NonNullable<Awaited<ReturnType<typeof analyticsControllerWorkload>>>
-
-    export type AnalyticsControllerWorkloadMutationError = unknown
-
-
-    export const useAnalyticsControllerWorkload = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof analyticsControllerWorkload>>,
-        TError,
-        void,
-        TContext
-      > => {
-      return useMutation(getAnalyticsControllerWorkloadMutationOptions(options), queryClient);
+export const getAnalyticsControllerWorkloadQueryKey = () => {
+    return [
+    `/team/workload`
+    ] as const;
     }
+
+
+export const getAnalyticsControllerWorkloadQueryOptions = <TData = Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAnalyticsControllerWorkloadQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof analyticsControllerWorkload>>> = ({ signal }) => analyticsControllerWorkload({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AnalyticsControllerWorkloadQueryResult = NonNullable<Awaited<ReturnType<typeof analyticsControllerWorkload>>>
+export type AnalyticsControllerWorkloadQueryError = unknown
+
+
+export function useAnalyticsControllerWorkload<TData = Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof analyticsControllerWorkload>>,
+          TError,
+          Awaited<ReturnType<typeof analyticsControllerWorkload>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerWorkload<TData = Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof analyticsControllerWorkload>>,
+          TError,
+          Awaited<ReturnType<typeof analyticsControllerWorkload>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerWorkload<TData = Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerWorkload<TData = Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerWorkload>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAnalyticsControllerWorkloadQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

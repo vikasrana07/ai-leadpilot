@@ -46,18 +46,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export type metaCallbacksControllerDeauthorizeResponse200 = {
-  data: void
-  status: 200
-}
-
-export type metaCallbacksControllerDeauthorizeResponseSuccess = (metaCallbacksControllerDeauthorizeResponse200) & {
-  headers: Headers;
-};
-;
-
-export type metaCallbacksControllerDeauthorizeResponse = (metaCallbacksControllerDeauthorizeResponseSuccess)
-
 export const getMetaCallbacksControllerDeauthorizeUrl = () => {
 
 
@@ -66,9 +54,9 @@ export const getMetaCallbacksControllerDeauthorizeUrl = () => {
   return `/webhooks/meta/deauthorize`
 }
 
-export const metaCallbacksControllerDeauthorize = async ( options?: Parameters<typeof customInstance>[1]): Promise<metaCallbacksControllerDeauthorizeResponse> => {
+export const metaCallbacksControllerDeauthorize = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<metaCallbacksControllerDeauthorizeResponse>(getMetaCallbacksControllerDeauthorizeUrl(),
+  return customInstance<void>(getMetaCallbacksControllerDeauthorizeUrl(),
   {
     ...options,
     method: 'POST'
@@ -81,89 +69,51 @@ export const metaCallbacksControllerDeauthorize = async ( options?: Parameters<t
 
 
 
-export const getMetaCallbacksControllerDeauthorizeQueryKey = () => {
-    return [
-    'POST', `/webhooks/meta/deauthorize`
-    ] as const;
+export const getMetaCallbacksControllerDeauthorizeMutationKey = () => ['metaCallbacksControllerDeauthorize'] as const;
+
+export const getMetaCallbacksControllerDeauthorizeMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError,void, TContext> => {
+
+const mutationKey = getMetaCallbacksControllerDeauthorizeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, void> = () => {
+
+
+          return  metaCallbacksControllerDeauthorize(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MetaCallbacksControllerDeauthorizeMutationResult = NonNullable<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>>
+
+    export type MetaCallbacksControllerDeauthorizeMutationError = unknown
+
+
+    export const useMetaCallbacksControllerDeauthorize = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getMetaCallbacksControllerDeauthorizeMutationOptions(options), queryClient);
     }
-
-
-export const getMetaCallbacksControllerDeauthorizeQueryOptions = <TData = Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getMetaCallbacksControllerDeauthorizeQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>> = ({ signal }) => metaCallbacksControllerDeauthorize({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type MetaCallbacksControllerDeauthorizeQueryResult = NonNullable<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>>
-export type MetaCallbacksControllerDeauthorizeQueryError = unknown
-
-
-export function useMetaCallbacksControllerDeauthorize<TData = Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>,
-          TError,
-          Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMetaCallbacksControllerDeauthorize<TData = Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>,
-          TError,
-          Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMetaCallbacksControllerDeauthorize<TData = Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMetaCallbacksControllerDeauthorize<TData = Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDeauthorize>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getMetaCallbacksControllerDeauthorizeQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type metaCallbacksControllerDataDeletionResponse200 = {
-  data: void
-  status: 200
-}
-
-export type metaCallbacksControllerDataDeletionResponseSuccess = (metaCallbacksControllerDataDeletionResponse200) & {
-  headers: Headers;
-};
-;
-
-export type metaCallbacksControllerDataDeletionResponse = (metaCallbacksControllerDataDeletionResponseSuccess)
-
-export const getMetaCallbacksControllerDataDeletionUrl = () => {
+    export const getMetaCallbacksControllerDataDeletionUrl = () => {
 
 
 
@@ -171,9 +121,9 @@ export const getMetaCallbacksControllerDataDeletionUrl = () => {
   return `/webhooks/meta/data-deletion`
 }
 
-export const metaCallbacksControllerDataDeletion = async ( options?: Parameters<typeof customInstance>[1]): Promise<metaCallbacksControllerDataDeletionResponse> => {
+export const metaCallbacksControllerDataDeletion = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<metaCallbacksControllerDataDeletionResponse>(getMetaCallbacksControllerDataDeletionUrl(),
+  return customInstance<void>(getMetaCallbacksControllerDataDeletionUrl(),
   {
     ...options,
     method: 'POST'
@@ -186,89 +136,51 @@ export const metaCallbacksControllerDataDeletion = async ( options?: Parameters<
 
 
 
-export const getMetaCallbacksControllerDataDeletionQueryKey = () => {
-    return [
-    'POST', `/webhooks/meta/data-deletion`
-    ] as const;
+export const getMetaCallbacksControllerDataDeletionMutationKey = () => ['metaCallbacksControllerDataDeletion'] as const;
+
+export const getMetaCallbacksControllerDataDeletionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError,void, TContext> => {
+
+const mutationKey = getMetaCallbacksControllerDataDeletionMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, void> = () => {
+
+
+          return  metaCallbacksControllerDataDeletion(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MetaCallbacksControllerDataDeletionMutationResult = NonNullable<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>>
+
+    export type MetaCallbacksControllerDataDeletionMutationError = unknown
+
+
+    export const useMetaCallbacksControllerDataDeletion = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getMetaCallbacksControllerDataDeletionMutationOptions(options), queryClient);
     }
-
-
-export const getMetaCallbacksControllerDataDeletionQueryOptions = <TData = Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getMetaCallbacksControllerDataDeletionQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>> = ({ signal }) => metaCallbacksControllerDataDeletion({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type MetaCallbacksControllerDataDeletionQueryResult = NonNullable<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>>
-export type MetaCallbacksControllerDataDeletionQueryError = unknown
-
-
-export function useMetaCallbacksControllerDataDeletion<TData = Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>,
-          TError,
-          Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMetaCallbacksControllerDataDeletion<TData = Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>,
-          TError,
-          Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMetaCallbacksControllerDataDeletion<TData = Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useMetaCallbacksControllerDataDeletion<TData = Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerDataDeletion>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getMetaCallbacksControllerDataDeletionQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-export type metaCallbacksControllerStatusResponse200 = {
-  data: void
-  status: 200
-}
-
-export type metaCallbacksControllerStatusResponseSuccess = (metaCallbacksControllerStatusResponse200) & {
-  headers: Headers;
-};
-;
-
-export type metaCallbacksControllerStatusResponse = (metaCallbacksControllerStatusResponseSuccess)
-
-export const getMetaCallbacksControllerStatusUrl = (code: string,) => {
+    export const getMetaCallbacksControllerStatusUrl = (code: string,) => {
 
 
 
@@ -276,9 +188,9 @@ export const getMetaCallbacksControllerStatusUrl = (code: string,) => {
   return `/webhooks/meta/data-deletion/${code}`
 }
 
-export const metaCallbacksControllerStatus = async (code: string, options?: Parameters<typeof customInstance>[1]): Promise<metaCallbacksControllerStatusResponse> => {
+export const metaCallbacksControllerStatus = async (code: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
 
-  return customInstance<metaCallbacksControllerStatusResponse>(getMetaCallbacksControllerStatusUrl(code),
+  return customInstance<void>(getMetaCallbacksControllerStatusUrl(code),
   {
     ...options,
     method: 'GET'
@@ -291,47 +203,73 @@ export const metaCallbacksControllerStatus = async (code: string, options?: Para
 
 
 
-export const getMetaCallbacksControllerStatusMutationKey = () => ['metaCallbacksControllerStatus'] as const;
-
-export const getMetaCallbacksControllerStatusMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError,MetaCallbacksControllerStatusMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError,MetaCallbacksControllerStatusMutationVariables, TContext> => {
-
-const mutationKey = getMetaCallbacksControllerStatusMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, MetaCallbacksControllerStatusMutationVariables> = (props) => {
-          const {code} = props ?? {};
-
-          return  metaCallbacksControllerStatus(code,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type MetaCallbacksControllerStatusMutationResult = NonNullable<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>>
-
-    export type MetaCallbacksControllerStatusMutationError = unknown
-    export type MetaCallbacksControllerStatusMutationVariables = {code: string}
-
-    export const useMetaCallbacksControllerStatus = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError,MetaCallbacksControllerStatusMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof metaCallbacksControllerStatus>>,
-        TError,
-        MetaCallbacksControllerStatusMutationVariables,
-        TContext
-      > => {
-      return useMutation(getMetaCallbacksControllerStatusMutationOptions(options), queryClient);
+export const getMetaCallbacksControllerStatusQueryKey = (code: string,) => {
+    return [
+    `/webhooks/meta/data-deletion/${code}`
+    ] as const;
     }
+
+
+export const getMetaCallbacksControllerStatusQueryOptions = <TData = Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError = unknown>(code: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getMetaCallbacksControllerStatusQueryKey(code);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>> = ({ signal }) => metaCallbacksControllerStatus(code, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: code !== null && code !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type MetaCallbacksControllerStatusQueryResult = NonNullable<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>>
+export type MetaCallbacksControllerStatusQueryError = unknown
+
+
+export function useMetaCallbacksControllerStatus<TData = Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError = unknown>(
+ code: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof metaCallbacksControllerStatus>>,
+          TError,
+          Awaited<ReturnType<typeof metaCallbacksControllerStatus>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useMetaCallbacksControllerStatus<TData = Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError = unknown>(
+ code: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof metaCallbacksControllerStatus>>,
+          TError,
+          Awaited<ReturnType<typeof metaCallbacksControllerStatus>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useMetaCallbacksControllerStatus<TData = Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError = unknown>(
+ code: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useMetaCallbacksControllerStatus<TData = Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError = unknown>(
+ code: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metaCallbacksControllerStatus>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getMetaCallbacksControllerStatusQueryOptions(code,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
