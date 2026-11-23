@@ -1,106 +1,61 @@
-# Performance & Scalability Assessment: LeadPilot AI
+# 09 — Performance & Scalability
 
-## 1. Measured Performance Baseline (Local Benchmark)
+**Separation of evidence:** *Measured* = recorded in `docs/performance.md` (2026-11-16, laptop, Postgres + Redis in Docker on the same machine, one tenant with 100k leads / 100k activities / 60k messages / 10k appointments). It predates campaigns, email tracking, Google Calendar and custom roles. *Architecture-based* = reasoning from code; no measurement exists. I did not run any load.
 
-Performance benchmarks were executed using `scripts/loadtest.mjs` against a production build of `apps/api` running on local hardware (Apple Silicon) backed by PostgreSQL 17 and Redis 7 in Docker.
+## 1. Measured (from `docs/performance.md`)
 
-The test dataset simulated a high-volume tenant workspace containing:
-- **100,000 Leads**
-- **100,000 Activities**
-- **10,000 Conversations & 60,000 Messages**
-- **10,000 Appointments**
+| Check | Result | Budget |
+|---|---|---|
+| Dashboard overview p50/p95 | 264 / 415 ms | 2000 ms |
+| Lead list p95 | 88 ms | 800 ms |
+| Lead search (trigram) p95 | 194–205 ms | 800 ms |
+| Pipeline board p95 | 186 ms | 1500 ms |
+| Concurrency (20 workers, 8 s) | dashboard 26 req/s p95 1068 ms; list 71 req/s p95 394 ms; search 44 req/s p95 567 ms; 0 errors | – |
+| WhatsApp webhook ACK (40 sequential) | p50 27 ms, p95 91 ms | < 1 s |
+| Rate limiter under load | engaged at 300 req/min/IP as designed | – |
 
-### Sequential Request Benchmarks (20 requests per endpoint, post warm-up)
-| Operation / Endpoint | Budget (SLA) | Measured p50 | Measured p95 | Status |
-|---|:---:|:---:|:---:|:---:|
-| **Dashboard Overview (30 Days)** | < 2,000 ms | 264 ms | 415 ms | **PASSED** (79% margin) |
-| **Dashboard Overview (Current Month)**| < 2,000 ms | 264 ms | 334 ms | **PASSED** (83% margin) |
-| **Lead List (Page 1 Default Sort)** | < 800 ms | 82 ms | 88 ms | **PASSED** (89% margin) |
-| **Lead List Sorted by Score** | < 800 ms | 80 ms | 90 ms | **PASSED** (89% margin) |
-| **Lead Trigram Search (Name)** | < 800 ms | 158 ms | 194 ms | **PASSED** (76% margin) |
-| **Lead Trigram Search (Phone)** | < 800 ms | 171 ms | 205 ms | **PASSED** (74% margin) |
-| **Filtered Query (Hot + Unassigned)** | < 800 ms | 47 ms | 64 ms | **PASSED** (92% margin) |
-| **Pipeline Kanban Board View** | < 1,500 ms | 142 ms | 186 ms | **PASSED** (88% margin) |
-| **Conversation List (Inbox)** | < 800 ms | 12 ms | 22 ms | **PASSED** (97% margin) |
-| **Appointments Month Grid** | < 1,000 ms | 9 ms | 11 ms | **PASSED** (99% margin) |
-| **WhatsApp Webhook Ingress (ACK)** | < 1,000 ms | 27 ms | 91 ms | **PASSED** (91% margin) |
+Caveats stated in that document and repeated here: not production hardware, LLM latency unmeasured (mock), no soak, one large tenant, 1M+ leads untested, `messages` and `lead_activities` flagged as the tables to watch, serial per-tenant scanner needs sharding at thousands of tenants.
 
-### Concurrent Load Profile (20 concurrent workers over 8 seconds)
-- **Dashboard Throughput**: 26 req/sec | p95 = 1,068 ms | 0 errors.
-- **Lead List Throughput**: 71 req/sec | p95 = 394 ms | 0 errors.
-- **Lead Search Throughput**: 44 req/sec | p95 = 567 ms | 0 errors.
-- **Webhook Processing**: Sub-100ms ACK times ensure zero Meta webhook timeouts.
+## 2. Architecture-based bottlenecks (ranked)
 
----
+| # | Area | Evidence | Why it matters | Severity |
+|---|---|---|---|---|
+| P1 | **Campaign dispatch throughput** | `dispatchBatch`: sequential loop, per recipient one provider call + one 5-write transaction + 50 ms sleep; batch 50; next batch via a new job; one chain per campaign (`campaigns.service.ts:562-700`) | Per recipient ≈ provider latency (assume 150–400 ms) + ~50 ms sleep + DB tx. At ~0.3–0.5 s each, 100k recipients ≈ 8–14 h. Meta documents far higher Cloud API throughput (80 msg/s by default, per my recollection of Meta's docs; not verified here) and daily limits by messaging tier. Estimate, not a measurement | High (growth) |
+| P2 | **Campaign launch memory/timeout** | `launch()` loads all matching leads and all consents (`IN (leadIds)`) into memory inside one transaction with the default 15 s timeout (`withTenant`) | Large segments (10⁴–10⁵) can exceed the timeout or the `IN` list size, leaving the campaign in DRAFT with an error | High |
+| P3 | **Hot-row counters** | `broadcast_campaigns.sent_count` incremented per recipient in separate transactions | Row-lock contention only matters with parallel dispatch; will bite once P1 is fixed by adding parallelism | Medium |
+| P4 | **Two transactions per request** | `TenantGuard` runs a membership+role+permissions transaction on every authenticated request, then the handler opens its own (`guards.ts`, `db.module.ts`) | ≥2 pool checkouts and round trips per call; no membership/permission cache (session validity *is* cached). With default `pg` pool (10) a few hundred rps will queue | Medium |
+| P5 | **External I/O in DB transactions** | `syncAppointment(tx, …)` HTTP to Google inside the appointment transaction (`appointments.service.ts:282,303`) | Slow Google ⇒ connections held ⇒ pool starvation across tenants | Medium |
+| P6 | **Bounded but in-memory bulk operations** | Lead import is capped at 5,000 rows (`lead-import.service.ts:15`); lead export is capped at 50,000 rows and builds the whole CSV in memory inside one transaction (`exportCsv`, `:179-193`, with an O(n·m) `users.find` inside the row map); workspace export is async (`DataExport`) | Caps make this safe now; a 50k-row export holds a connection and tens of MB per request, and tenants with more than 50k leads get a silently truncated export | Low–Medium |
+| P7 | **Email event write amplification** | Every open/click performs `trackedEmail.update`, `emailEngagementEvent.create`, `leadActivity.create` in a tenant transaction on a public unthrottled route (`email-tracking.service.ts:317-370`); scanners and prefetchers multiply hits | Unbounded event table growth, row contention on `tracked_emails` | Medium |
+| P8 | **SNS webhook lookup** | `findFirst OR [{sesMessageId},{smtpMessageId}]`; only `ses_message_id` is indexed, and not by tenant | Seq-scan risk on `smtp_message_id` as the table grows [validate with EXPLAIN] | Medium |
+| P9 | **Single Redis** | BullMQ, throttler, session cache, locks, SSE pub/sub on one instance (`app.module.ts`, `jobs.service.ts`, `realtime.service.ts`) | Latency or outage degrades auth throttling, queues and realtime together | Medium |
+| P10 | **Scanner fan-out** | `scanners.service.ts` iterates `list_active_tenant_ids()` serially each minute (also noted in `performance.md`) | At thousands of tenants a minute tick overruns; needs sharding/fan-out | Medium (later) |
+| P11 | **Client-heavy frontend** | 50 of 51 pages are `'use client'`; page components of 500–800 lines; `@xyflow/react` for the automation builder | Larger JS payloads and no server-rendered data; bundle size was **not measured** (no `next build` output inspected) | Low–Medium |
+| P12 | **Unbounded tables** | `messages`, `lead_activities`, `email_engagement_events`, `ai_runs`, `webhook_deliveries`: no partitioning (audit log is partitioned); retention exists for some (`lifecycle`, `automation-retention.test.ts`) | Index bloat and slow maintenance at 10⁸ rows | Medium (later) |
+| P13 | **Dashboard query fan-out** | ~20 queries serialised in one transaction (`series()` in `analytics.module.ts:64`) — already improved per `performance.md` | Acceptable; watch with 1M leads | Low |
 
-## 2. Front-End Bundle & Client-Side Rendering Performance
+## 3. Horizontal scaling posture
 
-### Next.js 16 App Router Evaluation
-- **Bundle Strategy**: Web application uses Turbopack/Next.js code splitting. Heavy components (such as the `@xyflow/react` visual DAG canvas, `recharts` analytics graphs, and PDF document previewers) are dynamically imported using `next/dynamic` with `ssr: false`, preventing excessive initial bundle payloads.
-- **Rendering Model**:
-  - The application shell and skeleton layouts render via Server Components (RSC).
-  - Data grids (`/leads`), Kanban boards (`/pipeline`), and chat interfaces (`/inbox`) utilize TanStack React Query on the client to facilitate optimistic UI updates and live Server-Sent Events (SSE) patching.
-- **Font Optimization**: Uses `geist/font` with native zero-layout-shift font optimization and local fallback metrics.
+| Layer | Can scale out? | Notes |
+|---|---|---|
+| API | Yes | Stateless; sessions in DB/Redis; throttler in Redis; SSE via Redis pub/sub with in-process fallback |
+| Workers | Yes by tier (`all|outbox|ai`) | Outbox claim uses `SKIP LOCKED`; automation runs claim by CAS; maintenance singleton via lock; campaigns not safe to parallelise yet (S-02) |
+| Postgres | Vertical + read replicas not used | All reads/writes go to one primary; no replica routing; connection pooling (pgbouncer) is anticipated by transaction-local settings but not configured in repo |
+| Redis | Single instance | No Sentinel/Cluster guidance in code |
+| Object storage | S3 | Fine |
+| Web | Yes | Next.js server; CDN guidance only in `docs/deployment.md` |
 
----
+## 4. Capacity guardrails missing
+- No per-tenant fairness for queues (one tenant's campaign or import can monopolise `broadcast-campaigns` concurrency 3 and AI workers).
+- No query timeouts / `statement_timeout` for the app role evident in code.
+- No SLO dashboards deployed; `docs/slos-and-alerts.md` and alert rules exist in code only.
+- No caching layer for read-heavy reference data (pipeline stages, plan entitlements, role permissions): each request re-reads.
 
-## 3. Database Query Efficiency & Optimization Patterns
-
-### Elimination of Interactive Transaction Queue Bottlenecks
-During Phase 7 optimization, a significant query latency spike (up to 1.8 seconds) was diagnosed on `/dashboard`.
-- **Root Cause**: The dashboard executed 20 parallel queries inside a single interactive transaction via `Promise.all()`. Because an interactive transaction binds to a single physical PostgreSQL connection, the queries queued serially behind each other, triggering `pg` client driver deprecation warnings.
-- **Architectural Fix**: Introduced the typed sequential runner `series()` (`apps/api/src/common/series.ts`). All transaction-bound multi-query aggregations now execute sequentially, reducing dashboard p95 latency from 1,800ms down to 415ms.
-
-### Indexing Efficiency (Trigram Search on 100k Rows)
-```sql
-CREATE INDEX idx_leads_search_name ON leads USING gin (name gin_trgm_ops);
-CREATE INDEX idx_leads_search_phone ON leads USING gin (phone gin_trgm_ops);
-```
-EXPLAIN ANALYZE on a 100,000-lead database demonstrates that trigram searches execute via Bitmap Index Scans in under 12ms, well within interactive UI budgets.
-
----
-
-## 4. Scalability Limits & Bottlenecks (10x Growth Projections)
-
-Evaluating the architecture against a **10x growth trajectory** (1,000 active tenants, 1,000,000 leads, 10,000,000 messages):
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                   10x SCALABILITY BOTTLENECK ANALYSIS                  │
-├──────────────────────────────┬──────────────────┬──────────────────────┤
-│ Component                    │ Current Capacity │ 10x Projected Limit  │
-├──────────────────────────────┼──────────────────┼──────────────────────┤
-│ 1. Serial Minute Scheduler   │ ~150 tenants     │ FAILS at >500 tenants│
-│ 2. Outbox Relay Polling      │ ~250 events/sec  │ CONFLICTS on locks   │
-│ 3. Unpartitioned Messages    │ ~100k rows       │ SLOWS at >5M rows    │
-│ 4. Vector Similarity Search  │ ~50k chunks      │ DEGRADES at >500k    │
-│ 5. Redis SSE Single Instance │ ~5,000 concurrent│ SATURATES at >20k    │
-└──────────────────────────────┴──────────────────┴──────────────────────┘
-```
-
-### Bottleneck 1: Serial Minute Maintenance Scanner
-- **Location**: `apps/api/src/ops/scanners.service.ts`
-- **Issue**: The maintenance job iterates sequentially through every active tenant in the database to detect SLA breaches and check inactive conversations.
-- **10x Impact**: At 1,000 tenants, iterating sequentially will consume 120-180 seconds, breaking the 60-second execution cadence.
-- **Remediation**: Shard the tenant list across multiple worker queues using a modulo partition hash (`tenant_id % N_WORKERS`), enabling concurrent multi-worker scanning.
-
-### Bottleneck 2: Outbox Table Contention (`FOR UPDATE SKIP LOCKED`)
-- **Location**: `apps/api/src/ops/outbox-relay.ts`
-- **Issue**: Polling `outbox_events` every 1,000ms using row locks creates hot index pages when multiple worker replicas compete for jobs.
-- **10x Impact**: Under bulk message bursts, database CPU spikes due to lock acquisition.
-- **Remediation**: Partition `outbox_events` by date/status, or migrate high-throughput asynchronous job dispatching directly to Redis/BullMQ streams, reserving PostgreSQL outbox only for transactional guarantees.
-
-### Bottleneck 3: Message Table Growth
-- **Location**: `packages/database/prisma/schema.prisma` (`Message`)
-- **Issue**: `messages` is an unpartitioned table storing both inbound customer chats and automated bot logs.
-- **10x Impact**: At 10M messages, index tree depth increases query times for historic conversation views.
-- **Remediation**: Partition `messages` by month or quarter based on `created_at`.
-
-### Bottleneck 4: PostgreSQL `pgvector` Index Scaling
-- **Location**: `apps/api/src/ai/knowledge/storage.ts`
-- **Issue**: Uses standard vector distance operators (`<=>`) over `vector(1536)`.
-- **10x Impact**: Without an HNSW (Hierarchical Navigable Small World) index, vector cosine searches perform sequential table scans over document chunks.
-- **Remediation**: Ensure an explicit HNSW index is generated:
-  ```sql
-  CREATE INDEX ON knowledge_chunks USING hnsw (embedding vector_cosine_ops) WITH (m = 16, ef_construction = 64);
-  ```
+## 5. Recommendations (ordered)
+1. Rewrite the campaign sender as a leased, concurrent, rate-aware dispatcher; stream audience materialisation in chunks (`INSERT … SELECT`) instead of loading all leads; keep launch under the transaction timeout (≈ 5–8 days with S-02).
+2. Cache membership + permission set per `(userId, tenantId)` in Redis (short TTL, invalidate on role/membership change): halves per-request DB work (≈ 2 days).
+3. Move external I/O out of transactions: write an outbox event `appointment.calendar_sync` handled by the worker with retry (≈ 2 days).
+4. Stream lead export instead of materialising 50k rows, and tell the user when the 50,000-row cap truncates; queue imports only if the 5,000-row cap is raised (≈ 3 days).
+5. Add `statement_timeout`, explicit pool sizing, pgbouncer in the reference topology (≈ 2 days).
+6. Re-run `scripts/loadtest.mjs` against a deployed staging, add campaign and webhook-burst scenarios, record results (≈ 3 days).
+7. Partition `messages`/`lead_activities`/`email_engagement_events` by month before they exceed ~50M rows (≈ 5 days when needed).
