@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import type { ReactNode } from 'react';
@@ -19,6 +19,8 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const cookieStore = await cookies();
+  const headerStore = await headers();
+  const nonce = headerStore.get('x-nonce') ?? undefined;
   const initialSidebarCollapsed = cookieStore.get('lp-sidebar-collapsed')?.value === '1';
 
   return (
@@ -29,8 +31,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     >
       <head>
         {/* Runs before first paint: applies persisted theme and sidebar state so there is no layout shift or flash. */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <script dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} nonce={nonce} />
+        <script dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT_SCRIPT }} nonce={nonce} />
       </head>
       <body><Providers initialSidebarCollapsed={initialSidebarCollapsed}>{children}</Providers></body>
     </html>

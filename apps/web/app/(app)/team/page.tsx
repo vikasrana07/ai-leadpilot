@@ -27,13 +27,19 @@ interface Workload { members: { membershipId: string; name: string; email: strin
 interface Member { id: string; status: 'ACTIVE' | 'INVITED' | 'DEACTIVATED'; roleKey: string; roleName: string; mfaEnabled?: boolean; joinedAt: string; user: { id: string; name: string; email: string } }
 interface Invitation { id: string; email: string; expiresAt: string; role: { key: string; name: string } }
 
-const ROLES = [{ key: 'owner', name: 'Business Owner' }, { key: 'manager', name: 'Sales Manager' }, { key: 'agent', name: 'Sales Agent' }] as const;
+const FALLBACK_ROLES = [{ key: 'owner', name: 'Business Owner' }, { key: 'manager', name: 'Sales Manager' }, { key: 'agent', name: 'Sales Agent' }] as const;
 
 function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const qc = useQueryClient();
   const { ctx } = useAuth();
+  const rolesQuery = useQuery({
+    queryKey: ['roles'],
+    queryFn: () => api<{ id: string; key: string; name: string }[]>('/roles'),
+    enabled: open,
+  });
+  const allRoles = rolesQuery.data ?? FALLBACK_ROLES;
   const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting } } = useForm<InviteInput>({ resolver: zodResolver(inviteSchema), defaultValues: { roleKey: 'agent' } });
-  const grantable = ROLES.filter((r) => r.key !== 'owner' || ctx.permissions.includes('billing:manage'));
+  const grantable = allRoles.filter((r) => r.key !== 'owner' || ctx.permissions.includes('billing:manage'));
   async function onSubmit(v: InviteInput) {
     try {
       await api('/team/invitations', { method: 'POST', body: v });
@@ -136,6 +142,8 @@ export default function TeamPage() {
   const members = useQuery({ queryKey: ['team', 'members'], queryFn: () => api<Member[]>('/team/members') });
   const workload = useQuery({ queryKey: ['team', 'workload'], queryFn: () => api<Workload>('/team/workload'), enabled: can('analytics:read:team') });
   const invitations = useQuery({ queryKey: ['team', 'invitations'], queryFn: () => api<Invitation[]>('/team/invitations'), enabled: canInvite });
+  const rolesQuery = useQuery({ queryKey: ['roles'], queryFn: () => api<{ id: string; key: string; name: string }[]>('/roles'), enabled: canManage });
+  const allRoles = rolesQuery.data ?? FALLBACK_ROLES;
 
   const act = useMutation({
     mutationFn: (a: { path: string; method: string; body?: unknown; ok: string }) => api(a.path, { method: a.method, body: a.body }).then(() => a.ok),
@@ -163,7 +171,7 @@ export default function TeamPage() {
                   {m.mfaEnabled ? <span className="text-helper inline-flex items-center gap-1" title="Two-step verification is on"><ShieldCheck className="h-3.5 w-3.5" aria-hidden /><span className="sr-only">Two-step verification is on</span></span> : null}
                   {canManage && !self ? (
                     <Dropdown trigger={<Button variant="ghost" size="icon" aria-label={`Actions for ${m.user.name}`}><MoreHorizontal className="h-4 w-4" /></Button>}>
-                      {ROLES.filter((r) => r.key !== m.roleKey).map((r) => (
+                      {allRoles.filter((r) => r.key !== m.roleKey).map((r) => (
                         <DropdownItem key={r.key} onSelect={() => act.mutate({ path: `/team/members/${m.id}/role`, method: 'PATCH', body: { roleKey: r.key }, ok: `${m.user.name} is now ${r.name}` })}>Make {r.name}</DropdownItem>
                       ))}
                       <DropdownSeparator />

@@ -72,14 +72,46 @@ services:
     restart: unless-stopped
     # The image HEALTHCHECK is liveness. Point your load balancer at GET /health/ready (checks the database).
 
-  worker:
-    image: ${API_IMAGE:-leadpilot-api:latest}    # same image as the API
-    command: ["node", "dist/worker.js"]          # sets WORKERS_ENABLED=true itself; no HTTP listener
+  # Specialized worker tier 1: Low-latency transactional outbox relay & webhook deliveries
+  worker-outbox:
+    image: ${API_IMAGE:-leadpilot-api:latest}
+    command: ["node", "dist/worker-outbox.js"]
     environment:
       <<: *app-env
-    healthcheck: { disable: true }               # inherited HTTP healthcheck does not apply (no listener)
+      WORKER_TIER: outbox
+    healthcheck: { disable: true }
     restart: unless-stopped
-    # Safe to run more than one (SKIP LOCKED outbox claims, compare-and-set run claims, event-mark scanners). Start with 1-2.
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # Specialized worker tier 2: Isolated AI document extraction, chunking & vector embeddings
+  worker-ai:
+    image: ${API_IMAGE:-leadpilot-api:latest}
+    command: ["node", "dist/worker-ai.js"]
+    environment:
+      <<: *app-env
+      WORKER_TIER: ai
+    healthcheck: { disable: true }
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+
+  # Optional unified monolithic worker (runs all tiers in a single container for smaller deployments)
+  worker:
+    image: ${API_IMAGE:-leadpilot-api:latest}
+    command: ["node", "dist/worker.js"]
+    profiles: ["monolith"]
+    environment:
+      <<: *app-env
+      WORKER_TIER: all
+    healthcheck: { disable: true }
+    restart: unless-stopped
 
   web:
     image: ${WEB_IMAGE:-leadpilot-web:latest}    # built with --build-arg NEXT_PUBLIC_API_URL=<public API URL>

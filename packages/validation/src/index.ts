@@ -33,7 +33,28 @@ export const resetPasswordSchema = z.object({ token: z.string().min(20).max(200)
 export const verifyEmailSchema = z.object({ token: z.string().min(20).max(200) });
 export const switchWorkspaceSchema = z.object({ tenantId: z.string().uuid() });
 
-export const inviteSchema = z.object({ email, roleKey: z.enum(ASSIGNABLE_ROLE_KEYS) });
+export const roleKeySchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(2, 'Role key must have at least 2 characters')
+  .max(32, 'Role key must have at most 32 characters')
+  .regex(/^[a-z0-9_-]+$/, 'Role key may only contain lowercase letters, numbers, hyphens, and underscores');
+
+export const createRoleSchema = z.object({
+  key: roleKeySchema,
+  name: z.string().trim().min(2, 'Name must have at least 2 characters').max(64, 'Name must have at most 64 characters'),
+  permissions: z.array(z.string()).min(1, 'Select at least one permission'),
+});
+export type CreateRoleInput = z.infer<typeof createRoleSchema>;
+
+export const updateRoleSchema = z.object({
+  name: z.string().trim().min(2, 'Name must have at least 2 characters').max(64, 'Name must have at most 64 characters'),
+  permissions: z.array(z.string()).min(1, 'Select at least one permission'),
+});
+export type UpdateRoleInput = z.infer<typeof updateRoleSchema>;
+
+export const inviteSchema = z.object({ email, roleKey: roleKeySchema });
 export type InviteInput = z.infer<typeof inviteSchema>;
 
 export const acceptInviteSchema = z.object({
@@ -44,7 +65,7 @@ export const acceptInviteSchema = z.object({
 });
 export type AcceptInviteInput = z.infer<typeof acceptInviteSchema>;
 
-export const changeRoleSchema = z.object({ roleKey: z.enum(ASSIGNABLE_ROLE_KEYS) });
+export const changeRoleSchema = z.object({ roleKey: roleKeySchema });
 export const changeMemberStatusSchema = z.object({ status: z.enum(['ACTIVE', 'DEACTIVATED']) });
 
 export const updateTenantSchema = z

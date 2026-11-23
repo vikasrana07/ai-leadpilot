@@ -80,6 +80,8 @@ const schema = z.object({
   ACCESS_LOG: z.enum(['true', 'false']).optional().transform((v) => (v === undefined ? undefined : v === 'true')),
   /** Run the outbox relay, BullMQ workers and scanners in this process. The API process normally leaves this off and `apps/worker` turns it on. */
   WORKERS_ENABLED: bool,
+  /** Execution tier for background workers: 'all' (unified monolithic), 'outbox' (low-latency outbox/relay/webhooks), or 'ai' (heavy document extraction & embeddings). */
+  WORKER_TIER: z.enum(['all', 'outbox', 'ai']).default('all'),
   QUEUE_PREFIX: z.string().min(1).max(40).default('leadpilot'),
   AUTOMATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(5),
   AUTOMATION_RETRY_BASE_MS: z.coerce.number().int().min(10).default(2000),

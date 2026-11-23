@@ -9,6 +9,7 @@ import { createLogger, installProcessHandlers } from './observability/index.js';
  * outbox relay, the BullMQ workers and the minute scheduler inside JobsService.
  */
 process.env.WORKERS_ENABLED = 'true';
+process.env.WORKER_TIER = process.env.WORKER_TIER ?? 'all';
 process.env.LP_PROCESS = 'worker';
 const logger = createLogger();
 installProcessHandlers(logger);

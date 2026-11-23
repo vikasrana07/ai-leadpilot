@@ -6,6 +6,8 @@
   "description": "Background process. The code lives in apps/api (src/worker.ts + src/ops) so business logic exists once; this package only runs it.",
   "scripts": {
     "build": "pnpm --filter @leadpilot/api build",
-    "start": "pnpm --filter @leadpilot/api worker"
+    "start": "pnpm --filter @leadpilot/api worker",
+    "start:outbox": "pnpm --filter @leadpilot/api worker:outbox",
+    "start:ai": "pnpm --filter @leadpilot/api worker:ai"
   }
 }

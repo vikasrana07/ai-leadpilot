@@ -1,5 +1,5 @@
 import { EntitlementsService } from '../../billing/entitlements.service.js';
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException, PayloadTooLargeException, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException, Optional, PayloadTooLargeException, ServiceUnavailableException, UnprocessableEntityException, type OnApplicationBootstrap } from '@nestjs/common';
 import { Prisma } from '@leadpilot/database';
 import { createHash } from 'node:crypto';
 import { v7 as uuidv7 } from 'uuid';
@@ -10,6 +10,7 @@ import { EMBEDDING_PROVIDER, type EmbeddingProvider } from '../llm.js';
 import { chunkText, detectKind, extractText, stripInjection, type DocKind } from './extract.js';
 import { OBJECT_STORAGE, type ObjectStorage } from './storage.js';
 import { ScannerUnavailableError, VIRUS_SCANNER, type VirusScanner } from './virus-scan.js';
+import { JobsService } from '../../ops/jobs.service.js';
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 export interface KnowledgeHit { chunkId: string; documentId: string; title: string; content: string; score: number }
@@ -17,7 +18,7 @@ export interface KnowledgeHit { chunkId: string; documentId: string; title: stri
 const vec = (v: number[]) => `[${v.map((x) => Number(x.toFixed(6))).join(',')}]`;
 
 @Injectable()
-export class KnowledgeService {
+export class KnowledgeService implements OnApplicationBootstrap {
   private readonly log = new Logger('Knowledge');
   private readonly pending = new Set<Promise<void>>();
 
@@ -28,7 +29,14 @@ export class KnowledgeService {
     @Inject(VIRUS_SCANNER) private readonly scanner: VirusScanner,
     @Inject(EMBEDDING_PROVIDER) private readonly embeddings: EmbeddingProvider,
     @Inject(EntitlementsService) private readonly ent: EntitlementsService,
+    @Optional() @Inject(JobsService) private readonly jobs?: JobsService,
   ) {}
+
+  onApplicationBootstrap(): void {
+    if (this.jobs) {
+      this.jobs.processDoc = (tenantId, id, kind) => this.process(tenantId, id, kind as DocKind);
+    }
+  }
 
   /** Resolves when all background processing has finished (used by tests and graceful shutdown). */
   async idle(): Promise<void> { while (this.pending.size) await Promise.all([...this.pending]); }
@@ -60,7 +68,13 @@ export class KnowledgeService {
       await this.rec(ctx, tx, 'knowledge.uploaded', id, { filename, bytes: file.size });
       return d;
     });
-    this.kick(ctx.tenantId, id, kind, file.buffer);
+    if (this.jobs) {
+      await this.jobs.enqueueDocProcessing(ctx.tenantId, id, kind).catch(() => {
+        this.kick(ctx.tenantId, id, kind, file.buffer);
+      });
+    } else {
+      this.kick(ctx.tenantId, id, kind, file.buffer);
+    }
     return this.view(doc);
   }
 
@@ -70,7 +84,7 @@ export class KnowledgeService {
   }
 
   /** Extract text, chunk, embed, index. Failures are recorded on the document with a customer-safe message. */
-  private async process(tenantId: string, id: string, kind: DocKind, data?: Buffer): Promise<void> {
+  async process(tenantId: string, id: string, kind: DocKind, data?: Buffer): Promise<void> {
     await this.db.tenantTx({ tenantId }, (tx) => tx.knowledgeDocument.update({ where: { id }, data: { status: 'PROCESSING', error: null } }));
     try {
       const doc = await this.db.tenantTx({ tenantId }, (tx) => tx.knowledgeDocument.findUniqueOrThrow({ where: { id } }));

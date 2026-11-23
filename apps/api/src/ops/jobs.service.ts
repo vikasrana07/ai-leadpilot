@@ -17,6 +17,7 @@ import { ScannersService } from './scanners.service.js';
 export const RUNS_QUEUE = 'automation-runs';
 export const MAINTENANCE_QUEUE = 'maintenance';
 export const WEBHOOKS_QUEUE = 'webhook-deliveries';
+export const AI_DOCS_QUEUE = 'ai-knowledge-docs';
 
 export function redisConnection(url: string): ConnectionOptions {
   const u = new URL(url);
@@ -35,9 +36,13 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
   private runsQueue: Queue | null = null;
   private maintenanceQueue: Queue | null = null;
   private webhooksQueue: Queue | null = null;
+  private aiDocsQueue: Queue | null = null;
   private readonly workers: Worker[] = [];
   private relayTimer: NodeJS.Timeout | null = null;
   private relayBusy = false;
+
+  /** Hook registered by KnowledgeService to process AI documents */
+  processDoc?: (tenantId: string, documentId: string, kind: string) => Promise<void>;
 
   constructor(
     @Inject(ENV) private readonly env: Env,
@@ -52,7 +57,7 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     @Inject(ChannelHealth) private readonly channelHealth: ChannelHealth,
   ) {}
 
-  get running(): boolean { return this.runsQueue !== null; }
+  get running(): boolean { return this.workers.length > 0; }
 
   async onApplicationBootstrap(): Promise<void> {
     if (!this.env.WORKERS_ENABLED) return;
@@ -60,48 +65,93 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
   }
 
   async start(): Promise<void> {
-    if (this.runsQueue) return;
+    if (this.running) return;
+    const tier = this.env.WORKER_TIER;
     const connection = redisConnection(this.env.REDIS_URL);
     const prefix = this.env.QUEUE_PREFIX;
-    this.runsQueue = new Queue(RUNS_QUEUE, { connection, prefix, defaultJobOptions: { attempts: this.env.AUTOMATION_MAX_ATTEMPTS, backoff: { type: 'exponential', delay: this.env.AUTOMATION_RETRY_BASE_MS }, removeOnComplete: { count: 1000 }, removeOnFail: { count: 5000 } } });
-    this.maintenanceQueue = new Queue(MAINTENANCE_QUEUE, { connection, prefix, defaultJobOptions: { removeOnComplete: { count: 20 }, removeOnFail: { count: 50 } } });
-    this.webhooksQueue = new Queue(WEBHOOKS_QUEUE, { connection, prefix, defaultJobOptions: { attempts: 5, backoff: { type: 'exponential', delay: 2000 }, removeOnComplete: { count: 1000 }, removeOnFail: { count: 10000 } } });
-    this.runsQueue.on('error', (e) => this.log.error(`runs queue: ${e.message}`));
-    this.maintenanceQueue.on('error', (e) => this.log.error(`maintenance queue: ${e.message}`));
-    this.webhooksQueue.on('error', (e) => this.log.error(`webhooks queue: ${e.message}`));
-    this.relay.enqueueRun = (tenantId, runId) => this.enqueueRun(tenantId, runId);
-    this.relay.enqueueWebhook = (tenantId, deliveryId) => this.enqueueWebhook(tenantId, deliveryId);
-    this.webhooks.enqueueJob = (tenantId, deliveryId, generation) => this.enqueueWebhook(tenantId, deliveryId, generation);
 
-    this.workers.push(new Worker(RUNS_QUEUE, async (job: Job<{ tenantId: string; runId: string }>) => {
-      const maxAttempts = job.opts.attempts ?? 1;
-      await runWithLogContext({ jobId: String(job.id ?? job.data.runId), tenantId: job.data.tenantId }, () => this.engine.execute(job.data.tenantId, job.data.runId, job.attemptsMade + 1 >= maxAttempts));
-    }, { connection, prefix, concurrency: 5 }));
-    this.workers.push(new Worker(WEBHOOKS_QUEUE, async (job: Job<{ tenantId: string; deliveryId: string }>) => {
-      const maxAttempts = job.opts.attempts ?? 5;
-      await runWithLogContext({ jobId: String(job.id ?? job.data.deliveryId), tenantId: job.data.tenantId }, () =>
-        this.webhooks.deliverJob(job.data.deliveryId, job.data.tenantId, job.attemptsMade + 1, maxAttempts)
-      );
-    }, { connection, prefix, concurrency: 5 }));
-    this.workers.push(new Worker(MAINTENANCE_QUEUE, async () => { await this.maintenance(); }, { connection, prefix, concurrency: 1 }));
+    const shouldRunOutbox = tier === 'all' || tier === 'outbox';
+    const shouldRunAi = tier === 'all' || tier === 'ai';
+
+    if (shouldRunOutbox) {
+      this.runsQueue = new Queue(RUNS_QUEUE, { connection, prefix, defaultJobOptions: { attempts: this.env.AUTOMATION_MAX_ATTEMPTS, backoff: { type: 'exponential', delay: this.env.AUTOMATION_RETRY_BASE_MS }, removeOnComplete: { count: 1000 }, removeOnFail: { count: 5000 } } });
+      this.maintenanceQueue = new Queue(MAINTENANCE_QUEUE, { connection, prefix, defaultJobOptions: { removeOnComplete: { count: 20 }, removeOnFail: { count: 50 } } });
+      this.webhooksQueue = new Queue(WEBHOOKS_QUEUE, { connection, prefix, defaultJobOptions: { attempts: 5, backoff: { type: 'exponential', delay: 2000 }, removeOnComplete: { count: 1000 }, removeOnFail: { count: 10000 } } });
+      this.runsQueue.on('error', (e) => this.log.error(`runs queue: ${e.message}`));
+      this.maintenanceQueue.on('error', (e) => this.log.error(`maintenance queue: ${e.message}`));
+      this.webhooksQueue.on('error', (e) => this.log.error(`webhooks queue: ${e.message}`));
+      this.relay.enqueueRun = (tenantId, runId) => this.enqueueRun(tenantId, runId);
+      this.relay.enqueueWebhook = (tenantId, deliveryId) => this.enqueueWebhook(tenantId, deliveryId);
+      this.webhooks.enqueueJob = (tenantId, deliveryId, generation) => this.enqueueWebhook(tenantId, deliveryId, generation);
+
+      this.workers.push(new Worker(RUNS_QUEUE, async (job: Job<{ tenantId: string; runId: string }>) => {
+        const maxAttempts = job.opts.attempts ?? 1;
+        await runWithLogContext({ jobId: String(job.id ?? job.data.runId), tenantId: job.data.tenantId }, () => this.engine.execute(job.data.tenantId, job.data.runId, job.attemptsMade + 1 >= maxAttempts));
+      }, { connection, prefix, concurrency: 5 }));
+
+      this.workers.push(new Worker(WEBHOOKS_QUEUE, async (job: Job<{ tenantId: string; deliveryId: string }>) => {
+        const maxAttempts = job.opts.attempts ?? 5;
+        await runWithLogContext({ jobId: String(job.id ?? job.data.deliveryId), tenantId: job.data.tenantId }, () =>
+          this.webhooks.deliverJob(job.data.deliveryId, job.data.tenantId, job.attemptsMade + 1, maxAttempts)
+        );
+      }, { connection, prefix, concurrency: 5 }));
+
+      this.workers.push(new Worker(MAINTENANCE_QUEUE, async () => { await this.maintenance(); }, { connection, prefix, concurrency: 1 }));
+
+      await this.maintenanceQueue.upsertJobScheduler('tick', { every: 60_000 }, { name: 'tick', data: {} });
+      this.relayTimer = setInterval(() => { void this.drain(); }, 1000);
+    }
+
+    if (shouldRunAi) {
+      this.aiDocsQueue = new Queue(AI_DOCS_QUEUE, {
+        connection,
+        prefix,
+        defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 5000 }, removeOnComplete: { count: 500 }, removeOnFail: { count: 2000 } },
+      });
+      this.aiDocsQueue.on('error', (e) => this.log.error(`ai docs queue: ${e.message}`));
+
+      this.workers.push(new Worker(AI_DOCS_QUEUE, async (job: Job<{ tenantId: string; documentId: string; kind: string }>) => {
+        await runWithLogContext({ jobId: String(job.id ?? job.data.documentId), tenantId: job.data.tenantId }, async () => {
+          if (this.processDoc) {
+            await this.processDoc(job.data.tenantId, job.data.documentId, job.data.kind);
+          } else {
+            this.log.warn(`No processDoc handler registered for AI doc job ${job.data.documentId}`);
+          }
+        });
+      }, { connection, prefix, concurrency: 2 }));
+    }
+
     for (const w of this.workers) w.on('error', (e) => this.log.error(`worker: ${e.message}`));
 
-    await this.maintenanceQueue.upsertJobScheduler('tick', { every: 60_000 }, { name: 'tick', data: {} });
-    this.relayTimer = setInterval(() => { void this.drain(); }, 1000);
     this.heartbeat.start();
-    this.log.log('Background workers started');
+    this.log.log(`Background workers started (tier: ${tier}, active workers: ${this.workers.length})`);
   }
 
   /** `jobId` makes enqueueing idempotent per run and delivery generation (a re-queued failed run needs a fresh id). */
   async enqueueRun(tenantId: string, runId: string, generation = 0): Promise<void> {
-    if (!this.runsQueue) return;
+    if (!this.runsQueue) {
+      const connection = redisConnection(this.env.REDIS_URL);
+      this.runsQueue = new Queue(RUNS_QUEUE, { connection, prefix: this.env.QUEUE_PREFIX });
+    }
     await this.runsQueue.add('run', { tenantId, runId }, { jobId: `${runId}-${generation}` });
   }
 
   /** `jobId` makes enqueueing idempotent per delivery and generation. */
   async enqueueWebhook(tenantId: string, deliveryId: string, generation = 0): Promise<void> {
-    if (!this.webhooksQueue) return;
+    if (!this.webhooksQueue) {
+      const connection = redisConnection(this.env.REDIS_URL);
+      this.webhooksQueue = new Queue(WEBHOOKS_QUEUE, { connection, prefix: this.env.QUEUE_PREFIX });
+    }
     await this.webhooksQueue.add('deliver', { tenantId, deliveryId }, { jobId: `${deliveryId}-${generation}` });
+  }
+
+  /** Enqueues heavy AI document parsing, chunking, and vector embedding calculation to the AI worker tier. */
+  async enqueueDocProcessing(tenantId: string, documentId: string, kind: string, generation = 0): Promise<void> {
+    if (!this.aiDocsQueue) {
+      const connection = redisConnection(this.env.REDIS_URL);
+      this.aiDocsQueue = new Queue(AI_DOCS_QUEUE, { connection, prefix: this.env.QUEUE_PREFIX });
+    }
+    await this.aiDocsQueue.add('process', { tenantId, documentId, kind }, { jobId: `${documentId}-${generation}` });
   }
 
   private async drain(): Promise<void> {
@@ -145,8 +195,18 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
 
   async onApplicationShutdown(): Promise<void> {
     if (this.relayTimer) clearInterval(this.relayTimer);
+    this.relayTimer = null;
     await Promise.allSettled(this.workers.map((w) => w.close()));
-    await Promise.allSettled([this.runsQueue?.close(), this.maintenanceQueue?.close(), this.webhooksQueue?.close()]);
-    this.runsQueue = null; this.maintenanceQueue = null; this.webhooksQueue = null; this.workers.length = 0;
+    await Promise.allSettled([
+      this.runsQueue?.close(),
+      this.maintenanceQueue?.close(),
+      this.webhooksQueue?.close(),
+      this.aiDocsQueue?.close(),
+    ]);
+    this.runsQueue = null;
+    this.maintenanceQueue = null;
+    this.webhooksQueue = null;
+    this.aiDocsQueue = null;
+    this.workers.length = 0;
   }
 }

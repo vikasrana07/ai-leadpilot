@@ -26,7 +26,7 @@ export class TeamController {
   revoke(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.team.revokeInvitation(ctx, id); }
 
   @Patch('members/:id/role') @RequirePermissions('team:manage')
-  role(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(changeRoleSchema)) body: { roleKey: SystemRoleKey }) {
+  role(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(changeRoleSchema)) body: { roleKey: string }) {
     return this.team.changeRole(ctx, id, body.roleKey);
   }
 
