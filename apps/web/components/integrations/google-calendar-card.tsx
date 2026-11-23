@@ -36,10 +36,10 @@ export function GoogleCalendarCard() {
   });
 
   const connectMutation = useMutation({
-    mutationFn: (code: string) =>
+    mutationFn: ({ code, state }: { code: string; state: string }) =>
       api<{ ok: boolean; email: string }>('/integrations/google-calendar/connect', {
         method: 'POST',
-        body: { code },
+        body: { code, state },
       }),
     onSuccess: async (data) => {
       toast.success(`Google Calendar connected (${data.email})`);
@@ -62,8 +62,16 @@ export function GoogleCalendarCard() {
   // Handle OAuth callback if code is in the query params
   useEffect(() => {
     const code = searchParams.get('code');
-    if (code && !connectMutation.isPending && !connectMutation.isSuccess) {
-      connectMutation.mutate(code);
+    const state = searchParams.get('state');
+    if (!code) return;
+    // The server only accepts a `state` it issued for this member; a link crafted by someone else will not carry one.
+    if (!state) {
+      toast.error('This Google sign-in link is not valid. Please start the connection again.');
+      router.replace('/integrations');
+      return;
+    }
+    if (!connectMutation.isPending && !connectMutation.isSuccess) {
+      connectMutation.mutate({ code, state });
     }
   }, [searchParams]);
 

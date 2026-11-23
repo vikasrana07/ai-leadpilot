@@ -1,3 +1,4 @@
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import type { TxClient } from '@leadpilot/database';
 import { v7 as uuidv7 } from 'uuid';
@@ -24,6 +25,7 @@ export interface GoogleCalendarStatus {
   status: string | null;
 }
 
+const STATE_TTL_MS = 10 * 60_000;
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo';
@@ -81,32 +83,59 @@ export class GoogleCalendarService {
     });
   }
 
+  /** The redirect URI is fixed by configuration; it is never taken from the client. */
+  private redirectUri(): string {
+    return this.env.GOOGLE_CALENDAR_REDIRECT_URI ?? `${this.env.WEB_ORIGIN}/integrations`;
+  }
+
+  /** Domain-separated key so the session-signing secret is never used directly for OAuth state. */
+  private stateKey(): Buffer {
+    return createHmac('sha256', this.env.JWT_ACCESS_SECRET).update('leadpilot/google-calendar-oauth-state/v1').digest();
+  }
+
+  /** Stateless signed state bound to the workspace member that started the flow: `<payload>.<hmac>`, valid for 10 minutes. */
+  private signState(tenantId: string, membershipId: string): string {
+    const payload = Buffer.from(JSON.stringify({ t: tenantId, m: membershipId, n: randomBytes(16).toString('base64url'), e: Date.now() + STATE_TTL_MS })).toString('base64url');
+    const sig = createHmac('sha256', this.stateKey()).update(payload).digest('base64url');
+    return `${payload}.${sig}`;
+  }
+
+  private verifyState(state: string, tenantId: string, membershipId: string): void {
+    const invalid = (): never => { throw new BadRequestException({ code: 'invalid_oauth_state', message: 'The Google sign-in request is invalid or has expired. Please start again.' }); };
+    const [payload, sig, extra] = state.split('.');
+    if (!payload || !sig || extra !== undefined) return invalid();
+    const expected = createHmac('sha256', this.stateKey()).update(payload).digest();
+    const given = Buffer.from(sig, 'base64url');
+    if (given.length !== expected.length || !timingSafeEqual(given, expected)) return invalid();
+    let claims: { t?: string; m?: string; e?: number };
+    try { claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as typeof claims; } catch { return invalid(); }
+    if (claims.t !== tenantId || claims.m !== membershipId || typeof claims.e !== 'number' || claims.e < Date.now()) return invalid();
+  }
+
   /**
    * Generates the OAuth2 consent URL for the sales agent to link their Google Calendar.
    */
-  getAuthUrl(tenantId: string, membershipId: string, redirectUri?: string): string {
+  getAuthUrl(tenantId: string, membershipId: string): string {
     if (this.mode === 'off') {
       throw new BadRequestException({ code: 'gcal_disabled', message: 'Google Calendar integration is disabled' });
     }
 
-    const state = Buffer.from(JSON.stringify({ tenantId, membershipId, ts: Date.now() })).toString('base64url');
+    const state = this.signState(tenantId, membershipId);
+    const redirect = this.redirectUri();
 
     if (this.mode === 'mock') {
       // In mock mode, redirect back with a mock code so local development and testing are seamless
-      const redirect = redirectUri ?? `${this.env.WEB_ORIGIN}/integrations`;
       return `${redirect}?gcal_mock=1&code=mock_code_${membershipId}&state=${state}`;
     }
 
     const clientId = this.env.GOOGLE_CALENDAR_CLIENT_ID;
-    const resolvedRedirect = redirectUri ?? this.env.GOOGLE_CALENDAR_REDIRECT_URI ?? `${this.env.WEB_ORIGIN}/integrations`;
-
     if (!clientId) {
       throw new BadRequestException({ code: 'gcal_not_configured', message: 'Google Calendar Client ID is not configured' });
     }
 
     const params = new URLSearchParams({
       client_id: clientId,
-      redirect_uri: resolvedRedirect,
+      redirect_uri: redirect,
       response_type: 'code',
       scope: SCOPES,
       access_type: 'offline',
@@ -120,10 +149,13 @@ export class GoogleCalendarService {
   /**
    * Exchanges authorization code and seals encrypted tokens in integration_credentials.
    */
-  async connect(tenantId: string, membershipId: string, code: string, redirectUri?: string): Promise<{ email: string }> {
+  async connect(tenantId: string, membershipId: string, code: string, state: string): Promise<{ email: string }> {
     if (this.mode === 'off') {
       throw new BadRequestException({ code: 'gcal_disabled', message: 'Google Calendar integration is disabled' });
     }
+
+    // OAuth login-CSRF guard: the state must have been issued by this server, for THIS workspace member, and not be expired.
+    this.verifyState(state, tenantId, membershipId);
 
     let email = 'agent@example.com';
     let tokens: GoogleCalendarTokens;
@@ -139,7 +171,7 @@ export class GoogleCalendarService {
     } else {
       const clientId = this.env.GOOGLE_CALENDAR_CLIENT_ID;
       const clientSecret = this.env.GOOGLE_CALENDAR_CLIENT_SECRET;
-      const resolvedRedirect = redirectUri ?? this.env.GOOGLE_CALENDAR_REDIRECT_URI ?? `${this.env.WEB_ORIGIN}/integrations`;
+      const resolvedRedirect = this.redirectUri();
 
       if (!clientId || !clientSecret) {
         throw new BadRequestException({ code: 'gcal_not_configured', message: 'Google Calendar Client credentials missing' });

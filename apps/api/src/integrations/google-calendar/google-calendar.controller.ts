@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Inject, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { googleCalendarConnectSchema, type GoogleCalendarConnectInput } from '@leadpilot/validation';
 import { CurrentTenant } from '../../common/decorators.js';
 import type { TenantRequestContext } from '../../common/request-context.js';
+import { ZodPipe } from '../../common/zod.pipe.js';
 import { GoogleCalendarService } from './google-calendar.service.js';
 
 @ApiTags('Integrations')
@@ -17,17 +19,16 @@ export class GoogleCalendarController {
   }
 
   @Get('auth-url')
-  authUrl(@CurrentTenant() ctx: TenantRequestContext, @Query('redirectUri') redirectUri?: string) {
-    const url = this.gcal.getAuthUrl(ctx.tenantId, ctx.membershipId, redirectUri);
-    return { url };
+  authUrl(@CurrentTenant() ctx: TenantRequestContext) {
+    return { url: this.gcal.getAuthUrl(ctx.tenantId, ctx.membershipId) };
   }
 
   @Post('connect')
   async connect(
     @CurrentTenant() ctx: TenantRequestContext,
-    @Body() body: { code: string; redirectUri?: string },
+    @Body(new ZodPipe(googleCalendarConnectSchema)) body: GoogleCalendarConnectInput,
   ) {
-    const res = await this.gcal.connect(ctx.tenantId, ctx.membershipId, body.code, body.redirectUri);
+    const res = await this.gcal.connect(ctx.tenantId, ctx.membershipId, body.code, body.state);
     return { ok: true, email: res.email };
   }
 

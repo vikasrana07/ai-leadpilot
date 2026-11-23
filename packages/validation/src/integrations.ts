@@ -53,3 +53,8 @@ export const reportQuerySchema = z.object({
   to: z.string().datetime().optional(),
 });
 export type ReportQuery = z.infer<typeof reportQuerySchema>;
+
+// ----------------------------------------------------------------------------- Google Calendar OAuth
+/** `state` is the signed value returned by GET /integrations/google-calendar/auth-url; the server verifies it before exchanging `code`. */
+export const googleCalendarConnectSchema = z.object({ code: z.string().trim().min(1).max(2048), state: z.string().trim().min(1).max(2048) });
+export type GoogleCalendarConnectInput = z.infer<typeof googleCalendarConnectSchema>;
