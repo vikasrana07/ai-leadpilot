@@ -23,7 +23,11 @@ import {
 import { CurrentTenant, RequirePermissions } from '../common/decorators.js';
 import type { TenantRequestContext } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
-import { EmailTrackingService } from './email-tracking.service.js';
+import { EmailTrackingService, type EmailReadScope } from './email-tracking.service.js';
+
+/** Members without `email:read:all` only see emails about leads assigned to them. */
+const readScope = (ctx: TenantRequestContext): EmailReadScope | undefined =>
+  ctx.permissions.has('email:read:all') ? undefined : { membershipId: ctx.membershipId };
 
 @Controller('emails')
 export class EmailTrackingController {
@@ -31,22 +35,22 @@ export class EmailTrackingController {
     @Inject(EmailTrackingService) private readonly tracking: EmailTrackingService,
   ) {}
 
-  @RequirePermissions('lead:read:own')
+  @RequirePermissions('email:read:own')
   @Get('stats')
   async stats(@CurrentTenant() ctx: TenantRequestContext) {
-    return this.tracking.getStats(ctx.tenantId);
+    return this.tracking.getStats(ctx.tenantId, readScope(ctx));
   }
 
-  @RequirePermissions('lead:read:own')
+  @RequirePermissions('email:read:own')
   @Get()
   async list(
     @CurrentTenant() ctx: TenantRequestContext,
     @Query(new ZodPipe(trackedEmailListQuerySchema)) q: TrackedEmailListQuery,
   ) {
-    return this.tracking.listTrackedEmails(ctx.tenantId, q);
+    return this.tracking.listTrackedEmails(ctx.tenantId, q, readScope(ctx));
   }
 
-  @RequirePermissions('lead:read:own')
+  @RequirePermissions('email:suppress:manage')
   @Get('suppressions')
   async listSuppressions(
     @CurrentTenant() ctx: TenantRequestContext,
@@ -55,7 +59,7 @@ export class EmailTrackingController {
     return this.tracking.listSuppressions(ctx.tenantId, q);
   }
 
-  @RequirePermissions('lead:write:own')
+  @RequirePermissions('email:suppress:manage')
   @Post('suppressions')
   @HttpCode(201)
   async addSuppression(
@@ -65,7 +69,7 @@ export class EmailTrackingController {
     return this.tracking.addSuppression(ctx.tenantId, body);
   }
 
-  @RequirePermissions('lead:write:own')
+  @RequirePermissions('email:suppress:manage')
   @Delete('suppressions/:id')
   @HttpCode(204)
   async removeSuppression(
@@ -75,13 +79,13 @@ export class EmailTrackingController {
     await this.tracking.removeSuppression(ctx.tenantId, id);
   }
 
-  @RequirePermissions('lead:read:own')
+  @RequirePermissions('email:read:own')
   @Get(':id')
   async getDetail(
     @CurrentTenant() ctx: TenantRequestContext,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.tracking.getEmailDetail(ctx.tenantId, id);
+    return this.tracking.getEmailDetail(ctx.tenantId, id, readScope(ctx));
   }
 
   @RequirePermissions('lead:write:own')
@@ -91,6 +95,7 @@ export class EmailTrackingController {
     @CurrentTenant() ctx: TenantRequestContext,
     @Body(new ZodPipe(sendTrackedEmailSchema)) body: SendTrackedEmailInput,
   ) {
+    await this.tracking.assertCanEmail(ctx, body.leadId);
     return this.tracking.sendTrackedEmail(
       { tenantId: ctx.tenantId, userId: ctx.userId },
       body,

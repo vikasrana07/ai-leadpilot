@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   Logger,
@@ -42,6 +43,9 @@ interface ClickTokenPayload {
   u: string; // original target url
   type: 'click';
 }
+
+/** Row-level scope for reads by members without `email:read:all`. */
+export interface EmailReadScope { membershipId: string }
 
 @Injectable()
 export class EmailTrackingService {
@@ -735,11 +739,35 @@ export class EmailTrackingService {
   // Queries & Management
   // ---------------------------------------------------------------------------
 
-  async getStats(tenantId: string): Promise<EmailEngagementStatsDto> {
+  /** `{ membershipId }` restricts reads to emails about leads assigned to that member; `undefined` = whole workspace (`email:read:all`). */
+  private leadScope(scope?: EmailReadScope): Record<string, unknown> {
+    return scope ? { lead: { is: { assignedMembershipId: scope.membershipId } } } : {};
+  }
+
+  /**
+   * Sending authority: an agent may email a lead they may edit (`lead:write:own` + assigned, or `lead:write:all`). Emailing an arbitrary
+   * address with no lead requires `lead:write:all`, so the workspace's mail domain is not an open relay for every member.
+   */
+  async assertCanEmail(actor: { tenantId: string; membershipId: string | null; permissions: ReadonlySet<string> }, leadId?: string): Promise<void> {
+    const all = actor.permissions.has('lead:write:all');
+    if (!leadId) {
+      if (!all) throw new ForbiddenException({ code: 'forbidden', message: 'Open a lead to email it' });
+      return;
+    }
+    const lead = await this.db.tenantTx({ tenantId: actor.tenantId }, (tx) =>
+      tx.lead.findFirst({ where: { id: leadId, tenantId: actor.tenantId }, select: { assignedMembershipId: true } }),
+    );
+    if (!lead) throw new NotFoundException({ code: 'not_found', message: 'Lead not found' });
+    if (!all && !(actor.permissions.has('lead:write:own') && actor.membershipId !== null && lead.assignedMembershipId === actor.membershipId)) {
+      throw new NotFoundException({ code: 'not_found', message: 'Lead not found' }); // do not reveal other members' leads
+    }
+  }
+
+  async getStats(tenantId: string, scope?: EmailReadScope): Promise<EmailEngagementStatsDto> {
     return this.db.tenantTx({ tenantId }, async (tx) => {
       const counts = await tx.trackedEmail.groupBy({
         by: ['status'],
-        where: { tenantId },
+        where: { tenantId, ...this.leadScope(scope) },
         _count: { _all: true },
       });
 
@@ -776,9 +804,10 @@ export class EmailTrackingService {
   async listTrackedEmails(
     tenantId: string,
     query: TrackedEmailListQuery,
+    scope?: EmailReadScope,
   ): Promise<{ items: TrackedEmailDto[]; total: number; page: number; limit: number }> {
     return this.db.tenantTx({ tenantId }, async (tx) => {
-      const where: Record<string, unknown> = { tenantId };
+      const where: Record<string, unknown> = { tenantId, ...this.leadScope(scope) };
       if (query.status) where.status = query.status;
       if (query.leadId) where.leadId = query.leadId;
       if (query.q) {
@@ -828,10 +857,10 @@ export class EmailTrackingService {
     });
   }
 
-  async getEmailDetail(tenantId: string, id: string): Promise<TrackedEmailDetailDto> {
+  async getEmailDetail(tenantId: string, id: string, scope?: EmailReadScope): Promise<TrackedEmailDetailDto> {
     return this.db.tenantTx({ tenantId }, async (tx) => {
       const r = await tx.trackedEmail.findFirst({
-        where: { id, tenantId },
+        where: { id, tenantId, ...this.leadScope(scope) },
         include: {
           lead: { select: { id: true, name: true } },
           events: { orderBy: { timestamp: 'asc' } },

@@ -20,7 +20,7 @@ export const WORKSPACE_NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, phase: 1 },
   { href: '/leads', label: 'Leads', term: 'leads', icon: Users, phase: 2, description: 'Capture, search, score and assign every lead.' },
   { href: '/inbox', label: 'Inbox', icon: Inbox, phase: 3, permission: 'conversation:read:own', description: 'WhatsApp and website chat in one place.' },
-  { href: '/emails', label: 'Email Tracking', icon: Mail, phase: 2, permission: 'lead:read:own', description: 'Monitor email delivery, opens, clicks, and bounces.' },
+  { href: '/emails', label: 'Email Tracking', icon: Mail, phase: 2, permission: 'email:read:own', description: 'Monitor email delivery, opens, clicks, and bounces.' },
   { href: '/campaigns', label: 'Broadcasts', icon: Megaphone, phase: 2, permission: 'campaign:read', description: 'WhatsApp broadcast campaigns with opt-out suppression.' },
   { href: '/pipeline', label: 'Sales Pipeline', icon: KanbanSquare, phase: 2, description: 'Move leads from first contact to closed.' },
   { href: '/properties', label: 'Properties', icon: Building2, phase: 2, permission: 'property:read', module: 'properties' },
