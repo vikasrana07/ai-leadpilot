@@ -255,7 +255,11 @@ export class GoogleCalendarService {
       if (!sync) return;
 
       await tx.googleCalendarSync.delete({ where: { id: sync.id } });
-      await tx.integrationCredential.delete({ where: { id: sync.credentialId } }).catch(() => null);
+      // The runtime role has no DELETE on integration_credentials (least privilege; only purge_tenant() removes rows). A failed DELETE would also
+      // abort this whole Postgres transaction, silently rolling back the sync-row delete above. So revoke instead: overwrite the stored tokens
+      // with an empty sealed payload so no refresh token is retained, and mark the credential revoked.
+      const empty = await this.box.seal({}, this.aad(tenantId));
+      await tx.integrationCredential.update({ where: { id: sync.credentialId }, data: { ...empty, status: 'revoked' } });
     });
   }
 
