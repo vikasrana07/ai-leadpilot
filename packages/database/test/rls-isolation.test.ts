@@ -79,6 +79,14 @@ describe('RLS coverage (CI guard)', () => {
     expect(tables.length).toBeGreaterThan(0);
     // `tenants` is scoped by its own `id`; include it explicitly.
     for (const t of [...tables, 'tenants']) {
+      // A partition (e.g. audit_logs_y2026m01) is reached through its parent, whose policies apply. It carries no RLS of its own, so what
+      // must hold instead is that the runtime role has NO direct privilege on it; otherwise it could be read around the parent's policy.
+      const part = await owner.query<{ relispartition: boolean; direct: boolean }>(
+        `SELECT c.relispartition, has_table_privilege('leadpilot_app', c.oid, 'SELECT,INSERT,UPDATE,DELETE') AS direct FROM pg_class c WHERE c.relname=$1 AND c.relnamespace='public'::regnamespace`, [t]);
+      if (part.rows[0]?.relispartition) {
+        expect(part.rows[0].direct, `runtime role can access partition ${t} directly, bypassing the parent's RLS policy`).toBe(false);
+        continue;
+      }
       const rls = await owner.query(`SELECT relrowsecurity FROM pg_class WHERE relname=$1 AND relnamespace='public'::regnamespace`, [t]);
       expect(rls.rows[0]?.relrowsecurity, `RLS disabled on ${t}`).toBe(true);
       const pol = await owner.query(`SELECT count(*)::int AS n FROM pg_policies WHERE schemaname='public' AND tablename=$1`, [t]);

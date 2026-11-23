@@ -8,6 +8,7 @@ import {
   isValidElement,
   useEffect,
   useState,
+  type ChangeEvent,
   type ComponentPropsWithoutRef,
   type ElementRef,
   type ReactNode,
@@ -53,7 +54,7 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
  */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
   { className, children, value, defaultValue, onChange, placeholder, disabled, ...props },
-  ref
+  _ref
 ) {
   // Check if children are `<option>` elements
   const options = extractOptions(children);
@@ -86,7 +87,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           onChange?.({
             target: { value: val, name: props.name },
             currentTarget: { value: val, name: props.name },
-          } as any);
+          } as unknown as ChangeEvent<HTMLSelectElement>);
         }}
         disabled={disabled}
       >
@@ -106,7 +107,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     onChange?.({
       target: { value: realVal, name: props.name },
       currentTarget: { value: realVal, name: props.name },
-    } as any);
+    } as unknown as ChangeEvent<HTMLSelectElement>);
   };
 
   const selectedOption = options.find((o) => o.value === activeValue);

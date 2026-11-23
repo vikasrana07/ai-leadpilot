@@ -416,6 +416,7 @@ export default function AppointmentsPage() {
   const [noShowTarget, setNoShowTarget] = useState<NoShowTarget | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: syncs UI state after mount or when the dialog/query input changes
     if (bookLeadId) setBook(true);
   }, [bookLeadId]);
 
@@ -500,6 +501,7 @@ export default function AppointmentsPage() {
                             Confirm
                           </Button>
                         ) : null}
+                        {/* eslint-disable-next-line react-hooks/purity -- elapsed-time check; re-evaluated on each render by design */}
                         {(a.status === 'PENDING' || a.status === 'CONFIRMED') && new Date(a.startsAt).getTime() <= Date.now() ? (
                           <>
                             <Button

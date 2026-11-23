@@ -418,22 +418,16 @@ export class EmailTrackingService {
 
     const sesMessageId = mail.messageId;
     let emailId: string | null = null;
-    let tenantId: string | null = null;
 
     if (mail.tags) {
       const tagEmail = mail.tags.emailId;
       if (typeof tagEmail === 'string') emailId = tagEmail;
       else if (Array.isArray(tagEmail) && tagEmail[0]) emailId = tagEmail[0];
-
-      const tagTenant = mail.tags.tenantId;
-      if (typeof tagTenant === 'string') tenantId = tagTenant;
-      else if (Array.isArray(tagTenant) && tagTenant[0]) tenantId = tagTenant[0];
     }
 
     if (!emailId && mail.headers) {
       for (const h of mail.headers) {
         if (h.name.toLowerCase() === 'x-leadpilot-email-id') emailId = h.value;
-        if (h.name.toLowerCase() === 'x-leadpilot-tenant-id') tenantId = h.value;
       }
     }
 

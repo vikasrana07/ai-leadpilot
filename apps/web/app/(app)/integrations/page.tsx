@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarDays, Check, Copy, KeyRound, Plus, Trash2 } from 'lucide-react';
+import { Check, Copy, KeyRound, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { WhatsappCard } from '@/components/integrations/whatsapp-card';
@@ -9,7 +9,6 @@ import { WidgetCard } from '@/components/integrations/widget-card';
 import { GoogleCalendarCard } from '@/components/integrations/google-calendar-card';
 import { SesCard } from '@/components/integrations/ses-card';
 import { PageHeader } from '@/components/page/page-header';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';

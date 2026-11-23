@@ -53,6 +53,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
   // Auto-select first channel
   useEffect(() => {
     if (channelsQuery.data?.length && !channelId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: syncs UI state after mount or when the dialog/query input changes
       setChannelId(channelsQuery.data[0]!.id);
     }
   }, [channelsQuery.data, channelId]);
@@ -70,6 +71,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
           fallback: 'Valued Customer',
         });
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: syncs UI state after mount or when the dialog/query input changes
       setTemplateParams(initial);
     } else {
       setTemplateParams([]);
@@ -82,7 +84,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
       stageIds: selectedStages,
       tagIds: [],
       sourceIds: [],
-      temperatures: selectedTemps as any,
+      temperatures: selectedTemps as CampaignSegment['temperatures'],
       ...(minScore !== '' ? { minScore: Number(minScore) } : {}),
       ...(maxScore !== '' ? { maxScore: Number(maxScore) } : {}),
     };
@@ -102,7 +104,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
       stageIds: selectedStages,
       tagIds: [],
       sourceIds: [],
-      temperatures: selectedTemps as any,
+      temperatures: selectedTemps as CampaignSegment['temperatures'],
       ...(minScore !== '' ? { minScore: Number(minScore) } : {}),
       ...(maxScore !== '' ? { maxScore: Number(maxScore) } : {}),
     };
@@ -139,7 +141,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
         footer={
           <div className="flex justify-between items-center w-full">
             {step > 1 ? (
-              <Button variant="ghost" onClick={() => setStep((s) => (s - 1) as any)}>
+              <Button variant="ghost" onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3 | 4)}>
                 Back
               </Button>
             ) : <div />}
@@ -156,7 +158,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
                     (step === 2 && !templateId) ||
                     (step === 3 && previewMutation.data?.eligibleCount === 0)
                   }
-                  onClick={() => setStep((s) => (s + 1) as any)}
+                  onClick={() => setStep((s) => (s + 1) as 1 | 2 | 3 | 4)}
                 >
                   Continue
                 </Button>
@@ -264,7 +266,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
                         value={param.field}
                         onChange={(e) => {
                           const updated = [...templateParams];
-                          updated[idx] = { ...param, field: e.target.value as any };
+                          updated[idx] = { ...param, field: e.target.value as CampaignTemplateParam['field'] };
                           setTemplateParams(updated);
                         }}
                       >

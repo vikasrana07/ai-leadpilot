@@ -1,6 +1,6 @@
 import { series } from '../common/series.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
-import { Prisma, type TxClient } from '@leadpilot/database';
+import { Prisma, type Temperature, type TxClient } from '@leadpilot/database';
 import type { BulkInput, CreateLeadInput, LeadListQuery, StageChangeInput, UpdateLeadInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import { ScoringService } from '../ai/scoring/scoring.service.js';
@@ -132,8 +132,8 @@ export class LeadsService {
     if (q.kind) and.push({ stage: { kind: q.kind } });
     if (q.temperature) {
       const temps = q.temperature.split(',').map((s) => s.trim()).filter(Boolean);
-      if (temps.length > 1) and.push({ temperature: { in: temps as any } });
-      else if (temps[0]) and.push({ temperature: temps[0] as any });
+      if (temps.length > 1) and.push({ temperature: { in: temps as Temperature[] } });
+      else if (temps[0]) and.push({ temperature: temps[0] as Temperature });
     }
     if (q.sourceId) {
       const sources = q.sourceId.split(',').map((s) => s.trim()).filter(Boolean);

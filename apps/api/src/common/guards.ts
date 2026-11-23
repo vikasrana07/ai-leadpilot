@@ -39,7 +39,7 @@ export class AuthGuard implements CanActivate {
     if (support) { await authenticateSupport(this.db, req, support); return true; }
 
     if (claims) {
-      let valid = false;
+      let valid: boolean;
       const cachedUserId = await this.sessionCache.getValidSessionUserId(claims.sessionId);
       if (cachedUserId) {
         valid = cachedUserId === claims.userId;

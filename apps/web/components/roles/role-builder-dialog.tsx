@@ -75,6 +75,7 @@ export function RoleBuilderDialog({ open, onOpenChange, role }: RoleBuilderDialo
   // Reset form when dialog opens or role changes
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: syncs UI state after mount or when the dialog/query input changes
       setError(null);
       setSearch('');
       if (role) {
@@ -168,7 +169,7 @@ export function RoleBuilderDialog({ open, onOpenChange, role }: RoleBuilderDialo
       void qc.invalidateQueries({ queryKey: ['roles'] });
       onOpenChange(false);
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       setError(err?.message ?? 'Failed to save role');
     },
   });

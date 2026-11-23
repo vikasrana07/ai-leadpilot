@@ -15,7 +15,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Channel, ConnectDialog } from '@/components/integrations/whatsapp-card';
+import { type Channel, ConnectDialog } from '@/components/integrations/whatsapp-card';
 import { EmbeddedSignupButton, type EmbeddedConfig } from '@/components/integrations/embedded-signup-button';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';

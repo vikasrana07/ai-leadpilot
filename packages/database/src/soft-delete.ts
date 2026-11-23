@@ -6,133 +6,82 @@ export interface SoftDeleteOptions {
   withDeleted?: boolean;
 }
 
+/** Query args are dynamic across models inside a generic `$allModels` hook, so they are modelled as plain objects. */
+type QueryArgs = Record<string, unknown>;
+type Where = Record<string, unknown>;
+interface HookParams { model: string; args: QueryArgs; query: (args: QueryArgs) => Promise<unknown> }
+
+const whereOf = (a: QueryArgs): Where | undefined => a.where as Where | undefined;
+
 /**
  * Strips `withDeleted` flag from args and args.where if present.
  * If withDeleted is false/undefined, ensures `where.deletedAt: null` is injected
  * unless an explicit `deletedAt` condition is already present in `where`.
  */
-export function applySoftDeleteArgs(args: any): { args: any; withDeleted: boolean } {
-  const a = (args ? { ...args } : {}) as Record<string, any>;
-  const withDeleted = Boolean(a.withDeleted || a.where?.withDeleted);
+export function applySoftDeleteArgs(args: QueryArgs | undefined): { args: QueryArgs; withDeleted: boolean } {
+  const a: QueryArgs = args ? { ...args } : {};
+  const withDeleted = Boolean(a.withDeleted || whereOf(a)?.withDeleted);
 
   if (a.withDeleted !== undefined) {
     delete a.withDeleted;
   }
   if (a.where) {
-    a.where = { ...a.where };
-    if (a.where.withDeleted !== undefined) {
-      delete a.where.withDeleted;
+    const where: Where = { ...(a.where as Where) };
+    if (where.withDeleted !== undefined) {
+      delete where.withDeleted;
     }
+    a.where = where;
   }
 
   if (!withDeleted) {
     if (!a.where) {
       a.where = { deletedAt: null };
-    } else if (a.where.deletedAt === undefined) {
-      a.where.deletedAt = null;
+    } else if ((a.where as Where).deletedAt === undefined) {
+      (a.where as Where).deletedAt = null;
     }
   }
 
   return { args: a, withDeleted };
 }
 
+/** List/aggregate operations: inject `deletedAt: null` unless the caller opts out. */
+const filtered = async ({ model, args, query }: HookParams): Promise<unknown> => {
+  if (SOFT_DELETE_MODELS.has(model)) {
+    const { args: cleanArgs } = applySoftDeleteArgs(args);
+    return query(cleanArgs);
+  }
+  return query(args);
+};
+
+/** Unique lookups cannot take `deletedAt` in the where clause, so the record is filtered after fetching. */
+const unique = (orThrow: boolean) => async ({ model, args, query }: HookParams): Promise<unknown> => {
+  if (!SOFT_DELETE_MODELS.has(model)) return query(args);
+  const a: QueryArgs = args ? { ...args } : {};
+  const withDeleted = Boolean(a.withDeleted || whereOf(a)?.withDeleted);
+  if (a.withDeleted !== undefined) delete a.withDeleted;
+  if (whereOf(a)?.withDeleted !== undefined) {
+    const where: Where = { ...(a.where as Where) };
+    delete where.withDeleted;
+    a.where = where;
+  }
+
+  const record = (await query(a)) as { deletedAt?: Date | null } | null;
+  const hidden = !record || (!withDeleted && record.deletedAt != null && whereOf(a)?.deletedAt === undefined);
+  if (!hidden) return record;
+  if (!orThrow) return null;
+  throw new Prisma.PrismaClientKnownRequestError(`No ${model} found`, { code: 'P2025', clientVersion: '7.10.1' });
+};
+
 export const softDeleteQueryExtension = {
   $allModels: {
-    async findMany({ model, args, query }: { model: string; args: any; query: (args: any) => Promise<any> }) {
-      if (SOFT_DELETE_MODELS.has(model)) {
-        const { args: cleanArgs } = applySoftDeleteArgs(args);
-        return query(cleanArgs);
-      }
-      return query(args);
-    },
-
-    async findFirst({ model, args, query }: { model: string; args: any; query: (args: any) => Promise<any> }) {
-      if (SOFT_DELETE_MODELS.has(model)) {
-        const { args: cleanArgs } = applySoftDeleteArgs(args);
-        return query(cleanArgs);
-      }
-      return query(args);
-    },
-
-    async findFirstOrThrow({ model, args, query }: { model: string; args: any; query: (args: any) => Promise<any> }) {
-      if (SOFT_DELETE_MODELS.has(model)) {
-        const { args: cleanArgs } = applySoftDeleteArgs(args);
-        return query(cleanArgs);
-      }
-      return query(args);
-    },
-
-    async count({ model, args, query }: { model: string; args: any; query: (args: any) => Promise<any> }) {
-      if (SOFT_DELETE_MODELS.has(model)) {
-        const { args: cleanArgs } = applySoftDeleteArgs(args);
-        return query(cleanArgs);
-      }
-      return query(args);
-    },
-
-    async aggregate({ model, args, query }: { model: string; args: any; query: (args: any) => Promise<any> }) {
-      if (SOFT_DELETE_MODELS.has(model)) {
-        const { args: cleanArgs } = applySoftDeleteArgs(args);
-        return query(cleanArgs);
-      }
-      return query(args);
-    },
-
-    async groupBy({ model, args, query }: { model: string; args: any; query: (args: any) => Promise<any> }) {
-      if (SOFT_DELETE_MODELS.has(model)) {
-        const { args: cleanArgs } = applySoftDeleteArgs(args);
-        return query(cleanArgs);
-      }
-      return query(args);
-    },
-
-    async findUnique({ model, args, query }: { model: string; args: any; query: (args: any) => Promise<any> }) {
-      if (SOFT_DELETE_MODELS.has(model)) {
-        const a = (args ? { ...args } : {}) as Record<string, any>;
-        const withDeleted = Boolean(a.withDeleted || a.where?.withDeleted);
-        if (a.withDeleted !== undefined) delete a.withDeleted;
-        if (a.where?.withDeleted !== undefined) {
-          a.where = { ...a.where };
-          delete a.where.withDeleted;
-        }
-
-        const record = (await query(a)) as any;
-        if (!record) return null;
-        if (!withDeleted && record.deletedAt != null && a.where?.deletedAt === undefined) {
-          return null;
-        }
-        return record;
-      }
-      return query(args);
-    },
-
-    async findUniqueOrThrow({ model, args, query }: { model: string; args: any; query: (args: any) => Promise<any> }) {
-      if (SOFT_DELETE_MODELS.has(model)) {
-        const a = (args ? { ...args } : {}) as Record<string, any>;
-        const withDeleted = Boolean(a.withDeleted || a.where?.withDeleted);
-        if (a.withDeleted !== undefined) delete a.withDeleted;
-        if (a.where?.withDeleted !== undefined) {
-          a.where = { ...a.where };
-          delete a.where.withDeleted;
-        }
-
-        const record = (await query(a)) as any;
-        if (!record) {
-          throw new Prisma.PrismaClientKnownRequestError(`No ${model} found`, {
-            code: 'P2025',
-            clientVersion: '7.10.1',
-          });
-        }
-        if (!withDeleted && record.deletedAt != null && a.where?.deletedAt === undefined) {
-          throw new Prisma.PrismaClientKnownRequestError(`No ${model} found`, {
-            code: 'P2025',
-            clientVersion: '7.10.1',
-          });
-        }
-        return record;
-      }
-      return query(args);
-    },
+    findMany: filtered,
+    findFirst: filtered,
+    findFirstOrThrow: filtered,
+    count: filtered,
+    aggregate: filtered,
+    groupBy: filtered,
+    findUnique: unique(false),
+    findUniqueOrThrow: unique(true),
   },
 };
 

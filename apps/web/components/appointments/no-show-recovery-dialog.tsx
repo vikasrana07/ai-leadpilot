@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CalendarX, CheckSquare, MessageSquare, Phone } from 'lucide-react';
+import { CalendarX, CheckSquare, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';

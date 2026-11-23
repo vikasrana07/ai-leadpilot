@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { CampaignsService } from '../src/campaigns/campaigns.service.js';
 import type { WhatsAppClient } from '../src/whatsapp/whatsapp.client.js';
-import type { CampaignSegment, CampaignTemplateParam } from '@leadpilot/validation';
+import type { CampaignTemplateParam } from '@leadpilot/validation';
 
 describe('CampaignsService Unit Tests', () => {
   let service: CampaignsService;
@@ -13,7 +13,6 @@ describe('CampaignsService Unit Tests', () => {
   const tenantId = '00000000-0000-0000-0000-000000000001';
   const userId = '11111111-1111-1111-1111-111111111111';
   const channelId = '22222222-2222-2222-2222-222222222222';
-  const templateId = '33333333-3333-3333-3333-333333333333';
   const campaignId = '44444444-4444-4444-4444-444444444444';
 
   beforeEach(() => {

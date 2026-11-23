@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import type { TxClient } from '@leadpilot/database';
 import { v7 as uuidv7 } from 'uuid';
 import { DbService } from '../../db/db.module.js';

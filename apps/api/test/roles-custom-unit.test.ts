@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { RolesController } from '../src/roles/roles.module.js';
 import type { TenantRequestContext } from '../src/common/request-context.js';
 

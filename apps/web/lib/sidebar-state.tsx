@@ -28,6 +28,7 @@ export function SidebarProvider({
       const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
       if (stored !== null) {
         const isCol = stored === '1';
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: syncs UI state after mount or when the dialog/query input changes
         setCollapsedState(isCol);
         document.documentElement.classList.toggle('sidebar-collapsed', isCol);
         document.documentElement.style.setProperty('--sidebar-width', isCol ? '64px' : '248px');

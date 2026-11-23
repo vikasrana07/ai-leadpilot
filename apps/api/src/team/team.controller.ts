@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { changeMemberStatusSchema, changeRoleSchema, inviteSchema, type InviteInput } from '@leadpilot/validation';
-import type { SystemRoleKey } from '@leadpilot/shared-types';
 import { CurrentTenant, RequirePermissions } from '../common/decorators.js';
 import type { TenantRequestContext } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
