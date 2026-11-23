@@ -27,20 +27,27 @@ export async function applyIndustryPack(tx: TxClient, tenantId: string, industry
 }
 
 /**
- * Changing industry during onboarding: swaps the pipeline, lost reasons and custom fields for the new pack, but ONLY while the workspace
- * has no leads yet (nothing to orphan). Once data exists the pack stays as it is and only the industry label changes.
- * Returns true when the pack was replaced.
+ * Changing industry during onboarding or settings: swaps the pipeline, lost reasons and custom fields for the new pack
+ * when the workspace has no leads yet (nothing to orphan). If leads already exist, existing pipeline stages are preserved
+ * to prevent orphaned records, but tenant.industryPackId is still updated so that presentation config (terminology,
+ * sidebar modules, lead fields, appointment presets) switches to the selected industry.
+ * Returns true when the pack was replaced or updated.
  */
 export async function switchIndustryPack(tx: TxClient, tenantId: string, industry: string, newId: () => string = randomUUID): Promise<boolean> {
   const pack = packForIndustry(industry);
   const tenant = await tx.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { industryPackId: true } });
   if (tenant.industryPackId === pack.id) return false;
-  if ((await tx.lead.count({ where: { tenantId } })) > 0) return false;
-  await tx.pipelineStage.deleteMany({ where: { tenantId } });
-  await tx.lostReason.deleteMany({ where: { tenantId } });
-  await tx.customFieldDefinition.deleteMany({ where: { tenantId, entity: 'lead' } });
-  await tx.leadSource.deleteMany({ where: { tenantId, isSystem: true } }); // pack sources only; sources the tenant added itself stay
-  await applyIndustryPack(tx, tenantId, industry, newId);
+  const leadCount = await tx.lead.count({ where: { tenantId } });
+  if (leadCount === 0) {
+    await tx.pipelineStage.deleteMany({ where: { tenantId } });
+    await tx.lostReason.deleteMany({ where: { tenantId } });
+    await tx.customFieldDefinition.deleteMany({ where: { tenantId, entity: 'lead' } });
+    await tx.leadSource.deleteMany({ where: { tenantId, isSystem: true } }); // pack sources only; sources the tenant added itself stay
+    await applyIndustryPack(tx, tenantId, industry, newId);
+  } else {
+    // Leads exist: keep stages and existing data, but seed any missing system sources or custom fields from new pack
+    await applyIndustryPack(tx, tenantId, industry, newId);
+  }
   await tx.tenant.update({ where: { id: tenantId }, data: { industryPackId: pack.id } });
   return true;
 }

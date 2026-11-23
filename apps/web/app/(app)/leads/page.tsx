@@ -2,14 +2,14 @@
 
 import type { LeadDto, PagedResult } from '@leadpilot/shared-types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, Download, Flame, FolderKanban, Plus, Tag, Upload, User, Users } from 'lucide-react';
+import { AlertCircle, ArrowDown, ArrowUp, CalendarPlus, Download, Flame, FolderKanban, MessageSquare, Phone, Plus, Tag, Upload, User, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ImportDialog } from '@/components/crm/import-dialog';
 import { LeadFormDialog } from '@/components/crm/lead-form-dialog';
 import { StageBadge, TemperatureBadge } from '@/components/crm/lead-badges';
-import { DataTableToolbar, useTablePreferences, type ColumnDef, type FilterDimension } from '@/components/data-table';
+import { DataTableToolbar, QuickViews, useTablePreferences, type ColumnDef, type FilterDimension, type QuickViewItem } from '@/components/data-table';
 import { PageHeader } from '@/components/page/page-header';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -70,13 +70,18 @@ export default function LeadsPage() {
       { id: 'lead', label: terms.Lead, alwaysVisible: true },
       { id: 'stage', label: 'Stage' },
       { id: 'temperature', label: 'Temp.' },
-      ...(lf.budget ? [{ id: 'budget', label: lf.budget.label }] : []),
+      ...(lf.budget
+        ? [{ id: 'budget', label: lf.budget.label }]
+        : lf.interest
+        ? [{ id: 'interest', label: lf.interest.label }]
+        : []),
       { id: 'assigned', label: 'Assigned' },
       { id: 'score', label: 'Score' },
       { id: 'followUp', label: 'Follow-up' },
       { id: 'createdAt', label: 'Added' },
+      { id: 'actions', label: 'Actions', alwaysVisible: true },
     ],
-    [terms.Lead, lf.budget]
+    [terms.Lead, lf.budget, lf.interest]
   );
 
   const {
@@ -122,6 +127,17 @@ export default function LeadsPage() {
       void qc.invalidateQueries({ queryKey: ['leads'] }); void qc.invalidateQueries({ queryKey: ['pipeline'] });
     },
     onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Bulk action failed'),
+  });
+
+  const changeLeadStage = useMutation({
+    mutationFn: ({ id, stageId }: { id: string; stageId: string }) =>
+      api(`/leads/${id}/stage`, { method: 'POST', body: { stageId } }),
+    onSuccess: () => {
+      toast.success('Stage updated');
+      void qc.invalidateQueries({ queryKey: ['leads'] });
+      void qc.invalidateQueries({ queryKey: ['pipeline'] });
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Stage update failed'),
   });
 
   async function exportCsv() {
@@ -205,6 +221,50 @@ export default function LeadsPage() {
     setPage(1);
   };
 
+  const quickViews: QuickViewItem[] = useMemo(
+    () => [
+      { id: 'all', label: `All ${terms.Leads}`, icon: Users },
+      { id: 'my_leads', label: 'My Leads', icon: User, tone: 'primary' },
+      { id: 'overdue', label: 'Follow-up Overdue', icon: AlertCircle, tone: 'danger' },
+      { id: 'hot', label: 'Hot Leads', icon: Flame, tone: 'warning' },
+    ],
+    [terms.Leads]
+  );
+
+  const activeQuickViewId = useMemo(() => {
+    if (f.overdue === 'true' && f.stageId.length === 0 && f.temperature.length === 0 && f.assigned.length === 0 && f.sourceId.length === 0 && !search) {
+      return 'overdue';
+    }
+    if (f.assigned.length === 1 && f.assigned[0] === 'me' && f.stageId.length === 0 && f.temperature.length === 0 && f.sourceId.length === 0 && !f.overdue && !search) {
+      return 'my_leads';
+    }
+    if (f.temperature.length === 1 && f.temperature[0] === 'HOT' && f.stageId.length === 0 && f.assigned.length === 0 && f.sourceId.length === 0 && !f.overdue && !search) {
+      return 'hot';
+    }
+    if (f.stageId.length === 0 && f.temperature.length === 0 && f.assigned.length === 0 && f.sourceId.length === 0 && !f.overdue && !f.kind && !search) {
+      return 'all';
+    }
+    return '';
+  }, [f, search]);
+
+  const handleSelectQuickView = (id: string) => {
+    if (id === 'all') {
+      handleClearAllFilters();
+    } else if (id === 'my_leads') {
+      setSearch('');
+      setF({ stageId: [], temperature: [], assigned: ['me'], sourceId: [], kind: '', overdue: '' });
+      setPage(1);
+    } else if (id === 'overdue') {
+      setSearch('');
+      setF({ stageId: [], temperature: [], assigned: [], sourceId: [], kind: '', overdue: 'true' });
+      setPage(1);
+    } else if (id === 'hot') {
+      setSearch('');
+      setF({ stageId: [], temperature: ['HOT'], assigned: [], sourceId: [], kind: '', overdue: '' });
+      setPage(1);
+    }
+  };
+
   const th = (label: string, key?: SortKey, cls = '') => (
     <th
       scope="col"
@@ -260,6 +320,13 @@ export default function LeadsPage() {
       />
 
       <Card className="overflow-hidden">
+        {/* Quick View Presets */}
+        <QuickViews
+          activeId={activeQuickViewId}
+          items={quickViews}
+          onSelect={handleSelectQuickView}
+        />
+
         {/* Dynamic Data Table Toolbar */}
         <DataTableToolbar
           search={search}
@@ -405,6 +472,10 @@ export default function LeadsPage() {
                           <span className="num text-[12px] text-muted-foreground">
                             {formatBudget(l.budgetMin, l.budgetMax)}
                           </span>
+                        ) : lf.interest && l.propertyType ? (
+                          <span className="text-[12px] text-muted-foreground">
+                            {l.propertyType}
+                          </span>
                         ) : null}
                       </span>
                       <span className="text-helper mt-1.5 block">
@@ -442,10 +513,16 @@ export default function LeadsPage() {
                     {isColumnVisible('stage') && th('Stage')}
                     {isColumnVisible('temperature') && th('Temp.')}
                     {lf.budget && isColumnVisible('budget') ? th(lf.budget.label) : null}
+                    {!lf.budget && lf.interest && isColumnVisible('interest') ? th(lf.interest.label) : null}
                     {isColumnVisible('assigned') && th('Assigned')}
                     {isColumnVisible('score') && th('Score', 'score', 'text-right')}
                     {isColumnVisible('followUp') && th('Follow-up', 'nextFollowUpAt')}
                     {isColumnVisible('createdAt') && th('Added', 'createdAt')}
+                    {isColumnVisible('actions') && (
+                      <th scope="col" className={cn('w-28 text-right pr-4 font-medium', densityHeaderClass)}>
+                        Actions
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -490,7 +567,29 @@ export default function LeadsPage() {
 
                         {isColumnVisible('stage') && (
                           <td className={densityCellClass}>
-                            <StageBadge name={l.stage.name} kind={l.stage.kind} />
+                            <div className="flex items-center gap-1.5">
+                              <StageBadge name={l.stage.name} kind={l.stage.kind} />
+                              {(can('lead:write:all') || can('lead:write:own')) && stages.data?.stages ? (
+                                <select
+                                  aria-label={`Change stage for ${l.name}`}
+                                  value={l.stage.id}
+                                  onChange={(e) => {
+                                    const nextStageId = e.target.value;
+                                    if (nextStageId && nextStageId !== l.stage.id) {
+                                      changeLeadStage.mutate({ id: l.id, stageId: nextStageId });
+                                    }
+                                  }}
+                                  className="h-6 rounded border border-border bg-surface px-1 text-[11px] text-muted-foreground opacity-30 hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
+                                  title="Quick change stage"
+                                >
+                                  {stages.data.stages.map((st) => (
+                                    <option key={st.id} value={st.id}>
+                                      {st.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : null}
+                            </div>
                           </td>
                         )}
 
@@ -503,6 +602,12 @@ export default function LeadsPage() {
                         {lf.budget && isColumnVisible('budget') ? (
                           <td className={cn('num whitespace-nowrap', densityCellClass)}>
                             {formatBudget(l.budgetMin, l.budgetMax)}
+                          </td>
+                        ) : null}
+
+                        {!lf.budget && lf.interest && isColumnVisible('interest') ? (
+                          <td className={cn('whitespace-nowrap', densityCellClass)}>
+                            <span className="text-[13px] text-foreground">{l.propertyType || '—'}</span>
                           </td>
                         ) : null}
 
@@ -534,6 +639,45 @@ export default function LeadsPage() {
                         {isColumnVisible('createdAt') && (
                           <td className={cn('num whitespace-nowrap text-muted-foreground', densityCellClass)}>
                             {timeAgo(l.createdAt)}
+                          </td>
+                        )}
+
+                        {isColumnVisible('actions') && (
+                          <td className={cn('w-28 whitespace-nowrap text-right pr-4', densityCellClass)}>
+                            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                              {l.phone ? (
+                                <a
+                                  href={`https://wa.me/${l.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                                    `Hi ${l.name}, reaching out regarding your enquiry.`
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  aria-label={`Chat with ${l.name} on WhatsApp`}
+                                  title="Chat on WhatsApp"
+                                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-primary transition-colors"
+                                >
+                                  <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+                                </a>
+                              ) : null}
+                              {l.phone ? (
+                                <a
+                                  href={`tel:${l.phone}`}
+                                  aria-label={`Call ${l.name}`}
+                                  title={`Call ${l.phone}`}
+                                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                >
+                                  <Phone className="h-3.5 w-3.5" aria-hidden />
+                                </a>
+                              ) : null}
+                              <Link
+                                href={`/appointments?bookLeadId=${l.id}&bookLeadName=${encodeURIComponent(l.name)}`}
+                                aria-label={`Book appointment for ${l.name}`}
+                                title="Book appointment"
+                                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                              >
+                                <CalendarPlus className="h-3.5 w-3.5" aria-hidden />
+                              </Link>
+                            </div>
                           </td>
                         )}
                       </tr>

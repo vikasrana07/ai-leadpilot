@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { INDUSTRIES, updateTenantSchema, type UpdateTenantInput } from '@leadpilot/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Monitor, Moon, Smartphone, Sun } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/page/page-header';
@@ -15,9 +16,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { CURRENCIES, getAllTimezones } from '@/lib/i18n';
 import { useTerms } from '@/lib/pack';
 import { cn } from '@/lib/cn';
 import { handleApiError } from '@/lib/forms';
@@ -29,14 +32,44 @@ interface SessionRow { id: string; ip: string | null; userAgent: string | null; 
 function BusinessProfile() {
   const { can } = useAuth();
   const qc = useQueryClient();
+  const router = useRouter();
   const canEdit = can('settings:manage');
   const tenant = useQuery({ queryKey: ['tenant'], queryFn: () => api<Tenant>('/tenant') });
-  const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting, isDirty } } = useForm<UpdateTenantInput>({ resolver: zodResolver(updateTenantSchema) });
-  useEffect(() => { if (tenant.data) reset({ ...tenant.data, phone: tenant.data.phone ?? null, website: tenant.data.website ?? null, address: tenant.data.address ?? null } as UpdateTenantInput); }, [tenant.data, reset]);
+  const timezones = useMemo(() => getAllTimezones(), []);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    setError,
+    formState: { errors, isSubmitting, isDirty },
+  } = useForm<UpdateTenantInput>({ resolver: zodResolver(updateTenantSchema) });
+
+  useEffect(() => {
+    if (tenant.data) {
+      reset({
+        ...tenant.data,
+        phone: tenant.data.phone ?? null,
+        website: tenant.data.website ?? null,
+        address: tenant.data.address ?? null,
+      } as UpdateTenantInput);
+    }
+  }, [tenant.data, reset]);
+
+  const currentIndustry = watch('industry');
+  const currentTimezone = watch('timezone');
+  const currentCurrency = watch('currency');
 
   async function onSubmit(v: UpdateTenantInput) {
     const clean = { ...v, phone: v.phone || null, website: v.website || null, address: v.address || null };
-    try { await api('/tenant', { method: 'PATCH', body: clean }); toast.success('Business profile saved'); await qc.invalidateQueries({ queryKey: ['tenant'] }); await qc.invalidateQueries({ queryKey: ['auth', 'me'] }); }
+    try {
+      await api('/tenant', { method: 'PATCH', body: clean });
+      toast.success('Business profile saved');
+      await qc.invalidateQueries({ queryKey: ['tenant'] });
+      await qc.invalidateQueries({ queryKey: ['auth', 'me'] });
+      router.refresh();
+    }
     catch (e) { handleApiError(e, setError); }
   }
   return (
@@ -49,9 +82,51 @@ function BusinessProfile() {
             <Field label="Business email" htmlFor="email" error={errors.email?.message}><Input id="email" type="email" disabled={!canEdit} {...register('email')} /></Field>
             <Field label="Phone" htmlFor="phone" error={errors.phone?.message}><Input id="phone" disabled={!canEdit} {...register('phone')} /></Field>
             <Field label="Website" htmlFor="website" error={errors.website?.message} hint="Include https://"><Input id="website" disabled={!canEdit} {...register('website')} /></Field>
-            <Field label="Industry" htmlFor="industry"><select id="industry" disabled={!canEdit} className="h-9 w-full rounded-md border border-border bg-surface px-3 text-[13px] capitalize" {...register('industry')}>{INDUSTRIES.map((i) => <option key={i} value={i}>{i.replace('_', ' ')}</option>)}</select></Field>
-            <Field label="Timezone" htmlFor="timezone" error={errors.timezone?.message}><Input id="timezone" disabled={!canEdit} {...register('timezone')} /></Field>
-            <Field label="Currency" htmlFor="currency" error={errors.currency?.message}><Input id="currency" maxLength={3} disabled={!canEdit} {...register('currency')} /></Field>
+            <Field label="Industry" htmlFor="industry" error={errors.industry?.message}>
+              <Select
+                id="industry"
+                disabled={!canEdit}
+                value={currentIndustry ?? ''}
+                onChange={(e) => setValue('industry', e.target.value as any, { shouldDirty: true, shouldValidate: true })}
+              >
+                {INDUSTRIES.map((i) => (
+                  <option key={i} value={i} className="capitalize">
+                    {i.replace('_', ' ')}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Timezone" htmlFor="timezone" error={errors.timezone?.message}>
+              <Select
+                id="timezone"
+                disabled={!canEdit}
+                value={currentTimezone ?? ''}
+                onChange={(e) => setValue('timezone', e.target.value, { shouldDirty: true, shouldValidate: true })}
+              >
+                {timezones.map((tz) => (
+                  <option key={tz.value} value={tz.value}>
+                    {tz.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Currency" htmlFor="currency" error={errors.currency?.message}>
+              <Select
+                id="currency"
+                disabled={!canEdit}
+                value={currentCurrency ?? ''}
+                onChange={(e) => setValue('currency', e.target.value.toUpperCase(), { shouldDirty: true, shouldValidate: true })}
+              >
+                {CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.label}
+                  </option>
+                ))}
+                {currentCurrency && !CURRENCIES.some((c) => c.code === currentCurrency) ? (
+                  <option value={currentCurrency}>{currentCurrency}</option>
+                ) : null}
+              </Select>
+            </Field>
             <Field label="Address" htmlFor="address" error={errors.address?.message} className="sm:col-span-2"><Input id="address" disabled={!canEdit} {...register('address')} /></Field>
             {canEdit ? <div className="sm:col-span-2"><Button type="submit" variant="primary" loading={isSubmitting} disabled={!isDirty}>Save changes</Button></div> : null}
           </form>

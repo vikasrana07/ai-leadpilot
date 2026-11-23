@@ -5,18 +5,20 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowLeft, ArrowRight, Check, Clock, PartyPopper } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/page/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { handleApiError } from '@/lib/forms';
+import { getAllTimezones } from '@/lib/i18n';
 import { useTerms } from '@/lib/pack';
 import { applyTerms } from '@/lib/terms-text';
 
@@ -39,6 +41,7 @@ const INDUSTRY_OPTIONS = [
 function BusinessStep({ tenant, onDone }: { tenant: Tenant; onDone: () => Promise<void> }) {
   const [v, setV] = useState({ name: tenant.name, phone: tenant.phone ?? '', website: tenant.website ?? '', timezone: tenant.timezone });
   const [busy, setBusy] = useState(false);
+  const timezones = useMemo(() => getAllTimezones(), []);
   return (
     <form className="grid gap-4 sm:grid-cols-2" onSubmit={async (e) => {
       e.preventDefault(); setBusy(true);
@@ -47,7 +50,15 @@ function BusinessStep({ tenant, onDone }: { tenant: Tenant; onDone: () => Promis
       <Field label="Business name" htmlFor="o-name"><Input id="o-name" required minLength={2} value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} /></Field>
       <Field label="Phone" htmlFor="o-phone"><Input id="o-phone" value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} /></Field>
       <Field label="Website" htmlFor="o-web" hint="Include https://"><Input id="o-web" type="url" value={v.website} onChange={(e) => setV({ ...v, website: e.target.value })} /></Field>
-      <Field label="Timezone" htmlFor="o-tz"><Input id="o-tz" value={v.timezone} onChange={(e) => setV({ ...v, timezone: e.target.value })} /></Field>
+      <Field label="Timezone" htmlFor="o-tz">
+        <Select id="o-tz" value={v.timezone} onChange={(e) => setV({ ...v, timezone: e.target.value })}>
+          {timezones.map((tz) => (
+            <option key={tz.value} value={tz.value}>
+              {tz.label}
+            </option>
+          ))}
+        </Select>
+      </Field>
       <div className="sm:col-span-2"><Button type="submit" variant="primary" loading={busy}>Save and continue <ArrowRight className="h-4 w-4" aria-hidden /></Button></div>
     </form>
   );

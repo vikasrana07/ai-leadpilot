@@ -967,6 +967,7 @@ model Appointment {
   membershipId       String            @map("membership_id") @db.Uuid
   propertyId         String?           @map("property_id") @db.Uuid
   title              String
+  serviceType        String?           @map("service_type")
   startsAt           DateTime          @map("starts_at") @db.Timestamptz(3)
   endsAt             DateTime          @map("ends_at") @db.Timestamptz(3)
   status             AppointmentStatus @default(PENDING)

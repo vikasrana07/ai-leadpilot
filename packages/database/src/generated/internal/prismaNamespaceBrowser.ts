@@ -809,6 +809,7 @@ export const AppointmentScalarFieldEnum = {
   membershipId: 'membershipId',
   propertyId: 'propertyId',
   title: 'title',
+  serviceType: 'serviceType',
   startsAt: 'startsAt',
   endsAt: 'endsAt',
   status: 'status',

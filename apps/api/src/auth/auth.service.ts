@@ -256,10 +256,10 @@ export class AuthService {
       tx.membership.findMany({
         where: { userId, status: 'ACTIVE', tenant: { status: 'ACTIVE' } },
         orderBy: { createdAt: 'asc' },
-        select: { tenant: { select: { id: true, name: true, industryPackId: true, onboardingState: true } }, role: { select: { key: true, name: true } } },
+        select: { tenant: { select: { id: true, name: true, industryPackId: true, industry: true, onboardingState: true } }, role: { select: { key: true, name: true } } },
       }),
     );
-    return rows.map((m) => ({ tenantId: m.tenant.id, name: m.tenant.name, roleKey: m.role.key, roleName: m.role.name, industryPackId: m.tenant.industryPackId, industryChosen: industryChosen(m.tenant.onboardingState) }));
+    return rows.map((m) => ({ tenantId: m.tenant.id, name: m.tenant.name, roleKey: m.role.key, roleName: m.role.name, industryPackId: m.tenant.industryPackId, industry: m.tenant.industry, industryChosen: industryChosen(m.tenant.onboardingState) }));
   }
 
   /** Name and industry pack of a workspace (support sessions have no membership to read them from). */

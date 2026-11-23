@@ -6,3 +6,4 @@ export * from './filter-popover';
 export * from './filter-pill';
 export * from './add-filter-menu';
 export * from './data-table-toolbar';
+export * from './quick-views';

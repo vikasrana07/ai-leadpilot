@@ -45,6 +45,16 @@ export interface PackAiGuidance {
   guidance: string[];
 }
 
+export interface AppointmentConfig {
+  practitionerLabel: string;
+  customerLabel: string;
+  services: string[];
+  durations: number[];
+  locationPlaceholder: string;
+  notesPlaceholder: string;
+  safetyNotice?: string;
+}
+
 export interface IndustryPack {
   id: string;
   version: number;
@@ -62,6 +72,7 @@ export interface IndustryPack {
   /** Optional modules shown in the app. Only what an industry actually uses appears in the menu. */
   modules: { properties: boolean };
   leadFields: LeadFieldsConfig;
+  appointmentConfig: AppointmentConfig;
   ai: PackAiGuidance;
 }
 
@@ -102,6 +113,14 @@ export const REAL_ESTATE_PACK: IndustryPack = {
     timeline: { label: 'Buying timeline', soon: 'Buying within 30 days' },
     location: { label: 'Preferred location', placeholder: 'Baner, Pune' },
     requirements: { label: 'Requirements' },
+  },
+  appointmentConfig: {
+    practitionerLabel: 'Agent',
+    customerLabel: 'Lead',
+    services: ['Project Site Visit', 'Sample Flat Tour', 'Price Negotiation', 'Agreement Signing', 'Possession Walkthrough'],
+    durations: [30, 45, 60, 90, 120],
+    locationPlaceholder: 'Project site address or sales gallery',
+    notesPlaceholder: 'Unit preference, attendees, or visit notes',
   },
   ai: {
     offering: 'properties',
@@ -144,6 +163,14 @@ export const COACHING_PACK: IndustryPack = {
     timeline: { label: 'When do they want to start', soon: 'Starting within 30 days' },
     location: { label: 'City or area', placeholder: 'Kota' },
     requirements: { label: 'Notes' },
+  },
+  appointmentConfig: {
+    practitionerLabel: 'Instructor / Counselor',
+    customerLabel: 'Student / Parent',
+    services: ['Trial Demo Class', 'Course Counseling', 'Assessment Test', 'Batch Induction'],
+    durations: [30, 45, 60, 90],
+    locationPlaceholder: 'Classroom / Branch or Online meeting link',
+    notesPlaceholder: 'Student goals, current class, or batch timing',
   },
   ai: {
     offering: 'its courses and classes',
@@ -193,6 +220,15 @@ export const HEALTHCARE_PACK: IndustryPack = {
     location: { label: 'City or area', placeholder: 'Andheri, Mumbai' },
     requirements: { label: 'Notes (no medical details)' },
   },
+  appointmentConfig: {
+    practitionerLabel: 'Doctor / Practitioner',
+    customerLabel: 'Patient / Enquiry',
+    services: ['General Consultation', 'Specialist Follow-up', 'Routine Check-up', 'Dental Examination', 'Diagnostic Review', 'Tele-consultation'],
+    durations: [15, 30, 45, 60],
+    locationPlaceholder: 'Clinic room / OPD or Online video link',
+    notesPlaceholder: 'Logistics, special assistance, or appointment notes',
+    safetyNotice: 'Medical privacy: Do not enter clinical diagnoses, medical history, or symptom details in notes.',
+  },
   ai: {
     offering: 'its clinic services and appointments',
     captureList: 'which service they are interested in, preferred doctor, preferred time of day, whether it is their first visit, wanting a consultation',
@@ -240,6 +276,14 @@ export const HOME_SERVICES_PACK: IndustryPack = {
     location: { label: 'Area or locality', placeholder: 'Whitefield, Bengaluru' },
     requirements: { label: 'Job details' },
   },
+  appointmentConfig: {
+    practitionerLabel: 'Technician / Estimator',
+    customerLabel: 'Customer',
+    services: ['On-site Inspection', 'Repair Service', 'Periodic Maintenance', 'Project Estimate'],
+    durations: [30, 60, 90, 120, 180],
+    locationPlaceholder: 'Customer premises / site address',
+    notesPlaceholder: 'Job details, site access, or parking notes',
+  },
   ai: {
     offering: 'its home services',
     captureList: 'service needed, property type, area or locality, approximate size, how soon it is needed, budget, wanting an inspection',
@@ -281,6 +325,14 @@ export const GENERAL_PACK: IndustryPack = {
     timeline: { label: 'Timeline', soon: 'Planning within 30 days' },
     location: { label: 'Location', placeholder: 'City or area' },
     requirements: { label: 'Requirements' },
+  },
+  appointmentConfig: {
+    practitionerLabel: 'Representative',
+    customerLabel: 'Client / Lead',
+    services: ['Discovery Call', 'Product Demo', 'Follow-up Meeting', 'Strategy Review'],
+    durations: [15, 30, 45, 60],
+    locationPlaceholder: 'Meeting room or Video call link',
+    notesPlaceholder: 'Agenda, discussion points, or meeting notes',
   },
   ai: {
     offering: 'its products and services',
@@ -354,4 +406,8 @@ export function packTerms(pack: IndustryPack): PackTerms {
     event: (pack.terminology.visitShort ?? visit).toLowerCase(),
     summary: { lead: generic ? 'lead' : lead, appointment: generic ? 'appointment' : visit },
   };
+}
+
+export function appointmentConfig(pack: IndustryPack): AppointmentConfig {
+  return pack.appointmentConfig;
 }
