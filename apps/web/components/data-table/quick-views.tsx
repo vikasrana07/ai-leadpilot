@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, Flame, Sparkles, User, Users } from 'lucide-react';
+import { type Users } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 export interface QuickViewItem {

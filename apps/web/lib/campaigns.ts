@@ -1,14 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
-import type {
-  AudiencePreviewInput,
-  CampaignQuery,
-  CampaignSegment,
-  CampaignTemplateParam,
-  CreateCampaignInput,
-  RecipientQuery,
-  UpdateCampaignInput,
-} from '@leadpilot/validation';
+import type { AudiencePreviewInput, CampaignSegment, CampaignTemplateParam, CreateCampaignInput, RecipientQuery, UpdateCampaignInput } from '@leadpilot/validation';
 
 export interface CampaignItem {
   id: string;

@@ -1,6 +1,5 @@
 'use client';
 
-import { packForIndustry } from '@leadpilot/shared-types';
 import { motion } from 'motion/react';
 import { ChevronsLeft } from 'lucide-react';
 import Link from 'next/link';

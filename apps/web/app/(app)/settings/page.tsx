@@ -87,7 +87,7 @@ function BusinessProfile() {
                 id="industry"
                 disabled={!canEdit}
                 value={currentIndustry ?? ''}
-                onChange={(e) => setValue('industry', e.target.value as any, { shouldDirty: true, shouldValidate: true })}
+                onChange={(e) => setValue('industry', e.target.value as UpdateTenantInput['industry'], { shouldDirty: true, shouldValidate: true })}
               >
                 {INDUSTRIES.map((i) => (
                   <option key={i} value={i} className="capitalize">

@@ -1,12 +1,5 @@
-import { generateKeyPairSync, createSign } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import {
-  buildStringToSign,
-  validateSnsCertUrl,
-  validateSnsSubscribeUrl,
-  verifySnsSignature,
-  SnsVerificationError,
-} from '../src/email-tracking/sns-validator.js';
+import { buildStringToSign, validateSnsCertUrl, validateSnsSubscribeUrl, verifySnsSignature } from '../src/email-tracking/sns-validator.js';
 import type { SnsMessageInput } from '@leadpilot/validation';
 
 describe('SNS Validator', () => {

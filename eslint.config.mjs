@@ -20,6 +20,12 @@ export default tseslint.config(
     files: ['apps/api/**/*.ts'],
     rules: { '@typescript-eslint/consistent-type-imports': 'off' },
   },
+  {
+    // Unit tests stub partially-typed Nest services and Prisma clients; `any` is accepted there (decision recorded in the PR that introduced this override).
+    files: ['apps/api/test/**/*.ts'],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
+  },
+  { files: ['**/*.cjs'], languageOptions: { globals: { module: 'writable', require: 'readonly', process: 'readonly' } } },
   { files: ['scripts/**/*.mjs', 'e2e/tools/**/*.mjs'], languageOptions: { globals: { fetch: 'readonly', process: 'readonly', console: 'readonly', performance: 'readonly', Buffer: 'readonly', URL: 'readonly', AbortSignal: 'readonly', innerWidth: 'readonly', innerHeight: 'readonly', document: 'readonly', getComputedStyle: 'readonly', setTimeout: 'readonly' } } },
   { files: ['apps/web/**/*.{ts,tsx}'], plugins: { 'react-hooks': reactHooks }, rules: { ...reactHooks.configs.recommended.rules } },
 );

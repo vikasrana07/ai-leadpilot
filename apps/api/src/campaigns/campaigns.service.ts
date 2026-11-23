@@ -22,7 +22,7 @@ import { DbService } from '../db/db.module.js';
 import { AuditService } from '../audit/audit.service.js';
 import { ChannelsService } from '../channels/channels.module.js';
 import { JobsService } from '../ops/jobs.service.js';
-import { WHATSAPP_CLIENT, WhatsAppApiError, type WhatsAppClient } from '../whatsapp/whatsapp.client.js';
+import { WHATSAPP_CLIENT, type WhatsAppClient } from '../whatsapp/whatsapp.client.js';
 import { v7 as uuidv7 } from 'uuid';
 import type { TenantRequestContext } from '../common/request-context.js';
 
@@ -546,7 +546,7 @@ export class CampaignsService implements OnModuleInit {
   }
 
   /** Resolves template params for a specific lead */
-  private resolveParams(lead: any, params: CampaignTemplateParam[]): string[] {
+  private resolveParams(lead: Record<string, unknown>, params: CampaignTemplateParam[]): string[] {
     const sorted = [...params].sort((a, b) => a.index - b.index);
     return sorted.map((p) => {
       if (p.field === 'custom' && p.customValue) return p.customValue;

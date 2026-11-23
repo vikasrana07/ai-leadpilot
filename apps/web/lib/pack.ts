@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth';
  */
 export function usePack(): IndustryPack {
   const { activeWorkspace } = useAuth();
-  return packForIndustry(activeWorkspace?.industryPackId || (activeWorkspace as any)?.industry || 'real_estate');
+  return packForIndustry(activeWorkspace?.industryPackId || (activeWorkspace as { industry?: string } | null)?.industry || 'real_estate');
 }
 
 /** The pack's word for an appointment in the forms we need: "Site visit" / "site visit" / "site visits" / "a site visit" / "Site visits". */

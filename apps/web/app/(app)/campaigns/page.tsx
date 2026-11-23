@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ComponentProps } from 'react';
 import Link from 'next/link';
 import {
   Megaphone,
@@ -246,7 +246,7 @@ function CampaignRow({
               >
                 {campaign.name}
               </Link>
-              <Badge tone={tone as any} className="gap-1 text-[11px] font-medium">
+              <Badge tone={tone as ComponentProps<typeof Badge>['tone']} className="gap-1 text-[11px] font-medium">
                 {campaign.status === 'RUNNING' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
                 {campaign.status}
               </Badge>

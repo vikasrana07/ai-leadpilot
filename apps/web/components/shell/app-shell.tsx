@@ -34,6 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const support = useSupportSession().data?.active === true;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: syncs UI state after mount or when the dialog/query input changes
     setMounted(true);
   }, []);
 

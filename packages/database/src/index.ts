@@ -1,5 +1,5 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, type Prisma } from './generated/client.js';
+import { PrismaClient } from './generated/client.js';
 import { softDeleteExtension } from './soft-delete.js';
 
 export * from './generated/client.js';
@@ -37,8 +37,8 @@ export async function withTenant<T>(
 ): Promise<T> {
   if (ctx.tenantId !== null && !UUID_RE.test(ctx.tenantId)) throw new Error('Invalid tenant id');
   if (ctx.userId && !UUID_RE.test(ctx.userId)) throw new Error('Invalid user id');
-  return (prisma as any).$transaction(
-    async (tx: any) => {
+  return (prisma as ExtendedPrismaClient).$transaction(
+    async (tx) => {
       await tx.$executeRaw`SELECT set_config('app.tenant_id', ${ctx.tenantId ?? ''}, true), set_config('app.user_id', ${ctx.userId ?? ''}, true)`;
       return fn(tx);
     },

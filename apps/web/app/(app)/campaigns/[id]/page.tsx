@@ -1,6 +1,7 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, type ComponentProps } from 'react';
+import type { RecipientQuery } from '@leadpilot/validation';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -30,7 +31,7 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
   const campaignQuery = useCampaign(id);
   const recipientsQuery = useCampaignRecipients(id, {
     q: search || undefined,
-    status: statusFilter !== 'ALL' ? (statusFilter as any) : undefined,
+    status: statusFilter !== 'ALL' ? (statusFilter as RecipientQuery['status']) : undefined,
   });
 
   const launchMutation = useLaunchCampaign();
@@ -103,7 +104,7 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
           <div className="space-y-1">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold tracking-tight text-foreground">{campaign.name}</h1>
-              <Badge tone={campaignTone as any}>
+              <Badge tone={campaignTone as ComponentProps<typeof Badge>['tone']}>
                 {campaign.status === 'RUNNING' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />}
                 {campaign.status}
               </Badge>

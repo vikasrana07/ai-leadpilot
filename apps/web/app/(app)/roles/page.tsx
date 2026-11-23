@@ -35,8 +35,8 @@ export default function RolesPage() {
       void qc.invalidateQueries({ queryKey: ['roles'] });
       setDeletingRole(null);
     },
-    onError: (err: any) => {
-      toast.error(err?.message ?? 'Failed to delete role');
+    onError: (err: Error) => {
+      toast.error(err.message ?? 'Failed to delete role');
     },
   });
 
