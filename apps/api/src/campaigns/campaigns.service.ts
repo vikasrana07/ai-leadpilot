@@ -790,20 +790,13 @@ export class CampaignsService implements OnModuleInit {
 
   /** Checks and launches any scheduled campaigns whose scheduledAt has arrived */
   async checkScheduledCampaigns(): Promise<number> {
-    const now = new Date();
-    // System sweep without tenant context to find scheduled campaigns across all tenants
-    const due = await this.db.prisma.broadcastCampaign.findMany({
-      where: {
-        status: 'SCHEDULED',
-        scheduledAt: { lte: now },
-      },
-      select: { id: true, tenantId: true },
-      take: 20,
-    });
+    // System sweep without tenant context: broadcast_campaigns is RLS-protected, so a plain query as the app role returns nothing.
+    // list_due_campaigns() is a SECURITY DEFINER helper that returns ids only; each launch then runs in its own tenant transaction.
+    const due = await this.db.prisma.$queryRaw<{ id: string; tenant_id: string }[]>`SELECT id, tenant_id FROM list_due_campaigns(20)`;
 
     for (const c of due) {
       try {
-        await this.launch({ tenantId: c.tenantId }, c.id);
+        await this.launch({ tenantId: c.tenant_id }, c.id);
       } catch (err) {
         this.log.error(`Failed to trigger scheduled campaign ${c.id}: ${err instanceof Error ? err.message : String(err)}`);
       }
