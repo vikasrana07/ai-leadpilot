@@ -377,6 +377,7 @@ model Lead {
   notes       LeadNote[]
   activities  LeadActivity[]
   transitions StageTransition[]
+  trackedEmails TrackedEmail[]
 
   @@index([tenantId, deletedAt, createdAt(sort: Desc)])
   @@index([tenantId, stageId])
@@ -977,6 +978,7 @@ model Appointment {
   cancelledReason    String?           @map("cancelled_reason")
   rescheduledFromId  String?           @map("rescheduled_from_id") @db.Uuid
   createdByUserId    String?           @map("created_by_user_id") @db.Uuid
+  googleEventId      String?           @map("google_event_id")
   createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -1001,6 +1003,25 @@ model AppointmentEvent {
 
   @@index([tenantId, appointmentId, createdAt])
   @@map("appointment_events")
+}
+
+model GoogleCalendarSync {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  membershipId   String    @map("membership_id") @db.Uuid
+  calendarId     String    @default("primary") @map("calendar_id")
+  credentialId   String    @map("credential_id") @db.Uuid
+  syncToken      String?   @map("sync_token")
+  channelId      String?   @map("channel_id")
+  status         String    @default("active")
+  email          String?   @map("email")
+  lastSyncedAt   DateTime? @map("last_synced_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([tenantId, membershipId])
+  @@index([tenantId])
+  @@map("google_calendar_syncs")
 }
 
 model Automation {
@@ -1549,5 +1570,103 @@ model UserAlertSettings {
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@map("user_alert_settings")
+}
+
+// -----------------------------------------------------------------------------
+// Email Engagement Tracking (Amazon SES & Native)
+// -----------------------------------------------------------------------------
+
+enum EmailDeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  COMPLAINED
+  REJECTED
+  SUPPRESSED
+  FAILED
+}
+
+enum EmailEventType {
+  SEND
+  DELIVERY
+  OPEN
+  CLICK
+  BOUNCE
+  COMPLAINT
+  REJECT
+}
+
+enum SuppressionReason {
+  HARD_BOUNCE
+  COMPLAINT
+  UNSUBSCRIBED
+  MANUAL
+}
+
+model TrackedEmail {
+  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId              String              @map("tenant_id") @db.Uuid
+  leadId                String?             @map("lead_id") @db.Uuid
+  recipient             String              @db.Citext
+  subject               String
+  status                EmailDeliveryStatus @default(PENDING)
+  sesMessageId          String?             @map("ses_message_id")
+  smtpMessageId         String?             @map("smtp_message_id")
+  openCount             Int                 @default(0) @map("open_count")
+  clickCount            Int                 @default(0) @map("click_count")
+  firstOpenedAt         DateTime?           @map("first_opened_at") @db.Timestamptz(3)
+  lastOpenedAt          DateTime?           @map("last_opened_at") @db.Timestamptz(3)
+  deliveredAt           DateTime?           @map("delivered_at") @db.Timestamptz(3)
+  bouncedAt             DateTime?           @map("bounced_at") @db.Timestamptz(3)
+  bounceType            String?             @map("bounce_type")
+  bounceSubType         String?             @map("bounce_sub_type")
+  complaintAt           DateTime?           @map("complaint_at") @db.Timestamptz(3)
+  complaintFeedbackType String?             @map("complaint_feedback_type")
+  metadata              Json                @default("{}")
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  lead   Lead?                  @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  events EmailEngagementEvent[]
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, recipient])
+  @@index([tenantId, leadId])
+  @@index([sesMessageId])
+  @@map("tracked_emails")
+}
+
+model EmailEngagementEvent {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String         @map("tenant_id") @db.Uuid
+  emailId   String         @map("email_id") @db.Uuid
+  type      EmailEventType
+  timestamp DateTime       @default(now()) @db.Timestamptz(3)
+  ipAddress String?        @map("ip_address")
+  userAgent String?        @map("user_agent")
+  clickUrl  String?        @map("click_url")
+  metadata  Json           @default("{}")
+
+  email TrackedEmail @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, emailId, timestamp(sort: Desc)])
+  @@map("email_engagement_events")
+}
+
+model EmailSuppression {
+  id        String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String            @map("tenant_id") @db.Uuid
+  email     String            @db.Citext
+  reason    SuppressionReason
+  source    String
+  notes     String?
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([tenantId, email])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("email_suppressions")
 }
 

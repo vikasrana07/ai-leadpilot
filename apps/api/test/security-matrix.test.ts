@@ -109,6 +109,7 @@ describe('permission declarations', () => {
     'POST /conversations/:id/assign', 'POST /conversations/:id/close', 'POST /conversations/:id/handback', 'POST /conversations/:id/messages', 'POST /conversations/:id/messages/:mid/retry', 'POST /conversations/:id/notes', 'POST /conversations/:id/read',
     'POST /conversations/:id/reopen', 'POST /conversations/:id/takeover', 'POST /leads', 'POST /leads/:id/merge', 'POST /leads/:id/notes', 'POST /leads/:id/score/override', 'POST /leads/:id/stage', 'POST /leads/bulk', 'POST /leads/check-duplicates',
     'POST /leads/import', 'PUT /appointments/availability', 'PUT /conversations/:id/tags', 'PUT /leads/:id/tags', 'PUT /sla',
+    'GET /integrations/google-calendar', 'GET /integrations/google-calendar/auth-url', 'POST /integrations/google-calendar/connect', 'DELETE /integrations/google-calendar',
   ]);
   it('every tenant route without a declared permission is on the reviewed service-enforced list', () => {
     const open = routes.filter((r) => !r.isPublic && !r.noTenant && r.perms.length === 0).map(label);

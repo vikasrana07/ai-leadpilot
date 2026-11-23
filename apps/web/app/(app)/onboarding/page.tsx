@@ -3,17 +3,20 @@
 import { ONBOARDING_STEPS, type OnboardingProgress, type OnboardingStep } from '@leadpilot/validation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowLeft, ArrowRight, Check, Clock, PartyPopper } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Clock, MessageCircle, PartyPopper } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/page/page-header';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Channel, ConnectDialog } from '@/components/integrations/whatsapp-card';
+import { EmbeddedSignupButton, type EmbeddedConfig } from '@/components/integrations/embedded-signup-button';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
@@ -28,7 +31,7 @@ const STEPS: { key: Exclude<OnboardingStep, 'complete'>; title: string; blurb: s
   { key: 'business', title: 'Business details', blurb: 'How customers and your team will see your business.' },
   { key: 'industry', title: 'Industry', blurb: 'We tailor fields, pipeline stages and AI prompts to your industry.' },
   { key: 'team', title: 'Invite your team', blurb: 'Add sales managers and agents. You can do this later too.' },
-  { key: 'whatsapp', title: 'Connect WhatsApp', blurb: 'Reply to enquiries on WhatsApp.', phase: 3 },
+  { key: 'whatsapp', title: 'Connect WhatsApp', blurb: 'Reply to enquiries on WhatsApp.' },
   { key: 'assistant', title: 'Configure the AI assistant', blurb: 'Name, tone and rules for your assistant.', phase: 4 },
   { key: 'knowledge', title: 'Upload knowledge', blurb: 'Brochures and FAQs the assistant answers from.', phase: 4 },
   { key: 'qualification', title: 'Qualification rules', blurb: 'What makes a lead hot, warm or cold for you.', phase: 4 },
@@ -108,6 +111,88 @@ function TeamStep({ onDone }: { onDone: () => Promise<void> }) {
   );
 }
 
+function WhatsappStep({ onDone, onSkip }: { onDone: () => Promise<void>; onSkip: () => Promise<void> }) {
+  const qc = useQueryClient();
+  const channels = useQuery({ queryKey: ['channels'], queryFn: () => api<Channel[]>('/channels') });
+  const embedded = useQuery({ queryKey: ['channels', 'embedded-config'], queryFn: () => api<EmbeddedConfig>('/channels/embedded-signup'), retry: false });
+  const [manualOpen, setManualOpen] = useState(false);
+
+  const ch = channels.data?.[0];
+  const isConnected = ch && (ch.status === 'ACTIVE' || ch.status === 'NEEDS_RECONNECT');
+  const es = embedded.data && embedded.data.mode !== 'off' ? embedded.data : null;
+
+  if (channels.isPending) return <Skeleton className="h-32" />;
+
+  if (isConnected) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-surface p-4">
+          <Check className="h-5 w-5 text-success" aria-hidden />
+          <div className="flex-1">
+            <p className="text-[13px] font-medium">{ch.name}</p>
+            <p className="text-helper">{ch.displayPhone ?? ch.phoneNumberId} is connected</p>
+          </div>
+          <Badge tone="success">Connected</Badge>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="primary" onClick={() => void onDone()}>
+            Continue <ArrowRight className="h-4 w-4" aria-hidden />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-border p-5 space-y-3">
+        <div className="flex items-start gap-3">
+          <MessageCircle className="mt-0.5 h-5 w-5 text-primary shrink-0" aria-hidden />
+          <div className="flex-1 space-y-1">
+            <p className="text-[13px] font-medium">Connect your WhatsApp Business number</p>
+            <p className="text-helper">
+              {es
+                ? 'Sign in with Facebook to link your WhatsApp Business account in a few clicks. LeadPilot will automatically capture and reply to enquiries.'
+                : 'Connect your WhatsApp Business Cloud API number. You can connect with Facebook or enter credentials manually.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-2 flex flex-wrap items-center gap-3">
+          {es ? (
+            <EmbeddedSignupButton
+              config={es}
+              label="Connect with Facebook"
+              onConnected={async () => {
+                await qc.invalidateQueries({ queryKey: ['channels'] });
+                await onDone();
+              }}
+            />
+          ) : null}
+          <Button
+            variant={es ? 'secondary' : 'primary'}
+            onClick={() => setManualOpen(true)}
+          >
+            Enter credentials manually
+          </Button>
+          <Button variant="ghost" onClick={() => void onSkip()}>
+            Skip for now <ArrowRight className="h-4 w-4" aria-hidden />
+          </Button>
+        </div>
+      </div>
+
+      <ConnectDialog
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+        onConnected={async () => {
+          await qc.invalidateQueries({ queryKey: ['channels'] });
+          await onDone();
+        }}
+      />
+    </div>
+  );
+}
+
 export default function OnboardingPage() {
   const terms = useTerms();
   const qc = useQueryClient();
@@ -169,6 +254,7 @@ export default function OnboardingPage() {
                     {step.key === 'business' ? <BusinessStep tenant={tenant.data} onDone={() => advance('business', 'completed')} /> : null}
                     {step.key === 'industry' ? <IndustryStep tenant={tenant.data} onDone={() => advance('industry', 'completed')} /> : null}
                     {step.key === 'team' ? <TeamStep onDone={() => advance('team', 'completed')} /> : null}
+                    {step.key === 'whatsapp' ? <WhatsappStep onDone={() => advance('whatsapp', 'completed')} onSkip={() => advance('whatsapp', 'skipped')} /> : null}
                     {step.phase ? (
                       <div className="rounded-lg border border-dashed border-border-strong p-5">
                         <p className="text-[13px]">This step needs a module that ships in phase {step.phase}. Nothing to configure yet, so you can skip it now and return when it is available.</p>

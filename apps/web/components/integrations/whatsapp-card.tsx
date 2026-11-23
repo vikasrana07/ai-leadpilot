@@ -22,7 +22,7 @@ import type { WaTemplate } from '@/lib/inbox';
 import { useTerms } from '@/lib/pack';
 import { EmbeddedSignupButton, type EmbeddedConfig } from './embedded-signup-button';
 
-interface Channel { id: string; name: string; status: 'ACTIVE' | 'DISABLED' | 'ERROR' | 'NEEDS_RECONNECT'; mode: 'manual' | 'platform'; phoneNumberId: string; displayPhone: string | null; webhookUrl: string | null; verifyToken: string | null; lastVerifiedAt: string | null }
+export interface Channel { id: string; name: string; status: 'ACTIVE' | 'DISABLED' | 'ERROR' | 'NEEDS_RECONNECT'; mode: 'manual' | 'platform'; phoneNumberId: string; displayPhone: string | null; webhookUrl: string | null; verifyToken: string | null; lastVerifiedAt: string | null }
 type ConnectForm = z.infer<typeof channelWhatsappSchema>;
 type TemplateForm = z.input<typeof templateSchema>;
 
@@ -36,11 +36,11 @@ function CopyField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ConnectDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+export function ConnectDialog({ open, onOpenChange, onConnected }: { open: boolean; onOpenChange: (o: boolean) => void; onConnected?: () => void }) {
   const qc = useQueryClient();
   const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting } } = useForm<ConnectForm>({ resolver: zodResolver(channelWhatsappSchema), defaultValues: { name: 'Main WhatsApp number' } });
   async function onSubmit(v: ConnectForm) {
-    try { await api('/channels/whatsapp', { method: 'POST', body: v }); toast.success('WhatsApp connected. Now add the webhook in Meta (steps below).'); await qc.invalidateQueries({ queryKey: ['channels'] }); reset(); onOpenChange(false); }
+    try { await api('/channels/whatsapp', { method: 'POST', body: v }); toast.success('WhatsApp connected. Now add the webhook in Meta (steps below).'); await qc.invalidateQueries({ queryKey: ['channels'] }); reset(); onOpenChange(false); onConnected?.(); }
     catch (e) { handleApiError(e, setError); }
   }
   return (

@@ -95,6 +95,7 @@ export const ModelName = {
   AvailabilityException: 'AvailabilityException',
   Appointment: 'Appointment',
   AppointmentEvent: 'AppointmentEvent',
+  GoogleCalendarSync: 'GoogleCalendarSync',
   Automation: 'Automation',
   AutomationRun: 'AutomationRun',
   AutomationVersion: 'AutomationVersion',
@@ -125,7 +126,10 @@ export const ModelName = {
   PortalConfig: 'PortalConfig',
   PortalLoginCode: 'PortalLoginCode',
   PortalSession: 'PortalSession',
-  UserAlertSettings: 'UserAlertSettings'
+  UserAlertSettings: 'UserAlertSettings',
+  TrackedEmail: 'TrackedEmail',
+  EmailEngagementEvent: 'EmailEngagementEvent',
+  EmailSuppression: 'EmailSuppression'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -819,6 +823,7 @@ export const AppointmentScalarFieldEnum = {
   cancelledReason: 'cancelledReason',
   rescheduledFromId: 'rescheduledFromId',
   createdByUserId: 'createdByUserId',
+  googleEventId: 'googleEventId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -837,6 +842,24 @@ export const AppointmentEventScalarFieldEnum = {
 } as const
 
 export type AppointmentEventScalarFieldEnum = (typeof AppointmentEventScalarFieldEnum)[keyof typeof AppointmentEventScalarFieldEnum]
+
+
+export const GoogleCalendarSyncScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  membershipId: 'membershipId',
+  calendarId: 'calendarId',
+  credentialId: 'credentialId',
+  syncToken: 'syncToken',
+  channelId: 'channelId',
+  status: 'status',
+  email: 'email',
+  lastSyncedAt: 'lastSyncedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GoogleCalendarSyncScalarFieldEnum = (typeof GoogleCalendarSyncScalarFieldEnum)[keyof typeof GoogleCalendarSyncScalarFieldEnum]
 
 
 export const AutomationScalarFieldEnum = {
@@ -1327,6 +1350,61 @@ export const UserAlertSettingsScalarFieldEnum = {
 } as const
 
 export type UserAlertSettingsScalarFieldEnum = (typeof UserAlertSettingsScalarFieldEnum)[keyof typeof UserAlertSettingsScalarFieldEnum]
+
+
+export const TrackedEmailScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  recipient: 'recipient',
+  subject: 'subject',
+  status: 'status',
+  sesMessageId: 'sesMessageId',
+  smtpMessageId: 'smtpMessageId',
+  openCount: 'openCount',
+  clickCount: 'clickCount',
+  firstOpenedAt: 'firstOpenedAt',
+  lastOpenedAt: 'lastOpenedAt',
+  deliveredAt: 'deliveredAt',
+  bouncedAt: 'bouncedAt',
+  bounceType: 'bounceType',
+  bounceSubType: 'bounceSubType',
+  complaintAt: 'complaintAt',
+  complaintFeedbackType: 'complaintFeedbackType',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TrackedEmailScalarFieldEnum = (typeof TrackedEmailScalarFieldEnum)[keyof typeof TrackedEmailScalarFieldEnum]
+
+
+export const EmailEngagementEventScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  emailId: 'emailId',
+  type: 'type',
+  timestamp: 'timestamp',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  clickUrl: 'clickUrl',
+  metadata: 'metadata'
+} as const
+
+export type EmailEngagementEventScalarFieldEnum = (typeof EmailEngagementEventScalarFieldEnum)[keyof typeof EmailEngagementEventScalarFieldEnum]
+
+
+export const EmailSuppressionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  email: 'email',
+  reason: 'reason',
+  source: 'source',
+  notes: 'notes',
+  createdAt: 'createdAt'
+} as const
+
+export type EmailSuppressionScalarFieldEnum = (typeof EmailSuppressionScalarFieldEnum)[keyof typeof EmailSuppressionScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -2,6 +2,7 @@ export * from './permissions.js';
 export * from './industry-packs.js';
 export * from './terms-text.js';
 export * from './crm.js';
+export * from './email-tracking.js';
 
 export interface WorkspaceSummary {
   tenantId: string;

@@ -86,3 +86,4 @@ export * from './billing.js';
 export * from './integrations.js';
 export * from './automation-graph.js';
 export * from './portal.js';
+export * from './email-tracking.js';

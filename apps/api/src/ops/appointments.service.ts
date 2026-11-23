@@ -1,5 +1,5 @@
 import { packForIndustry } from '@leadpilot/shared-types';
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, Optional, UnprocessableEntityException } from '@nestjs/common';
 import type { Prisma, TxClient } from '@leadpilot/database';
 import { APPOINTMENT_TRANSITIONS, type AppointmentCreateInput, type AppointmentListQuery, type SlotsQuery } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
@@ -8,6 +8,7 @@ import type { Actor } from '../common/actor.js';
 import { addDays, localParts } from '../common/tz.js';
 import { DbService } from '../db/db.module.js';
 import { DistributedLockService } from '../common/lock.service.js';
+import { GoogleCalendarService } from '../integrations/google-calendar/google-calendar.service.js';
 import { loadAvailability, slotsForDate, withinWorkingHours } from './availability.js';
 import { OutboxService } from './outbox.service.js';
 
@@ -66,6 +67,7 @@ export class AppointmentsService {
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(OutboxService) private readonly outbox: OutboxService,
     @Inject(DistributedLockService) private readonly lock: DistributedLockService,
+    @Optional() @Inject(GoogleCalendarService) private readonly gcal?: GoogleCalendarService,
   ) {}
 
   private tx<T>(a: Actor, fn: (tx: TxClient) => Promise<T>): Promise<T> { return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, fn); }
@@ -140,10 +142,19 @@ export class AppointmentsService {
     const rangeStart = new Date(`${fromDate}T00:00:00Z`); rangeStart.setUTCDate(rangeStart.getUTCDate() - 1);
     const rangeEnd = new Date(`${addDays(fromDate, days)}T00:00:00Z`); rangeEnd.setUTCDate(rangeEnd.getUTCDate() + 1);
     const busyRows = await tx.appointment.findMany({ where: { membershipId: { in: membershipIds }, status: { in: ['PENDING', 'CONFIRMED'] }, startsAt: { lt: rangeEnd }, endsAt: { gt: rangeStart } }, select: { membershipId: true, startsAt: true, endsAt: true } });
+    let allBusy = busyRows;
+    if (this.gcal) {
+      try {
+        const gcalBusy = await this.gcal.getFreeBusy(tenantId, membershipIds, rangeStart, rangeEnd);
+        if (gcalBusy.length > 0) allBusy = [...busyRows, ...gcalBusy];
+      } catch {
+        // Fallback to internal appointments if external calendar query fails
+      }
+    }
     const out: { date: string; slots: { startsAt: string; endsAt: string; membershipIds: string[] }[] }[] = [];
     for (let i = 0; i < days; i++) {
       const date = addDays(fromDate, i);
-      const slots = slotsForDate({ data, date, tz, durationMinutes, membershipIds, busy: busyRows, now });
+      const slots = slotsForDate({ data, date, tz, durationMinutes, membershipIds, busy: allBusy, now });
       out.push({ date, slots: slots.map((s) => ({ startsAt: s.startsAt.toISOString(), endsAt: s.endsAt.toISOString(), membershipIds: s.membershipIds })) });
     }
     return { timezone: tz, days: out };
@@ -267,6 +278,9 @@ export class AppointmentsService {
     await tx.leadActivity.create({ data: { id: uuidv7(), tenantId: a.tenantId, leadId: row.leadId, type: 'appointment_booked', actorUserId: a.userId, data: { appointmentId: row.id, startsAt: row.startsAt.toISOString(), source: row.source } } });
     await this.audit.record(tx, { tenantId: a.tenantId, actorUserId: a.userId, action: `appointment.${kind}`, resourceType: 'appointment', resourceId: row.id, metadata: { source: row.source, ...(a.apiKeyId ? { apiKeyId: a.apiKeyId } : {}) }, ...(a.requestId ? { requestId: a.requestId } : {}), ...(a.ip ? { ip: a.ip } : {}) });
     await this.outbox.emit(tx, a.tenantId, kind === 'booked' ? 'appointment.booked' : 'appointment.rescheduled', { appointmentId: row.id, leadId: row.leadId, membershipId: row.membershipId, source: row.source, byUserId: a.userId });
+    if (this.gcal) {
+      await this.gcal.syncAppointment(tx, a.tenantId, row.id, kind === 'booked' ? 'created' : 'rescheduled').catch(() => null);
+    }
   }
 
   // ------------------------------------------------------------------ lifecycle
@@ -285,6 +299,9 @@ export class AppointmentsService {
       await tx.leadActivity.create({ data: { id: uuidv7(), tenantId: a.tenantId, leadId: cur.leadId, type: `appointment_${to.toLowerCase()}`, actorUserId: a.userId, data: { appointmentId: id } } });
       await this.audit.record(tx, { tenantId: a.tenantId, actorUserId: a.userId, action: `appointment.${to.toLowerCase()}`, resourceType: 'appointment', resourceId: id, metadata: {}, ...(a.requestId ? { requestId: a.requestId } : {}), ...(a.ip ? { ip: a.ip } : {}) });
       await this.outbox.emit(tx, a.tenantId, `appointment.${to.toLowerCase()}`, { appointmentId: id, leadId: cur.leadId, membershipId: cur.membershipId, byUserId: a.userId });
+      if (this.gcal && to === 'CANCELLED') {
+        await this.gcal.syncAppointment(tx, a.tenantId, id, 'cancelled').catch(() => null);
+      }
     });
     return this.get({ ...a, permissions: new Set([...a.permissions, 'appointment:read:all']) }, id);
   }

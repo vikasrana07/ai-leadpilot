@@ -228,3 +228,42 @@ export const SubscriptionStatus = {
 } as const
 
 export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+
+
+export const EmailDeliveryStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  OPENED: 'OPENED',
+  CLICKED: 'CLICKED',
+  BOUNCED: 'BOUNCED',
+  COMPLAINED: 'COMPLAINED',
+  REJECTED: 'REJECTED',
+  SUPPRESSED: 'SUPPRESSED',
+  FAILED: 'FAILED'
+} as const
+
+export type EmailDeliveryStatus = (typeof EmailDeliveryStatus)[keyof typeof EmailDeliveryStatus]
+
+
+export const EmailEventType = {
+  SEND: 'SEND',
+  DELIVERY: 'DELIVERY',
+  OPEN: 'OPEN',
+  CLICK: 'CLICK',
+  BOUNCE: 'BOUNCE',
+  COMPLAINT: 'COMPLAINT',
+  REJECT: 'REJECT'
+} as const
+
+export type EmailEventType = (typeof EmailEventType)[keyof typeof EmailEventType]
+
+
+export const SuppressionReason = {
+  HARD_BOUNCE: 'HARD_BOUNCE',
+  COMPLAINT: 'COMPLAINT',
+  UNSUBSCRIBED: 'UNSUBSCRIBED',
+  MANUAL: 'MANUAL'
+} as const
+
+export type SuppressionReason = (typeof SuppressionReason)[keyof typeof SuppressionReason]

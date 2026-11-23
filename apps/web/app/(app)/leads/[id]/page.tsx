@@ -12,6 +12,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { ActivityTimeline, type ActivityItem } from '@/components/crm/activity-timeline';
+import { SendEmailDialog } from '@/components/crm/send-email-dialog';
 import { StageBadge, TemperatureBadge } from '@/components/crm/lead-badges';
 import { ScoreCard } from '@/components/ai/score-card';
 import { MergeDialog } from '@/components/crm/merge-dialog';
@@ -206,7 +207,7 @@ export default function LeadDetailPage() {
   const { can } = useAuth();
   const stages = useStages(); const members = useMembers();
   const [tab, setTab] = useState<'activity' | 'notes'>('activity');
-  const [editOpen, setEditOpen] = useState(false); const [mergeOpen, setMergeOpen] = useState(false); const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false); const [mergeOpen, setMergeOpen] = useState(false); const [deleteOpen, setDeleteOpen] = useState(false); const [emailOpen, setEmailOpen] = useState(false);
   const [lostFor, setLostFor] = useState<string | null>(null); const [lostReason, setLostReason] = useState(''); const [lostNote, setLostNote] = useState('');
   // A native <select> fires `change` per keystroke when typed on the keyboard ("Contacted" = 9 changes). The choice is therefore held
   // locally and committed once: after a short pause, on blur, or immediately for a mouse pick that closes the list.
@@ -248,6 +249,7 @@ export default function LeadDetailPage() {
     <>
       <PageHeader title={l.name} breadcrumbs={[{ label: terms.Leads, href: '/leads' }, { label: l.name }]} actions={<>
         {can('lead:write:all') ? <Button onClick={() => setMergeOpen(true)}><GitMerge className="h-4 w-4" aria-hidden />Merge duplicates</Button> : null}
+        {l.canWrite ? <Button variant="secondary" onClick={() => setEmailOpen(true)}><Mail className="h-4 w-4" aria-hidden />Send email</Button> : null}
         {l.canWrite ? <Button onClick={() => setEditOpen(true)}><Pencil className="h-4 w-4" aria-hidden />Edit</Button> : null}
         <LeadPrivacyMenu leadId={id} leadName={l.name} />
         {can('lead:delete') ? <Button variant="ghost" size="icon" aria-label={`Delete ${terms.lead}`} onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4" /></Button> : null}
@@ -368,6 +370,7 @@ export default function LeadDetailPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <SendEmailDialog open={emailOpen} onOpenChange={setEmailOpen} lead={{ id: l.id, name: l.name, email: l.email }} />
     </>
   );
 }
