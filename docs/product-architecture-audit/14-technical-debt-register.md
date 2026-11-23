@@ -1,6 +1,6 @@
 # 14 — Technical Debt Register
 
-Rows are sorted by priority (P0 first), then impact, then ID. Scoring: **Impact** H/M/L (customer, security or delivery harm if left) · **Effort** in engineering days · **Priority** P0 (before first customer) → P3 (opportunistic). "Roadmap" links to doc 13. Evidence is file/line from this checkout (`main` @ `dce256d`) or a command I ran.
+**Status 2026-11-24:** TD-03 resolved (PR #2); TD-01 resolved for lint (PR #3) but CI also depends on failing tests; TD-31 partly resolved (PR #4). Rows are sorted by priority (P0 first), then impact, then ID. Scoring: **Impact** H/M/L (customer, security or delivery harm if left) · **Effort** in engineering days · **Priority** P0 (before first customer) → P3 (opportunistic). "Roadmap" links to doc 13. Evidence is file/line from this checkout (`main` @ `dce256d`) or a command I ran.
 
 | ID | Debt | Evidence | Impact | Effort | Priority | Roadmap |
 |---|---|---|:--:|---:|:--:|---|
@@ -24,6 +24,8 @@ Rows are sorted by priority (P0 first), then impact, then ID. Scoring: **Impact*
 | TD-25 | **SES message-id correlation unproven** | `email-tracking.service.ts:227-228,445-456`; `mail.module.ts` | M | 3 | P1 | R7 |
 | TD-32 | **AI reply turns not durable**: in-memory debounce timers, executes in API tier, no unanswered-message sweeper; same mutable-callback pattern as jobs | `ai/orchestrator.ts:36,55,65-72`; `ai/ai-trigger.ts` | M | 3 | P1 | A11 |
 | TD-33 | **`erase_lead()` not updated for tracked emails / engagement events** (DPDP gap) | `20261116230000_privacy_erasure`; `tracked_emails.lead_id` `SET NULL` | M | 1 | P1 | R11 |
+| TD-34 | **Workspace export omits six new tables** (DPDP portability); classification test failing | `ops/export-tables.ts`; `data-lifecycle.test.ts` | M | 1 | P1 | R11 |
+| TD-35 | **Knowledge docs stay PENDING when no `ai` worker runs**; no sweeper/alert | `knowledge.service.ts:71-77`; `jobs.service.ts:180-186` | M | 2 | P1 | A11 |
 | TD-10 | **Small exposures**: `/docs` always on; `/design/*` demo pages in prod; literal fallback secret in source; platform-admin MFA off by default (`PLATFORM_REQUIRE_MFA=false`) | `bootstrap.ts` `setupSwagger`; `app/design/**`; `email-tracking.service.ts:57`; `.env.example:137` | L | 1 | P1 | R9 |
 | TD-14 | **Oversized services**: `email-tracking.service.ts` 976, `campaigns.service.ts` 814, `leads.service.ts` 486, `appointments.service.ts` 453, `automation-engine.ts` 419 | `wc -l` | M | 5 | P2 | A3, A9 |
 | TD-18 | **Dual API-client strategy** (65 hand-written vs 2 generated) | grep of `api-generated` vs `lib/api` | M | 10 | P2 | A7 |

@@ -27,7 +27,7 @@ Defensive, static review. No exploitation was attempted and nothing was run agai
 | S-16 | Low | `connect` endpoint body not schema-validated; client-supplied `redirectUri` | Confirmed |
 | S-17 | Low (info) | No audit-log tamper evidence or export | Fact |
 
-IDs are stable references used by other audit documents; the table is ordered by severity, not by ID. Counts: 4 High, 9 Medium (S-05–S-10, S-18–S-20), 6 Low (S-11–S-16), 1 informational (S-17).
+**Status 2026-11-24:** S-04 fixed (PR #2, confirmed by a failing-then-passing test); S-19 partly fixed (disconnect, PR #4); S-21–S-23 added (see `01-executive-summary.md`, Remediation status). All other findings are open. IDs are stable references used by other audit documents; the table is ordered by severity, not by ID. Counts: 4 High, 9 Medium (S-05–S-10, S-18–S-20), 6 Low (S-11–S-16), 1 informational (S-17).
 
 No Critical findings. No SQL injection, XSS or tenant-isolation bypass was found in the areas inspected.
 
