@@ -1,83 +1,103 @@
-# Code Quality, Technical Debt & Testing Assessment: LeadPilot AI
+# 10 — Code Quality & Testing
 
-## 1. Code Quality & Architectural Hygiene
+## 0. What I actually ran (read-only, 2026-11-23, `main` @ `dce256d`)
 
-The LeadPilot AI repository demonstrates strict adherence to modern TypeScript best practices, domain-driven modular boundaries, and clean software craftsmanship.
+| Command | Result |
+|---|---|
+| `tsc --noEmit` in `apps/api` and `apps/web` | **Clean** (no diagnostics) |
+| `eslint .` (what root `pnpm lint` and CI run) | **FAILS: 174 problems (164 errors, 10 warnings).** 122 × `@typescript-eslint/no-explicit-any`, 31 × `no-unused-vars`, 6 × `react-hooks/set-state-in-effect`, 6 × `react-hooks/incompatible-library`, 4 × `exhaustive-deps`, 2 × `consistent-type-imports`, 1 × `purity`, 1 × `no-useless-assignment` |
+| `vitest run` in `apps/web` | 16 files, **86 tests pass** |
+| `vitest run` on 5 API unit suites (`campaigns-unit`, `roles-custom-unit`, `worker-tiers-unit`, `google-calendar-unit`, `ses-sns-validator`) | **33 tests pass** |
+| DB-backed API suites, Playwright E2E | **Not run** (need Postgres/Redis/browser) |
 
-### Architectural Adherence & Design Patterns:
-- **Single Responsibility Principle (SRP)**: Controllers (`*controller.ts`) strictly manage HTTP routing, parameter extraction, and status mapping. Business logic is delegated entirely to services (`*.service.ts`). Database operations are decoupled via Prisma models, and complex workflows run through dedicated domain services (e.g., `RoundRobinService`, `StageRulesService`, `LeadImportService`).
-- **DRY (Don't Repeat Yourself)**: Shared validations and domain contracts live in `@leadpilot/validation` and `@leadpilot/shared-types`. Code reuse across the API and the background worker is achieved by bootstrapping identical NestJS modules in `apps/worker` rather than duplicating queue logic.
-- **Strict Type Safety**: The codebase operates under `strict: true` across all `tsconfig.json` configurations. There are zero instances of unconstrained `any` types in application logic; all request inputs validate against Zod schemas, producing typed DTOs.
-- **Contract Synchronization**: OpenAPI schemas are generated directly from NestJS metadata into `packages/shared-types/openapi.json`. Orval compiles this into strongly typed React Query hooks in `apps/web`, eliminating client-server contract drift.
+**Consequence:** CI (`.github/workflows/ci.yml`) runs `pnpm lint` before `pnpm test`, so the `verify` job should be red on `main` [Inference: I cannot see run history]. The failing files cluster in the last three commits: `packages/database/src/soft-delete.ts` (31), `apps/api/test/email-tracking.test.ts` (21), `roles-custom-unit.test.ts` (19), `campaigns-unit.test.ts` (18), `worker-tiers-unit.test.ts` (12), `create-campaign-dialog.tsx` (8), `emails/page.tsx` (5). The repo's own rule says "Product requirement: no `any`" (`eslint.config.mjs`). Quality gates exist but are not being honoured: a signal that work is merged without CI.
 
----
+Also: each package's `lint` script is `tsc --noEmit` (`apps/api/package.json:12`, `apps/web/package.json:11`), so `turbo run lint` is only a type check; the real lint is the root `eslint .`.
 
-## 2. Technical Debt & Code Complexity Hotspots
+## 1. Maintainability assessment
 
-While overall code quality is high, specific areas of accumulated technical debt and complexity were identified during the audit:
+| Dimension | Rating | Evidence |
+|---|:--:|---|
+| Type safety | Good | `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride` (`tsconfig.base.json`); Zod-inferred types shared across packages; the `any` debt is concentrated in `soft-delete.ts` (Prisma extension typing), new tests and the campaign dialog |
+| Separation of concerns | Mixed | Services own business logic and tenancy; but controllers live inside `*.module.ts`, `ops/` is a catch-all, and page components in the web app mix fetching, state and layout |
+| SOLID/SRP | Weak spots | `email-tracking.service.ts` (976 lines: token signing, HTML rewriting, sending, suppression, SNS event handling, stats), `campaigns.service.ts` (814: segment builder, launch, dispatch, scheduling, recipients), `leads.service.ts` (486), `appointments.service.ts` (453), `automation-engine.ts` (419) |
+| Dependency inversion | Mixed | Nest DI used well; exceptions: mutable callbacks on `JobsService` (`processCampaignBatch`, `checkScheduledCampaigns`, `processDoc`) assigned by feature services; `@Optional()` cross-module injection (`AppointmentsService` → `GoogleCalendarService`) |
+| DRY | Fair | Actor/permission scoping helpers are re-implemented per service (`leads.service.ts:24-33`, `tasks.service.ts:11-12`, `appointments.service.ts:75-77`, `conversations.service.ts:35-36,156`); `getStatus`/`connect` tenant-tx boilerplate repeated; hand-written web API clients duplicate generated ones |
+| Naming/consistency | Good | Consistent domain vocabulary; mixed `ctx`/`actor`/`a` parameter names for the same concept; UUIDv7 vs `gen_random_uuid()` mixed |
+| Error handling | Good at edges, uneven inside | Structured `HttpException` codes; but `.catch(() => null)` swallowing (`appointments.service.ts:282,303`), empty `catch {}` in the open-pixel route (intentional), campaign errors stored as `{message}` JSON without classification |
+| Dead / scaffolding code | Present | `CURRENT_PHASE`/`phase`/"Soon" in `nav.ts`; unused `GoogleCalendarSync.syncToken/channelId`; `/design/*` pages; `sesMessageId` duplicate of `smtpMessageId` |
+| Comments / docs | Excellent | ADRs 0001–0012, runbooks, threat model, SLOs; comments explain intent. One misleading comment: "rate-limit guard" on `dispatchBatch` (no limiter exists) |
+| Component complexity (web) | High in places | `tasks/page.tsx` 799, `leads/page.tsx` 723, `appointments/page.tsx` 575, `emails/page.tsx` 513, `webhooks/page.tsx` 511 lines; 50 of 51 pages are client components |
+| Newest code vs. older code | Quality drops | Core modules carry `ZodPipe`, permission decorators, audit events, tests; Google Calendar controller lacks validation/permissions, campaigns/email modules lack HTTP-level tests and fail lint |
 
-### 1. Oversized Service: `ConversationsService` (Complexity Hotspot)
-- **File**: `apps/api/src/conversations/conversations.service.ts` (~800 lines)
-- **Issue**: Handles thread pagination, message sending, WhatsApp template parsing, opt-out checking, agent takeover state, read receipt tracking, and outbox event dispatching.
-- **Recommendation**: Decompose into three focused services:
-  1. `ThreadManagementService`: Thread lifecycle, assignment, and takeover.
-  2. `MessageDeliveryService`: Sending messages, templates, and outbox writes.
-  3. `ConsentService`: STOP keywords, 24-hour window, and compliance rules.
+### Specific hot spots
 
-### 2. Large Controller with Mixed Concerns: `OpsController` / `Ops2Controller`
-- **File**: `apps/api/src/ops/ops.controller.ts` & `apps/api/src/ops/ops2.controller.ts`
-- **Issue**: The split between `OpsController` and `Ops2Controller` is an artificial artifact of development phases rather than domain boundaries. `OpsController` handles appointments and notifications, while `Ops2Controller` handles automations, tasks, and SLA settings.
-- **Recommendation**: Refactor into domain-dedicated controllers: `AppointmentsController`, `AutomationsController`, `TasksController`, and `SlaController`.
+| File / function | Issue |
+|---|---|
+| `campaigns/campaigns.service.ts` `dispatchBatch` (L562-700) | send-then-persist, no claim, per-recipient transactions, 140-line function with nested try/catch |
+| `campaigns/campaigns.service.ts` `launch` (L383-507) | loads entire audience in memory; no CAS on status; one long transaction |
+| `campaigns/campaigns.service.ts` `checkScheduledCampaigns` (end) | bypasses RLS context (doc 07 §4.7) |
+| `email-tracking/email-tracking.service.ts` `instrumentHtml` (L99-122) | regex HTML rewriting; only wraps `https?://` anchors with double/single quotes; `<a>` tags spanning attributes unusual, `<area>`, CSS URLs, and unsubscribe links are not considered |
+| `email-tracking/email-tracking.service.ts` L57 | secret fallback chain with a literal |
+| `integrations/google-calendar/google-calendar.service.ts` `getAuthUrl`/`connect` | unsigned state, never verified; raw `fetch` without timeout/`AbortSignal` (not confirmed for all calls) |
+| `ops/jobs.service.ts` L47-53, L97-103, L222 | callback wiring; silent skip when unset |
+| `packages/database/src/soft-delete.ts` | 31 lint errors; implicit `any` pass-through defeats typing of every soft-deleted model query |
+| `common/guards.ts` `TenantGuard` | one DB transaction per request, no cache |
+| `apps/web/lib/*.ts` vs `lib/api-generated` | dual client strategy |
+| `apps/web/app/(app)/tasks/page.tsx` | 799-line page |
 
-### 3. Tight Coupling in AI Orchestrator
-- **File**: `apps/api/src/ai/orchestrator.ts`
-- **Issue**: Contains inline prompt string concatenation and embeds logic for tool parameter parsing, grounding checks, and token usage calculation directly in the orchestrator loop.
-- **Recommendation**: Extract prompt assembly into a dedicated `PromptBuilder` and separate tool dispatching into a `ToolExecutionBus`.
+## 2. Technical-debt register
+See `14-technical-debt-register.md` (30 items with evidence and priority).
 
----
+## 3. Testing assessment
 
-## 3. Testing & Quality Engineering Assessment
+### 3.1 Inventory
+| Layer | Tooling | Count | Notes |
+|---|---|---|---|
+| API unit/integration | vitest 5.1 + supertest, real Postgres/Redis via `helpers.ts` (`createTestApp`) | ~65 files, ~689 cases | Most are integration tests through the real Nest app; `*-unit.test.ts` for newest modules use mocks |
+| Security matrix | `security-matrix.test.ts` | 209 lines | route discovery, 401 sweep, public allow-list, permission-declaration review list, role matrix, error/secret leak, CORS/headers, agent behaviour, SSRF |
+| Web unit | vitest | 16 files / 86 cases (all pass) | utilities and a few dialogs; **no page-level component tests** |
+| E2E | Playwright 1.65 + axe, Chrome channel | 19 specs / ~60 cases | auth, leads, widget+inbox, billing, AI+appointments, platform, security, keyboard, MFA, a11y, mobile, automation builder/canvas, packs, retention, error pages, ops status, embedded signup, alert settings |
+| DB | vitest | 3 files in `packages` | `rls-isolation.test.ts` etc. |
+| AI evaluation | `apps/api/test/eval` + `eval.test.ts` | cases file | live eval gated by `EVAL_LIVE=1`; never run live |
+| Load | `scripts/loadtest.mjs` | manual | results in `docs/performance.md` |
+| CI | GitHub Actions | `verify` + `e2e` jobs | no coverage, no flake tracking, E2E only on Chrome |
 
-The testing infrastructure is exceptionally comprehensive, featuring **89 test suites** and over **600 automated tests** executing via Vitest and Playwright.
+### 3.2 Strengths
+- Tests assert behaviour at tenant and permission boundaries, not only happy paths.
+- Test environment uses the real app + DB, which catches RLS/guard regressions.
+- E2E includes accessibility, keyboard and mobile.
+- `env-example.test.ts` checks that `.env.example` plus the required secrets loads as a valid configuration (it does not catch undocumented variables); `alert-runbooks.test.ts` couples alerts to runbooks.
 
+### 3.3 Gaps by critical workflow
+| Workflow | Coverage today | Gap |
+|---|---|---|
+| Campaign launch → dispatch → delivery receipts | `campaigns-unit.test.ts` (mocked DB/WhatsApp) | No test against RLS-bound DB; no scheduled sweep test; no concurrency/double-dispatch test; no consent-eligibility test; no HTTP/permission test; no E2E |
+| Email send → track → SNS bounce → suppression | `email-tracking.test.ts` (412 lines), SNS validator | No cross-user scoping test (S-05), no SES-id correlation test with a realistic SES payload |
+| Google Calendar | `google-calendar*.test.ts` | OAuth state/CSRF not tested; failure-path of `syncAppointment` not tested |
+| Custom roles | `roles-custom-unit.test.ts` | No HTTP integration test of escalation guards on `PATCH /roles/:id`, member role change with custom roles, or deletion with members assigned |
+| Worker tiers | `worker-tiers-unit.test.ts` | No test that each tier registers the expected queues/workers against Redis |
+| RLS on new tables | `rls-isolation.test.ts` | Catalog-level test exists (every `tenant_id` table has RLS + a policy; per-table isolation checks), so new tables are covered automatically. Gap: nothing tests cross-tenant system sweeps on the app role (S-04) |
+| Billing against Razorpay | mock only | Live smoke scripts never run |
+| WhatsApp inbound/outbound | mock client | Live smoke never run |
+| Frontend pages | E2E for older pages | No E2E for campaigns, emails, roles builder, GCal card |
+| Data erase/export | `data-lifecycle.test.ts` | Not confirmed to include new PII tables |
+| Concurrency | `appointments-exclusion-unit` and automation CAS | No test for simultaneous campaign launch or duplicate webhook bursts on new endpoints |
+
+### 3.4 Recommended pyramid and strategy
 ```
-                    ┌─────────────────────────┐
-                    │  Playwright E2E Tests   │  19 Spec Files
-                    │  (Desktop/Mobile Chrome)│  (Full UI Journeys)
-                    ├─────────────────────────┤
-                    │    Integration Tests    │  59 API Test Suites
-                    │   (NestJS + Test DB)    │  (RLS, APIs, Outbox)
-                    ├─────────────────────────┤
-                    │    Unit & Schema Tests  │  11 Validation Suites
-                    │    (Zod, Utils, Helpers)│  13 Web Lib Tests
-                    └─────────────────────────┘
+        E2E (Playwright)           ~10%   critical journeys per module + a11y: add campaigns, emails, roles, GCal
+      API integration (real DB)    ~35%   every module's permission matrix + RLS + concurrency
+   Contract tests (OpenAPI/Zod)    ~10%   generated-client vs spec; webhook payload fixtures from real providers
+ Unit / pure logic                 ~45%   money, phone, scoring, segmentation, scheduling, availability
+ Static gates: tsc + eslint + audit + secret scan   every PR
 ```
-
-### Testing Pyramid Distribution
-
-| Test Level | Framework / Runner | Test Suites | Scope & Coverage |
-|---|---|:---:|---|
-| **Unit Tests** | Vitest | 24 | Schema validation (`@leadpilot/validation`), phone formatting, currency parsing (`csv.ts`), Indian tax rules (`money.ts`), graph state reducers. |
-| **Integration Tests** | Vitest + Supertest | 59 | End-to-end API testing across PostgreSQL test database with RLS isolation, session cache, outbox worker simulation, and RBAC matrix enforcement. |
-| **End-to-End (E2E)** | Playwright | 19 | Browser automation driving Next.js frontend against live backend: registration, onboarding, lead creation, inbox chat, visual DAG builder, and responsive mobile layouts. |
-| **Accessibility (a11y)** | `@axe-core/playwright` | 1 (`10-a11y.spec.ts`) | Automated WCAG 2.1 AA audits across all major screens; zero critical accessibility violations. |
-| **Load & Stress Testing** | Custom Node.js runner (`scripts/loadtest.mjs`) | 1 | 100,000-lead database stress test measuring p50/p95 latency and concurrent connection limits. |
-
-### Automated Security Matrix Verification (`security-matrix.test.ts`)
-A critical engineering highlight of the repository is `apps/api/test/security-matrix.test.ts`:
-- **Automated Route Discovery**: Inspects the NestJS reflection metadata tree at runtime to discover every registered controller and endpoint.
-- **Public Allow-list Enforcement**: Asserts that every public route is explicitly registered in a documented `PUBLIC_ALLOWLIST`. Any new unauthenticated endpoint added without review immediately breaks the build.
-- **RBAC Matrix Verification**: Executes automated test calls as a restricted `agent` user against every endpoint, proving that non-owners cannot delete leads, access billing, invite team members, or read colleague records.
-
----
-
-## 4. Testing Gaps & Quality Recommendations
-
-1. **Absence of Real Provider Integration Tests in CI**:
-   - `ci.yml` spins up PostgreSQL, Redis, MinIO, and ClamAV in Docker.
-   - However, tests for WhatsApp (`whatsapp.client.ts`), OpenAI (`llm.ts`), and Razorpay (`provider.ts`) run against mock implementations (`MockLlm`, `MockBillingProvider`).
-   - **Recommendation**: Create a segregated staging test suite that executes against live provider sandboxes (Meta Cloud API Test Numbers, Razorpay Test Mode, OpenAI API) gated behind manual dispatch or nightly cron.
-2. **Missing Component Unit Tests**:
-   - `apps/web` contains only 13 test files. Most front-end testing is conducted at the E2E level via Playwright. While Playwright provides high confidence, edge cases in complex React components (e.g., date pickers, canvas nodes) should be covered by lightweight React Testing Library / Vitest component tests.
-3. **Database Migration Rollback Testing**:
-   - While migrations (`packages/database/prisma/migrations`) are tested forward (`prisma migrate deploy`), there is no automated verification of down-migrations or zero-downtime schema evolution patterns.
+Priority order:
+1. **Make CI green and keep it green**: fix the 164 lint errors (mostly typing `soft-delete.ts` and tests) or consciously relax the rule per directory; add branch protection requiring `verify`. (≈ 3 days)
+2. Add a **system-sweep test on the app role**: every worker sweep (`checkScheduledCampaigns`, scanners, outbox) returns rows through its `SECURITY DEFINER` function when no tenant context is set. (≈ 1 day)
+3. Add **integration tests for campaigns** on the real DB: scheduled sweep, consent eligibility, double-dispatch, cancel mid-flight, 429 handling. (≈ 3 days)
+4. Add **authorization tests for email-tracking and Google Calendar**, and OAuth state tests. (≈ 1.5 days)
+5. **Provider contract fixtures**: record sanitized real payloads from the live-verification run and replay in tests (WhatsApp statuses, Razorpay events, SNS bounce). (≈ 3 days after live verification)
+6. Add **coverage reporting** (v8) with a ratchet; target 80% lines on `common/`, `leads/`, `conversations/`, `campaigns/`, `billing/`. (≈ 1 day)
+7. Add Firefox/WebKit smoke to Playwright and a nightly full E2E; quarantine flaky tests with tracking. (≈ 2 days)
+8. Mutation-test the permission layer (`PermissionsGuard`, scoping helpers) with Stryker on a nightly job. (optional, ≈ 2 days)

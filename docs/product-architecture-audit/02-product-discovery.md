@@ -1,228 +1,95 @@
-# Product Discovery & Business Understanding: LeadPilot AI
+# 02 — Product Discovery
 
-## 1. Product Vision & Value Proposition
+Reverse-engineered from code, migrations, nav (`apps/web/lib/nav.ts`), ADRs (`docs/decisions/0001–0012`) and `PROGRESS.md`. Stated intent in `MASTER_PROMPT.md` was cross-checked against implementation, not trusted.
 
-**LeadPilot AI** is an intelligent, multi-tenant B2B SaaS platform designed to automate the entire top-of-funnel and mid-funnel sales lifecycle. 
+## 1. Vision and problem
 
-In traditional high-value, consideration-heavy sales environments (such as Indian real estate agencies, higher education admissions, and elective medical clinics), lead conversion rates fail primarily due to three operational friction points:
-1. **Response Latency**: Enquiries arriving via WhatsApp or website forms outside business hours or during high-traffic peaks wait hours or days for a response, resulting in lead decay.
-2. **Rep Disqualification Overhead**: Up to 70% of inbound leads are unqualified (insufficient budget, out-of-scope geography, tire-kickers), wasting costly sales agent bandwidth.
-3. **Dropped Follow-ups**: Fragmented manual record-keeping across personal WhatsApp accounts and disparate spreadsheets leads to lost sales opportunities.
+**Vision [Inference, from `MASTER_PROMPT.md` and code naming; no README was read]:** never lose a lead to a missed enquiry, slow reply or forgotten follow-up.
 
-**LeadPilot’s Mission**: *"Never lose a potential customer because of a missed enquiry, delayed response, or forgotten follow-up."*
+**Problem [Inference]:** Indian SMEs (real estate agencies first) capture enquiries from ads, portals, walk-ins and WhatsApp, track them in spreadsheets or personal phones, reply late, and cannot see which leads are hot. Lost enquiries are lost revenue.
 
-LeadPilot acts as an autonomous frontline sales assistant that instantly engages inbound leads 24/7 over their preferred channel (primarily WhatsApp), answers nuanced inquiries using organizational knowledge, qualifies prospective buyers, schedules appointments, routes qualified opportunities to human agents, and triggers automated follow-up sequences.
+**Solution shape [Fact]:** one workspace per business with: capture (WhatsApp, web widget, API, CSV, manual) → AI-assisted qualification and scoring → team inbox with human takeover → pipeline, tasks and automations → appointment booking → reporting; billed per plan via Razorpay with GST invoices.
 
----
+## 2. Target market
 
-## 2. Target Market & Customer Segments
+- **Primary:** Indian real-estate agencies and brokers (rupee `Lakh/Crore` parsing in `common/money.ts`, property inventory module, site-visit fields on `Lead`).
+- **Secondary (industry packs, ADR 0011):** coaching institutes, clinics, home services. Packs rename vocabulary (Leads/Enquiries/Customers via `navLabel`), toggle modules (`module: 'properties'`), and seed pipelines/templates.
+- **Compliance posture [Fact]:** DPDP-oriented export/erasure/retention (`lifecycle/`, `privacy/`, runbook `data-breach-dpdp.md`), Meta data-deletion callbacks, GST invoicing, `docs/legal/`.
 
-### Primary Target Segment: Indian Real Estate Agencies
-- **Firm Profile**: Real estate developers, channel partners, and boutique brokerages handling residential apartments, commercial plots, and luxury villas.
-- **Operating Geography**: Tier-1 and Tier-2 Indian metropolitan markets (Mumbai MMR, Bengaluru, Delhi NCR, Pune, Hyderabad, Chennai).
-- **Core Market Needs**: Support for Indian vernaculars/Hinglish, financial terminology (INR Lakhs/Crores, sq. ft., RERA compliance, carpet area), rapid lead distribution across rotating sales teams, and WhatsApp-native communication.
+## 3. Personas and roles
 
-### Secondary Segments (Supported via Modular "Industry Packs"):
-- **Coaching & EdTech Institutes**: Managing course inquiries, fee structures, batch timings, demo class bookings, and entrance test counselling.
-- **Elective Healthcare & Clinics**: Dental clinics, cosmetic dermatology, and wellness centers managing consultation fees, doctor availability, and treatment package bookings.
-- **Home Services**: Interior design studios, solar installations, and renovations requiring site visits, scope estimation, and quotation follow-ups.
-
----
-
-## 3. User Personas & Organizational Roles
-
-| Persona / Role | Description & Primary Goals | Key Platform Responsibilities |
+| Persona | Evidence | What they do |
 |---|---|---|
-| **Platform Super Admin** (`PlatformAdmin`) | Operator of the SaaS platform. Manages tenant health, billing plans, compliance, and platform operations. | Workspace suspension/activation, manual plan assignment, viewing system-wide metrics, emergency read-only tenant impersonation, monitoring health snapshots. |
-| **Business Owner** (`owner`) | Agency principal, managing director, or business founder. Focuses on revenue, lead conversion velocity, and ROI. | Workspace creation and configuration, billing and subscription management, team invitation and role assignment, AI knowledge base curation, SLA rules definition. |
-| **Sales Manager** (`manager`) | Team lead or sales director supervising day-to-day rep performance and pipeline throughput. | Pipeline stage management, manual lead assignment and re-allocation, reviewing unassigned queues, monitoring SLA breaches, configuring automation workflows, viewing team analytics. |
-| **Sales Agent** (`agent`) | Individual sales representative closing deals and conducting customer meetings. | Interacting with assigned leads via the unified inbox, taking over conversations from the AI, scheduling appointments, logging call notes, advancing lead stages. |
-| **End Customer / Lead** (`Lead`) | Prospective buyer/client reaching out via WhatsApp, website widget, or customer portal. | Communicating needs, receiving instant property brochures/quotes, scheduling consultation appointments via one-time login links. |
+| **Workspace Owner** | system role `owner` (`sync-system-roles.ts`) | Everything: billing, team, roles, integrations, settings |
+| **Manager** | system role `manager` (permission list in `permissions.ts`, includes `campaign:read/manage`, `automation:manage`) | Team-wide leads/inbox/reports, assignment, pipeline config, campaigns |
+| **Sales Agent** | system role `agent` | Own leads/conversations/appointments; replies, notes, tasks |
+| **Custom-role user** | `roles/roles.module.ts`, `role-builder-dialog.tsx` (new) | Tenant-defined permission bundles (41 keys); cannot grant what they do not hold |
+| **Platform admin (vendor staff)** | `platform/`, `/platform/*` pages, separate `PLATFORM_JWT_SECRET`, MFA enforced only when `PLATFORM_REQUIRE_MFA=true` (`.env.example` ships `false`) | Tenant lifecycle, plans, ops health, audit, time-boxed read-only support impersonation |
+| **Lead / customer** | `portal/` (OTP login, own appointments) | Self-service view of their appointments |
+| **Website visitor** | `widget/` | Chat via embeddable widget with Turnstile bot check |
+| **External developer** | `v1/`, `api-keys`, `webhooks` | Scoped API keys, signed outbound webhooks |
 
----
+## 4. Modules (implementation maturity)
 
-## 4. Core Business Problems Solved
+Maturity legend: **Full** = code + automated tests + UI present (I did not click through the UI); **Mock-verified** = full but only against mock providers; **Partial** = works for happy path with identified gaps; **Missing**.
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       TRADITIONAL FRAGMENTED PROCESS                        │
-│                                                                             │
-│ Inbound Lead  ──▶ Personal WhatsApp /  ──▶ Delayed Response ──▶ Lead Cools  │
-│ (Any Channel)     Unshared Spreadsheets    (Hours / Days)       Down / Lost │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       LEADPILOT AI OPERATIONAL PIPELINE                     │
-│                                                                             │
-│ Inbound Lead  ──▶ Instant AI Engagement ──▶ Vector Knowledge Retrieval      │
-│ (WhatsApp/Web)    (< 2 seconds)             (RERA, Floor plans, Pricing)    │
-│                                                          │                  │
-│                                                          ▼                  │
-│ Automated Appointment ◀── Round-Robin Assignment ◀── Lead Qualification &   │
-│ & Follow-up Sequences     to Human Agent             Scoring (Hot/Warm/Cold)│
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+| # | Module | Business purpose | Key code | Maturity |
+|---|---|---|---|---|
+| 1 | Identity & access | Register, login, sessions, verify/reset, invites, MFA | `auth/`, `mfa/`, `common/guards.ts` | Full |
+| 2 | Tenancy & workspace | Tenants, settings, onboarding, assignment rules | `tenants/`, `db/` | Full |
+| 3 | RBAC & custom roles | Least privilege, role builder | `roles/`, `team/`, `shared-types/permissions.ts` | Full (custom roles: unit-tested only) |
+| 4 | CRM | Leads, tags, notes, activity, import/export, merge, duplicates, bulk, custom fields | `leads/` | Full |
+| 5 | Pipeline | Stages, lost reasons, board, validated transitions | `pipeline/`, `leads` `checkTransition` | Full |
+| 6 | Properties | Inventory for real estate | `properties/` | Full (pack-gated) |
+| 7 | Capture | Web widget, API-key lead intake, CSV | `widget/`, `capture/` | Full |
+| 8 | Inbox (WhatsApp + web chat) | Unified conversations, takeover/handback, notes, 24h window, STOP handling, SSE live updates | `conversations/`, `channels/`, `realtime/`, `whatsapp/` | Mock-verified |
+| 9 | WhatsApp onboarding | Manual + Embedded Signup, template sync | `channels/`, ADR 0012 | Mock-verified |
+| 10 | AI assistant | Auto-reply, criteria extraction, scoring, kill-switch, token caps | `ai/` | Mock-verified (LLM provider never run live) |
+| 11 | Knowledge base | Upload → ClamAV scan → chunk → embed (pgvector) → retrieve | `ai/knowledge/` | Mock-verified |
+| 12 | Appointments | Availability, buffers, slots, exclusion constraint, reminders, portal view | `ops/appointments.service.ts`, `availability.ts` | Full |
+| 13 | Google Calendar | Per-user OAuth, free/busy read, one-way event push | `integrations/google-calendar/` | **Partial** (see doc 08/11) |
+| 14 | Automations | 8 general templates plus industry-specific ones (`automation-templates.ts`), graph/DAG builder, versions, dry-run, runs/retry | `ops/automation-*.ts`, `graph-executor.ts` | Full |
+| 15 | Tasks, notifications, SLA | Follow-ups, alerts, SLA breach marks | `ops/tasks.service.ts`, `sla.service.ts` | Full |
+| 16 | **Broadcast campaigns** (new) | WhatsApp template blasts to segmented leads | `campaigns/` | **Partial** — consent, idempotency, quota gaps |
+| 17 | **Email tracking** (new) | Send email from a lead, open/click tracking, bounce/complaint suppression | `email-tracking/` | **Partial** — authz, correlation, no unsubscribe |
+| 18 | Billing | Plans, entitlements, Razorpay subscription, GST invoices, dunning | `billing/` | Mock-verified |
+| 19 | Usage & limits | AI tokens, messaging, storage views; `PlanGuard`/`@RequireFeature` | `ops/usage.module.ts`, `billing/plan.guard.ts` | Full (campaigns not metered) |
+| 20 | Public API & webhooks | `/v1` with scopes + idempotency keys; signed outbound webhooks with retries | `v1/`, `webhooks/` | Full |
+| 21 | Reports & analytics | Overview, workload, exportable reports | `analytics/`, `reports/` | Full (basic) |
+| 22 | Audit | Partitioned audit log, viewer | `audit/` | Full |
+| 23 | Privacy & lifecycle | Lead export/erase, retention, workspace export/deletion with grace | `privacy/`, `lifecycle/` | Full |
+| 24 | Platform admin | Tenants, plans, ops, support sessions | `platform/`, `support/` | Full |
+| 25 | Observability & ops | EMF metrics, alerts, health snapshots, worker heartbeat | `observability/`, `ops/alert*.ts` | Full in code; no deployed monitoring |
 
-1. **Instant Top-of-Funnel Qualification**: The AI Assistant engages prospects within seconds, collecting budget, location, configuration, and timeline requirements.
-2. **Knowledge Retrieval Without Hallucination**: RAG (Retrieval-Augmented Generation) pipeline ensures the AI only recommends verified inventory and pricing approved by the tenant.
-3. **Deterministic Human Handover**: Automated escalation to human reps whenever a lead requests human intervention or triggers a "HOT" qualification score.
-4. **Fair & Transparent Team Workload Routing**: Concurrency-safe round-robin allocation engine ensures leads are distributed evenly across active agents.
-5. **No Double-Booking Appointment Scheduling**: Prevents rep calendar conflicts with automated WhatsApp reminders reducing no-show rates.
+## 5. Revenue-generating capabilities [Fact]
 
----
+- Subscription plans and per-plan entitlements (`Plan`, `PlanEntitlement`, `@RequireFeature(...)` e.g. `ai_assistant`, `web_widget`, `csv_export`, `lead_portal`).
+- Razorpay subscribe / change-plan / cancel, proration and dunning (`billing-lifecycle.ts`, `billing-notify.ts`), GST invoices with `InvoiceCounter`.
+- AI token caps per tenant (`AI_DEFAULT_MONTHLY_TOKEN_CAP`). Unit-economics model in `docs/unit-economics.md`.
+- **Not monetised:** WhatsApp broadcast volume and tracked email volume have no entitlement or metering (grep of `campaigns/` and `billing/` finds none). WhatsApp charges per template conversation, so unmetered campaigns can create direct cost for the vendor or tenant disputes. [Fact on absence; cost impact Inference]
 
-## 5. Main Product Modules & Business Capabilities
+## 6. Core user journeys
 
-The platform comprises 8 primary domain modules encapsulating 30 distinct functional capabilities:
+1. **Onboard:** register → verify email → onboarding checklist (`/onboarding`, `GET/PUT /tenant/onboarding`) → pick industry pack → connect WhatsApp (embedded signup) → invite team.
+2. **Capture → qualify:** WhatsApp inbound webhook (`/webhooks/whatsapp/:key`) → `inbound.service.ts` upserts lead + conversation, records consent, triggers `AiTrigger` → AI replies/extracts criteria/scores → hot lead notifies owner, SLA timer starts.
+3. **Human takeover:** agent opens inbox → `takeover` → replies (24h window enforced; template otherwise) → `handback`.
+4. **Pipeline & booking:** move stage (validated transitions, lost-reason required) → book appointment from slots (exclusion constraint prevents overlap) → reminders (automation) → optional Google Calendar push.
+5. **Automate:** choose template or build a graph → dry-run → enable → runs via outbox/BullMQ with retry and run history.
+6. **Broadcast (new):** pick approved template → segment (stage/tag/source/temperature/score) → preview audience & opt-outs → launch or schedule → monitor sent/delivered/read per recipient.
+7. **Bill:** plan selection → Razorpay checkout → webhook → printable HTML invoice page (`/invoice/[id]`, login required, print-styled; no PDF generation found).
+8. **Operate (platform admin):** tenant search → suspend/plan change → time-boxed support session (needs tenant opt-in via `/support-access`).
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                              LEADPILOT AI MODULES                            │
-├─────────────────┬──────────────────┬───────────────────┬─────────────────────┤
-│  1. IDENTITY    │  2. TENANCY      │  3. CRM CORE      │  4. COMMUNICATIONS  │
-│  - Auth & MFA   │  - Onboarding    │  - Leads & Merge  │  - WhatsApp Cloud   │
-│  - Roles (RBAC) │  - Industry Pack │  - Pipeline Kanban│  - Web Chat Widget  │
-│  - Audit Logs   │  - Workspace Cfg │  - Inventory (Prop│  - Unified Inbox    │
-├─────────────────┼──────────────────┼───────────────────┼─────────────────────┤
-│  5. AI ENGINE   │  6. OPS & SCHED  │  7. ANALYTICS     │  8. SAAS & BILLING  │
-│  - Assistant    │  - Appointments  │  - Dashboard KPIs │  - Subscriptions    │
-│  - Vector RAG   │  - DAG Automation│  - Reports & CSV  │  - GST Invoicing    │
-│  - Lead Scoring │  - SLA & Tasks   │  - CloudWatch EMF │  - Public API & WH  │
-└─────────────────┴──────────────────┴───────────────────┴─────────────────────┘
-```
+## 7. Business rules worth knowing [Fact]
 
-### Module 1: Identity & Access Management (IAM)
-- **Business Purpose**: Secure authentication, user management, and fine-grained access control.
-- **Target Users**: All authenticated users and platform admins.
-- **Features Implemented**: Email/password registration, secure JWT cookie authentication, session listing and revocation, TOTP-based Multi-Factor Authentication with recovery codes, invitation workflows with token preview.
-- **Business Rules**:
-  - Minimum 12-character passwords hashed with Argon2id.
-  - Granular RBAC enforcing 32 distinct permissions. Agents are strictly row-scoped (`lead:read:own`) returning 404 for unauthorized records.
-  - Workspace-level MFA enforcement holding non-enrolled users at `/security`.
-- **Dependencies**: `@leadpilot/database`, `argon2`, `jose`, `turnstile`.
-- **APIs**: `/auth/*`, `/security/mfa/*`, `/security/workspace/*`, `/team/*`, `/roles/*`.
-- **Entities**: `User`, `Session`, `Membership`, `Role`, `Permission`, `RolePermission`, `Invitation`, `MfaCredential`, `MfaRecoveryCode`.
-- **Maturity**: **Fully Implemented**.
+- Stage transitions validated by `checkTransition` (lost reason mandatory, only `lead:write:all` may reopen).
+- Agents own what they create; assignment requires `lead:assign` or `lead:write:all` (`leads.service.ts:199-201`).
+- Only managers (`lead:write:all`) can merge leads (`:457`).
+- WhatsApp STOP keyword → `OPTED_OUT` consent; any later inbound message → `OPTED_IN` (`inbound.service.ts:95-96`).
+- Role creation cannot grant permissions the actor lacks (`roles.module.ts`).
+- Workspace can require MFA; members without it are blocked from tenant data until enrolled (`TenantGuard`).
+- Workspace deletion has a grace period and cancellable request (`TenantDeletionRequest`).
 
-### Module 2: Tenancy & Industry Customization
-- **Business Purpose**: Multi-tenant data isolation and industry-specific business configuration.
-- **Target Users**: Business Owners and Platform Super Admins.
-- **Features Implemented**: Resumable multi-step onboarding wizard, tenant profile and timezone settings, Industry Pack system (Real Estate, Healthcare, Coaching, Home Services).
-- **Business Rules**:
-  - Tenants cannot see or mutate other tenants' records (enforced by PostgreSQL Row-Level Security).
-  - Applying an Industry Pack dynamically populates default pipeline stages, custom field definitions, lost reasons, and scoring rules without overwriting tenant modifications.
-- **Dependencies**: `@leadpilot/database`, `packages/shared-types/src/industry-packs.ts`.
-- **APIs**: `/tenant`, `/tenant/onboarding`, `/tenant/assignment`.
-- **Entities**: `Tenant`, `PipelineStage`, `LostReason`, `CustomFieldDefinition`, `ScoringRuleSet`.
-- **Maturity**: **Fully Implemented**.
+## 8. Unknowns
 
-### Module 3: CRM Core (Leads, Pipeline, Inventory)
-- **Business Purpose**: Managing customer relationships, tracking sales progression, and cataloging product inventory.
-- **Target Users**: Sales Agents, Sales Managers, Business Owners.
-- **Features Implemented**:
-  - Lead CRUD with trigram-indexed search (name, email, phone).
-  - Two-step CSV lead import with dry-run validation, Indian currency string normalization (`85 L` -> 8,500,000; `1.5 Cr` -> 15,000,000).
-  - Duplicate detection engine with interactive lead merge and activity history consolidation.
-  - Drag-and-drop Pipeline Kanban board with server-enforced transition rules and lost-reason tracking.
-  - Property inventory management with custom attribute filtering.
-  - Round-robin lead assignment engine with concurrency locks.
-- **Business Rules**:
-  - Soft deletion on leads and properties (`deletedAt` automatically filtered by Prisma client extension).
-  - Strict stage transition policies (e.g., preventing movement to `Won` or `Lost` without required qualification fields or lost reason).
-- **Dependencies**: `@leadpilot/database`, `@leadpilot/validation`.
-- **APIs**: `/leads/*`, `/pipeline/*`, `/properties/*`.
-- **Entities**: `Lead`, `PipelineStage`, `StageTransition`, `LeadActivity`, `LeadNote`, `Tag`, `LeadTag`, `Property`, `LostReason`.
-- **Maturity**: **Fully Implemented**.
-
-### Module 4: Omnichannel Communication & Unified Inbox
-- **Business Purpose**: Centralizing all customer conversations into a single collaborative workspace.
-- **Target Users**: Sales Agents and Sales Managers.
-- **Features Implemented**:
-  - 3-pane responsive unified inbox with conversation queues (`Unassigned`, `Mine`, `All`, `Bot`).
-  - WhatsApp Cloud API integration (message sending, template management, webhook intake).
-  - Embeddable website chat widget (`/widget.js`) with custom theme and origin allow-listing.
-  - Real-time live messaging over Server-Sent Events (SSE) backed by Redis pub/sub.
-  - Customer consent tracking and 24-hour customer service window enforcement.
-  - Human takeover mechanism disabling AI automation for active rep conversations.
-- **Business Rules**:
-  - Outbound freeform messages outside Meta's 24-hour messaging window are blocked; only pre-approved WhatsApp templates are permitted.
-  - Inbound opt-out messages (`STOP`, `UNSUBSCRIBE`) immediately set consent to `OPTED_OUT` and stop automated outreach.
-- **Dependencies**: `ioredis`, `@leadpilot/database`, `crypto/secret-box.ts`.
-- **APIs**: `/conversations/*`, `/channels/*`, `/whatsapp/templates/*`, `/webhooks/whatsapp/*`, `/widget-config/*`, `/realtime/stream`.
-- **Entities**: `Channel`, `Conversation`, `Message`, `ConversationNote`, `Consent`, `WhatsappTemplate`, `WidgetConfig`, `IntegrationCredential`.
-- **Maturity**: **Partially Implemented (Live Meta client unverified; tested with mock provider)**.
-
-### Module 5: AI Sales Assistant & Knowledge Retrieval (RAG)
-- **Business Purpose**: Autonomous lead engagement, RERA/brochure question answering, and automated lead scoring.
-- **Target Users**: Automated backend system, monitored by Sales Managers.
-- **Features Implemented**:
-  - AI Assistant orchestrator supporting tool execution (`search_properties`, `schedule_appointment`, `handover_to_human`, `qualify_lead`).
-  - Multi-format document parser (PDF via `unpdf`, Word via `mammoth`, plain text) with ClamAV virus scanning.
-  - Vector chunking and embedding storage using PostgreSQL `pgvector` (`text-embedding-3-small`, 1536 dimensions).
-  - Configurable lead scoring engine aggregating demographic, behavioral, and engagement signals.
-- **Business Rules**:
-  - Hard token caps per tenant per month to prevent LLM bill shocks.
-  - Grounded time guard preventing the AI from fabricating invalid calendar appointment slots.
-  - Document parsing runs in isolated background processes to prevent memory/CPU starvation.
-- **Dependencies**: `unpdf`, `mammoth`, `@aws-sdk/client-s3`, `pgvector`, ClamAV.
-- **APIs**: `/ai-assistant/*`, `/knowledge/*`.
-- **Entities**: `AiAssistant`, `AiRun`, `AiToolExecution`, `KnowledgeDocument`, `KnowledgeChunk`, `ScoringRuleSet`, `LeadScore`.
-- **Maturity**: **Partially Implemented (Offline Mock/rule engine verified; OpenAI client written but unverified)**.
-
-### Module 6: Operations, Scheduling & Visual Automation
-- **Business Purpose**: Executing background business logic, appointment scheduling, SLA tracking, and workflow automation.
-- **Target Users**: Sales Agents, Managers, Automated Workers.
-- **Features Implemented**:
-  - Multi-rep appointment calendar with conflict detection and automated WhatsApp confirmations.
-  - Visual DAG Automation Builder (`@xyflow/react` canvas + accessible Outline editor) supporting triggers, conditional branching, time delays, and actions.
-  - Background outbox relay (`FOR UPDATE SKIP LOCKED`) driving asynchronous BullMQ jobs.
-  - SLA breach monitoring and internal notification alerts.
-- **Business Rules**:
-  - Mutual recursion loop protection capping chained automation runs at 14 execution steps.
-  - Concurrent booking protection: atomic transaction checks ensure no two appointments can claim the same rep slot.
-- **Dependencies**: `bullmq`, `ioredis`, `@xyflow/react`, `apps/worker`.
-- **APIs**: `/appointments/*`, `/automations/*`, `/tasks/*`, `/sla/*`, `/notifications/*`.
-- **Entities**: `Appointment`, `AvailabilityRule`, `Automation`, `AutomationVersion`, `AutomationRun`, `Task`, `Notification`, `SlaBreach`, `OutboxEvent`.
-- **Maturity**: **Fully Implemented (Engine verified with local BullMQ + Redis)**.
-
-### Module 7: SaaS Subscriptions, Invoicing & Commercialization
-- **Business Purpose**: Monetizing the software, managing subscription tiers, generating tax invoices, and gating features.
-- **Target Users**: Business Owners, Billing Admins, Platform Admins.
-- **Features Implemented**:
-  - Subscription tier enforcement (Free, Starter, Growth, Enterprise).
-  - Indian GST-compliant invoice generation (with SAC code `998314`, CGST+SGST or IGST depending on state code).
-  - Razorpay subscription lifecycle management (plan creation, subscription, upgrade/downgrade, cancellation).
-  - Automated feature gating (`RequireFeature` decorator) checking database-backed entitlements.
-- **Business Rules**:
-  - Invoices are immutable once finalized and carry sequential legal invoice numbers.
-  - Grace period (7 days) on failed payments before workspace feature suspension.
-- **Dependencies**: `@leadpilot/database`, `packages/validation/src/billing.ts`.
-- **APIs**: `/billing/*`, `/webhooks/razorpay`, `/platform/plans/*`.
-- **Entities**: `Plan`, `PlanEntitlement`, `Subscription`, `BillingProfile`, `Invoice`, `Payment`, `BillingEvent`, `InvoiceCounter`.
-- **Maturity**: **Partially Implemented (Live Razorpay client unverified; tested with mock provider)**.
-
-### Module 8: Public API, Webhooks & Developer Platform
-- **Business Purpose**: Enabling external developers, CRM sync, and enterprise systems integration.
-- **Target Users**: Enterprise Developers, Technical Integration Partners.
-- **Features Implemented**:
-  - Public REST API under `/v1` guarded by hashed API keys.
-  - Outbound transactional webhooks with HMAC-SHA256 signatures, exponential backoff retries, and SSRF-safe HTTP dispatch.
-  - Customer Self-Service Portal (`/portal`) with passwordless code authentication.
-- **Business Rules**:
-  - SSRF protection: outbound webhooks strictly prohibit private RFC-1918 IPs, loopbacks, and cloud metadata endpoints in production.
-  - Strict idempotency key handling (`Idempotency-Key` header) on mutation endpoints.
-- **Dependencies**: `apps/api/src/common/safe-http.ts`, `apps/api/src/v1/*`.
-- **APIs**: `/v1/*`, `/webhooks/*`, `/portal/*`.
-- **Entities**: `ApiKey`, `WebhookEndpoint`, `WebhookDelivery`, `PortalConfig`, `PortalSession`, `IdempotencyKey`.
-- **Maturity**: **Fully Implemented**.
-
----
-
-## 6. Implementation Maturity Classification
-
-| Feature Classification | Modules & Capabilities |
-|---|---|
-| **Fully Implemented & Verified** | • Multi-tenant RLS Isolation<br>• Authentication, Sessions & TOTP MFA<br>• Granular RBAC (32 permissions)<br>• Lead Management, Deduplication & Merging<br>• Pipeline Kanban & Stage Transition Rules<br>• Property Inventory<br>• Outbox Relay & BullMQ Job Queue<br>• Appointment Double-Booking Protection<br>• Visual Automation Canvas & DAG Engine<br>• GST Invoice PDF/Data Engine<br>• Public `/v1` REST API & Idempotency<br>• SSRF-Safe Outbound Webhooks<br>• Turnstile Bot Guard (code complete)<br>• Month-Partitioned Audit Logs |
-| **Partially Implemented (Code Complete, Live Provider Unverified)** | • WhatsApp Cloud API Client (`apps/api/src/whatsapp/whatsapp.client.ts`)<br>• OpenAI LLM & Embeddings Client (`apps/api/src/ai/llm.ts`)<br>• Razorpay Subscriptions & Webhook Processing (`apps/api/src/billing/provider.ts`)<br>• AWS KMS Master Key Provider (`apps/api/src/crypto/secret-box.ts`)<br>• Cloudflare Turnstile Live Site-Verify (`apps/api/src/security/turnstile.ts`)<br>• Amazon SES / Production SMTP Delivery |
-| **UI-Only / Sandbox Features** | • `/design/*` routes (`/design/dashboard`, `/design/inbox`, `/design/lead`, `/design/pipeline`): static visual sandboxes with mocked datasets used for design tokens review. |
-| **Planned / Missing Features** | • Two-way Google Calendar & Outlook Calendar Sync<br>• Native Meta Lead Ads & Google Ads Webhook Ingestion<br>• Inbound/Outbound Email & SMS Channels<br>• WhatsApp Embedded Signup UI Flow<br>• Native Zapier / Make Integration App |
+- Real tenant/customer data, pricing actually charged, and production traffic: none present. [Unverified]
+- Whether Meta template approval, Tech-Provider status and business verification are in progress: only documented in `docs/meta-registration/`.

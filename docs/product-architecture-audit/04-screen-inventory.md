@@ -1,77 +1,81 @@
-# Screen Inventory & Front-End Experience Audit: LeadPilot AI
+# 04 — Screen Inventory
 
-This document provides a screen-by-screen audit of all 47 frontend pages discovered across `apps/web/app`, evaluating information architecture, component state handling, accessibility, and user experience consistency.
+Scope: all 51 `page.tsx` routes under `apps/web/app`. Derived from the route tree, `apps/web/lib/nav.ts` (permission per nav item) and the API surface in doc 06.
+**Limits:** I did not run the UI. "Status" reflects code presence and test coverage (E2E spec number from `e2e/tests`), not visual QA. Permissions listed are the **nav-level** requirement; real enforcement is server-side (doc 06). A blank permission means nav shows it to every member and the API applies row-level rules.
+**How the API/Data/Features columns were built:** from the backend module each screen belongs to plus a grep of the page file's own request paths on 2026-11-23. Sub-components (dialogs, cards, drawers under `components/`) were not traced one by one, so a screen may call more endpoints than listed. Examples where the page file itself differs from the table: `/dashboard` calls `/analytics/overview` and `/tenant/onboarding` but not `/team/workload` directly; `/settings` page code itself calls `/auth/sessions`, `/sla`, `/tenant`, `/tenant/assignment` (privacy, retention, support-access and portal panels live in components); `/reports` also reads `/billing/summary`; `/campaigns/[id]` contains no `refetchInterval`, so live progress is not polled by the page file.
 
----
+## 1. Workspace app `(app)` — authenticated tenant members
 
-## 1. Complete Screen Inventory Table
+| Screen | Route | Purpose | Intended user | Key features | API consumed | Data | Permission (nav) | Status | Issues / gaps |
+|---|---|---|---|---|---|---|---|---|---|
+| Dashboard | `/dashboard` | KPIs, hot leads, today's work | All | KPI cards, trends | `/analytics/overview`, `/team/workload` | Lead, Appointment, Task | – | Complete | Authorization for `/team/workload` is enforced in the service (`analytics.module.ts:119`, needs `analytics:read:team`), not by decorator |
+| Leads | `/leads` | Search/filter/bulk/import/export | All (row-scoped) | Data table, bulk actions, CSV import/export, saved controls | `/leads*` | Lead, Tag, PipelineStage | – (service: own/all) | Complete | 723-line page; import is synchronous and capped at 5,000 rows |
+| Lead detail | `/leads/[id]` | 360° view | All | Timeline, notes, tasks, score+override, stage, send email dialog (new), merge | `/leads/:id*`, `/leads/:id/score`, `/emails/send` | Lead, LeadNote, LeadActivity, LeadScore | – | Complete | Email composer coupled to tracking; no unsubscribe/templates |
+| Pipeline | `/pipeline` | Kanban | All | Drag between stages, lost reason | `/pipeline/board`, `/leads/:id/stage` | PipelineStage, Lead | – | Complete | |
+| Inbox | `/inbox` | Shared WhatsApp/web chat | Agents, managers | 3-pane, takeover, notes, tags, templates, 24h window, SSE | `/conversations*`, `/realtime/stream`, `/whatsapp/templates` | Conversation, Message, Consent | `conversation:read:own` | Complete (mock providers) | No saved views/bulk actions [Inference] |
+| Email Tracking (new) | `/emails` | Sent emails + engagement | Anyone with `lead:read:own` | List, stats, suppression list add/remove | `/emails*` | TrackedEmail, EmailEngagementEvent, EmailSuppression | `lead:read:own` | Partial | **Shows tenant-wide mail to own-scope users; own-scope users can edit suppressions** (doc 08 S-05). 513-line page |
+| Broadcasts (new) | `/campaigns` | Campaign list/create | Marketing/managers | Create dialog (segment, template, params, schedule), audience preview | `/campaigns*`, `/whatsapp/templates` | BroadcastCampaign, WhatsappTemplate | `campaign:read` | Partial | No cost estimate, no opt-in warning, no plan gate |
+| Campaign detail | `/campaigns/[id]` | Progress & recipients | same | Counters, recipient table by status, cancel | `/campaigns/:id`, `/recipients` | BroadcastRecipient | `campaign:read` | Partial | No `refetchInterval` in the page file (progress may not auto-update); no retry-failed action |
+| Properties | `/properties` | Inventory | Real-estate packs | CRUD, CSV import | `/properties*` | Property | `property:read` (pack-gated) | Complete | Hidden unless pack enables |
+| Appointments | `/appointments` | Calendar/list, availability | All | Slots, book/reschedule/confirm/no-show, availability + exceptions, preferences | `/appointments*` | Appointment, AvailabilityRule | – | Complete | Google Calendar status is on Integrations, not here; sync failures invisible |
+| AI Assistant | `/ai-assistant` | Configure persona/qualification | Owner/manager | Config, scoring rules, usage, runs | `/ai/*`, `/scoring/rules` | AiAssistant, AiRun, ScoringRuleSet | `ai:configure` | Complete (mock LLM) | |
+| Knowledge | `/knowledge` | Documents for AI | Owner/manager | Upload, status, reprocess, search, download | `/knowledge/*` | KnowledgeDocument, KnowledgeChunk | `knowledge:manage` | Complete | |
+| Tasks | `/tasks` | To-dos | All | Filters, drawer, assign | `/tasks*` (declared in `ops2.controller.ts`) | Task | – | Complete | 799-line page — largest in repo |
+| Automations | `/automations` | List/templates/runs | Owner/manager | Enable, runs, retry, templates | `/automations*` | Automation, AutomationRun | `automation:manage` + plan feature `automations` (class-level, `ops2.controller.ts:20`) | Complete | Nav shows the item to everyone; non-permitted users get 403 on load |
+| Automation new/edit | `/automations/new`, `/automations/[id]/edit` | Graph/outline builder | same | `@xyflow/react` canvas, validation, dry-run, versions | `/automations/validate`, `/dry-run`, `/versions` | Automation, AutomationVersion | – | Complete | |
+| Reports | `/reports` | Analytics | Managers | Keyed reports, CSV export | `/reports/:key*` | multiple | `analytics:read:own` | Complete (basic) | No custom reports/scheduling |
+| Team | `/team` | Members & invites | Owner/manager | Invite, role, status, MFA reset | `/team/*` | Membership, Invitation | `team:read` | Complete | |
+| Roles | `/roles` | RBAC | Owner | Role builder dialog (new), permission matrix | `/roles*` | Role, RolePermission | `team:read` (page), `role:manage` (mutations) | Complete | Unit-tested only |
+| Integrations | `/integrations` | Channels & connectors | Owner | WhatsApp card (embedded signup), widget, SES card, Google Calendar card | `/channels*`, `/widget-config`, `/integrations/google-calendar*` | Channel, WidgetConfig, GoogleCalendarSync | `integration:manage` | Partial | Google Calendar endpoints themselves have no permission check |
+| API keys | `/api-keys` | Developer keys | Owner | Create/revoke, scopes | `/api-keys*` | ApiKey | `integration:manage` | Complete | |
+| Webhooks | `/webhooks` | Outbound events | Owner | Endpoints, deliveries, redeliver, rotate secret | `/webhooks/*` | WebhookEndpoint, WebhookDelivery | `integration:manage` | Complete | |
+| Billing | `/billing` | Plan/invoices | Owner | Subscribe/change/cancel, GST profile | `/billing*` | Subscription, Invoice | `billing:manage` | Complete (mock Razorpay) | |
+| Usage | `/usage` | Consumption | Owner | AI/messages/storage | `/usage` | Plan entitlements | `usage:read` | Complete | Campaign/email volume not shown |
+| Audit | `/audit` | Trail | Owner | Filter/browse | `/audit-logs` | AuditLog | `audit:read` | Complete | No export |
+| Security | `/security` | Own MFA | All | Enrol/disable, recovery codes | `/security/mfa*` | MfaCredential | – | Complete | |
+| Settings | `/settings` | Workspace, privacy, support access, retention, portal, assignment | Owner | multiple panels | `/tenant*`, `/privacy*`, `/support-access`, `/portal` | Tenant, PortalConfig | `settings:manage` | Complete | Several concerns in one screen |
+| Onboarding | `/onboarding` | Checklist | Owner | Steps incl. Google Calendar | `/tenant/onboarding` | Tenant.settings | – | Complete | |
 
-| Screen Name | Route Pattern | Business Purpose | Target User | Features Available | APIs Consumed | Database Entities | Required Permissions | Implementation Status | Functional / UX Gaps |
-|---|---|---|---|---|---|---|---|:---:|---|
-| **Landing Page** | `/` | Marketing landing and entry point. | Public Visitors | Product overview, feature highlights, sign-in CTA. | None | None | Public | **Complete** | Static marketing landing page; minimal interactive elements. |
-| **Login** | `/login` | User authentication. | All Users | Email/password login, Turnstile challenge, MFA redirect. | `POST /auth/login` | `User`, `Session` | Public | **Complete** | Password visibility toggle implemented. Turnstile in mock mode locally. |
-| **Register** | `/register` | Workspace & user creation. | Business Owners | User signup, business name, Turnstile check. | `POST /auth/register` | `User`, `Tenant`, `Membership` | Public | **Complete** | Redirects immediately to onboarding flow. |
-| **Forgot Password** | `/forgot-password` | Request password reset email. | Registered Users | Email submission, rate-limited dispatch. | `POST /auth/forgot-password` | `PasswordResetToken` | Public | **Complete** | Generic response prevents user enumeration. |
-| **Reset Password** | `/reset-password` | Set new password with token. | Registered Users | Token validation, password strength meter, password update. | `POST /auth/reset-password` | `User`, `PasswordResetToken` | Public | **Complete** | Enforces 12-character minimum and character complexity. |
-| **Verify Email** | `/verify-email` | Confirm email ownership. | Unverified Users | Token verification, resend verification trigger. | `POST /auth/verify-email`<br>`POST /auth/resend-verification` | `EmailVerificationToken` | Authenticated (Unverified) | **Complete** | Auto-refreshes session upon token confirmation. |
-| **Accept Invite** | `/accept-invite` | Join existing workspace. | Invited Team Members | Invitation preview, password setup, acceptance. | `POST /auth/invitations/preview`<br>`POST /auth/invitations/accept` | `Invitation`, `Membership` | Public (Token required) | **Complete** | Displays inviting organization name and target role. |
-| **Onboarding Wizard** | `/onboarding` | Configure new workspace. | Business Owners | Resumable steps: Profile, Industry, Team, WhatsApp, AI. | `GET /tenant/onboarding`<br>`PUT /tenant/onboarding` | `Tenant`, `PipelineStage` | `owner` only | **Complete** | Optional steps (Meta, OpenAI) can be skipped cleanly. |
-| **Dashboard** | `/dashboard` | Executive sales performance overview. | All Members | KPI summary (revenue, leads, conversion), acquisition charts, hot leads, follow-up alerts. | `GET /analytics/overview`<br>`GET /leads?temperature=HOT` | `Lead`, `StageTransition`, `Conversation` | `lead:read:own` or `lead:read:all` | **Complete** | Real-time delta calculations. Agent view automatically filters to own numbers. |
-| **Leads List** | `/leads` | Search and filter prospective leads. | Agents, Managers, Owners | Trigram search, temperature filter, stage filter, CSV import/export, bulk actions. | `GET /leads`<br>`POST /leads/bulk`<br>`POST /leads/import` | `Lead`, `Tag`, `LeadTag`, `User` | `lead:read:own` or `lead:read:all` | **Complete** | Dual view (table / mobile cards). Responsive drawer filter. |
-| **Lead Detail** | `/leads/[id]` | 360-degree customer view. | Agents, Managers | Customer profile, activity timeline, lead scoring breakdown, notes, tasks, stage selector. | `GET /leads/{id}`<br>`PATCH /leads/{id}`<br>`POST /leads/{id}/notes` | `Lead`, `LeadActivity`, `LeadNote`, `LeadScore` | `lead:read:own` / `all` | **Complete** | Real-time score breakdown with explanation badges. |
-| **Pipeline Kanban** | `/pipeline` | Visual sales pipeline progression. | Agents, Managers, Owners | Stage columns, drag-drop card movement, keyboard accessibility menu, lost reason prompt. | `GET /pipeline/board`<br>`POST /leads/{id}/stage`<br>`PATCH /pipeline/stages/{id}` | `PipelineStage`, `Lead`, `LostReason` | `lead:read:own` / `all`, `pipeline:manage` | **Complete** | Optimistic UI update with server rollback on failure. |
-| **Unified Inbox** | `/inbox` | Real-time customer chat console. | Agents, Managers | 3-pane console, channel tabs, conversation queues, agent takeover, internal notes, SSE live feed. | `GET /conversations`<br>`GET /conversations/{id}/messages`<br>`POST /conversations/{id}/messages` | `Conversation`, `Message`, `ConversationNote` | `conversation:read:own` / `all`, `conversation:reply` | **Complete** | Collapses gracefully to single pane on mobile screens. |
-| **Tasks** | `/tasks` | Follow-ups and to-do management. | Agents, Managers | Task list, status toggling, due-date filters, manual task creation. | `GET /tasks`<br>`PATCH /tasks/{id}`<br>`POST /tasks` | `Task`, `Lead` | Authenticated member | **Complete** | Tasks generated manually or automatically via DAG engine. |
-| **Appointments** | `/appointments` | Consultation calendar & slot booking. | Agents, Managers | Day/Week/Month calendar, double-booking guard, slot search, booking dialog, cancel/reschedule. | `GET /appointments`<br>`POST /appointments`<br>`PATCH /appointments/{id}` | `Appointment`, `AvailabilityRule`, `User` | `appointment:read:own` / `all`, `appointment:write` | **Complete** | **Lacks external calendar sync (Google/Outlook).** |
-| **Properties Inventory** | `/properties` | Product & real estate inventory catalog. | Agents, Managers, Owners | Unit listing, price filters, bedroom filters, CSV import, property status updates. | `GET /properties`<br>`POST /properties`<br>`PATCH /properties/{id}` | `Property` | `property:read`, `property:manage` | **Complete** | Real estate specific; configurable via Industry Packs. |
-| **Automations List** | `/automations` | Workflow automation overview. | Managers, Owners | Active automations, run history, success/failure metrics, trigger toggles. | `GET /automations`<br>`PATCH /automations/{id}` | `Automation`, `AutomationRun` | `automation:manage` | **Complete** | Visual indicator for automations with missing templates. |
-| **New Automation** | `/automations/new` | Create workflow from template. | Managers, Owners | Template gallery (8 pre-built workflows) with preview and parameter customization. | `GET /automations/templates`<br>`POST /automations` | `Automation`, `AutomationVersion` | `automation:manage` | **Complete** | Provides instant scaffolding for standard follow-ups. |
-| **Automation Builder** | `/automations/[id]/edit` | Visual DAG workflow builder. | Managers, Owners | React Flow canvas (`@xyflow/react`), accessible tree outline editor, step configuration. | `GET /automations/{id}`<br>`PUT /automations/{id}` | `Automation`, `AutomationVersion` | `automation:manage` | **Complete** | Dual editing mode (canvas + outline) for high accessibility. |
-| **Knowledge Base** | `/knowledge` | Document repository for AI RAG. | Managers, Owners | Document uploader (PDF/DOCX), indexing status, chunk viewer, semantic search tester. | `GET /knowledge`<br>`POST /knowledge/upload`<br>`DELETE /knowledge/{id}` | `KnowledgeDocument`, `KnowledgeChunk` | `knowledge:manage`, `ai_assistant` feature | **Complete** | Live document status updates (scanning -> indexing -> ready). |
-| **AI Assistant Settings** | `/ai-assistant` | AI personality & qualification rules. | Managers, Owners | Assistant toggle, prompt tone customization, model parameter tuning, tool toggles. | `GET /ai-assistant`<br>`PUT /ai-assistant` | `AiAssistant`, `ScoringRuleSet` | `ai:configure`, `ai_assistant` feature | **Complete** | Safe guardrail settings preventing unauthorized promises. |
-| **Reports** | `/reports` | Business analytics and audit reports. | Managers, Owners | 7 standard reports (funnel conversion, agent workload, SLA breach, channel ROI), CSV export. | `GET /reports/{key}`<br>`GET /reports/{key}/export` | `Lead`, `StageTransition`, `SlaBreach` | `analytics:read:all` | **Complete** | Plan-gated under `reports` feature entitlement. |
-| **Team Management** | `/team` | User roster and permissions. | Managers, Owners | Active members list, pending invitations, role changes, member deactivation, MFA reset. | `GET /team/members`<br>`POST /team/invitations`<br>`PATCH /team/members/{id}/role` | `User`, `Membership`, `Invitation` | `team:read`, `team:invite`, `team:manage` | **Complete** | Enforces owner protection (cannot demote last owner). |
-| **Roles & Permissions** | `/roles` | Security permission matrix viewer. | All Members | Role definitions, 32 granular permission keys display. | `GET /roles` | `Role`, `Permission` | Authenticated member | **Complete** | Read-only matrix; custom roles deferred. |
-| **Integrations** | `/integrations` | External channel setup. | Owners | WhatsApp Cloud API configuration, Website Widget code generator, secret rotation. | `GET /channels`<br>`POST /channels/whatsapp`<br>`GET /widget-config` | `Channel`, `WidgetConfig`, `IntegrationCredential` | `integration:manage` | **Complete** | Embedded signup modal wired in code (mock verified). |
-| **Outbound Webhooks** | `/webhooks` | Developer webhooks management. | Owners, Developers | Endpoint URL setup, secret generation, event subscriptions, delivery retry logs. | `GET /webhooks/endpoints`<br>`POST /webhooks/endpoints`<br>`GET /webhooks/deliveries` | `WebhookEndpoint`, `WebhookDelivery` | `integration:manage`, `api_access` feature | **Complete** | Delivery inspector displays payload, response, and headers. |
-| **API Keys** | `/api-keys` | Server-to-server lead capture keys. | Owners, Developers | Key generation, one-time secret revelation, revocation, rate-limit visibility. | `GET /api-keys`<br>`POST /api-keys`<br>`DELETE /api-keys/{id}` | `ApiKey` | `integration:manage` | **Complete** | SHA-256 hashed at rest; prefix displayed for identification. |
-| **Audit Logs** | `/audit` | Immutable security activity trail. | Owners, Auditors | Filterable audit feed (actor, action, entity, IP, timestamp), detail modal with diff. | `GET /audit-logs` | `AuditLog` | `audit:read` | **Complete** | Partitioned PostgreSQL table query. |
-| **Usage & Limits** | `/usage` | Resource consumption tracking. | Managers, Owners | Monthly leads consumed, AI tokens used, WhatsApp conversations active vs plan quota. | `GET /usage` | `Subscription`, `PlanEntitlement` | `usage:read` | **Complete** | Visual quota progress bars with 80%/100% warning badges. |
-| **Billing & Invoices** | `/billing` | Subscription & payment settings. | Owners | Current plan card, plan upgrade selector, Razorpay payment triggers, GST invoices list. | `GET /billing/plans`<br>`POST /billing/subscribe`<br>`GET /billing/invoices` | `Subscription`, `Invoice`, `BillingProfile` | `billing:manage` | **Complete** | In-app billing modal; redirects to `/invoice/[id]`. |
-| **Workspace Settings** | `/settings` | General workspace preferences. | Owners | Business info, logo upload, timezone, currency, SLA response time rules, privacy defaults. | `GET /tenant`<br>`PATCH /tenant`<br>`PUT /sla/settings` | `Tenant`, `SlaBreach` | `settings:manage` | **Complete** | Timezone changes dynamically adjust analytics groupings. |
-| **Security & MFA** | `/security` | User credential & workspace security. | All Members | TOTP MFA enrollment, recovery codes generator, active sessions list with revocation. | `GET /security/mfa`<br>`POST /security/mfa/enroll`<br>`GET /auth/sessions` | `MfaCredential`, `Session` | Authenticated member | **Complete** | Supports mandatory workspace-wide MFA lockout. |
-| **Tax Invoice View** | `/invoice/[id]` | Legal Indian GST Tax Invoice. | Public / Customer | Printable formal tax invoice with SAC code, CGST/SGST/IGST breakdown, payment status. | `GET /billing/invoices/{id}` | `Invoice`, `BillingProfile`, `Tenant` | Public / Authorized | **Complete** | Includes print CSS stylesheets for clean PDF printing. |
-| **Customer Portal** | `/portal` | Lead self-service appointment portal. | End Leads | Passwordless login code, upcoming appointments viewer, rescheduling interface. | `GET /portal/me`<br>`POST /portal/code`<br>`GET /portal/appointments` | `PortalConfig`, `PortalSession`, `Appointment` | Lead Session Cookie | **Complete** | Tenant-branded white-label interface. |
-| **Data Deletion Status**| `/data-deletion` | Meta compliance data deletion page. | Meta / Leads | Public verification of Facebook user data deletion request status. | `GET /webhooks/meta/data-deletion/{code}` | `WebhookEvent` | Public | **Complete** | Required by Meta Platform Policies for live apps. |
-| **Platform Login** | `/platform/login` | Super admin portal authentication. | Platform Admins | Email/password login with dedicated platform JWT cookie. | `POST /platform/auth/login` | `PlatformAdmin` | Public | **Complete** | Segregated completely from tenant user auth. |
-| **Platform Dashboard** | `/platform` | SaaS platform operational overview. | Platform Admins | Total workspaces, active subscriptions, global MRR, system health gauges. | `GET /platform/metrics` | `PlatformAdmin`, `Tenant`, `Subscription` | Platform Admin | **Complete** | Real-time metric cards with tenant count trends. |
-| **Platform Tenants** | `/platform/tenants` | Global workspace management. | Platform Admins | Workspace search, plan assignment, suspension, reactivation, support login launch. | `GET /platform/tenants`<br>`POST /platform/tenants/{id}/suspend` | `Tenant`, `Plan` | Platform Admin | **Complete** | Provides emergency tenant suspension controls. |
-| **Platform Tenant Detail**| `/platform/tenants/[id]`| Workspace deep-dive inspector. | Platform Admins | Detailed workspace usage, member counts, billing status, support session initiator. | `GET /platform/tenants/{id}` | `Tenant`, `Membership`, `Invoice` | Platform Admin | **Complete** | Read-only view into customer workspace configuration. |
-| **Platform Plans** | `/platform/plans` | Subscription tier editor. | Platform Admins | Create/edit plans, monthly/annual pricing, entitlement feature toggles. | `GET /platform/plans`<br>`PATCH /platform/plans/{key}` | `Plan`, `PlanEntitlement` | Platform Admin | **Complete** | Edits take effect immediately for new subscriptions. |
-| **Platform Ops Status** | `/platform/ops` | Live system observability console. | Platform Admins | CloudWatch alert states, health snapshot, queue depths, worker heartbeats. | `GET /platform/ops` | `OpsAlert`, `EventMark` | Platform Admin | **Complete** | 30-second auto-refresh with stale warning banners. |
-| **Platform Audit** | `/platform/audit` | Global administrative audit trail. | Platform Admins | System-level admin action logs (suspensions, impersonation sessions, plan overrides). | `GET /platform/audit` | `PlatformAuditLog` | Platform Admin | **Complete** | Immutable append-only audit trail. |
-| **Platform Deletions** | `/platform/deletions` | Workspace purge supervisor. | Platform Admins | Pending tenant deletion requests, cooling-off countdowns, manual purge triggers. | `GET /platform/deletion-requests` | `TenantDeletionRequest` | Platform Admin | **Complete** | Allows managing legal cooling-off windows before purge. |
-| **Design Sandboxes** | `/design/*` | UI token and component testbenches. | Internal Devs | Static visual sandboxes for Dashboard, Inbox, Lead Detail, and Pipeline Kanban. | Static Mock Data | None | Development Only | **UI-Only** | Used during design passes; blocked in production. |
+## 2. Auth and public
 
----
+| Screen | Route | Purpose | Status | Notes |
+|---|---|---|---|---|
+| Landing | `/` | Marketing/redirect | Complete | |
+| Login / Register | `/login`, `/register` | Auth with Turnstile | Complete | e2e 01 |
+| Verify / Forgot / Reset / Accept invite | `/verify-email`, `/forgot-password`, `/reset-password`, `/accept-invite` | Account flows | Complete | |
+| Data deletion | `/data-deletion` | Meta-required status page for data-deletion callbacks | Complete | Public by design |
+| Invoice | `/invoice/[id]` | Printable GST invoice | Complete | Verify authorization on fetch (`GET /billing/invoices/:id` requires `billing:manage`) |
 
-## 2. Front-End UX & Quality Evaluation
+## 3. Platform console (`/platform/*`) — vendor staff
 
-### Information Architecture & Navigation
-- **Shell Design**: The application uses a persistent, high-contrast dark navy sidebar (`#0e1433`) paired with a lightweight header containing a workspace switcher, global search/command palette (`cmdk`), theme toggle (Light/Dark/System), notification bell, and user profile menu.
-- **Role-Based Visibility**: Navigation items automatically filter based on active permissions. For instance, Sales Agents only see `Dashboard`, `Leads`, `Pipeline`, `Inbox`, `Tasks`, and `Appointments`; administrative routes (`Billing`, `Team`, `Knowledge`, `Automations`, `Webhooks`) are completely hidden from non-permitted members.
+| Screen | Route | Purpose | Status |
+|---|---|---|---|
+| Login | `/platform/login` | Separate admin auth with MFA | Complete |
+| Overview | `/platform` | Metrics | Complete |
+| Tenants / detail | `/platform/tenants`, `/platform/tenants/[id]` | Suspend, reactivate, plan change, start support session | Complete |
+| Plans | `/platform/plans` | Plan/entitlement CRUD | Complete |
+| Ops | `/platform/ops` | Queue/worker/alert health | Complete |
+| Audit / Deletions / Security | `/platform/audit`, `/deletions`, `/security` | Staff audit, deletion queue, own MFA | Complete |
 
-### Form Validation & Error Handling
-- **React Hook Form + Zod**: All input forms utilize `@hookform/resolvers/zod` coupled with shared Zod schemas from `@leadpilot/validation`. Form fields display localized, inline validation errors on blur and submit.
-- **Server Error Envelopes**: When an API mutation fails, the server error envelope is mapped to form fields or surfaces via toast notifications (`sonner`). If a server error returns an `x-request-id`, it is explicitly rendered in the UI for ease of support debugging.
+## 4. Non-product routes
 
-### Loading & Empty States
-- **Skeleton Screens**: Every major dashboard route (`/leads`, `/pipeline`, `/inbox`, `/appointments`, `/dashboard`, `/audit`) implements a dedicated `loading.tsx` file leveraging animated SVG skeletons matching the exact table and card geometries.
-- **Informative Empty States**: List views render customized empty states with clear iconography and call-to-action buttons (e.g., *"No leads found matching your filters. Clear filters or Import CSV"*).
+| Route | What it is | Issue |
+|---|---|---|
+| `/design/dashboard`, `/design/inbox`, `/design/lead`, `/design/pipeline` | Static visual mock-ups with hard-coded KPI/lead data (`app/design/**`) | **UI-only** and served in production builds. Remove or gate. Low risk, confusing in sitemap/crawl. |
+| `/dev-error` | Dev-only error demo; `notFound()` in production | Fine |
 
-### Accessibility & Responsiveness
-- **WCAG 2.1 AA Compliance**: Built upon Radix UI headless primitives (`@radix-ui/react-*`), all modals, dropdowns, tooltips, and tabs support full keyboard focus trapping, ARIA roles, and screen-reader announcements.
-- **Mobile Adaptations**:
-  - The 3-pane unified inbox collapses into a single-pane navigation flow on mobile viewports (<768px), allowing reps to toggle between queue lists and active conversations.
-  - The Lead Table automatically transforms into swipeable card layouts on small screens.
-  - The Pipeline Kanban preserves horizontal drag scrolling with an accessible dropdown menu option on every card for moving stages without mouse drag.
+## 5. Cross-cutting UX assessment
+
+| Concern | Finding | Evidence |
+|---|---|---|
+| Information architecture | Nav is clear (Workspace vs Admin groups, industry-aware labels). "Email Tracking" and "Broadcasts" are siblings of Inbox but are outbound tools; "Roles" duplicates the permission needed for "Team". | `nav.ts` |
+| Build-phase scaffolding | `CURRENT_PHASE`, `phase`, "Soon" state remain in product code | `nav.ts` |
+| Consistency | Shared `components/ui`, `data-table`, `page` primitives; a design system exists | `apps/web/components/ui`, `data-table` |
+| Accessibility | Dedicated axe E2E (`10-a11y.spec.ts`) and keyboard E2E (`08-keyboard.spec.ts`); `docs/accessibility-and-responsive.md` | e2e |
+| Responsive | Mobile E2E (`11-mobile.spec.ts`) | e2e |
+| Error handling | Shared `error-view`, request-id surfaced, error-page E2E 16 | `components/error-view.tsx` |
+| Form validation | `react-hook-form` + Zod from `@leadpilot/validation` in most dialogs | web deps |
+| Loading/empty states | Present in reviewed components; not audited screen by screen | **[Unverified]** |
+| Component size | `tasks/page.tsx` 799, `leads/page.tsx` 723, `appointments/page.tsx` 575, `emails/page.tsx` 513, `webhooks/page.tsx` 511 lines; page-level components mix data fetching, state and layout | `wc -l` |
+| API layer | 65 files import hand-written `lib/api`; 2 use `lib/api-generated` | grep |
+| Duplicate/redundant flows | Opt-out/consent appears in Inbox and in Campaign audience preview but there is no single consent screen; Email suppressions live under Email Tracking, WhatsApp opt-outs under lead consent | code |
