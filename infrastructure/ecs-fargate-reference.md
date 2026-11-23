@@ -5,7 +5,8 @@ Shape (matches `docs/deployment.md`): three ECS services from two images.
 | Service | Image | Command | Desired count | Port | Health |
 |---|---|---|---|---|---|
 | `leadpilot-api` | `leadpilot-api` | `node dist/main.js` | 2+ (behind ALB) | 4000 | ALB target group: `GET /health/ready`; container check: `GET /health` |
-| `leadpilot-worker` | `leadpilot-api` | `node dist/worker.js` | 1 (2 for redundancy) | none | ECS "essential container running"; alarm on queue/outbox lag (see `docs/slos-and-alerts.md`) |
+| `leadpilot-worker-outbox` | `leadpilot-api` | `node dist/worker-outbox.js` | 1-2 | none | ECS "essential container running"; alarm on outbox relay lag |
+| `leadpilot-worker-ai` | `leadpilot-api` | `node dist/worker-ai.js` | 1-2 | none | ECS "essential container running"; alarm on `ai-knowledge-docs` queue depth |
 | `leadpilot-web` | `leadpilot-web` | `node_modules/.bin/next start --port 3100` | 2+ (behind ALB) | 3100 | `GET /` |
 | `leadpilot-migrate` (run-task, not a service) | `leadpilot-api` | see below | 1 per release | none | exit code |
 
@@ -13,7 +14,11 @@ Migration task: working dir `/app/node_modules/@leadpilot/database`, env `DATABA
 `sh -c "node_modules/.bin/prisma migrate deploy && node dist/sync-permissions.js && node dist/sync-system-roles.js && node dist/backfill-packs.js"`.
 Run it as an ECS `run-task` (or a CodeBuild/pipeline step) and gate the service update on exit code 0.
 
-Task sizing starting points (guesses, not measured): api 0.5 vCPU / 1 GB, worker 0.5 vCPU / 1 GB, web 0.5 vCPU / 1 GB. Argon2id hashing uses 19 MiB per hash, so keep API memory above ~512 MB.
+Task sizing starting points:
+- `leadpilot-api`: 0.5 vCPU / 1 GB (Argon2id hashing uses 19 MiB per hash; keep API memory above ~512 MB).
+- `leadpilot-worker-outbox`: 0.5 vCPU / 512 MB (lightweight, event-driven relay).
+- `leadpilot-worker-ai`: 1-2 vCPU / 2-4 GB (PDF/DOCX extraction, chunking, and embedding generation).
+- `leadpilot-web`: 0.5 vCPU / 1 GB.
 
 Networking: tasks in private subnets; ALB in public subnets (TLS via ACM); RDS, ElastiCache and ClamAV only reachable from the task security group. Egress needed: Meta Graph API, OpenAI, Razorpay, SMTP provider, S3 (use a gateway VPC endpoint), Secrets Manager.
 

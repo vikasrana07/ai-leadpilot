@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/page/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Dialog, DialogContent, FormErrorAlert } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Field } from '@/components/ui/field';
@@ -225,6 +226,7 @@ export default function ApiKeysPage() {
   const [open, setOpen] = useState(false);
   const [fresh, setFresh] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [keyToRevoke, setKeyToRevoke] = useState<Key | null>(null);
 
   const revoke = useMutation({
     mutationFn: (id: string) => api(`/api-keys/${id}`, { method: 'DELETE' }),
@@ -318,10 +320,7 @@ export default function ApiKeysPage() {
                     <Button
                       size="sm"
                       variant="danger"
-                      onClick={() => {
-                        if (window.confirm(`Revoke "${k.name}"? Anything using it stops working immediately.`))
-                          revoke.mutate(k.id);
-                      }}
+                      onClick={() => setKeyToRevoke(k)}
                     >
                       Revoke
                     </Button>
@@ -400,6 +399,23 @@ export default function ApiKeysPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={Boolean(keyToRevoke)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setKeyToRevoke(null);
+        }}
+        title={`Revoke "${keyToRevoke?.name}"?`}
+        description="Anything using this API key stops working immediately. This action cannot be undone."
+        confirmLabel="Revoke key"
+        danger
+        onConfirm={async () => {
+          if (keyToRevoke) {
+            await revoke.mutateAsync(keyToRevoke.id);
+            setKeyToRevoke(null);
+          }
+        }}
+      />
     </>
   );
 }

@@ -228,3 +228,67 @@ export const SubscriptionStatus = {
 } as const
 
 export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+
+
+export const EmailDeliveryStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  OPENED: 'OPENED',
+  CLICKED: 'CLICKED',
+  BOUNCED: 'BOUNCED',
+  COMPLAINED: 'COMPLAINED',
+  REJECTED: 'REJECTED',
+  SUPPRESSED: 'SUPPRESSED',
+  FAILED: 'FAILED'
+} as const
+
+export type EmailDeliveryStatus = (typeof EmailDeliveryStatus)[keyof typeof EmailDeliveryStatus]
+
+
+export const EmailEventType = {
+  SEND: 'SEND',
+  DELIVERY: 'DELIVERY',
+  OPEN: 'OPEN',
+  CLICK: 'CLICK',
+  BOUNCE: 'BOUNCE',
+  COMPLAINT: 'COMPLAINT',
+  REJECT: 'REJECT'
+} as const
+
+export type EmailEventType = (typeof EmailEventType)[keyof typeof EmailEventType]
+
+
+export const SuppressionReason = {
+  HARD_BOUNCE: 'HARD_BOUNCE',
+  COMPLAINT: 'COMPLAINT',
+  UNSUBSCRIBED: 'UNSUBSCRIBED',
+  MANUAL: 'MANUAL'
+} as const
+
+export type SuppressionReason = (typeof SuppressionReason)[keyof typeof SuppressionReason]
+
+
+export const BroadcastCampaignStatus = {
+  DRAFT: 'DRAFT',
+  SCHEDULED: 'SCHEDULED',
+  RUNNING: 'RUNNING',
+  PAUSED: 'PAUSED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type BroadcastCampaignStatus = (typeof BroadcastCampaignStatus)[keyof typeof BroadcastCampaignStatus]
+
+
+export const BroadcastRecipientStatus = {
+  PENDING: 'PENDING',
+  QUEUED: 'QUEUED',
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  READ: 'READ',
+  FAILED: 'FAILED',
+  SKIPPED_OPT_OUT: 'SKIPPED_OPT_OUT'
+} as const
+
+export type BroadcastRecipientStatus = (typeof BroadcastRecipientStatus)[keyof typeof BroadcastRecipientStatus]

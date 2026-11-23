@@ -42,12 +42,25 @@ const schema = z.object({
   META_APP_SECRET: z.string().optional(),
   META_ES_CONFIG_ID: z.string().optional(),
   META_WEBHOOK_VERIFY_TOKEN: z.string().optional(),
+  /** Google Calendar integration: off = disabled, mock = offline stand-in (dev/test), live = real Google OAuth2 & Calendar API. */
+  GOOGLE_CALENDAR_MODE: z.enum(['off', 'mock', 'live']).default('mock'),
+  GOOGLE_CALENDAR_CLIENT_ID: z.string().optional(),
+  GOOGLE_CALENDAR_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_CALENDAR_REDIRECT_URI: z.string().url().optional(),
   SMTP_HOST: z.string().default('localhost'),
   SMTP_PORT: z.coerce.number().int().default(1026),
   /** Optional SMTP authentication (e.g. Amazon SES SMTP credentials). Port 465 uses implicit TLS; other ports upgrade with STARTTLS. */
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   MAIL_FROM: z.string().default('LeadPilot <no-reply@leadpilot.local>'),
+  /** Amazon SES & Email Engagement tracking mode: mock (dev/test offline) or live (production with SES & SNS validation). */
+  SES_TRACKING_MODE: z.enum(['mock', 'live']).default('mock'),
+  /** Optional Amazon SES Configuration Set header (X-SES-CONFIGURATION-SET) added to tracked outbound emails. */
+  SES_CONFIGURATION_SET: z.string().optional(),
+  /** Base URL for open pixel and click redirect URLs. Defaults to WEB_ORIGIN if unset. */
+  TRACKING_BASE_URL: z.string().url().optional(),
+  /** HMAC secret for signing click tracking redirect URLs to prevent tampering and open redirects. */
+  TRACKING_SECRET: z.string().min(16).optional(),
   ENABLE_SWAGGER: bool,
   /** Application log format: `json` (one object per line; default in production) or `pretty` (readable; default elsewhere). */
   LOG_FORMAT: z.enum(['json', 'pretty']).optional(),
@@ -67,6 +80,8 @@ const schema = z.object({
   ACCESS_LOG: z.enum(['true', 'false']).optional().transform((v) => (v === undefined ? undefined : v === 'true')),
   /** Run the outbox relay, BullMQ workers and scanners in this process. The API process normally leaves this off and `apps/worker` turns it on. */
   WORKERS_ENABLED: bool,
+  /** Execution tier for background workers: 'all' (unified monolithic), 'outbox' (low-latency outbox/relay/webhooks), or 'ai' (heavy document extraction & embeddings). */
+  WORKER_TIER: z.enum(['all', 'outbox', 'ai']).default('all'),
   QUEUE_PREFIX: z.string().min(1).max(40).default('leadpilot'),
   AUTOMATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(5),
   AUTOMATION_RETRY_BASE_MS: z.coerce.number().int().min(10).default(2000),

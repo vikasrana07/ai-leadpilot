@@ -12,7 +12,9 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "smoke": "node --env-file=../../.env scripts/smoke.mjs",
-    "worker": "node --env-file=../../.env dist/worker.js"
+    "worker": "node --env-file=../../.env dist/worker.js",
+    "worker:outbox": "node --env-file=../../.env dist/worker-outbox.js",
+    "worker:ai": "node --env-file=../../.env dist/worker-ai.js"
   },
   "dependencies": {
     "@aws-sdk/client-kms": "^3.1169.0",

@@ -227,6 +227,7 @@ export type ChannelWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   conversations?: Prisma.ConversationListRelationFilter
+  broadcastCampaigns?: Prisma.BroadcastCampaignListRelationFilter
 }
 
 export type ChannelOrderByWithRelationInput = {
@@ -242,6 +243,7 @@ export type ChannelOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   conversations?: Prisma.ConversationOrderByRelationAggregateInput
+  broadcastCampaigns?: Prisma.BroadcastCampaignOrderByRelationAggregateInput
 }
 
 export type ChannelWhereUniqueInput = Prisma.AtLeast<{
@@ -261,6 +263,7 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   conversations?: Prisma.ConversationListRelationFilter
+  broadcastCampaigns?: Prisma.BroadcastCampaignListRelationFilter
 }, "id" | "webhookKey" | "tenantId_type_externalId">
 
 export type ChannelOrderByWithAggregationInput = {
@@ -310,6 +313,7 @@ export type ChannelCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   conversations?: Prisma.ConversationCreateNestedManyWithoutChannelInput
+  broadcastCampaigns?: Prisma.BroadcastCampaignCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateInput = {
@@ -325,6 +329,7 @@ export type ChannelUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutChannelInput
+  broadcastCampaigns?: Prisma.BroadcastCampaignUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUpdateInput = {
@@ -340,6 +345,7 @@ export type ChannelUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   conversations?: Prisma.ConversationUpdateManyWithoutChannelNestedInput
+  broadcastCampaigns?: Prisma.BroadcastCampaignUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateInput = {
@@ -355,6 +361,7 @@ export type ChannelUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   conversations?: Prisma.ConversationUncheckedUpdateManyWithoutChannelNestedInput
+  broadcastCampaigns?: Prisma.BroadcastCampaignUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateManyInput = {
@@ -472,6 +479,20 @@ export type ChannelUpdateOneRequiredWithoutConversationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutConversationsInput, Prisma.ChannelUpdateWithoutConversationsInput>, Prisma.ChannelUncheckedUpdateWithoutConversationsInput>
 }
 
+export type ChannelCreateNestedOneWithoutBroadcastCampaignsInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutBroadcastCampaignsInput, Prisma.ChannelUncheckedCreateWithoutBroadcastCampaignsInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutBroadcastCampaignsInput
+  connect?: Prisma.ChannelWhereUniqueInput
+}
+
+export type ChannelUpdateOneRequiredWithoutBroadcastCampaignsNestedInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutBroadcastCampaignsInput, Prisma.ChannelUncheckedCreateWithoutBroadcastCampaignsInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutBroadcastCampaignsInput
+  upsert?: Prisma.ChannelUpsertWithoutBroadcastCampaignsInput
+  connect?: Prisma.ChannelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutBroadcastCampaignsInput, Prisma.ChannelUpdateWithoutBroadcastCampaignsInput>, Prisma.ChannelUncheckedUpdateWithoutBroadcastCampaignsInput>
+}
+
 export type ChannelCreateWithoutConversationsInput = {
   id?: string
   tenantId: string
@@ -484,6 +505,7 @@ export type ChannelCreateWithoutConversationsInput = {
   credentialId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  broadcastCampaigns?: Prisma.BroadcastCampaignCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutConversationsInput = {
@@ -498,6 +520,7 @@ export type ChannelUncheckedCreateWithoutConversationsInput = {
   credentialId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  broadcastCampaigns?: Prisma.BroadcastCampaignUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutConversationsInput = {
@@ -528,6 +551,7 @@ export type ChannelUpdateWithoutConversationsInput = {
   credentialId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  broadcastCampaigns?: Prisma.BroadcastCampaignUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutConversationsInput = {
@@ -542,6 +566,83 @@ export type ChannelUncheckedUpdateWithoutConversationsInput = {
   credentialId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  broadcastCampaigns?: Prisma.BroadcastCampaignUncheckedUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelCreateWithoutBroadcastCampaignsInput = {
+  id?: string
+  tenantId: string
+  type: $Enums.ChannelType
+  name: string
+  status?: $Enums.ChannelStatus
+  externalId?: string | null
+  webhookKey?: string | null
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  credentialId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  conversations?: Prisma.ConversationCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelUncheckedCreateWithoutBroadcastCampaignsInput = {
+  id?: string
+  tenantId: string
+  type: $Enums.ChannelType
+  name: string
+  status?: $Enums.ChannelStatus
+  externalId?: string | null
+  webhookKey?: string | null
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  credentialId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelCreateOrConnectWithoutBroadcastCampaignsInput = {
+  where: Prisma.ChannelWhereUniqueInput
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutBroadcastCampaignsInput, Prisma.ChannelUncheckedCreateWithoutBroadcastCampaignsInput>
+}
+
+export type ChannelUpsertWithoutBroadcastCampaignsInput = {
+  update: Prisma.XOR<Prisma.ChannelUpdateWithoutBroadcastCampaignsInput, Prisma.ChannelUncheckedUpdateWithoutBroadcastCampaignsInput>
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutBroadcastCampaignsInput, Prisma.ChannelUncheckedCreateWithoutBroadcastCampaignsInput>
+  where?: Prisma.ChannelWhereInput
+}
+
+export type ChannelUpdateToOneWithWhereWithoutBroadcastCampaignsInput = {
+  where?: Prisma.ChannelWhereInput
+  data: Prisma.XOR<Prisma.ChannelUpdateWithoutBroadcastCampaignsInput, Prisma.ChannelUncheckedUpdateWithoutBroadcastCampaignsInput>
+}
+
+export type ChannelUpdateWithoutBroadcastCampaignsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumChannelStatusFieldUpdateOperationsInput | $Enums.ChannelStatus
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  credentialId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  conversations?: Prisma.ConversationUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelUncheckedUpdateWithoutBroadcastCampaignsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumChannelTypeFieldUpdateOperationsInput | $Enums.ChannelType
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumChannelStatusFieldUpdateOperationsInput | $Enums.ChannelStatus
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  webhookKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  config?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  credentialId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 
@@ -551,10 +652,12 @@ export type ChannelUncheckedUpdateWithoutConversationsInput = {
 
 export type ChannelCountOutputType = {
   conversations: number
+  broadcastCampaigns: number
 }
 
 export type ChannelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   conversations?: boolean | ChannelCountOutputTypeCountConversationsArgs
+  broadcastCampaigns?: boolean | ChannelCountOutputTypeCountBroadcastCampaignsArgs
 }
 
 /**
@@ -574,6 +677,13 @@ export type ChannelCountOutputTypeCountConversationsArgs<ExtArgs extends runtime
   where?: Prisma.ConversationWhereInput
 }
 
+/**
+ * ChannelCountOutputType without action
+ */
+export type ChannelCountOutputTypeCountBroadcastCampaignsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BroadcastCampaignWhereInput
+}
+
 
 export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -588,6 +698,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   createdAt?: boolean
   updatedAt?: boolean
   conversations?: boolean | Prisma.Channel$conversationsArgs<ExtArgs>
+  broadcastCampaigns?: boolean | Prisma.Channel$broadcastCampaignsArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channel"]>
 
@@ -636,6 +747,7 @@ export type ChannelSelectScalar = {
 export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "type" | "name" | "status" | "externalId" | "webhookKey" | "config" | "credentialId" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
 export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   conversations?: boolean | Prisma.Channel$conversationsArgs<ExtArgs>
+  broadcastCampaigns?: boolean | Prisma.Channel$broadcastCampaignsArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ChannelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -645,6 +757,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "Channel"
   objects: {
     conversations: Prisma.$ConversationPayload<ExtArgs>[]
+    broadcastCampaigns: Prisma.$BroadcastCampaignPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1062,6 +1175,7 @@ readonly fields: ChannelFieldRefs;
 export interface Prisma__ChannelClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   conversations<T extends Prisma.Channel$conversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  broadcastCampaigns<T extends Prisma.Channel$broadcastCampaignsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$broadcastCampaignsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BroadcastCampaignPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1516,6 +1630,30 @@ export type Channel$conversationsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.ConversationScalarFieldEnum | Prisma.ConversationScalarFieldEnum[]
+}
+
+/**
+ * Channel.broadcastCampaigns
+ */
+export type Channel$broadcastCampaignsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BroadcastCampaign
+   */
+  select?: Prisma.BroadcastCampaignSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BroadcastCampaign
+   */
+  omit?: Prisma.BroadcastCampaignOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BroadcastCampaignInclude<ExtArgs> | null
+  where?: Prisma.BroadcastCampaignWhereInput
+  orderBy?: Prisma.BroadcastCampaignOrderByWithRelationInput | Prisma.BroadcastCampaignOrderByWithRelationInput[]
+  cursor?: Prisma.BroadcastCampaignWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BroadcastCampaignScalarFieldEnum | Prisma.BroadcastCampaignScalarFieldEnum[]
 }
 
 /**

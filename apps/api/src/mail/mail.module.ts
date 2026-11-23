@@ -26,6 +26,26 @@ export class MailService {
     }
   }
 
+  /**
+   * Generic mail sender supporting HTML and custom email headers (e.g. SES tracking tags, configuration sets, message-ids).
+   */
+  async sendCustom(opts: { to: string; subject: string; text: string; html?: string; headers?: Record<string, string> }): Promise<{ messageId: string | null }> {
+    try {
+      const res = await this.transport.sendMail({
+        from: this.env.MAIL_FROM,
+        to: opts.to,
+        subject: opts.subject,
+        text: opts.text,
+        html: opts.html,
+        headers: opts.headers,
+      });
+      return { messageId: res?.messageId ?? null };
+    } catch (err) {
+      this.log.error(`Failed to send custom email: ${err instanceof Error ? err.message : String(err)}`);
+      throw err;
+    }
+  }
+
   sendVerification(to: string, token: string): Promise<void> {
     const link = `${this.env.WEB_ORIGIN}/verify-email?token=${encodeURIComponent(token)}`;
     return this.send(to, 'Verify your LeadPilot email', `Welcome to LeadPilot.\n\nConfirm your email: ${link}\n\nThis link expires in 24 hours.`);

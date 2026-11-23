@@ -12,7 +12,7 @@ import { useUnreadCount } from '@/lib/inbox';
 import { cn } from '@/lib/cn';
 import { BLOCKED_DURING_SUPPORT, useSupportSession } from '@/lib/support';
 import { ADMIN_NAV, isLive, navLabel, WORKSPACE_NAV, type NavItem } from '@/lib/nav';
-import { useTerms } from '@/lib/pack';
+import { usePack, useTerms } from '@/lib/pack';
 
 function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: boolean; onNavigate?: () => void }) {
   const label = navLabel(item, useTerms());
@@ -45,7 +45,8 @@ function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: bo
 
 export function SidebarContent({ collapsed, onToggle, onNavigate }: { collapsed: boolean; onToggle?: () => void; onNavigate?: () => void }) {
   const { can, activeWorkspace } = useAuth();
-  const modules = activeWorkspace?.industryChosen ? packForIndustry(activeWorkspace.industryPackId).modules : { properties: false };
+  const pack = usePack();
+  const modules = activeWorkspace?.industryChosen ? pack.modules : { properties: false };
   const support = useSupportSession().data?.active === true;
   const admin = ADMIN_NAV.filter((i) => (!i.permission || can(i.permission)) && !(support && BLOCKED_DURING_SUPPORT.has(i.href)));
   return (

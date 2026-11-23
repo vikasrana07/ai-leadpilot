@@ -262,6 +262,11 @@ export type Appointment = Prisma.AppointmentModel
  */
 export type AppointmentEvent = Prisma.AppointmentEventModel
 /**
+ * Model GoogleCalendarSync
+ * 
+ */
+export type GoogleCalendarSync = Prisma.GoogleCalendarSyncModel
+/**
  * Model Automation
  * 
  */
@@ -416,3 +421,28 @@ export type PortalSession = Prisma.PortalSessionModel
  * Per-person alert settings (sound and desktop alerts). No tenant: personal to the user. Missing row = defaults.
  */
 export type UserAlertSettings = Prisma.UserAlertSettingsModel
+/**
+ * Model TrackedEmail
+ * 
+ */
+export type TrackedEmail = Prisma.TrackedEmailModel
+/**
+ * Model EmailEngagementEvent
+ * 
+ */
+export type EmailEngagementEvent = Prisma.EmailEngagementEventModel
+/**
+ * Model EmailSuppression
+ * 
+ */
+export type EmailSuppression = Prisma.EmailSuppressionModel
+/**
+ * Model BroadcastCampaign
+ * 
+ */
+export type BroadcastCampaign = Prisma.BroadcastCampaignModel
+/**
+ * Model BroadcastRecipient
+ * 
+ */
+export type BroadcastRecipient = Prisma.BroadcastRecipientModel

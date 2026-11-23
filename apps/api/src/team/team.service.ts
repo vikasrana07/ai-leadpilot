@@ -1,7 +1,7 @@
 import { EntitlementsService } from '../billing/entitlements.service.js';
 import { SessionCacheService } from '../common/session-cache.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { SYSTEM_ROLES, type SystemRoleKey } from '@leadpilot/shared-types';
+import { SYSTEM_ROLES, type PermissionKey, type SystemRoleKey } from '@leadpilot/shared-types';
 import type { InviteInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
@@ -23,8 +23,19 @@ export class TeamService {
   ) {}
 
   /** Privilege-escalation guard: you can only grant a role whose permissions you hold yourself. */
-  private assertCanGrant(ctx: TenantRequestContext, roleKey: SystemRoleKey): void {
-    const missing = SYSTEM_ROLES[roleKey].permissions.some((p) => !ctx.permissions.has(p));
+  private async assertCanGrantRole(tx: Parameters<Parameters<DbService['tenantTx']>[1]>[0], ctx: TenantRequestContext, roleKey: string): Promise<void> {
+    let perms: readonly string[];
+    if (roleKey in SYSTEM_ROLES) {
+      perms = SYSTEM_ROLES[roleKey as SystemRoleKey].permissions;
+    } else {
+      const role = await tx.role.findUnique({
+        where: { tenantId_key: { tenantId: ctx.tenantId, key: roleKey } },
+        include: { permissions: true },
+      });
+      if (!role) throw new NotFoundException({ code: 'role_not_found', message: 'Role not found' });
+      perms = role.permissions.map((p) => p.permissionKey);
+    }
+    const missing = perms.some((p) => !ctx.permissions.has(p as PermissionKey));
     if (missing) throw new ForbiddenException({ code: 'cannot_grant_role', message: 'You cannot assign a role with more permissions than your own' });
   }
 
@@ -59,11 +70,11 @@ export class TeamService {
   async invite(ctx: TenantRequestContext, input: InviteInput) {
     const inviter = await this.db.prisma.user.findUniqueOrThrow({ where: { id: ctx.userId }, select: { name: true, emailVerifiedAt: true } });
     if (!inviter.emailVerifiedAt) throw new ForbiddenException({ code: 'email_unverified', message: 'Verify your email before inviting teammates' });
-    this.assertCanGrant(ctx, input.roleKey);
     await this.ent.assertCanAdd(ctx.tenantId, 'seats', 'team seats (members plus pending invitations)');
     const target = await this.db.prisma.user.findUnique({ where: { email: input.email }, select: { id: true } });
     const { token, hash } = generateToken();
     const result = await this.db.tenantTx(ctx, async (tx) => {
+      await this.assertCanGrantRole(tx, ctx, input.roleKey);
       if (target) {
         const m = await tx.membership.findUnique({ where: { tenantId_userId: { tenantId: ctx.tenantId, userId: target.id } } });
         if (m?.status === 'ACTIVE') throw new ConflictException({ code: 'already_member', message: 'This person is already on your team' });
@@ -97,14 +108,14 @@ export class TeamService {
     }
   }
 
-  changeRole(ctx: TenantRequestContext, membershipId: string, roleKey: SystemRoleKey) {
-    this.assertCanGrant(ctx, roleKey);
+  changeRole(ctx: TenantRequestContext, membershipId: string, roleKey: string) {
     return this.db.tenantTx(ctx, async (tx) => {
+      await this.assertCanGrantRole(tx, ctx, roleKey);
       const m = await tx.membership.findFirst({ where: { id: membershipId, tenantId: ctx.tenantId }, select: { id: true, userId: true, role: { select: { key: true } } } });
       if (!m) throw new NotFoundException({ code: 'not_found', message: 'Member not found' });
       if (m.userId === ctx.userId) throw new BadRequestException({ code: 'self_change', message: 'You cannot change your own role' });
       // Changing someone who currently outranks you is also escalation-adjacent: require holding their role's permissions.
-      this.assertCanGrant(ctx, m.role.key as SystemRoleKey);
+      await this.assertCanGrantRole(tx, ctx, m.role.key);
       await this.assertNotLastOwner(tx, ctx, membershipId);
       const role = await tx.role.findUniqueOrThrow({ where: { tenantId_key: { tenantId: ctx.tenantId, key: roleKey } } });
       await tx.membership.update({ where: { id: membershipId }, data: { roleId: role.id } });
@@ -119,7 +130,7 @@ export class TeamService {
       const m = await tx.membership.findFirst({ where: { id: membershipId, tenantId: ctx.tenantId }, select: { id: true, userId: true, role: { select: { key: true } } } });
       if (!m) throw new NotFoundException({ code: 'not_found', message: 'Member not found' });
       if (m.userId === ctx.userId) throw new BadRequestException({ code: 'self_change', message: 'You cannot change your own status' });
-      this.assertCanGrant(ctx, m.role.key as SystemRoleKey);
+      await this.assertCanGrantRole(tx, ctx, m.role.key);
       if (status === 'DEACTIVATED') {
         await this.assertNotLastOwner(tx, ctx, membershipId);
         await this.sessionCache.invalidateUser(m.userId);
@@ -140,7 +151,7 @@ export class TeamService {
       const m = await tx.membership.findFirst({ where: { id: membershipId, tenantId: ctx.tenantId }, select: { userId: true, role: { select: { key: true } } } });
       if (!m) throw new NotFoundException({ code: 'not_found', message: 'Member not found' });
       if (m.userId === ctx.userId) throw new BadRequestException({ code: 'self_change', message: 'Use the Security page to change your own two-step verification' });
-      this.assertCanGrant(ctx, m.role.key as SystemRoleKey);
+      await this.assertCanGrantRole(tx, ctx, m.role.key);
       return m;
     });
     const subject = { subjectType: 'user', subjectId: target.userId };

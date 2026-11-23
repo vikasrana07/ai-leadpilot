@@ -2,7 +2,7 @@ import type { PackTerms } from '@leadpilot/shared-types';
 import type { AutomationGraph, GraphIssue } from '@leadpilot/validation';
 
 export interface Appointment {
-  id: string; leadId: string; leadName: string; leadPhone: string | null; membershipId: string; agentName: string; title: string; startsAt: string; endsAt: string;
+  id: string; leadId: string; leadName: string; leadPhone: string | null; membershipId: string; agentName: string; title: string; serviceType?: string | null; startsAt: string; endsAt: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED'; notes: string | null; location: string | null; source: string; cancelledReason: string | null; rescheduledFromId: string | null;
   events?: { id: string; type: string; data: Record<string, unknown>; createdAt: string }[];
 }

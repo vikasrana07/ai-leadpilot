@@ -1,5 +1,5 @@
 import { packForIndustry } from '@leadpilot/shared-types';
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, Optional, UnprocessableEntityException } from '@nestjs/common';
 import type { Prisma, TxClient } from '@leadpilot/database';
 import { APPOINTMENT_TRANSITIONS, type AppointmentCreateInput, type AppointmentListQuery, type SlotsQuery } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
@@ -8,12 +8,14 @@ import type { Actor } from '../common/actor.js';
 import { addDays, localParts } from '../common/tz.js';
 import { DbService } from '../db/db.module.js';
 import { DistributedLockService } from '../common/lock.service.js';
+import { GoogleCalendarService } from '../integrations/google-calendar/google-calendar.service.js';
 import { loadAvailability, slotsForDate, withinWorkingHours } from './availability.js';
 import { OutboxService } from './outbox.service.js';
 
 type Row = Prisma.AppointmentGetPayload<{ include: { events: true } }>;
 export interface AppointmentDto {
   id: string; leadId: string; leadName: string; leadPhone: string | null; membershipId: string; agentName: string; propertyId: string | null; title: string;
+  serviceType: string | null;
   startsAt: string; endsAt: string; status: string; notes: string | null; location: string | null; source: string; cancelledReason: string | null;
   rescheduledFromId: string | null; createdAt: string; events?: { id: string; type: string; data: unknown; createdAt: string }[];
 }
@@ -65,6 +67,7 @@ export class AppointmentsService {
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(OutboxService) private readonly outbox: OutboxService,
     @Inject(DistributedLockService) private readonly lock: DistributedLockService,
+    @Optional() @Inject(GoogleCalendarService) private readonly gcal?: GoogleCalendarService,
   ) {}
 
   private tx<T>(a: Actor, fn: (tx: TxClient) => Promise<T>): Promise<T> { return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, fn); }
@@ -82,7 +85,7 @@ export class AppointmentsService {
     const L = new Map(leads.map((l) => [l.id, l])); const M = new Map(ms.map((m) => [m.id, m.user.name]));
     return rows.map((r) => ({
       id: r.id, leadId: r.leadId, leadName: L.get(r.leadId)?.name ?? 'Unknown', leadPhone: L.get(r.leadId)?.phone ?? null, membershipId: r.membershipId, agentName: M.get(r.membershipId) ?? 'Unknown',
-      propertyId: r.propertyId, title: r.title, startsAt: r.startsAt.toISOString(), endsAt: r.endsAt.toISOString(), status: r.status, notes: r.notes, location: r.location, source: r.source,
+      propertyId: r.propertyId, title: r.title, serviceType: r.serviceType ?? null, startsAt: r.startsAt.toISOString(), endsAt: r.endsAt.toISOString(), status: r.status, notes: r.notes, location: r.location, source: r.source,
       cancelledReason: r.cancelledReason, rescheduledFromId: r.rescheduledFromId, createdAt: r.createdAt.toISOString(),
       ...(withEvents && 'events' in r ? { events: [...r.events].sort((x, y) => x.createdAt.getTime() - y.createdAt.getTime()).map((e) => ({ id: e.id, type: e.type, data: e.data, createdAt: e.createdAt.toISOString() })) } : {}),
     }));
@@ -139,10 +142,19 @@ export class AppointmentsService {
     const rangeStart = new Date(`${fromDate}T00:00:00Z`); rangeStart.setUTCDate(rangeStart.getUTCDate() - 1);
     const rangeEnd = new Date(`${addDays(fromDate, days)}T00:00:00Z`); rangeEnd.setUTCDate(rangeEnd.getUTCDate() + 1);
     const busyRows = await tx.appointment.findMany({ where: { membershipId: { in: membershipIds }, status: { in: ['PENDING', 'CONFIRMED'] }, startsAt: { lt: rangeEnd }, endsAt: { gt: rangeStart } }, select: { membershipId: true, startsAt: true, endsAt: true } });
+    let allBusy = busyRows;
+    if (this.gcal) {
+      try {
+        const gcalBusy = await this.gcal.getFreeBusy(tenantId, membershipIds, rangeStart, rangeEnd);
+        if (gcalBusy.length > 0) allBusy = [...busyRows, ...gcalBusy];
+      } catch {
+        // Fallback to internal appointments if external calendar query fails
+      }
+    }
     const out: { date: string; slots: { startsAt: string; endsAt: string; membershipIds: string[] }[] }[] = [];
     for (let i = 0; i < days; i++) {
       const date = addDays(fromDate, i);
-      const slots = slotsForDate({ data, date, tz, durationMinutes, membershipIds, busy: busyRows, now });
+      const slots = slotsForDate({ data, date, tz, durationMinutes, membershipIds, busy: allBusy, now });
       out.push({ date, slots: slots.map((s) => ({ startsAt: s.startsAt.toISOString(), endsAt: s.endsAt.toISOString(), membershipIds: s.membershipIds })) });
     }
     return { timezone: tz, days: out };
@@ -229,9 +241,10 @@ export class AppointmentsService {
 
             const status = opts.status ?? (opts.source === 'manual' ? 'CONFIRMED' : 'PENDING');
             const visitNoun = packForIndustry((await tx.tenant.findUnique({ where: { id: a.tenantId }, select: { industryPackId: true } }))?.industryPackId ?? 'real_estate').terminology.visit;
+            const title = input.title ?? (input.serviceType ? `${input.serviceType}: ${plan.lead.name}` : `${visitNoun}: ${plan.lead.name}`);
             const created = await tx.appointment.create({ data: {
               id: uuidv7(), tenantId: a.tenantId, leadId: input.leadId, membershipId, propertyId: input.propertyId ?? null,
-              title: input.title ?? `${visitNoun}: ${plan.lead.name}`, startsAt, endsAt, status, notes: input.notes ?? null, location: input.location ?? null, source: opts.source, createdByUserId: a.userId,
+              title, serviceType: input.serviceType ?? null, startsAt, endsAt, status, notes: input.notes ?? null, location: input.location ?? null, source: opts.source, createdByUserId: a.userId,
             } });
             await this.afterBooked(tx, a, created, 'booked');
             return created.id;
@@ -265,6 +278,9 @@ export class AppointmentsService {
     await tx.leadActivity.create({ data: { id: uuidv7(), tenantId: a.tenantId, leadId: row.leadId, type: 'appointment_booked', actorUserId: a.userId, data: { appointmentId: row.id, startsAt: row.startsAt.toISOString(), source: row.source } } });
     await this.audit.record(tx, { tenantId: a.tenantId, actorUserId: a.userId, action: `appointment.${kind}`, resourceType: 'appointment', resourceId: row.id, metadata: { source: row.source, ...(a.apiKeyId ? { apiKeyId: a.apiKeyId } : {}) }, ...(a.requestId ? { requestId: a.requestId } : {}), ...(a.ip ? { ip: a.ip } : {}) });
     await this.outbox.emit(tx, a.tenantId, kind === 'booked' ? 'appointment.booked' : 'appointment.rescheduled', { appointmentId: row.id, leadId: row.leadId, membershipId: row.membershipId, source: row.source, byUserId: a.userId });
+    if (this.gcal) {
+      await this.gcal.syncAppointment(tx, a.tenantId, row.id, kind === 'booked' ? 'created' : 'rescheduled').catch(() => null);
+    }
   }
 
   // ------------------------------------------------------------------ lifecycle
@@ -283,6 +299,9 @@ export class AppointmentsService {
       await tx.leadActivity.create({ data: { id: uuidv7(), tenantId: a.tenantId, leadId: cur.leadId, type: `appointment_${to.toLowerCase()}`, actorUserId: a.userId, data: { appointmentId: id } } });
       await this.audit.record(tx, { tenantId: a.tenantId, actorUserId: a.userId, action: `appointment.${to.toLowerCase()}`, resourceType: 'appointment', resourceId: id, metadata: {}, ...(a.requestId ? { requestId: a.requestId } : {}), ...(a.ip ? { ip: a.ip } : {}) });
       await this.outbox.emit(tx, a.tenantId, `appointment.${to.toLowerCase()}`, { appointmentId: id, leadId: cur.leadId, membershipId: cur.membershipId, byUserId: a.userId });
+      if (this.gcal && to === 'CANCELLED') {
+        await this.gcal.syncAppointment(tx, a.tenantId, id, 'cancelled').catch(() => null);
+      }
     });
     return this.get({ ...a, permissions: new Set([...a.permissions, 'appointment:read:all']) }, id);
   }
@@ -291,13 +310,13 @@ export class AppointmentsService {
   noShow(a: Actor, id: string) { return this.transition(a, id, 'NO_SHOW'); }
   cancel(a: Actor, id: string, reason?: string) { return this.transition(a, id, 'CANCELLED', { reason }); }
 
-  async update(a: Actor, id: string, input: { title?: string | undefined; notes?: string | null | undefined; location?: string | null | undefined }): Promise<AppointmentDto> {
+  async update(a: Actor, id: string, input: { title?: string | undefined; serviceType?: string | null | undefined; notes?: string | null | undefined; location?: string | null | undefined }): Promise<AppointmentDto> {
     this.requireWrite(a);
     await this.tx(a, async (tx) => {
       const cur = await tx.appointment.findFirst({ where: { id } });
       if (!cur) throw new NotFoundException({ code: 'not_found', message: 'Appointment not found' });
       this.assertOwnsOrAll(a, cur.membershipId);
-      await tx.appointment.update({ where: { id }, data: { ...(input.title ? { title: input.title } : {}), ...(input.notes !== undefined ? { notes: input.notes } : {}), ...(input.location !== undefined ? { location: input.location } : {}) } });
+      await tx.appointment.update({ where: { id }, data: { ...(input.title ? { title: input.title } : {}), ...(input.serviceType !== undefined ? { serviceType: input.serviceType } : {}), ...(input.notes !== undefined ? { notes: input.notes } : {}), ...(input.location !== undefined ? { location: input.location } : {}) } });
       await tx.appointmentEvent.create({ data: { id: uuidv7(), tenantId: a.tenantId, appointmentId: id, type: 'updated', actorUserId: a.userId, data: { fields: Object.keys(input) } } });
     });
     return this.get({ ...a, permissions: new Set([...a.permissions, 'appointment:read:all']) }, id);
@@ -368,7 +387,7 @@ export class AppointmentsService {
           const res = await tx.appointment.updateMany({ where: { id, status: cur.status }, data: { status: 'RESCHEDULED' } });
           if (res.count !== 1) throw new ConflictException({ code: 'invalid_transition', message: 'This appointment was just changed by someone else. Refresh and try again.' });
           const created = await tx.appointment.create({ data: {
-            id: uuidv7(), tenantId: a.tenantId, leadId: cur.leadId, membershipId, propertyId: cur.propertyId, title: cur.title, startsAt, endsAt, status: cur.status === 'CONFIRMED' ? 'CONFIRMED' : 'PENDING',
+            id: uuidv7(), tenantId: a.tenantId, leadId: cur.leadId, membershipId, propertyId: cur.propertyId, title: cur.title, serviceType: cur.serviceType, startsAt, endsAt, status: cur.status === 'CONFIRMED' ? 'CONFIRMED' : 'PENDING',
             notes: cur.notes, location: cur.location, source: cur.source, rescheduledFromId: cur.id, createdByUserId: a.userId,
           } });
           await tx.appointmentEvent.create({ data: { id: uuidv7(), tenantId: a.tenantId, appointmentId: cur.id, type: 'rescheduled_from', actorUserId: a.userId, data: { toAppointmentId: created.id, ...(input.reason ? { reason: input.reason } : {}) } } });

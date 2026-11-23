@@ -31,6 +31,7 @@ export type AppointmentMinAggregateOutputType = {
   membershipId: string | null
   propertyId: string | null
   title: string | null
+  serviceType: string | null
   startsAt: Date | null
   endsAt: Date | null
   status: $Enums.AppointmentStatus | null
@@ -40,6 +41,7 @@ export type AppointmentMinAggregateOutputType = {
   cancelledReason: string | null
   rescheduledFromId: string | null
   createdByUserId: string | null
+  googleEventId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -51,6 +53,7 @@ export type AppointmentMaxAggregateOutputType = {
   membershipId: string | null
   propertyId: string | null
   title: string | null
+  serviceType: string | null
   startsAt: Date | null
   endsAt: Date | null
   status: $Enums.AppointmentStatus | null
@@ -60,6 +63,7 @@ export type AppointmentMaxAggregateOutputType = {
   cancelledReason: string | null
   rescheduledFromId: string | null
   createdByUserId: string | null
+  googleEventId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -71,6 +75,7 @@ export type AppointmentCountAggregateOutputType = {
   membershipId: number
   propertyId: number
   title: number
+  serviceType: number
   startsAt: number
   endsAt: number
   status: number
@@ -80,6 +85,7 @@ export type AppointmentCountAggregateOutputType = {
   cancelledReason: number
   rescheduledFromId: number
   createdByUserId: number
+  googleEventId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -93,6 +99,7 @@ export type AppointmentMinAggregateInputType = {
   membershipId?: true
   propertyId?: true
   title?: true
+  serviceType?: true
   startsAt?: true
   endsAt?: true
   status?: true
@@ -102,6 +109,7 @@ export type AppointmentMinAggregateInputType = {
   cancelledReason?: true
   rescheduledFromId?: true
   createdByUserId?: true
+  googleEventId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -113,6 +121,7 @@ export type AppointmentMaxAggregateInputType = {
   membershipId?: true
   propertyId?: true
   title?: true
+  serviceType?: true
   startsAt?: true
   endsAt?: true
   status?: true
@@ -122,6 +131,7 @@ export type AppointmentMaxAggregateInputType = {
   cancelledReason?: true
   rescheduledFromId?: true
   createdByUserId?: true
+  googleEventId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -133,6 +143,7 @@ export type AppointmentCountAggregateInputType = {
   membershipId?: true
   propertyId?: true
   title?: true
+  serviceType?: true
   startsAt?: true
   endsAt?: true
   status?: true
@@ -142,6 +153,7 @@ export type AppointmentCountAggregateInputType = {
   cancelledReason?: true
   rescheduledFromId?: true
   createdByUserId?: true
+  googleEventId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -226,6 +238,7 @@ export type AppointmentGroupByOutputType = {
   membershipId: string
   propertyId: string | null
   title: string
+  serviceType: string | null
   startsAt: Date
   endsAt: Date
   status: $Enums.AppointmentStatus
@@ -235,6 +248,7 @@ export type AppointmentGroupByOutputType = {
   cancelledReason: string | null
   rescheduledFromId: string | null
   createdByUserId: string | null
+  googleEventId: string | null
   createdAt: Date
   updatedAt: Date
   _count: AppointmentCountAggregateOutputType | null
@@ -267,6 +281,7 @@ export type AppointmentWhereInput = {
   membershipId?: Prisma.UuidFilter<"Appointment"> | string
   propertyId?: Prisma.UuidNullableFilter<"Appointment"> | string | null
   title?: Prisma.StringFilter<"Appointment"> | string
+  serviceType?: Prisma.StringNullableFilter<"Appointment"> | string | null
   startsAt?: Prisma.DateTimeFilter<"Appointment"> | Date | string
   endsAt?: Prisma.DateTimeFilter<"Appointment"> | Date | string
   status?: Prisma.EnumAppointmentStatusFilter<"Appointment"> | $Enums.AppointmentStatus
@@ -276,6 +291,7 @@ export type AppointmentWhereInput = {
   cancelledReason?: Prisma.StringNullableFilter<"Appointment"> | string | null
   rescheduledFromId?: Prisma.UuidNullableFilter<"Appointment"> | string | null
   createdByUserId?: Prisma.UuidNullableFilter<"Appointment"> | string | null
+  googleEventId?: Prisma.StringNullableFilter<"Appointment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Appointment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Appointment"> | Date | string
   events?: Prisma.AppointmentEventListRelationFilter
@@ -288,6 +304,7 @@ export type AppointmentOrderByWithRelationInput = {
   membershipId?: Prisma.SortOrder
   propertyId?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrderInput | Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -297,6 +314,7 @@ export type AppointmentOrderByWithRelationInput = {
   cancelledReason?: Prisma.SortOrderInput | Prisma.SortOrder
   rescheduledFromId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  googleEventId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   events?: Prisma.AppointmentEventOrderByRelationAggregateInput
@@ -312,6 +330,7 @@ export type AppointmentWhereUniqueInput = Prisma.AtLeast<{
   membershipId?: Prisma.UuidFilter<"Appointment"> | string
   propertyId?: Prisma.UuidNullableFilter<"Appointment"> | string | null
   title?: Prisma.StringFilter<"Appointment"> | string
+  serviceType?: Prisma.StringNullableFilter<"Appointment"> | string | null
   startsAt?: Prisma.DateTimeFilter<"Appointment"> | Date | string
   endsAt?: Prisma.DateTimeFilter<"Appointment"> | Date | string
   status?: Prisma.EnumAppointmentStatusFilter<"Appointment"> | $Enums.AppointmentStatus
@@ -321,6 +340,7 @@ export type AppointmentWhereUniqueInput = Prisma.AtLeast<{
   cancelledReason?: Prisma.StringNullableFilter<"Appointment"> | string | null
   rescheduledFromId?: Prisma.UuidNullableFilter<"Appointment"> | string | null
   createdByUserId?: Prisma.UuidNullableFilter<"Appointment"> | string | null
+  googleEventId?: Prisma.StringNullableFilter<"Appointment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Appointment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Appointment"> | Date | string
   events?: Prisma.AppointmentEventListRelationFilter
@@ -333,6 +353,7 @@ export type AppointmentOrderByWithAggregationInput = {
   membershipId?: Prisma.SortOrder
   propertyId?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrderInput | Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -342,6 +363,7 @@ export type AppointmentOrderByWithAggregationInput = {
   cancelledReason?: Prisma.SortOrderInput | Prisma.SortOrder
   rescheduledFromId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  googleEventId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.AppointmentCountOrderByAggregateInput
@@ -359,6 +381,7 @@ export type AppointmentScalarWhereWithAggregatesInput = {
   membershipId?: Prisma.UuidWithAggregatesFilter<"Appointment"> | string
   propertyId?: Prisma.UuidNullableWithAggregatesFilter<"Appointment"> | string | null
   title?: Prisma.StringWithAggregatesFilter<"Appointment"> | string
+  serviceType?: Prisma.StringNullableWithAggregatesFilter<"Appointment"> | string | null
   startsAt?: Prisma.DateTimeWithAggregatesFilter<"Appointment"> | Date | string
   endsAt?: Prisma.DateTimeWithAggregatesFilter<"Appointment"> | Date | string
   status?: Prisma.EnumAppointmentStatusWithAggregatesFilter<"Appointment"> | $Enums.AppointmentStatus
@@ -368,6 +391,7 @@ export type AppointmentScalarWhereWithAggregatesInput = {
   cancelledReason?: Prisma.StringNullableWithAggregatesFilter<"Appointment"> | string | null
   rescheduledFromId?: Prisma.UuidNullableWithAggregatesFilter<"Appointment"> | string | null
   createdByUserId?: Prisma.UuidNullableWithAggregatesFilter<"Appointment"> | string | null
+  googleEventId?: Prisma.StringNullableWithAggregatesFilter<"Appointment"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Appointment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Appointment"> | Date | string
 }
@@ -379,6 +403,7 @@ export type AppointmentCreateInput = {
   membershipId: string
   propertyId?: string | null
   title: string
+  serviceType?: string | null
   startsAt: Date | string
   endsAt: Date | string
   status?: $Enums.AppointmentStatus
@@ -388,6 +413,7 @@ export type AppointmentCreateInput = {
   cancelledReason?: string | null
   rescheduledFromId?: string | null
   createdByUserId?: string | null
+  googleEventId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   events?: Prisma.AppointmentEventCreateNestedManyWithoutAppointmentInput
@@ -400,6 +426,7 @@ export type AppointmentUncheckedCreateInput = {
   membershipId: string
   propertyId?: string | null
   title: string
+  serviceType?: string | null
   startsAt: Date | string
   endsAt: Date | string
   status?: $Enums.AppointmentStatus
@@ -409,6 +436,7 @@ export type AppointmentUncheckedCreateInput = {
   cancelledReason?: string | null
   rescheduledFromId?: string | null
   createdByUserId?: string | null
+  googleEventId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   events?: Prisma.AppointmentEventUncheckedCreateNestedManyWithoutAppointmentInput
@@ -421,6 +449,7 @@ export type AppointmentUpdateInput = {
   membershipId?: Prisma.StringFieldUpdateOperationsInput | string
   propertyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
@@ -430,6 +459,7 @@ export type AppointmentUpdateInput = {
   cancelledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rescheduledFromId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   events?: Prisma.AppointmentEventUpdateManyWithoutAppointmentNestedInput
@@ -442,6 +472,7 @@ export type AppointmentUncheckedUpdateInput = {
   membershipId?: Prisma.StringFieldUpdateOperationsInput | string
   propertyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
@@ -451,6 +482,7 @@ export type AppointmentUncheckedUpdateInput = {
   cancelledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rescheduledFromId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   events?: Prisma.AppointmentEventUncheckedUpdateManyWithoutAppointmentNestedInput
@@ -463,6 +495,7 @@ export type AppointmentCreateManyInput = {
   membershipId: string
   propertyId?: string | null
   title: string
+  serviceType?: string | null
   startsAt: Date | string
   endsAt: Date | string
   status?: $Enums.AppointmentStatus
@@ -472,6 +505,7 @@ export type AppointmentCreateManyInput = {
   cancelledReason?: string | null
   rescheduledFromId?: string | null
   createdByUserId?: string | null
+  googleEventId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -483,6 +517,7 @@ export type AppointmentUpdateManyMutationInput = {
   membershipId?: Prisma.StringFieldUpdateOperationsInput | string
   propertyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
@@ -492,6 +527,7 @@ export type AppointmentUpdateManyMutationInput = {
   cancelledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rescheduledFromId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -503,6 +539,7 @@ export type AppointmentUncheckedUpdateManyInput = {
   membershipId?: Prisma.StringFieldUpdateOperationsInput | string
   propertyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
@@ -512,6 +549,7 @@ export type AppointmentUncheckedUpdateManyInput = {
   cancelledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rescheduledFromId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -523,6 +561,7 @@ export type AppointmentCountOrderByAggregateInput = {
   membershipId?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -532,6 +571,7 @@ export type AppointmentCountOrderByAggregateInput = {
   cancelledReason?: Prisma.SortOrder
   rescheduledFromId?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
+  googleEventId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -543,6 +583,7 @@ export type AppointmentMaxOrderByAggregateInput = {
   membershipId?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -552,6 +593,7 @@ export type AppointmentMaxOrderByAggregateInput = {
   cancelledReason?: Prisma.SortOrder
   rescheduledFromId?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
+  googleEventId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -563,6 +605,7 @@ export type AppointmentMinOrderByAggregateInput = {
   membershipId?: Prisma.SortOrder
   propertyId?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -572,6 +615,7 @@ export type AppointmentMinOrderByAggregateInput = {
   cancelledReason?: Prisma.SortOrder
   rescheduledFromId?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
+  googleEventId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -606,6 +650,7 @@ export type AppointmentCreateWithoutEventsInput = {
   membershipId: string
   propertyId?: string | null
   title: string
+  serviceType?: string | null
   startsAt: Date | string
   endsAt: Date | string
   status?: $Enums.AppointmentStatus
@@ -615,6 +660,7 @@ export type AppointmentCreateWithoutEventsInput = {
   cancelledReason?: string | null
   rescheduledFromId?: string | null
   createdByUserId?: string | null
+  googleEventId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -626,6 +672,7 @@ export type AppointmentUncheckedCreateWithoutEventsInput = {
   membershipId: string
   propertyId?: string | null
   title: string
+  serviceType?: string | null
   startsAt: Date | string
   endsAt: Date | string
   status?: $Enums.AppointmentStatus
@@ -635,6 +682,7 @@ export type AppointmentUncheckedCreateWithoutEventsInput = {
   cancelledReason?: string | null
   rescheduledFromId?: string | null
   createdByUserId?: string | null
+  googleEventId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -662,6 +710,7 @@ export type AppointmentUpdateWithoutEventsInput = {
   membershipId?: Prisma.StringFieldUpdateOperationsInput | string
   propertyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
@@ -671,6 +720,7 @@ export type AppointmentUpdateWithoutEventsInput = {
   cancelledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rescheduledFromId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -682,6 +732,7 @@ export type AppointmentUncheckedUpdateWithoutEventsInput = {
   membershipId?: Prisma.StringFieldUpdateOperationsInput | string
   propertyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  serviceType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
@@ -691,6 +742,7 @@ export type AppointmentUncheckedUpdateWithoutEventsInput = {
   cancelledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rescheduledFromId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  googleEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -733,6 +785,7 @@ export type AppointmentSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   membershipId?: boolean
   propertyId?: boolean
   title?: boolean
+  serviceType?: boolean
   startsAt?: boolean
   endsAt?: boolean
   status?: boolean
@@ -742,6 +795,7 @@ export type AppointmentSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   cancelledReason?: boolean
   rescheduledFromId?: boolean
   createdByUserId?: boolean
+  googleEventId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   events?: boolean | Prisma.Appointment$eventsArgs<ExtArgs>
@@ -755,6 +809,7 @@ export type AppointmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   membershipId?: boolean
   propertyId?: boolean
   title?: boolean
+  serviceType?: boolean
   startsAt?: boolean
   endsAt?: boolean
   status?: boolean
@@ -764,6 +819,7 @@ export type AppointmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   cancelledReason?: boolean
   rescheduledFromId?: boolean
   createdByUserId?: boolean
+  googleEventId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["appointment"]>
@@ -775,6 +831,7 @@ export type AppointmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   membershipId?: boolean
   propertyId?: boolean
   title?: boolean
+  serviceType?: boolean
   startsAt?: boolean
   endsAt?: boolean
   status?: boolean
@@ -784,6 +841,7 @@ export type AppointmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   cancelledReason?: boolean
   rescheduledFromId?: boolean
   createdByUserId?: boolean
+  googleEventId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["appointment"]>
@@ -795,6 +853,7 @@ export type AppointmentSelectScalar = {
   membershipId?: boolean
   propertyId?: boolean
   title?: boolean
+  serviceType?: boolean
   startsAt?: boolean
   endsAt?: boolean
   status?: boolean
@@ -804,11 +863,12 @@ export type AppointmentSelectScalar = {
   cancelledReason?: boolean
   rescheduledFromId?: boolean
   createdByUserId?: boolean
+  googleEventId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type AppointmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "leadId" | "membershipId" | "propertyId" | "title" | "startsAt" | "endsAt" | "status" | "notes" | "location" | "source" | "cancelledReason" | "rescheduledFromId" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["appointment"]>
+export type AppointmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "leadId" | "membershipId" | "propertyId" | "title" | "serviceType" | "startsAt" | "endsAt" | "status" | "notes" | "location" | "source" | "cancelledReason" | "rescheduledFromId" | "createdByUserId" | "googleEventId" | "createdAt" | "updatedAt", ExtArgs["result"]["appointment"]>
 export type AppointmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   events?: boolean | Prisma.Appointment$eventsArgs<ExtArgs>
   _count?: boolean | Prisma.AppointmentCountOutputTypeDefaultArgs<ExtArgs>
@@ -828,6 +888,7 @@ export type $AppointmentPayload<ExtArgs extends runtime.Types.Extensions.Interna
     membershipId: string
     propertyId: string | null
     title: string
+    serviceType: string | null
     startsAt: Date
     endsAt: Date
     status: $Enums.AppointmentStatus
@@ -837,6 +898,7 @@ export type $AppointmentPayload<ExtArgs extends runtime.Types.Extensions.Interna
     cancelledReason: string | null
     rescheduledFromId: string | null
     createdByUserId: string | null
+    googleEventId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["appointment"]>
@@ -1269,6 +1331,7 @@ export interface AppointmentFieldRefs {
   readonly membershipId: Prisma.FieldRef<"Appointment", 'String'>
   readonly propertyId: Prisma.FieldRef<"Appointment", 'String'>
   readonly title: Prisma.FieldRef<"Appointment", 'String'>
+  readonly serviceType: Prisma.FieldRef<"Appointment", 'String'>
   readonly startsAt: Prisma.FieldRef<"Appointment", 'DateTime'>
   readonly endsAt: Prisma.FieldRef<"Appointment", 'DateTime'>
   readonly status: Prisma.FieldRef<"Appointment", 'AppointmentStatus'>
@@ -1278,6 +1341,7 @@ export interface AppointmentFieldRefs {
   readonly cancelledReason: Prisma.FieldRef<"Appointment", 'String'>
   readonly rescheduledFromId: Prisma.FieldRef<"Appointment", 'String'>
   readonly createdByUserId: Prisma.FieldRef<"Appointment", 'String'>
+  readonly googleEventId: Prisma.FieldRef<"Appointment", 'String'>
   readonly createdAt: Prisma.FieldRef<"Appointment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Appointment", 'DateTime'>
 }

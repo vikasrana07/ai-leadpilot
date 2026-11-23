@@ -435,6 +435,8 @@ export type LeadWhereInput = {
   notes?: Prisma.LeadNoteListRelationFilter
   activities?: Prisma.LeadActivityListRelationFilter
   transitions?: Prisma.StageTransitionListRelationFilter
+  trackedEmails?: Prisma.TrackedEmailListRelationFilter
+  broadcastRecipients?: Prisma.BroadcastRecipientListRelationFilter
 }
 
 export type LeadOrderByWithRelationInput = {
@@ -476,6 +478,8 @@ export type LeadOrderByWithRelationInput = {
   notes?: Prisma.LeadNoteOrderByRelationAggregateInput
   activities?: Prisma.LeadActivityOrderByRelationAggregateInput
   transitions?: Prisma.StageTransitionOrderByRelationAggregateInput
+  trackedEmails?: Prisma.TrackedEmailOrderByRelationAggregateInput
+  broadcastRecipients?: Prisma.BroadcastRecipientOrderByRelationAggregateInput
 }
 
 export type LeadWhereUniqueInput = Prisma.AtLeast<{
@@ -520,6 +524,8 @@ export type LeadWhereUniqueInput = Prisma.AtLeast<{
   notes?: Prisma.LeadNoteListRelationFilter
   activities?: Prisma.LeadActivityListRelationFilter
   transitions?: Prisma.StageTransitionListRelationFilter
+  trackedEmails?: Prisma.TrackedEmailListRelationFilter
+  broadcastRecipients?: Prisma.BroadcastRecipientListRelationFilter
 }, "id">
 
 export type LeadOrderByWithAggregationInput = {
@@ -634,6 +640,8 @@ export type LeadCreateInput = {
   notes?: Prisma.LeadNoteCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateInput = {
@@ -672,6 +680,8 @@ export type LeadUncheckedCreateInput = {
   notes?: Prisma.LeadNoteUncheckedCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityUncheckedCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionUncheckedCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUpdateInput = {
@@ -710,6 +720,8 @@ export type LeadUpdateInput = {
   notes?: Prisma.LeadNoteUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateInput = {
@@ -748,6 +760,8 @@ export type LeadUncheckedUpdateInput = {
   notes?: Prisma.LeadNoteUncheckedUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUncheckedUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadCreateManyInput = {
@@ -976,6 +990,11 @@ export type LeadScalarRelationFilter = {
   isNot?: Prisma.LeadWhereInput
 }
 
+export type LeadNullableScalarRelationFilter = {
+  is?: Prisma.LeadWhereInput | null
+  isNot?: Prisma.LeadWhereInput | null
+}
+
 export type LeadCreateNestedManyWithoutTenantInput = {
   create?: Prisma.XOR<Prisma.LeadCreateWithoutTenantInput, Prisma.LeadUncheckedCreateWithoutTenantInput> | Prisma.LeadCreateWithoutTenantInput[] | Prisma.LeadUncheckedCreateWithoutTenantInput[]
   connectOrCreate?: Prisma.LeadCreateOrConnectWithoutTenantInput | Prisma.LeadCreateOrConnectWithoutTenantInput[]
@@ -1182,6 +1201,36 @@ export type LeadUpdateOneRequiredWithoutTransitionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.LeadUpdateToOneWithWhereWithoutTransitionsInput, Prisma.LeadUpdateWithoutTransitionsInput>, Prisma.LeadUncheckedUpdateWithoutTransitionsInput>
 }
 
+export type LeadCreateNestedOneWithoutTrackedEmailsInput = {
+  create?: Prisma.XOR<Prisma.LeadCreateWithoutTrackedEmailsInput, Prisma.LeadUncheckedCreateWithoutTrackedEmailsInput>
+  connectOrCreate?: Prisma.LeadCreateOrConnectWithoutTrackedEmailsInput
+  connect?: Prisma.LeadWhereUniqueInput
+}
+
+export type LeadUpdateOneWithoutTrackedEmailsNestedInput = {
+  create?: Prisma.XOR<Prisma.LeadCreateWithoutTrackedEmailsInput, Prisma.LeadUncheckedCreateWithoutTrackedEmailsInput>
+  connectOrCreate?: Prisma.LeadCreateOrConnectWithoutTrackedEmailsInput
+  upsert?: Prisma.LeadUpsertWithoutTrackedEmailsInput
+  disconnect?: Prisma.LeadWhereInput | boolean
+  delete?: Prisma.LeadWhereInput | boolean
+  connect?: Prisma.LeadWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LeadUpdateToOneWithWhereWithoutTrackedEmailsInput, Prisma.LeadUpdateWithoutTrackedEmailsInput>, Prisma.LeadUncheckedUpdateWithoutTrackedEmailsInput>
+}
+
+export type LeadCreateNestedOneWithoutBroadcastRecipientsInput = {
+  create?: Prisma.XOR<Prisma.LeadCreateWithoutBroadcastRecipientsInput, Prisma.LeadUncheckedCreateWithoutBroadcastRecipientsInput>
+  connectOrCreate?: Prisma.LeadCreateOrConnectWithoutBroadcastRecipientsInput
+  connect?: Prisma.LeadWhereUniqueInput
+}
+
+export type LeadUpdateOneRequiredWithoutBroadcastRecipientsNestedInput = {
+  create?: Prisma.XOR<Prisma.LeadCreateWithoutBroadcastRecipientsInput, Prisma.LeadUncheckedCreateWithoutBroadcastRecipientsInput>
+  connectOrCreate?: Prisma.LeadCreateOrConnectWithoutBroadcastRecipientsInput
+  upsert?: Prisma.LeadUpsertWithoutBroadcastRecipientsInput
+  connect?: Prisma.LeadWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LeadUpdateToOneWithWhereWithoutBroadcastRecipientsInput, Prisma.LeadUpdateWithoutBroadcastRecipientsInput>, Prisma.LeadUncheckedUpdateWithoutBroadcastRecipientsInput>
+}
+
 export type LeadCreateWithoutTenantInput = {
   id?: string
   name: string
@@ -1217,6 +1266,8 @@ export type LeadCreateWithoutTenantInput = {
   notes?: Prisma.LeadNoteCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateWithoutTenantInput = {
@@ -1254,6 +1305,8 @@ export type LeadUncheckedCreateWithoutTenantInput = {
   notes?: Prisma.LeadNoteUncheckedCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityUncheckedCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionUncheckedCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadCreateOrConnectWithoutTenantInput = {
@@ -1354,6 +1407,8 @@ export type LeadCreateWithoutStageInput = {
   notes?: Prisma.LeadNoteCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateWithoutStageInput = {
@@ -1391,6 +1446,8 @@ export type LeadUncheckedCreateWithoutStageInput = {
   notes?: Prisma.LeadNoteUncheckedCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityUncheckedCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionUncheckedCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadCreateOrConnectWithoutStageInput = {
@@ -1454,6 +1511,8 @@ export type LeadCreateWithoutSourceInput = {
   notes?: Prisma.LeadNoteCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateWithoutSourceInput = {
@@ -1491,6 +1550,8 @@ export type LeadUncheckedCreateWithoutSourceInput = {
   notes?: Prisma.LeadNoteUncheckedCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityUncheckedCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionUncheckedCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadCreateOrConnectWithoutSourceInput = {
@@ -1554,6 +1615,8 @@ export type LeadCreateWithoutTagsInput = {
   notes?: Prisma.LeadNoteCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateWithoutTagsInput = {
@@ -1591,6 +1654,8 @@ export type LeadUncheckedCreateWithoutTagsInput = {
   notes?: Prisma.LeadNoteUncheckedCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityUncheckedCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionUncheckedCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadCreateOrConnectWithoutTagsInput = {
@@ -1644,6 +1709,8 @@ export type LeadUpdateWithoutTagsInput = {
   notes?: Prisma.LeadNoteUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateWithoutTagsInput = {
@@ -1681,6 +1748,8 @@ export type LeadUncheckedUpdateWithoutTagsInput = {
   notes?: Prisma.LeadNoteUncheckedUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUncheckedUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadCreateWithoutNotesInput = {
@@ -1718,6 +1787,8 @@ export type LeadCreateWithoutNotesInput = {
   tags?: Prisma.LeadTagCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateWithoutNotesInput = {
@@ -1755,6 +1826,8 @@ export type LeadUncheckedCreateWithoutNotesInput = {
   tags?: Prisma.LeadTagUncheckedCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityUncheckedCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionUncheckedCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadCreateOrConnectWithoutNotesInput = {
@@ -1808,6 +1881,8 @@ export type LeadUpdateWithoutNotesInput = {
   tags?: Prisma.LeadTagUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateWithoutNotesInput = {
@@ -1845,6 +1920,8 @@ export type LeadUncheckedUpdateWithoutNotesInput = {
   tags?: Prisma.LeadTagUncheckedUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUncheckedUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadCreateWithoutActivitiesInput = {
@@ -1882,6 +1959,8 @@ export type LeadCreateWithoutActivitiesInput = {
   tags?: Prisma.LeadTagCreateNestedManyWithoutLeadInput
   notes?: Prisma.LeadNoteCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateWithoutActivitiesInput = {
@@ -1919,6 +1998,8 @@ export type LeadUncheckedCreateWithoutActivitiesInput = {
   tags?: Prisma.LeadTagUncheckedCreateNestedManyWithoutLeadInput
   notes?: Prisma.LeadNoteUncheckedCreateNestedManyWithoutLeadInput
   transitions?: Prisma.StageTransitionUncheckedCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadCreateOrConnectWithoutActivitiesInput = {
@@ -1972,6 +2053,8 @@ export type LeadUpdateWithoutActivitiesInput = {
   tags?: Prisma.LeadTagUpdateManyWithoutLeadNestedInput
   notes?: Prisma.LeadNoteUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateWithoutActivitiesInput = {
@@ -2009,6 +2092,8 @@ export type LeadUncheckedUpdateWithoutActivitiesInput = {
   tags?: Prisma.LeadTagUncheckedUpdateManyWithoutLeadNestedInput
   notes?: Prisma.LeadNoteUncheckedUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUncheckedUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadCreateWithoutTransitionsInput = {
@@ -2046,6 +2131,8 @@ export type LeadCreateWithoutTransitionsInput = {
   tags?: Prisma.LeadTagCreateNestedManyWithoutLeadInput
   notes?: Prisma.LeadNoteCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutLeadInput
 }
 
 export type LeadUncheckedCreateWithoutTransitionsInput = {
@@ -2083,6 +2170,8 @@ export type LeadUncheckedCreateWithoutTransitionsInput = {
   tags?: Prisma.LeadTagUncheckedCreateNestedManyWithoutLeadInput
   notes?: Prisma.LeadNoteUncheckedCreateNestedManyWithoutLeadInput
   activities?: Prisma.LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutLeadInput
 }
 
 export type LeadCreateOrConnectWithoutTransitionsInput = {
@@ -2136,6 +2225,8 @@ export type LeadUpdateWithoutTransitionsInput = {
   tags?: Prisma.LeadTagUpdateManyWithoutLeadNestedInput
   notes?: Prisma.LeadNoteUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateWithoutTransitionsInput = {
@@ -2173,6 +2264,352 @@ export type LeadUncheckedUpdateWithoutTransitionsInput = {
   tags?: Prisma.LeadTagUncheckedUpdateManyWithoutLeadNestedInput
   notes?: Prisma.LeadNoteUncheckedUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutLeadNestedInput
+}
+
+export type LeadCreateWithoutTrackedEmailsInput = {
+  id?: string
+  name: string
+  phone?: string | null
+  phoneNorm?: string | null
+  email?: string | null
+  emailNorm?: string | null
+  temperature?: $Enums.Temperature
+  budgetMinMinor?: bigint | number | null
+  budgetMaxMinor?: bigint | number | null
+  location?: string | null
+  propertyType?: string | null
+  requirements?: string | null
+  buyingTimeline?: $Enums.BuyingTimeline
+  assignedMembershipId?: string | null
+  score?: number | null
+  scoreUpdatedAt?: Date | string | null
+  lastContactedAt?: Date | string | null
+  nextFollowUpAt?: Date | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
+  lostReasonId?: string | null
+  lostNote?: string | null
+  mergedIntoId?: string | null
+  createdByUserId?: string | null
+  deletedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutLeadsInput
+  stage: Prisma.PipelineStageCreateNestedOneWithoutLeadsInput
+  source?: Prisma.LeadSourceCreateNestedOneWithoutLeadsInput
+  tags?: Prisma.LeadTagCreateNestedManyWithoutLeadInput
+  notes?: Prisma.LeadNoteCreateNestedManyWithoutLeadInput
+  activities?: Prisma.LeadActivityCreateNestedManyWithoutLeadInput
+  transitions?: Prisma.StageTransitionCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutLeadInput
+}
+
+export type LeadUncheckedCreateWithoutTrackedEmailsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  phone?: string | null
+  phoneNorm?: string | null
+  email?: string | null
+  emailNorm?: string | null
+  sourceId?: string | null
+  stageId: string
+  temperature?: $Enums.Temperature
+  budgetMinMinor?: bigint | number | null
+  budgetMaxMinor?: bigint | number | null
+  location?: string | null
+  propertyType?: string | null
+  requirements?: string | null
+  buyingTimeline?: $Enums.BuyingTimeline
+  assignedMembershipId?: string | null
+  score?: number | null
+  scoreUpdatedAt?: Date | string | null
+  lastContactedAt?: Date | string | null
+  nextFollowUpAt?: Date | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
+  lostReasonId?: string | null
+  lostNote?: string | null
+  mergedIntoId?: string | null
+  createdByUserId?: string | null
+  deletedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tags?: Prisma.LeadTagUncheckedCreateNestedManyWithoutLeadInput
+  notes?: Prisma.LeadNoteUncheckedCreateNestedManyWithoutLeadInput
+  activities?: Prisma.LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+  transitions?: Prisma.StageTransitionUncheckedCreateNestedManyWithoutLeadInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutLeadInput
+}
+
+export type LeadCreateOrConnectWithoutTrackedEmailsInput = {
+  where: Prisma.LeadWhereUniqueInput
+  create: Prisma.XOR<Prisma.LeadCreateWithoutTrackedEmailsInput, Prisma.LeadUncheckedCreateWithoutTrackedEmailsInput>
+}
+
+export type LeadUpsertWithoutTrackedEmailsInput = {
+  update: Prisma.XOR<Prisma.LeadUpdateWithoutTrackedEmailsInput, Prisma.LeadUncheckedUpdateWithoutTrackedEmailsInput>
+  create: Prisma.XOR<Prisma.LeadCreateWithoutTrackedEmailsInput, Prisma.LeadUncheckedCreateWithoutTrackedEmailsInput>
+  where?: Prisma.LeadWhereInput
+}
+
+export type LeadUpdateToOneWithWhereWithoutTrackedEmailsInput = {
+  where?: Prisma.LeadWhereInput
+  data: Prisma.XOR<Prisma.LeadUpdateWithoutTrackedEmailsInput, Prisma.LeadUncheckedUpdateWithoutTrackedEmailsInput>
+}
+
+export type LeadUpdateWithoutTrackedEmailsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNorm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailNorm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  temperature?: Prisma.EnumTemperatureFieldUpdateOperationsInput | $Enums.Temperature
+  budgetMinMinor?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  budgetMaxMinor?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  propertyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyingTimeline?: Prisma.EnumBuyingTimelineFieldUpdateOperationsInput | $Enums.BuyingTimeline
+  assignedMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  score?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scoreUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutLeadsNestedInput
+  stage?: Prisma.PipelineStageUpdateOneRequiredWithoutLeadsNestedInput
+  source?: Prisma.LeadSourceUpdateOneWithoutLeadsNestedInput
+  tags?: Prisma.LeadTagUpdateManyWithoutLeadNestedInput
+  notes?: Prisma.LeadNoteUpdateManyWithoutLeadNestedInput
+  activities?: Prisma.LeadActivityUpdateManyWithoutLeadNestedInput
+  transitions?: Prisma.StageTransitionUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUpdateManyWithoutLeadNestedInput
+}
+
+export type LeadUncheckedUpdateWithoutTrackedEmailsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNorm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailNorm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stageId?: Prisma.StringFieldUpdateOperationsInput | string
+  temperature?: Prisma.EnumTemperatureFieldUpdateOperationsInput | $Enums.Temperature
+  budgetMinMinor?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  budgetMaxMinor?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  propertyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyingTimeline?: Prisma.EnumBuyingTimelineFieldUpdateOperationsInput | $Enums.BuyingTimeline
+  assignedMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  score?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scoreUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tags?: Prisma.LeadTagUncheckedUpdateManyWithoutLeadNestedInput
+  notes?: Prisma.LeadNoteUncheckedUpdateManyWithoutLeadNestedInput
+  activities?: Prisma.LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+  transitions?: Prisma.StageTransitionUncheckedUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutLeadNestedInput
+}
+
+export type LeadCreateWithoutBroadcastRecipientsInput = {
+  id?: string
+  name: string
+  phone?: string | null
+  phoneNorm?: string | null
+  email?: string | null
+  emailNorm?: string | null
+  temperature?: $Enums.Temperature
+  budgetMinMinor?: bigint | number | null
+  budgetMaxMinor?: bigint | number | null
+  location?: string | null
+  propertyType?: string | null
+  requirements?: string | null
+  buyingTimeline?: $Enums.BuyingTimeline
+  assignedMembershipId?: string | null
+  score?: number | null
+  scoreUpdatedAt?: Date | string | null
+  lastContactedAt?: Date | string | null
+  nextFollowUpAt?: Date | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
+  lostReasonId?: string | null
+  lostNote?: string | null
+  mergedIntoId?: string | null
+  createdByUserId?: string | null
+  deletedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutLeadsInput
+  stage: Prisma.PipelineStageCreateNestedOneWithoutLeadsInput
+  source?: Prisma.LeadSourceCreateNestedOneWithoutLeadsInput
+  tags?: Prisma.LeadTagCreateNestedManyWithoutLeadInput
+  notes?: Prisma.LeadNoteCreateNestedManyWithoutLeadInput
+  activities?: Prisma.LeadActivityCreateNestedManyWithoutLeadInput
+  transitions?: Prisma.StageTransitionCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailCreateNestedManyWithoutLeadInput
+}
+
+export type LeadUncheckedCreateWithoutBroadcastRecipientsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  phone?: string | null
+  phoneNorm?: string | null
+  email?: string | null
+  emailNorm?: string | null
+  sourceId?: string | null
+  stageId: string
+  temperature?: $Enums.Temperature
+  budgetMinMinor?: bigint | number | null
+  budgetMaxMinor?: bigint | number | null
+  location?: string | null
+  propertyType?: string | null
+  requirements?: string | null
+  buyingTimeline?: $Enums.BuyingTimeline
+  assignedMembershipId?: string | null
+  score?: number | null
+  scoreUpdatedAt?: Date | string | null
+  lastContactedAt?: Date | string | null
+  nextFollowUpAt?: Date | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: boolean
+  siteVisitRequested?: boolean
+  lostReasonId?: string | null
+  lostNote?: string | null
+  mergedIntoId?: string | null
+  createdByUserId?: string | null
+  deletedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tags?: Prisma.LeadTagUncheckedCreateNestedManyWithoutLeadInput
+  notes?: Prisma.LeadNoteUncheckedCreateNestedManyWithoutLeadInput
+  activities?: Prisma.LeadActivityUncheckedCreateNestedManyWithoutLeadInput
+  transitions?: Prisma.StageTransitionUncheckedCreateNestedManyWithoutLeadInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedCreateNestedManyWithoutLeadInput
+}
+
+export type LeadCreateOrConnectWithoutBroadcastRecipientsInput = {
+  where: Prisma.LeadWhereUniqueInput
+  create: Prisma.XOR<Prisma.LeadCreateWithoutBroadcastRecipientsInput, Prisma.LeadUncheckedCreateWithoutBroadcastRecipientsInput>
+}
+
+export type LeadUpsertWithoutBroadcastRecipientsInput = {
+  update: Prisma.XOR<Prisma.LeadUpdateWithoutBroadcastRecipientsInput, Prisma.LeadUncheckedUpdateWithoutBroadcastRecipientsInput>
+  create: Prisma.XOR<Prisma.LeadCreateWithoutBroadcastRecipientsInput, Prisma.LeadUncheckedCreateWithoutBroadcastRecipientsInput>
+  where?: Prisma.LeadWhereInput
+}
+
+export type LeadUpdateToOneWithWhereWithoutBroadcastRecipientsInput = {
+  where?: Prisma.LeadWhereInput
+  data: Prisma.XOR<Prisma.LeadUpdateWithoutBroadcastRecipientsInput, Prisma.LeadUncheckedUpdateWithoutBroadcastRecipientsInput>
+}
+
+export type LeadUpdateWithoutBroadcastRecipientsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNorm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailNorm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  temperature?: Prisma.EnumTemperatureFieldUpdateOperationsInput | $Enums.Temperature
+  budgetMinMinor?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  budgetMaxMinor?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  propertyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyingTimeline?: Prisma.EnumBuyingTimelineFieldUpdateOperationsInput | $Enums.BuyingTimeline
+  assignedMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  score?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scoreUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutLeadsNestedInput
+  stage?: Prisma.PipelineStageUpdateOneRequiredWithoutLeadsNestedInput
+  source?: Prisma.LeadSourceUpdateOneWithoutLeadsNestedInput
+  tags?: Prisma.LeadTagUpdateManyWithoutLeadNestedInput
+  notes?: Prisma.LeadNoteUpdateManyWithoutLeadNestedInput
+  activities?: Prisma.LeadActivityUpdateManyWithoutLeadNestedInput
+  transitions?: Prisma.StageTransitionUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUpdateManyWithoutLeadNestedInput
+}
+
+export type LeadUncheckedUpdateWithoutBroadcastRecipientsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNorm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailNorm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stageId?: Prisma.StringFieldUpdateOperationsInput | string
+  temperature?: Prisma.EnumTemperatureFieldUpdateOperationsInput | $Enums.Temperature
+  budgetMinMinor?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  budgetMaxMinor?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  propertyType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyingTimeline?: Prisma.EnumBuyingTimelineFieldUpdateOperationsInput | $Enums.BuyingTimeline
+  assignedMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  score?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  scoreUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastContactedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextFollowUpAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customFields?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scoreOverridden?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  siteVisitRequested?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lostReasonId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lostNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mergedIntoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tags?: Prisma.LeadTagUncheckedUpdateManyWithoutLeadNestedInput
+  notes?: Prisma.LeadNoteUncheckedUpdateManyWithoutLeadNestedInput
+  activities?: Prisma.LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
+  transitions?: Prisma.StageTransitionUncheckedUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadCreateManyTenantInput = {
@@ -2243,6 +2680,8 @@ export type LeadUpdateWithoutTenantInput = {
   notes?: Prisma.LeadNoteUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateWithoutTenantInput = {
@@ -2280,6 +2719,8 @@ export type LeadUncheckedUpdateWithoutTenantInput = {
   notes?: Prisma.LeadNoteUncheckedUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUncheckedUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateManyWithoutTenantInput = {
@@ -2383,6 +2824,8 @@ export type LeadUpdateWithoutStageInput = {
   notes?: Prisma.LeadNoteUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateWithoutStageInput = {
@@ -2420,6 +2863,8 @@ export type LeadUncheckedUpdateWithoutStageInput = {
   notes?: Prisma.LeadNoteUncheckedUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUncheckedUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateManyWithoutStageInput = {
@@ -2523,6 +2968,8 @@ export type LeadUpdateWithoutSourceInput = {
   notes?: Prisma.LeadNoteUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateWithoutSourceInput = {
@@ -2560,6 +3007,8 @@ export type LeadUncheckedUpdateWithoutSourceInput = {
   notes?: Prisma.LeadNoteUncheckedUpdateManyWithoutLeadNestedInput
   activities?: Prisma.LeadActivityUncheckedUpdateManyWithoutLeadNestedInput
   transitions?: Prisma.StageTransitionUncheckedUpdateManyWithoutLeadNestedInput
+  trackedEmails?: Prisma.TrackedEmailUncheckedUpdateManyWithoutLeadNestedInput
+  broadcastRecipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutLeadNestedInput
 }
 
 export type LeadUncheckedUpdateManyWithoutSourceInput = {
@@ -2605,6 +3054,8 @@ export type LeadCountOutputType = {
   notes: number
   activities: number
   transitions: number
+  trackedEmails: number
+  broadcastRecipients: number
 }
 
 export type LeadCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2612,6 +3063,8 @@ export type LeadCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   notes?: boolean | LeadCountOutputTypeCountNotesArgs
   activities?: boolean | LeadCountOutputTypeCountActivitiesArgs
   transitions?: boolean | LeadCountOutputTypeCountTransitionsArgs
+  trackedEmails?: boolean | LeadCountOutputTypeCountTrackedEmailsArgs
+  broadcastRecipients?: boolean | LeadCountOutputTypeCountBroadcastRecipientsArgs
 }
 
 /**
@@ -2650,6 +3103,20 @@ export type LeadCountOutputTypeCountActivitiesArgs<ExtArgs extends runtime.Types
  */
 export type LeadCountOutputTypeCountTransitionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.StageTransitionWhereInput
+}
+
+/**
+ * LeadCountOutputType without action
+ */
+export type LeadCountOutputTypeCountTrackedEmailsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TrackedEmailWhereInput
+}
+
+/**
+ * LeadCountOutputType without action
+ */
+export type LeadCountOutputTypeCountBroadcastRecipientsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BroadcastRecipientWhereInput
 }
 
 
@@ -2692,6 +3159,8 @@ export type LeadSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   notes?: boolean | Prisma.Lead$notesArgs<ExtArgs>
   activities?: boolean | Prisma.Lead$activitiesArgs<ExtArgs>
   transitions?: boolean | Prisma.Lead$transitionsArgs<ExtArgs>
+  trackedEmails?: boolean | Prisma.Lead$trackedEmailsArgs<ExtArgs>
+  broadcastRecipients?: boolean | Prisma.Lead$broadcastRecipientsArgs<ExtArgs>
   _count?: boolean | Prisma.LeadCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["lead"]>
 
@@ -2812,6 +3281,8 @@ export type LeadInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   notes?: boolean | Prisma.Lead$notesArgs<ExtArgs>
   activities?: boolean | Prisma.Lead$activitiesArgs<ExtArgs>
   transitions?: boolean | Prisma.Lead$transitionsArgs<ExtArgs>
+  trackedEmails?: boolean | Prisma.Lead$trackedEmailsArgs<ExtArgs>
+  broadcastRecipients?: boolean | Prisma.Lead$broadcastRecipientsArgs<ExtArgs>
   _count?: boolean | Prisma.LeadCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type LeadIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2835,6 +3306,8 @@ export type $LeadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     notes: Prisma.$LeadNotePayload<ExtArgs>[]
     activities: Prisma.$LeadActivityPayload<ExtArgs>[]
     transitions: Prisma.$StageTransitionPayload<ExtArgs>[]
+    trackedEmails: Prisma.$TrackedEmailPayload<ExtArgs>[]
+    broadcastRecipients: Prisma.$BroadcastRecipientPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3278,6 +3751,8 @@ export interface Prisma__LeadClient<T, Null = never, ExtArgs extends runtime.Typ
   notes<T extends Prisma.Lead$notesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lead$notesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LeadNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   activities<T extends Prisma.Lead$activitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lead$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LeadActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   transitions<T extends Prisma.Lead$transitionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lead$transitionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StageTransitionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  trackedEmails<T extends Prisma.Lead$trackedEmailsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lead$trackedEmailsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TrackedEmailPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  broadcastRecipients<T extends Prisma.Lead$broadcastRecipientsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lead$broadcastRecipientsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BroadcastRecipientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3851,6 +4326,54 @@ export type Lead$transitionsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.StageTransitionScalarFieldEnum | Prisma.StageTransitionScalarFieldEnum[]
+}
+
+/**
+ * Lead.trackedEmails
+ */
+export type Lead$trackedEmailsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TrackedEmail
+   */
+  select?: Prisma.TrackedEmailSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TrackedEmail
+   */
+  omit?: Prisma.TrackedEmailOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TrackedEmailInclude<ExtArgs> | null
+  where?: Prisma.TrackedEmailWhereInput
+  orderBy?: Prisma.TrackedEmailOrderByWithRelationInput | Prisma.TrackedEmailOrderByWithRelationInput[]
+  cursor?: Prisma.TrackedEmailWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TrackedEmailScalarFieldEnum | Prisma.TrackedEmailScalarFieldEnum[]
+}
+
+/**
+ * Lead.broadcastRecipients
+ */
+export type Lead$broadcastRecipientsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BroadcastRecipient
+   */
+  select?: Prisma.BroadcastRecipientSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BroadcastRecipient
+   */
+  omit?: Prisma.BroadcastRecipientOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BroadcastRecipientInclude<ExtArgs> | null
+  where?: Prisma.BroadcastRecipientWhereInput
+  orderBy?: Prisma.BroadcastRecipientOrderByWithRelationInput | Prisma.BroadcastRecipientOrderByWithRelationInput[]
+  cursor?: Prisma.BroadcastRecipientWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BroadcastRecipientScalarFieldEnum | Prisma.BroadcastRecipientScalarFieldEnum[]
 }
 
 /**

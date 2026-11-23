@@ -377,6 +377,8 @@ model Lead {
   notes       LeadNote[]
   activities  LeadActivity[]
   transitions StageTransition[]
+  trackedEmails TrackedEmail[]
+  broadcastRecipients BroadcastRecipient[]
 
   @@index([tenantId, deletedAt, createdAt(sort: Desc)])
   @@index([tenantId, stageId])
@@ -600,6 +602,7 @@ model Channel {
   updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   conversations Conversation[]
+  broadcastCampaigns BroadcastCampaign[]
 
   @@unique([tenantId, type, externalId])
   @@index([tenantId])
@@ -644,6 +647,7 @@ model Conversation {
   channel  Channel        @relation(fields: [channelId], references: [id])
   messages Message[]
   notes    ConversationNote[]
+  broadcastRecipients BroadcastRecipient[]
 
   @@unique([channelId, externalThreadId])
   @@index([tenantId, status, lastMessageAt(sort: Desc)])
@@ -675,6 +679,7 @@ model Message {
   statusUpdatedAt DateTime        @default(now()) @map("status_updated_at") @db.Timestamptz(3)
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  broadcastRecipients BroadcastRecipient[]
 
   @@unique([channelId, externalId])
   @@unique([tenantId, idempotencyKey])
@@ -724,6 +729,8 @@ model WhatsappTemplate {
   approvalStatus String? @map("approval_status")
   syncedAt     DateTime? @map("synced_at") @db.Timestamptz(3)
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  broadcastCampaigns BroadcastCampaign[]
 
   @@unique([tenantId, name, language])
   @@map("whatsapp_templates")
@@ -967,6 +974,7 @@ model Appointment {
   membershipId       String            @map("membership_id") @db.Uuid
   propertyId         String?           @map("property_id") @db.Uuid
   title              String
+  serviceType        String?           @map("service_type")
   startsAt           DateTime          @map("starts_at") @db.Timestamptz(3)
   endsAt             DateTime          @map("ends_at") @db.Timestamptz(3)
   status             AppointmentStatus @default(PENDING)
@@ -976,6 +984,7 @@ model Appointment {
   cancelledReason    String?           @map("cancelled_reason")
   rescheduledFromId  String?           @map("rescheduled_from_id") @db.Uuid
   createdByUserId    String?           @map("created_by_user_id") @db.Uuid
+  googleEventId      String?           @map("google_event_id")
   createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -1000,6 +1009,25 @@ model AppointmentEvent {
 
   @@index([tenantId, appointmentId, createdAt])
   @@map("appointment_events")
+}
+
+model GoogleCalendarSync {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  membershipId   String    @map("membership_id") @db.Uuid
+  calendarId     String    @default("primary") @map("calendar_id")
+  credentialId   String    @map("credential_id") @db.Uuid
+  syncToken      String?   @map("sync_token")
+  channelId      String?   @map("channel_id")
+  status         String    @default("active")
+  email          String?   @map("email")
+  lastSyncedAt   DateTime? @map("last_synced_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([tenantId, membershipId])
+  @@index([tenantId])
+  @@map("google_calendar_syncs")
 }
 
 model Automation {
@@ -1549,4 +1577,184 @@ model UserAlertSettings {
 
   @@map("user_alert_settings")
 }
+
+// -----------------------------------------------------------------------------
+// Email Engagement Tracking (Amazon SES & Native)
+// -----------------------------------------------------------------------------
+
+enum EmailDeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  COMPLAINED
+  REJECTED
+  SUPPRESSED
+  FAILED
+}
+
+enum EmailEventType {
+  SEND
+  DELIVERY
+  OPEN
+  CLICK
+  BOUNCE
+  COMPLAINT
+  REJECT
+}
+
+enum SuppressionReason {
+  HARD_BOUNCE
+  COMPLAINT
+  UNSUBSCRIBED
+  MANUAL
+}
+
+model TrackedEmail {
+  id                    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId              String              @map("tenant_id") @db.Uuid
+  leadId                String?             @map("lead_id") @db.Uuid
+  recipient             String              @db.Citext
+  subject               String
+  status                EmailDeliveryStatus @default(PENDING)
+  sesMessageId          String?             @map("ses_message_id")
+  smtpMessageId         String?             @map("smtp_message_id")
+  openCount             Int                 @default(0) @map("open_count")
+  clickCount            Int                 @default(0) @map("click_count")
+  firstOpenedAt         DateTime?           @map("first_opened_at") @db.Timestamptz(3)
+  lastOpenedAt          DateTime?           @map("last_opened_at") @db.Timestamptz(3)
+  deliveredAt           DateTime?           @map("delivered_at") @db.Timestamptz(3)
+  bouncedAt             DateTime?           @map("bounced_at") @db.Timestamptz(3)
+  bounceType            String?             @map("bounce_type")
+  bounceSubType         String?             @map("bounce_sub_type")
+  complaintAt           DateTime?           @map("complaint_at") @db.Timestamptz(3)
+  complaintFeedbackType String?             @map("complaint_feedback_type")
+  metadata              Json                @default("{}")
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  lead   Lead?                  @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  events EmailEngagementEvent[]
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, recipient])
+  @@index([tenantId, leadId])
+  @@index([sesMessageId])
+  @@map("tracked_emails")
+}
+
+model EmailEngagementEvent {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String         @map("tenant_id") @db.Uuid
+  emailId   String         @map("email_id") @db.Uuid
+  type      EmailEventType
+  timestamp DateTime       @default(now()) @db.Timestamptz(3)
+  ipAddress String?        @map("ip_address")
+  userAgent String?        @map("user_agent")
+  clickUrl  String?        @map("click_url")
+  metadata  Json           @default("{}")
+
+  email TrackedEmail @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, emailId, timestamp(sort: Desc)])
+  @@map("email_engagement_events")
+}
+
+model EmailSuppression {
+  id        String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String            @map("tenant_id") @db.Uuid
+  email     String            @db.Citext
+  reason    SuppressionReason
+  source    String
+  notes     String?
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([tenantId, email])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("email_suppressions")
+}
+
+enum BroadcastCampaignStatus {
+  DRAFT
+  SCHEDULED
+  RUNNING
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum BroadcastRecipientStatus {
+  PENDING
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  SKIPPED_OPT_OUT
+}
+
+model BroadcastCampaign {
+  id               String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String                  @map("tenant_id") @db.Uuid
+  name             String
+  status           BroadcastCampaignStatus @default(DRAFT)
+  channelId        String                  @map("channel_id") @db.Uuid
+  templateId       String                  @map("template_id") @db.Uuid
+  templateName     String                  @map("template_name")
+  templateLanguage String                  @default("en") @map("template_language")
+  templateParams   Json                    @default("[]") @map("template_params")
+  segment          Json                    @default("{}")
+  scheduledAt      DateTime?               @map("scheduled_at") @db.Timestamptz(3)
+  startedAt        DateTime?               @map("started_at") @db.Timestamptz(3)
+  completedAt      DateTime?               @map("completed_at") @db.Timestamptz(3)
+  totalRecipients  Int                     @default(0) @map("total_recipients")
+  sentCount        Int                     @default(0) @map("sent_count")
+  deliveredCount   Int                     @default(0) @map("delivered_count")
+  readCount        Int                     @default(0) @map("read_count")
+  failedCount      Int                     @default(0) @map("failed_count")
+  optOutCount      Int                     @default(0) @map("opt_out_count")
+  createdByUserId  String?                 @map("created_by_user_id") @db.Uuid
+  createdAt        DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  channel          Channel                 @relation(fields: [channelId], references: [id])
+  template         WhatsappTemplate        @relation(fields: [templateId], references: [id])
+  recipients       BroadcastRecipient[]
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, status])
+  @@map("broadcast_campaigns")
+}
+
+model BroadcastRecipient {
+  id             String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String                   @map("tenant_id") @db.Uuid
+  campaignId     String                   @map("campaign_id") @db.Uuid
+  leadId         String                   @map("lead_id") @db.Uuid
+  phone          String
+  status         BroadcastRecipientStatus @default(PENDING)
+  conversationId String?                  @map("conversation_id") @db.Uuid
+  messageId      String?                  @map("message_id") @db.Uuid
+  externalId     String?                  @map("external_id")
+  error          Json?
+  sentAt         DateTime?                @map("sent_at") @db.Timestamptz(3)
+  deliveredAt    DateTime?                @map("delivered_at") @db.Timestamptz(3)
+  readAt         DateTime?                @map("read_at") @db.Timestamptz(3)
+  createdAt      DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  campaign       BroadcastCampaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  lead           Lead                     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  conversation   Conversation?            @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  message        Message?                 @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@unique([campaignId, leadId])
+  @@index([tenantId, campaignId, status])
+  @@index([tenantId, leadId])
+  @@index([tenantId, externalId])
+  @@map("broadcast_recipients")
+}
+
 

@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ChannelsModule } from '../channels/channels.module.js';
 import { ConversationsModule } from '../conversations/conversations.module.js';
 import { LeadsModule } from '../leads/leads.module.js';
+import { GoogleCalendarModule } from '../integrations/google-calendar/google-calendar.module.js';
 import { AppointmentsService } from './appointments.service.js';
 import { LifecycleJobs } from './lifecycle-jobs.js';
 import { WebhookDispatcher } from './webhook-dispatcher.js';
@@ -31,7 +32,7 @@ import { TasksService } from './tasks.service.js';
 export class OutboxModule {}
 
 @Module({
-  imports: [LeadsModule, ConversationsModule, ChannelsModule],
+  imports: [LeadsModule, ConversationsModule, ChannelsModule, GoogleCalendarModule],
   controllers: [AppointmentsController, NotificationsController, AlertSettingsController, AutomationsController, TasksController, SlaController],
   providers: [ChannelHealth, WebhookDispatcher, LifecycleJobs, BillingNotifier, BillingLifecycle, NotificationsService, AppointmentsService, AutomationEngine, AutomationsService, EventNotifier, OutboxRelay, ScannersService, SlaService, TasksService, JobsService, WorkerHeartbeat, HealthSnapshotService, AlertsService],
   exports: [ChannelHealth, WebhookDispatcher, LifecycleJobs, BillingNotifier, AppointmentsService, NotificationsService, OutboxRelay, ScannersService, JobsService, AutomationEngine, WorkerHeartbeat, HealthSnapshotService, AlertsService],

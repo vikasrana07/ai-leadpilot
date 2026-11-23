@@ -19,6 +19,7 @@ export const appointmentCreateSchema = z.object({
   membershipId: z.string().uuid().optional(),
   propertyId: z.string().uuid().nullish(),
   title: z.string().trim().min(1).max(160).optional(),
+  serviceType: z.string().trim().min(1).max(100).nullish(),
   startsAt: z.string().datetime(),
   durationMinutes: z.number().int().min(15).max(480).default(60),
   location: z.string().trim().max(300).nullish(),
@@ -30,6 +31,7 @@ export type AppointmentCreateInput = z.infer<typeof appointmentCreateSchema>;
 
 export const appointmentUpdateSchema = z.object({
   title: z.string().trim().min(1).max(160).optional(),
+  serviceType: z.string().trim().min(1).max(100).nullish(),
   notes: z.string().trim().max(2000).nullish(),
   location: z.string().trim().max(300).nullish(),
 });

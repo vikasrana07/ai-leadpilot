@@ -8,7 +8,7 @@ import type { Env } from '../config/env.js';
 export const HEARTBEAT_EVERY_MS = 30_000;
 export const HEARTBEAT_TTL_SECONDS = 90;
 
-export interface Heartbeat { instanceId: string; startedAt: string; lastBeat: string; version: string | null }
+export interface Heartbeat { instanceId: string; startedAt: string; lastBeat: string; version: string | null; tier?: string }
 
 export const heartbeatKey = (prefix: string, instanceId: string): string => `${prefix}:worker:heartbeat:${instanceId}`;
 
@@ -34,13 +34,15 @@ export async function readHeartbeats(redis: Pick<Redis, 'scan' | 'mget'>, prefix
 @Injectable()
 export class WorkerHeartbeat implements OnApplicationShutdown {
   private readonly log = new Logger('Heartbeat');
-  readonly instanceId = `${hostname().replace(/[^A-Za-z0-9.-]/g, '').slice(0, 24) || 'host'}-${process.pid}-${randomBytes(3).toString('hex')}`;
+  readonly instanceId: string;
   private readonly startedAt = new Date().toISOString();
   private redis: Redis | null = null;
   private timer: NodeJS.Timeout | null = null;
   private warned = false;
 
-  constructor(@Inject(ENV) private readonly env: Env) {}
+  constructor(@Inject(ENV) private readonly env: Env) {
+    this.instanceId = `${this.env.WORKER_TIER ?? 'worker'}-${hostname().replace(/[^A-Za-z0-9.-]/g, '').slice(0, 20) || 'host'}-${process.pid}-${randomBytes(3).toString('hex')}`;
+  }
 
   client(): Redis {
     this.redis ??= new Redis(this.env.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: 1, enableOfflineQueue: false, connectTimeout: 1500 });
@@ -59,7 +61,13 @@ export class WorkerHeartbeat implements OnApplicationShutdown {
     try {
       const r = this.client();
       if (r.status === 'wait' || r.status === 'end') await r.connect();
-      const hb: Heartbeat = { instanceId: this.instanceId, startedAt: this.startedAt, lastBeat: new Date().toISOString(), version: process.env.GIT_SHA ?? process.env.APP_VERSION ?? null };
+      const hb: Heartbeat = {
+        instanceId: this.instanceId,
+        startedAt: this.startedAt,
+        lastBeat: new Date().toISOString(),
+        version: process.env.GIT_SHA ?? process.env.APP_VERSION ?? null,
+        tier: this.env.WORKER_TIER,
+      };
       await r.set(heartbeatKey(this.env.QUEUE_PREFIX, this.instanceId), JSON.stringify(hb), 'EX', HEARTBEAT_TTL_SECONDS);
       this.warned = false;
       return true;

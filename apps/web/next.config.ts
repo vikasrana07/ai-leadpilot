@@ -4,27 +4,9 @@ const isDev = process.env.NODE_ENV !== 'production';
 const apiOrigin = (() => { try { return new URL(process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000').origin; } catch { return 'http://localhost:4000'; } })();
 
 /**
- * Content-Security-Policy for the app. Next injects inline bootstrap scripts, so `script-src` needs 'unsafe-inline' (a nonce-based
- * policy needs dynamic rendering for every page: a later hardening step). The rest is tight: no framing, no foreign form targets,
- * connections only to our API (+ Razorpay), no plugins. 'unsafe-eval' is development-only (React refresh).
+ * Security headers for the app. Content-Security-Policy is dynamically generated with
+ * cryptographic nonces per-request in `middleware.ts`.
  */
-// Facebook hosts are for WhatsApp Embedded Signup (ADR 0012): the SDK script, its Graph/login calls and the login frame. The list follows
-// Meta's documentation at planning time and has NOT been confirmed in a real run: if the pop-up misbehaves, check the browser console for
-// blocked requests and adjust here. The pop-up window itself is not governed by frame-src; COOP below already allows popups.
-const csp = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://checkout.razorpay.com https://challenges.cloudflare.com https://connect.facebook.net`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  `connect-src 'self' https://api.razorpay.com wss: ${apiOrigin} https://lumberjack.razorpay.com https://graph.facebook.com https://www.facebook.com https://web.facebook.com${isDev ? ' ws:' : ''}`,
-  'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com https://www.facebook.com https://web.facebook.com',
-  "frame-ancestors 'none'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-].join('; ');
-
 const config: NextConfig = {
   // E2E builds into a separate dir (inside node_modules, which every tool already ignores) so they never clobber the dev `.next`.
   distDir: process.env.NEXT_DIST_DIR ?? '.next',
@@ -35,7 +17,6 @@ const config: NextConfig = {
     return [{
       source: '/:path*',
       headers: [
-        { key: 'Content-Security-Policy', value: csp },
         { key: 'X-Content-Type-Options', value: 'nosniff' },
         { key: 'X-Frame-Options', value: 'DENY' },
         { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },

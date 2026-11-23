@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { WhatsappCard } from '@/components/integrations/whatsapp-card';
 import { WidgetCard } from '@/components/integrations/widget-card';
+import { GoogleCalendarCard } from '@/components/integrations/google-calendar-card';
+import { SesCard } from '@/components/integrations/ses-card';
 import { PageHeader } from '@/components/page/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,8 +36,14 @@ export default function IntegrationsPage() {
   return (
     <>
       <PageHeader title="Integrations" description={`Connect the places your ${terms.leads} come from.`} />
-      {can('integration:manage') ? <div className="mb-6 space-y-6"><WhatsappCard /><WidgetCard /></div> : null}
-      <Card className="mb-6"><CardBody className="flex items-start gap-3"><CalendarDays className="mt-0.5 h-5 w-5 text-muted-foreground" aria-hidden /><div className="flex-1"><p className="text-[13px] font-medium">Google Calendar</p><p className="text-helper">Sync {terms.visits} to your calendar.</p></div><Badge>Soon</Badge></CardBody></Card>
+      {can('integration:manage') ? (
+        <div className="mb-6 space-y-6">
+          <WhatsappCard />
+          <WidgetCard />
+          <SesCard />
+        </div>
+      ) : null}
+      <GoogleCalendarCard />
 
       <Card>
         <CardHeader><div><CardTitle><KeyRound className="mr-1.5 inline h-4 w-4" aria-hidden />{terms.Lead} capture API</CardTitle><p className="text-helper mt-0.5">Send {terms.leads} from your website form, ad platform or any backend. Keep keys secret: call this from a server, never from browser code.</p></div></CardHeader>

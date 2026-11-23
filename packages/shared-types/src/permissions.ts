@@ -29,8 +29,10 @@ export const PERMISSIONS = {
   // AI & knowledge
   'ai:configure': 'Configure the AI assistant',
   'knowledge:manage': 'Manage knowledge base documents',
-  // Automations
+  // Automations & Campaigns
   'automation:manage': 'Manage automations',
+  'campaign:read': 'View broadcast campaigns',
+  'campaign:manage': 'Create, edit, schedule, and cancel broadcast campaigns',
   // Analytics
   'analytics:read:own': 'View my performance',
   'analytics:read:team': 'View team analytics',
@@ -62,7 +64,7 @@ const MANAGER: PermissionKey[] = [
   ...AGENT,
   'lead:read:all', 'lead:write:all', 'lead:assign', 'lead:import', 'lead:export', 'lead:score:override',
   'pipeline:manage', 'conversation:read:all', 'conversation:assign', 'appointment:read:all',
-  'analytics:read:team', 'analytics:read:all', 'usage:read', 'automation:manage', 'property:manage',
+  'analytics:read:team', 'analytics:read:all', 'usage:read', 'automation:manage', 'campaign:read', 'campaign:manage', 'property:manage',
 ];
 
 export const SYSTEM_ROLES: Record<SystemRoleKey, { name: string; permissions: readonly PermissionKey[] }> = {

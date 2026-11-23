@@ -117,6 +117,45 @@ export class InboundService {
       const allowed = next === 'FAILED' ? RANK[m.status] < RANK.DELIVERED : RANK[next] > RANK[m.status] && m.status !== 'FAILED';
       if (!allowed) return null;
       await tx.message.update({ where: { id: m.id }, data: { status: next, statusUpdatedAt: at, ...(next === 'FAILED' ? { error: { message: error?.title ?? 'Delivery failed', code: error?.code ?? null, retryable: false } } : {}) } });
+
+      // Update broadcast recipient status and campaign counters if externalId belongs to a broadcast
+      const recipient = await tx.broadcastRecipient.findFirst({
+        where: { tenantId, externalId },
+        select: { id: true, campaignId: true, status: true },
+      });
+      if (recipient) {
+        const recipNext = next === 'SENT' ? 'SENT' : next === 'DELIVERED' ? 'DELIVERED' : next === 'READ' ? 'READ' : 'FAILED';
+        await tx.broadcastRecipient.update({
+          where: { id: recipient.id },
+          data: {
+            status: recipNext,
+            ...(next === 'DELIVERED' ? { deliveredAt: at } : {}),
+            ...(next === 'READ' ? { readAt: at } : {}),
+            ...(next === 'FAILED' ? { error: { message: error?.title ?? 'Delivery failed', code: error?.code ?? null } } : {}),
+          },
+        });
+
+        if (next === 'DELIVERED' && recipient.status !== 'DELIVERED' && recipient.status !== 'READ') {
+          await tx.broadcastCampaign.update({
+            where: { id: recipient.campaignId },
+            data: { deliveredCount: { increment: 1 } },
+          });
+        } else if (next === 'READ' && recipient.status !== 'READ') {
+          await tx.broadcastCampaign.update({
+            where: { id: recipient.campaignId },
+            data: {
+              readCount: { increment: 1 },
+              ...(recipient.status !== 'DELIVERED' ? { deliveredCount: { increment: 1 } } : {}),
+            },
+          });
+        } else if (next === 'FAILED' && recipient.status !== 'FAILED') {
+          await tx.broadcastCampaign.update({
+            where: { id: recipient.campaignId },
+            data: { failedCount: { increment: 1 } },
+          });
+        }
+      }
+
       return { id: m.id, conversationId: m.conversationId, assigned: m.conversation.assignedMembershipId };
     });
     if (out) this.rt.publish(tenantId, { type: 'message.status', conversationId: out.conversationId, assignedMembershipId: out.assigned, data: { messageId: out.id, status: next } });

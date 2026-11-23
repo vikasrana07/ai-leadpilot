@@ -2,10 +2,14 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import { Command } from 'cmdk';
-import { Search } from 'lucide-react';
+import { Search, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useDebounce } from '@/hooks/use-debounce';
+import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { qs } from '@/lib/crm';
 import { ALL_NAV, isLive, navLabel } from '@/lib/nav';
 import { usePack, useTerms } from '@/lib/pack';
 import { BLOCKED_DURING_SUPPORT, useSupportSession } from '@/lib/support';
@@ -40,6 +44,18 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   const support = useSupportSession().data?.active === true;
   const nav = ALL_NAV.filter((n) => isLive(n) && (!n.permission || can(n.permission)) && (!n.module || modules[n.module]) && !(support && BLOCKED_DURING_SUPPORT.has(n.href)));
 
+  const [search, setSearch] = useState('');
+  const q = useDebounce(search, 200);
+
+  const leads = useQuery({
+    queryKey: ['command-leads', q],
+    enabled: open && q.trim().length >= 2 && (can('lead:read:all') || can('lead:read:own')),
+    queryFn: () =>
+      api<{ items: { id: string; name: string; phone: string | null; email: string | null; stage: { name: string } }[] }>(
+        `/leads${qs({ q: q.trim(), pageSize: 5 })}`
+      ),
+  });
+
   return (
     <AnimatePresence>
       {open ? (
@@ -49,11 +65,43 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
             <Command label="Search pages and actions" loop>
               <div className="flex items-center gap-2 border-b border-border px-4">
                 <Search className="h-4 w-4 text-muted-foreground" aria-hidden />
-                <Command.Input autoFocus placeholder="Search pages and actions…" className="h-12 flex-1 bg-transparent text-[14px] outline-none placeholder:text-muted-foreground" />
+                <Command.Input
+                  autoFocus
+                  value={search}
+                  onValueChange={setSearch}
+                  placeholder={`Search pages, actions, or ${terms.leads.toLowerCase()}…`}
+                  className="h-12 flex-1 bg-transparent text-[14px] outline-none placeholder:text-muted-foreground"
+                />
                 <kbd className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">esc</kbd>
               </div>
               <Command.List className="max-h-80 overflow-auto p-2">
                 <Command.Empty className="py-8 text-center text-[13px] text-muted-foreground">No results.</Command.Empty>
+
+                {leads.data?.items && leads.data.items.length > 0 ? (
+                  <Command.Group
+                    heading={terms.Leads}
+                    className="[&_[cmdk-group-heading]]:text-label [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-muted-foreground"
+                  >
+                    {leads.data.items.map((lead) => (
+                      <Command.Item
+                        key={lead.id}
+                        value={`Lead ${lead.name} ${lead.phone ?? ''} ${lead.email ?? ''}`}
+                        onSelect={() => run(() => router.push(`/leads/${lead.id}`))}
+                        className="flex cursor-pointer items-center justify-between rounded-md px-2 py-2 text-[13px] data-[selected=true]:bg-muted"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <User className="h-4 w-4 text-primary" aria-hidden />
+                          <span className="font-medium text-foreground">{lead.name}</span>
+                          <span className="text-muted-foreground text-[12px]">{lead.phone ?? lead.email}</span>
+                        </div>
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
+                          {lead.stage.name}
+                        </span>
+                      </Command.Item>
+                    ))}
+                  </Command.Group>
+                ) : null}
+
                 <Command.Group heading="Go to" className="[&_[cmdk-group-heading]]:text-label [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-muted-foreground">
                   {nav.map((n) => (
                     <Command.Item key={n.href} value={navLabel(n, terms)} onSelect={() => run(() => router.push(n.href))} className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-[13px] data-[selected=true]:bg-muted">

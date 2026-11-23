@@ -1,0 +1,101 @@
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { CurrentTenant, RequirePermissions } from '../common/decorators.js';
+import type { TenantRequestContext } from '../common/request-context.js';
+import { ZodPipe } from '../common/zod.pipe.js';
+import {
+  audiencePreviewSchema,
+  campaignQuerySchema,
+  createCampaignSchema,
+  recipientQuerySchema,
+  updateCampaignSchema,
+  type AudiencePreviewInput,
+  type CampaignQuery,
+  type CreateCampaignInput,
+  type RecipientQuery,
+  type UpdateCampaignInput,
+} from '@leadpilot/validation';
+import { CampaignsService } from './campaigns.service.js';
+
+@Controller('campaigns')
+export class CampaignsController {
+  constructor(private readonly svc: CampaignsService) {}
+
+  @Get()
+  @RequirePermissions('campaign:read')
+  list(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Query(new ZodPipe(campaignQuerySchema)) query: CampaignQuery,
+  ) {
+    return this.svc.list(ctx, query);
+  }
+
+  @Post('preview')
+  @HttpCode(200)
+  @RequirePermissions('campaign:read')
+  preview(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Body(new ZodPipe(audiencePreviewSchema)) input: AudiencePreviewInput,
+  ) {
+    return this.svc.previewAudience(ctx, input);
+  }
+
+  @Post()
+  @HttpCode(201)
+  @RequirePermissions('campaign:manage')
+  create(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Body(new ZodPipe(createCampaignSchema)) input: CreateCampaignInput,
+  ) {
+    return this.svc.create(ctx, input);
+  }
+
+  @Get(':id')
+  @RequirePermissions('campaign:read')
+  get(@CurrentTenant() ctx: TenantRequestContext, @Param('id') id: string) {
+    return this.svc.get(ctx, id);
+  }
+
+  @Patch(':id')
+  @RequirePermissions('campaign:manage')
+  update(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Param('id') id: string,
+    @Body(new ZodPipe(updateCampaignSchema)) input: UpdateCampaignInput,
+  ) {
+    return this.svc.update(ctx, id, input);
+  }
+
+  @Post(':id/launch')
+  @HttpCode(200)
+  @RequirePermissions('campaign:manage')
+  launch(@CurrentTenant() ctx: TenantRequestContext, @Param('id') id: string) {
+    return this.svc.launch(ctx, id);
+  }
+
+  @Post(':id/cancel')
+  @HttpCode(200)
+  @RequirePermissions('campaign:manage')
+  cancel(@CurrentTenant() ctx: TenantRequestContext, @Param('id') id: string) {
+    return this.svc.cancel(ctx, id);
+  }
+
+  @Get(':id/recipients')
+  @RequirePermissions('campaign:read')
+  listRecipients(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Param('id') id: string,
+    @Query(new ZodPipe(recipientQuerySchema)) query: RecipientQuery,
+  ) {
+    return this.svc.listRecipients(ctx, id, query);
+  }
+}
+
