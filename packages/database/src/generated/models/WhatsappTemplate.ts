@@ -264,6 +264,7 @@ export type WhatsappTemplateWhereInput = {
   approvalStatus?: Prisma.StringNullableFilter<"WhatsappTemplate"> | string | null
   syncedAt?: Prisma.DateTimeNullableFilter<"WhatsappTemplate"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WhatsappTemplate"> | Date | string
+  broadcastCampaigns?: Prisma.BroadcastCampaignListRelationFilter
 }
 
 export type WhatsappTemplateOrderByWithRelationInput = {
@@ -278,6 +279,7 @@ export type WhatsappTemplateOrderByWithRelationInput = {
   approvalStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   syncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  broadcastCampaigns?: Prisma.BroadcastCampaignOrderByRelationAggregateInput
 }
 
 export type WhatsappTemplateWhereUniqueInput = Prisma.AtLeast<{
@@ -296,6 +298,7 @@ export type WhatsappTemplateWhereUniqueInput = Prisma.AtLeast<{
   approvalStatus?: Prisma.StringNullableFilter<"WhatsappTemplate"> | string | null
   syncedAt?: Prisma.DateTimeNullableFilter<"WhatsappTemplate"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WhatsappTemplate"> | Date | string
+  broadcastCampaigns?: Prisma.BroadcastCampaignListRelationFilter
 }, "id" | "tenantId_name_language">
 
 export type WhatsappTemplateOrderByWithAggregationInput = {
@@ -346,6 +349,7 @@ export type WhatsappTemplateCreateInput = {
   approvalStatus?: string | null
   syncedAt?: Date | string | null
   createdAt?: Date | string
+  broadcastCampaigns?: Prisma.BroadcastCampaignCreateNestedManyWithoutTemplateInput
 }
 
 export type WhatsappTemplateUncheckedCreateInput = {
@@ -360,6 +364,7 @@ export type WhatsappTemplateUncheckedCreateInput = {
   approvalStatus?: string | null
   syncedAt?: Date | string | null
   createdAt?: Date | string
+  broadcastCampaigns?: Prisma.BroadcastCampaignUncheckedCreateNestedManyWithoutTemplateInput
 }
 
 export type WhatsappTemplateUpdateInput = {
@@ -374,6 +379,7 @@ export type WhatsappTemplateUpdateInput = {
   approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  broadcastCampaigns?: Prisma.BroadcastCampaignUpdateManyWithoutTemplateNestedInput
 }
 
 export type WhatsappTemplateUncheckedUpdateInput = {
@@ -388,6 +394,7 @@ export type WhatsappTemplateUncheckedUpdateInput = {
   approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  broadcastCampaigns?: Prisma.BroadcastCampaignUncheckedUpdateManyWithoutTemplateNestedInput
 }
 
 export type WhatsappTemplateCreateManyInput = {
@@ -488,6 +495,126 @@ export type WhatsappTemplateSumOrderByAggregateInput = {
   variableCount?: Prisma.SortOrder
 }
 
+export type WhatsappTemplateScalarRelationFilter = {
+  is?: Prisma.WhatsappTemplateWhereInput
+  isNot?: Prisma.WhatsappTemplateWhereInput
+}
+
+export type WhatsappTemplateCreateNestedOneWithoutBroadcastCampaignsInput = {
+  create?: Prisma.XOR<Prisma.WhatsappTemplateCreateWithoutBroadcastCampaignsInput, Prisma.WhatsappTemplateUncheckedCreateWithoutBroadcastCampaignsInput>
+  connectOrCreate?: Prisma.WhatsappTemplateCreateOrConnectWithoutBroadcastCampaignsInput
+  connect?: Prisma.WhatsappTemplateWhereUniqueInput
+}
+
+export type WhatsappTemplateUpdateOneRequiredWithoutBroadcastCampaignsNestedInput = {
+  create?: Prisma.XOR<Prisma.WhatsappTemplateCreateWithoutBroadcastCampaignsInput, Prisma.WhatsappTemplateUncheckedCreateWithoutBroadcastCampaignsInput>
+  connectOrCreate?: Prisma.WhatsappTemplateCreateOrConnectWithoutBroadcastCampaignsInput
+  upsert?: Prisma.WhatsappTemplateUpsertWithoutBroadcastCampaignsInput
+  connect?: Prisma.WhatsappTemplateWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WhatsappTemplateUpdateToOneWithWhereWithoutBroadcastCampaignsInput, Prisma.WhatsappTemplateUpdateWithoutBroadcastCampaignsInput>, Prisma.WhatsappTemplateUncheckedUpdateWithoutBroadcastCampaignsInput>
+}
+
+export type WhatsappTemplateCreateWithoutBroadcastCampaignsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  language?: string
+  category?: string
+  bodyPreview: string
+  variableCount?: number
+  source?: string
+  approvalStatus?: string | null
+  syncedAt?: Date | string | null
+  createdAt?: Date | string
+}
+
+export type WhatsappTemplateUncheckedCreateWithoutBroadcastCampaignsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  language?: string
+  category?: string
+  bodyPreview: string
+  variableCount?: number
+  source?: string
+  approvalStatus?: string | null
+  syncedAt?: Date | string | null
+  createdAt?: Date | string
+}
+
+export type WhatsappTemplateCreateOrConnectWithoutBroadcastCampaignsInput = {
+  where: Prisma.WhatsappTemplateWhereUniqueInput
+  create: Prisma.XOR<Prisma.WhatsappTemplateCreateWithoutBroadcastCampaignsInput, Prisma.WhatsappTemplateUncheckedCreateWithoutBroadcastCampaignsInput>
+}
+
+export type WhatsappTemplateUpsertWithoutBroadcastCampaignsInput = {
+  update: Prisma.XOR<Prisma.WhatsappTemplateUpdateWithoutBroadcastCampaignsInput, Prisma.WhatsappTemplateUncheckedUpdateWithoutBroadcastCampaignsInput>
+  create: Prisma.XOR<Prisma.WhatsappTemplateCreateWithoutBroadcastCampaignsInput, Prisma.WhatsappTemplateUncheckedCreateWithoutBroadcastCampaignsInput>
+  where?: Prisma.WhatsappTemplateWhereInput
+}
+
+export type WhatsappTemplateUpdateToOneWithWhereWithoutBroadcastCampaignsInput = {
+  where?: Prisma.WhatsappTemplateWhereInput
+  data: Prisma.XOR<Prisma.WhatsappTemplateUpdateWithoutBroadcastCampaignsInput, Prisma.WhatsappTemplateUncheckedUpdateWithoutBroadcastCampaignsInput>
+}
+
+export type WhatsappTemplateUpdateWithoutBroadcastCampaignsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.StringFieldUpdateOperationsInput | string
+  bodyPreview?: Prisma.StringFieldUpdateOperationsInput | string
+  variableCount?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type WhatsappTemplateUncheckedUpdateWithoutBroadcastCampaignsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.StringFieldUpdateOperationsInput | string
+  bodyPreview?: Prisma.StringFieldUpdateOperationsInput | string
+  variableCount?: Prisma.IntFieldUpdateOperationsInput | number
+  source?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  syncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type WhatsappTemplateCountOutputType
+ */
+
+export type WhatsappTemplateCountOutputType = {
+  broadcastCampaigns: number
+}
+
+export type WhatsappTemplateCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  broadcastCampaigns?: boolean | WhatsappTemplateCountOutputTypeCountBroadcastCampaignsArgs
+}
+
+/**
+ * WhatsappTemplateCountOutputType without action
+ */
+export type WhatsappTemplateCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WhatsappTemplateCountOutputType
+   */
+  select?: Prisma.WhatsappTemplateCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * WhatsappTemplateCountOutputType without action
+ */
+export type WhatsappTemplateCountOutputTypeCountBroadcastCampaignsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BroadcastCampaignWhereInput
+}
 
 
 export type WhatsappTemplateSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -502,6 +629,8 @@ export type WhatsappTemplateSelect<ExtArgs extends runtime.Types.Extensions.Inte
   approvalStatus?: boolean
   syncedAt?: boolean
   createdAt?: boolean
+  broadcastCampaigns?: boolean | Prisma.WhatsappTemplate$broadcastCampaignsArgs<ExtArgs>
+  _count?: boolean | Prisma.WhatsappTemplateCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["whatsappTemplate"]>
 
 export type WhatsappTemplateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -547,10 +676,18 @@ export type WhatsappTemplateSelectScalar = {
 }
 
 export type WhatsappTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "language" | "category" | "bodyPreview" | "variableCount" | "source" | "approvalStatus" | "syncedAt" | "createdAt", ExtArgs["result"]["whatsappTemplate"]>
+export type WhatsappTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  broadcastCampaigns?: boolean | Prisma.WhatsappTemplate$broadcastCampaignsArgs<ExtArgs>
+  _count?: boolean | Prisma.WhatsappTemplateCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type WhatsappTemplateIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type WhatsappTemplateIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $WhatsappTemplatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "WhatsappTemplate"
-  objects: {}
+  objects: {
+    broadcastCampaigns: Prisma.$BroadcastCampaignPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     tenantId: string
@@ -963,6 +1100,7 @@ readonly fields: WhatsappTemplateFieldRefs;
  */
 export interface Prisma__WhatsappTemplateClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  broadcastCampaigns<T extends Prisma.WhatsappTemplate$broadcastCampaignsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WhatsappTemplate$broadcastCampaignsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BroadcastCampaignPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1020,6 +1158,10 @@ export type WhatsappTemplateFindUniqueArgs<ExtArgs extends runtime.Types.Extensi
    */
   omit?: Prisma.WhatsappTemplateOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsappTemplateInclude<ExtArgs> | null
+  /**
    * Filter, which WhatsappTemplate to fetch.
    */
   where: Prisma.WhatsappTemplateWhereUniqueInput
@@ -1038,6 +1180,10 @@ export type WhatsappTemplateFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.
    */
   omit?: Prisma.WhatsappTemplateOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsappTemplateInclude<ExtArgs> | null
+  /**
    * Filter, which WhatsappTemplate to fetch.
    */
   where: Prisma.WhatsappTemplateWhereUniqueInput
@@ -1055,6 +1201,10 @@ export type WhatsappTemplateFindFirstArgs<ExtArgs extends runtime.Types.Extensio
    * Omit specific fields from the WhatsappTemplate
    */
   omit?: Prisma.WhatsappTemplateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsappTemplateInclude<ExtArgs> | null
   /**
    * Filter, which WhatsappTemplate to fetch.
    */
@@ -1104,6 +1254,10 @@ export type WhatsappTemplateFindFirstOrThrowArgs<ExtArgs extends runtime.Types.E
    */
   omit?: Prisma.WhatsappTemplateOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsappTemplateInclude<ExtArgs> | null
+  /**
    * Filter, which WhatsappTemplate to fetch.
    */
   where?: Prisma.WhatsappTemplateWhereInput
@@ -1151,6 +1305,10 @@ export type WhatsappTemplateFindManyArgs<ExtArgs extends runtime.Types.Extension
    * Omit specific fields from the WhatsappTemplate
    */
   omit?: Prisma.WhatsappTemplateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsappTemplateInclude<ExtArgs> | null
   /**
    * Filter, which WhatsappTemplates to fetch.
    */
@@ -1200,6 +1358,10 @@ export type WhatsappTemplateCreateArgs<ExtArgs extends runtime.Types.Extensions.
    */
   omit?: Prisma.WhatsappTemplateOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsappTemplateInclude<ExtArgs> | null
+  /**
    * The data needed to create a WhatsappTemplate.
    */
   data: Prisma.XOR<Prisma.WhatsappTemplateCreateInput, Prisma.WhatsappTemplateUncheckedCreateInput>
@@ -1247,6 +1409,10 @@ export type WhatsappTemplateUpdateArgs<ExtArgs extends runtime.Types.Extensions.
    * Omit specific fields from the WhatsappTemplate
    */
   omit?: Prisma.WhatsappTemplateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsappTemplateInclude<ExtArgs> | null
   /**
    * The data needed to update a WhatsappTemplate.
    */
@@ -1314,6 +1480,10 @@ export type WhatsappTemplateUpsertArgs<ExtArgs extends runtime.Types.Extensions.
    */
   omit?: Prisma.WhatsappTemplateOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsappTemplateInclude<ExtArgs> | null
+  /**
    * The filter to search for the WhatsappTemplate to update in case it exists.
    */
   where: Prisma.WhatsappTemplateWhereUniqueInput
@@ -1340,6 +1510,10 @@ export type WhatsappTemplateDeleteArgs<ExtArgs extends runtime.Types.Extensions.
    */
   omit?: Prisma.WhatsappTemplateOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsappTemplateInclude<ExtArgs> | null
+  /**
    * Filter which WhatsappTemplate to delete.
    */
   where: Prisma.WhatsappTemplateWhereUniqueInput
@@ -1360,6 +1534,30 @@ export type WhatsappTemplateDeleteManyArgs<ExtArgs extends runtime.Types.Extensi
 }
 
 /**
+ * WhatsappTemplate.broadcastCampaigns
+ */
+export type WhatsappTemplate$broadcastCampaignsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BroadcastCampaign
+   */
+  select?: Prisma.BroadcastCampaignSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BroadcastCampaign
+   */
+  omit?: Prisma.BroadcastCampaignOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BroadcastCampaignInclude<ExtArgs> | null
+  where?: Prisma.BroadcastCampaignWhereInput
+  orderBy?: Prisma.BroadcastCampaignOrderByWithRelationInput | Prisma.BroadcastCampaignOrderByWithRelationInput[]
+  cursor?: Prisma.BroadcastCampaignWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BroadcastCampaignScalarFieldEnum | Prisma.BroadcastCampaignScalarFieldEnum[]
+}
+
+/**
  * WhatsappTemplate without action
  */
 export type WhatsappTemplateDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1371,4 +1569,8 @@ export type WhatsappTemplateDefaultArgs<ExtArgs extends runtime.Types.Extensions
    * Omit specific fields from the WhatsappTemplate
    */
   omit?: Prisma.WhatsappTemplateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsappTemplateInclude<ExtArgs> | null
 }

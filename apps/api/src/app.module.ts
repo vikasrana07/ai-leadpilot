@@ -46,6 +46,7 @@ import { WidgetModule } from './widget/widget.module.js';
 import { TeamModule } from './team/team.module.js';
 import { TenantsModule } from './tenants/tenants.module.js';
 import { GoogleCalendarModule } from './integrations/google-calendar/google-calendar.module.js';
+import { CampaignsModule } from './campaigns/campaigns.module.js';
 import { Inject } from '@nestjs/common';
 import { SecretBox } from './crypto/secret-box.js';
 import { BotGuard, TurnstileService } from './security/turnstile.js';
@@ -70,7 +71,7 @@ class IntegrationsCoreModule {}
       // Redis-backed so limits hold across API instances (tests keep the in-memory store: counters would otherwise leak between runs).
       useFactory: (env: Env) => ({ throttlers: [{ name: 'default', ttl: 60_000, limit: env.THROTTLE_GLOBAL_LIMIT }], ...(env.NODE_ENV === 'test' ? {} : { storage: new RedisThrottlerStorage(env.REDIS_URL, env.QUEUE_PREFIX) }) }),
     }),
-    DbModule, MailModule, EmailTrackingModule, AuditModule, AuthModule, MfaModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, PortalModule, AiModule, OpsModule, BillingModule, PlatformModule, V1Module, WebhooksModule, ReportsModule, SupportModule, PrivacyModule, LifecycleModule, UsageModule, TeamModule, RolesModule, HealthModule, GoogleCalendarModule,
+    DbModule, MailModule, EmailTrackingModule, AuditModule, AuthModule, MfaModule, TenantsModule, LeadsModule, PipelineModule, PropertiesModule, CaptureModule, AnalyticsModule, ChannelsModule, ConversationsModule, WidgetModule, PortalModule, AiModule, OpsModule, BillingModule, PlatformModule, V1Module, WebhooksModule, ReportsModule, SupportModule, PrivacyModule, LifecycleModule, UsageModule, TeamModule, RolesModule, HealthModule, GoogleCalendarModule, CampaignsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

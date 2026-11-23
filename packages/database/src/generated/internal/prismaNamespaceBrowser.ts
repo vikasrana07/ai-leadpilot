@@ -129,7 +129,9 @@ export const ModelName = {
   UserAlertSettings: 'UserAlertSettings',
   TrackedEmail: 'TrackedEmail',
   EmailEngagementEvent: 'EmailEngagementEvent',
-  EmailSuppression: 'EmailSuppression'
+  EmailSuppression: 'EmailSuppression',
+  BroadcastCampaign: 'BroadcastCampaign',
+  BroadcastRecipient: 'BroadcastRecipient'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1405,6 +1407,55 @@ export const EmailSuppressionScalarFieldEnum = {
 } as const
 
 export type EmailSuppressionScalarFieldEnum = (typeof EmailSuppressionScalarFieldEnum)[keyof typeof EmailSuppressionScalarFieldEnum]
+
+
+export const BroadcastCampaignScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  status: 'status',
+  channelId: 'channelId',
+  templateId: 'templateId',
+  templateName: 'templateName',
+  templateLanguage: 'templateLanguage',
+  templateParams: 'templateParams',
+  segment: 'segment',
+  scheduledAt: 'scheduledAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  totalRecipients: 'totalRecipients',
+  sentCount: 'sentCount',
+  deliveredCount: 'deliveredCount',
+  readCount: 'readCount',
+  failedCount: 'failedCount',
+  optOutCount: 'optOutCount',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BroadcastCampaignScalarFieldEnum = (typeof BroadcastCampaignScalarFieldEnum)[keyof typeof BroadcastCampaignScalarFieldEnum]
+
+
+export const BroadcastRecipientScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  campaignId: 'campaignId',
+  leadId: 'leadId',
+  phone: 'phone',
+  status: 'status',
+  conversationId: 'conversationId',
+  messageId: 'messageId',
+  externalId: 'externalId',
+  error: 'error',
+  sentAt: 'sentAt',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BroadcastRecipientScalarFieldEnum = (typeof BroadcastRecipientScalarFieldEnum)[keyof typeof BroadcastRecipientScalarFieldEnum]
 
 
 export const SortOrder = {

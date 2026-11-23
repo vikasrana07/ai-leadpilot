@@ -1,4 +1,4 @@
-import { BarChart3, Webhook, ListChecks, BookOpen, Building2, CalendarDays, CreditCard, Gauge, Inbox, KanbanSquare, KeyRound, LayoutDashboard, type LucideIcon, Mail, ScrollText, Settings, ShieldCheck, Sparkles, Users, UsersRound, Workflow, Plug } from 'lucide-react';
+import { BarChart3, Webhook, ListChecks, BookOpen, Building2, CalendarDays, CreditCard, Gauge, Inbox, KanbanSquare, KeyRound, LayoutDashboard, type LucideIcon, Mail, Megaphone, ScrollText, Settings, ShieldCheck, Sparkles, Users, UsersRound, Workflow, Plug } from 'lucide-react';
 
 export interface NavItem {
   href: string;
@@ -21,6 +21,7 @@ export const WORKSPACE_NAV: NavItem[] = [
   { href: '/leads', label: 'Leads', term: 'leads', icon: Users, phase: 2, description: 'Capture, search, score and assign every lead.' },
   { href: '/inbox', label: 'Inbox', icon: Inbox, phase: 3, permission: 'conversation:read:own', description: 'WhatsApp and website chat in one place.' },
   { href: '/emails', label: 'Email Tracking', icon: Mail, phase: 2, permission: 'lead:read:own', description: 'Monitor email delivery, opens, clicks, and bounces.' },
+  { href: '/campaigns', label: 'Broadcasts', icon: Megaphone, phase: 2, permission: 'campaign:read', description: 'WhatsApp broadcast campaigns with opt-out suppression.' },
   { href: '/pipeline', label: 'Sales Pipeline', icon: KanbanSquare, phase: 2, description: 'Move leads from first contact to closed.' },
   { href: '/properties', label: 'Properties', icon: Building2, phase: 2, permission: 'property:read', module: 'properties' },
   { href: '/appointments', label: 'Appointments', icon: CalendarDays, phase: 5, description: 'Appointments and meetings without double booking.' },

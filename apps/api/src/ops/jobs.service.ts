@@ -18,6 +18,7 @@ export const RUNS_QUEUE = 'automation-runs';
 export const MAINTENANCE_QUEUE = 'maintenance';
 export const WEBHOOKS_QUEUE = 'webhook-deliveries';
 export const AI_DOCS_QUEUE = 'ai-knowledge-docs';
+export const CAMPAIGNS_QUEUE = 'broadcast-campaigns';
 
 export function redisConnection(url: string): ConnectionOptions {
   const u = new URL(url);
@@ -37,12 +38,19 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
   private maintenanceQueue: Queue | null = null;
   private webhooksQueue: Queue | null = null;
   private aiDocsQueue: Queue | null = null;
+  private campaignsQueue: Queue | null = null;
   private readonly workers: Worker[] = [];
   private relayTimer: NodeJS.Timeout | null = null;
   private relayBusy = false;
 
   /** Hook registered by KnowledgeService to process AI documents */
   processDoc?: (tenantId: string, documentId: string, kind: string) => Promise<void>;
+
+  /** Hook registered by CampaignsService to dispatch campaign batches */
+  processCampaignBatch?: (tenantId: string, campaignId: string) => Promise<void>;
+
+  /** Hook registered by CampaignsService to sweep scheduled campaigns */
+  checkScheduledCampaigns?: () => Promise<number>;
 
   constructor(
     @Inject(ENV) private readonly env: Env,
@@ -77,12 +85,22 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
       this.runsQueue = new Queue(RUNS_QUEUE, { connection, prefix, defaultJobOptions: { attempts: this.env.AUTOMATION_MAX_ATTEMPTS, backoff: { type: 'exponential', delay: this.env.AUTOMATION_RETRY_BASE_MS }, removeOnComplete: { count: 1000 }, removeOnFail: { count: 5000 } } });
       this.maintenanceQueue = new Queue(MAINTENANCE_QUEUE, { connection, prefix, defaultJobOptions: { removeOnComplete: { count: 20 }, removeOnFail: { count: 50 } } });
       this.webhooksQueue = new Queue(WEBHOOKS_QUEUE, { connection, prefix, defaultJobOptions: { attempts: 5, backoff: { type: 'exponential', delay: 2000 }, removeOnComplete: { count: 1000 }, removeOnFail: { count: 10000 } } });
+      this.campaignsQueue = new Queue(CAMPAIGNS_QUEUE, { connection, prefix, defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 1000 }, removeOnComplete: { count: 1000 }, removeOnFail: { count: 1000 } } });
       this.runsQueue.on('error', (e) => this.log.error(`runs queue: ${e.message}`));
       this.maintenanceQueue.on('error', (e) => this.log.error(`maintenance queue: ${e.message}`));
       this.webhooksQueue.on('error', (e) => this.log.error(`webhooks queue: ${e.message}`));
+      this.campaignsQueue.on('error', (e) => this.log.error(`campaigns queue: ${e.message}`));
       this.relay.enqueueRun = (tenantId, runId) => this.enqueueRun(tenantId, runId);
       this.relay.enqueueWebhook = (tenantId, deliveryId) => this.enqueueWebhook(tenantId, deliveryId);
       this.webhooks.enqueueJob = (tenantId, deliveryId, generation) => this.enqueueWebhook(tenantId, deliveryId, generation);
+
+      this.workers.push(new Worker(CAMPAIGNS_QUEUE, async (job: Job<{ tenantId: string; campaignId: string }>) => {
+        await runWithLogContext({ jobId: String(job.id ?? job.data.campaignId), tenantId: job.data.tenantId }, async () => {
+          if (this.processCampaignBatch) {
+            await this.processCampaignBatch(job.data.tenantId, job.data.campaignId);
+          }
+        });
+      }, { connection, prefix, concurrency: 3 }));
 
       this.workers.push(new Worker(RUNS_QUEUE, async (job: Job<{ tenantId: string; runId: string }>) => {
         const maxAttempts = job.opts.attempts ?? 1;
@@ -145,6 +163,19 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     await this.webhooksQueue.add('deliver', { tenantId, deliveryId }, { jobId: `${deliveryId}-${generation}` });
   }
 
+  /** Enqueues broadcast campaign batch dispatching */
+  async enqueueCampaignDispatch(tenantId: string, campaignId: string): Promise<void> {
+    if (!this.campaignsQueue) {
+      if (this.processCampaignBatch) {
+        void this.processCampaignBatch(tenantId, campaignId).catch((e) =>
+          this.log.error(`Campaign direct dispatch failed: ${e instanceof Error ? e.message : String(e)}`),
+        );
+      }
+      return;
+    }
+    await this.campaignsQueue.add('dispatch-batch', { tenantId, campaignId }, { jobId: `campaign:${campaignId}:${Date.now()}` });
+  }
+
   /** Enqueues heavy AI document parsing, chunking, and vector embedding calculation to the AI worker tier. */
   async enqueueDocProcessing(tenantId: string, documentId: string, kind: string, generation = 0): Promise<void> {
     if (!this.aiDocsQueue) {
@@ -187,6 +218,10 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     // once a day: test the token of every Facebook-connected WhatsApp number (revoked token -> NEEDS_RECONNECT, owners told once)
     await this.channelHealth.runDaily().catch((e: unknown) => this.log.error(`channel health: ${e instanceof Error ? e.message : String(e)}`));
     await this.lifecycle.purgeDueTenants().catch((e: unknown) => this.log.error(`tenant purge: ${e instanceof Error ? e.message : String(e)}`));
+    // scheduled campaigns check
+    if (this.checkScheduledCampaigns) {
+      await this.checkScheduledCampaigns().catch((e: unknown) => this.log.error(`scheduled campaigns: ${e instanceof Error ? e.message : String(e)}`));
+    }
     // Orphaned QUEUED runs (job lost, manual retry, stale RUNNING reset) are re-enqueued with a per-minute generation so BullMQ does not drop
     // them as duplicates. Double delivery is harmless: the engine claims a run with a compare-and-set.
     const generation = Math.floor(Date.now() / 60_000);
@@ -202,11 +237,13 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
       this.maintenanceQueue?.close(),
       this.webhooksQueue?.close(),
       this.aiDocsQueue?.close(),
+      this.campaignsQueue?.close(),
     ]);
     this.runsQueue = null;
     this.maintenanceQueue = null;
     this.webhooksQueue = null;
     this.aiDocsQueue = null;
+    this.campaignsQueue = null;
     this.workers.length = 0;
   }
 }

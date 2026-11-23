@@ -475,7 +475,9 @@ export const ModelName = {
   UserAlertSettings: 'UserAlertSettings',
   TrackedEmail: 'TrackedEmail',
   EmailEngagementEvent: 'EmailEngagementEvent',
-  EmailSuppression: 'EmailSuppression'
+  EmailSuppression: 'EmailSuppression',
+  BroadcastCampaign: 'BroadcastCampaign',
+  BroadcastRecipient: 'BroadcastRecipient'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -491,7 +493,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "googleCalendarSync" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "opsAlert" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest" | "portalConfig" | "portalLoginCode" | "portalSession" | "userAlertSettings" | "trackedEmail" | "emailEngagementEvent" | "emailSuppression"
+    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "googleCalendarSync" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "opsAlert" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest" | "portalConfig" | "portalLoginCode" | "portalSession" | "userAlertSettings" | "trackedEmail" | "emailEngagementEvent" | "emailSuppression" | "broadcastCampaign" | "broadcastRecipient"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -6341,6 +6343,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BroadcastCampaign: {
+      payload: Prisma.$BroadcastCampaignPayload<ExtArgs>
+      fields: Prisma.BroadcastCampaignFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BroadcastCampaignFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BroadcastCampaignFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload>
+        }
+        findFirst: {
+          args: Prisma.BroadcastCampaignFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BroadcastCampaignFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload>
+        }
+        findMany: {
+          args: Prisma.BroadcastCampaignFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload>[]
+        }
+        create: {
+          args: Prisma.BroadcastCampaignCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload>
+        }
+        createMany: {
+          args: Prisma.BroadcastCampaignCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BroadcastCampaignCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload>[]
+        }
+        delete: {
+          args: Prisma.BroadcastCampaignDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload>
+        }
+        update: {
+          args: Prisma.BroadcastCampaignUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload>
+        }
+        deleteMany: {
+          args: Prisma.BroadcastCampaignDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BroadcastCampaignUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BroadcastCampaignUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload>[]
+        }
+        upsert: {
+          args: Prisma.BroadcastCampaignUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastCampaignPayload>
+        }
+        aggregate: {
+          args: Prisma.BroadcastCampaignAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBroadcastCampaign>
+        }
+        groupBy: {
+          args: Prisma.BroadcastCampaignGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BroadcastCampaignGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BroadcastCampaignCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BroadcastCampaignCountAggregateOutputType> | number
+        }
+      }
+    }
+    BroadcastRecipient: {
+      payload: Prisma.$BroadcastRecipientPayload<ExtArgs>
+      fields: Prisma.BroadcastRecipientFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BroadcastRecipientFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BroadcastRecipientFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload>
+        }
+        findFirst: {
+          args: Prisma.BroadcastRecipientFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BroadcastRecipientFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload>
+        }
+        findMany: {
+          args: Prisma.BroadcastRecipientFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload>[]
+        }
+        create: {
+          args: Prisma.BroadcastRecipientCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload>
+        }
+        createMany: {
+          args: Prisma.BroadcastRecipientCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BroadcastRecipientCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload>[]
+        }
+        delete: {
+          args: Prisma.BroadcastRecipientDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload>
+        }
+        update: {
+          args: Prisma.BroadcastRecipientUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload>
+        }
+        deleteMany: {
+          args: Prisma.BroadcastRecipientDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BroadcastRecipientUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BroadcastRecipientUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload>[]
+        }
+        upsert: {
+          args: Prisma.BroadcastRecipientUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastRecipientPayload>
+        }
+        aggregate: {
+          args: Prisma.BroadcastRecipientAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBroadcastRecipient>
+        }
+        groupBy: {
+          args: Prisma.BroadcastRecipientGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BroadcastRecipientGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BroadcastRecipientCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BroadcastRecipientCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -7639,6 +7789,55 @@ export const EmailSuppressionScalarFieldEnum = {
 export type EmailSuppressionScalarFieldEnum = (typeof EmailSuppressionScalarFieldEnum)[keyof typeof EmailSuppressionScalarFieldEnum]
 
 
+export const BroadcastCampaignScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  status: 'status',
+  channelId: 'channelId',
+  templateId: 'templateId',
+  templateName: 'templateName',
+  templateLanguage: 'templateLanguage',
+  templateParams: 'templateParams',
+  segment: 'segment',
+  scheduledAt: 'scheduledAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  totalRecipients: 'totalRecipients',
+  sentCount: 'sentCount',
+  deliveredCount: 'deliveredCount',
+  readCount: 'readCount',
+  failedCount: 'failedCount',
+  optOutCount: 'optOutCount',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BroadcastCampaignScalarFieldEnum = (typeof BroadcastCampaignScalarFieldEnum)[keyof typeof BroadcastCampaignScalarFieldEnum]
+
+
+export const BroadcastRecipientScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  campaignId: 'campaignId',
+  leadId: 'leadId',
+  phone: 'phone',
+  status: 'status',
+  conversationId: 'conversationId',
+  messageId: 'messageId',
+  externalId: 'externalId',
+  error: 'error',
+  sentAt: 'sentAt',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BroadcastRecipientScalarFieldEnum = (typeof BroadcastRecipientScalarFieldEnum)[keyof typeof BroadcastRecipientScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -8147,6 +8346,34 @@ export type EnumSuppressionReasonFieldRefInput<$PrismaModel> = FieldRefInputType
 export type ListEnumSuppressionReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SuppressionReason[]'>
     
 
+
+/**
+ * Reference to a field of type 'BroadcastCampaignStatus'
+ */
+export type EnumBroadcastCampaignStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BroadcastCampaignStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'BroadcastCampaignStatus[]'
+ */
+export type ListEnumBroadcastCampaignStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BroadcastCampaignStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BroadcastRecipientStatus'
+ */
+export type EnumBroadcastRecipientStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BroadcastRecipientStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'BroadcastRecipientStatus[]'
+ */
+export type ListEnumBroadcastRecipientStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BroadcastRecipientStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -8377,6 +8604,8 @@ export type GlobalOmitConfig = {
   trackedEmail?: Prisma.TrackedEmailOmit
   emailEngagementEvent?: Prisma.EmailEngagementEventOmit
   emailSuppression?: Prisma.EmailSuppressionOmit
+  broadcastCampaign?: Prisma.BroadcastCampaignOmit
+  broadcastRecipient?: Prisma.BroadcastRecipientOmit
 }
 
 /* Types for Logging */

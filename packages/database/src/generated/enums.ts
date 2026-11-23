@@ -267,3 +267,28 @@ export const SuppressionReason = {
 } as const
 
 export type SuppressionReason = (typeof SuppressionReason)[keyof typeof SuppressionReason]
+
+
+export const BroadcastCampaignStatus = {
+  DRAFT: 'DRAFT',
+  SCHEDULED: 'SCHEDULED',
+  RUNNING: 'RUNNING',
+  PAUSED: 'PAUSED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type BroadcastCampaignStatus = (typeof BroadcastCampaignStatus)[keyof typeof BroadcastCampaignStatus]
+
+
+export const BroadcastRecipientStatus = {
+  PENDING: 'PENDING',
+  QUEUED: 'QUEUED',
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  READ: 'READ',
+  FAILED: 'FAILED',
+  SKIPPED_OPT_OUT: 'SKIPPED_OPT_OUT'
+} as const
+
+export type BroadcastRecipientStatus = (typeof BroadcastRecipientStatus)[keyof typeof BroadcastRecipientStatus]

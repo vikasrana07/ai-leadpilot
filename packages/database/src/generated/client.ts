@@ -436,3 +436,13 @@ export type EmailEngagementEvent = Prisma.EmailEngagementEventModel
  * 
  */
 export type EmailSuppression = Prisma.EmailSuppressionModel
+/**
+ * Model BroadcastCampaign
+ * 
+ */
+export type BroadcastCampaign = Prisma.BroadcastCampaignModel
+/**
+ * Model BroadcastRecipient
+ * 
+ */
+export type BroadcastRecipient = Prisma.BroadcastRecipientModel

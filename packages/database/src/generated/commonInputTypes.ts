@@ -881,6 +881,40 @@ export type EnumSuppressionReasonWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumSuppressionReasonFilter<$PrismaModel>
 }
 
+export type EnumBroadcastCampaignStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BroadcastCampaignStatus | Prisma.EnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BroadcastCampaignStatus[] | Prisma.ListEnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BroadcastCampaignStatus[] | Prisma.ListEnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBroadcastCampaignStatusFilter<$PrismaModel> | $Enums.BroadcastCampaignStatus
+}
+
+export type EnumBroadcastCampaignStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BroadcastCampaignStatus | Prisma.EnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BroadcastCampaignStatus[] | Prisma.ListEnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BroadcastCampaignStatus[] | Prisma.ListEnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBroadcastCampaignStatusWithAggregatesFilter<$PrismaModel> | $Enums.BroadcastCampaignStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBroadcastCampaignStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBroadcastCampaignStatusFilter<$PrismaModel>
+}
+
+export type EnumBroadcastRecipientStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BroadcastRecipientStatus | Prisma.EnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BroadcastRecipientStatus[] | Prisma.ListEnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BroadcastRecipientStatus[] | Prisma.ListEnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBroadcastRecipientStatusFilter<$PrismaModel> | $Enums.BroadcastRecipientStatus
+}
+
+export type EnumBroadcastRecipientStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BroadcastRecipientStatus | Prisma.EnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BroadcastRecipientStatus[] | Prisma.ListEnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BroadcastRecipientStatus[] | Prisma.ListEnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBroadcastRecipientStatusWithAggregatesFilter<$PrismaModel> | $Enums.BroadcastRecipientStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBroadcastRecipientStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBroadcastRecipientStatusFilter<$PrismaModel>
+}
+
 export type NestedUuidFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1690,6 +1724,40 @@ export type NestedEnumSuppressionReasonWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSuppressionReasonFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSuppressionReasonFilter<$PrismaModel>
+}
+
+export type NestedEnumBroadcastCampaignStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BroadcastCampaignStatus | Prisma.EnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BroadcastCampaignStatus[] | Prisma.ListEnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BroadcastCampaignStatus[] | Prisma.ListEnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBroadcastCampaignStatusFilter<$PrismaModel> | $Enums.BroadcastCampaignStatus
+}
+
+export type NestedEnumBroadcastCampaignStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BroadcastCampaignStatus | Prisma.EnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BroadcastCampaignStatus[] | Prisma.ListEnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BroadcastCampaignStatus[] | Prisma.ListEnumBroadcastCampaignStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBroadcastCampaignStatusWithAggregatesFilter<$PrismaModel> | $Enums.BroadcastCampaignStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBroadcastCampaignStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBroadcastCampaignStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBroadcastRecipientStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.BroadcastRecipientStatus | Prisma.EnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BroadcastRecipientStatus[] | Prisma.ListEnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BroadcastRecipientStatus[] | Prisma.ListEnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBroadcastRecipientStatusFilter<$PrismaModel> | $Enums.BroadcastRecipientStatus
+}
+
+export type NestedEnumBroadcastRecipientStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BroadcastRecipientStatus | Prisma.EnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.BroadcastRecipientStatus[] | Prisma.ListEnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BroadcastRecipientStatus[] | Prisma.ListEnumBroadcastRecipientStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBroadcastRecipientStatusWithAggregatesFilter<$PrismaModel> | $Enums.BroadcastRecipientStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBroadcastRecipientStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBroadcastRecipientStatusFilter<$PrismaModel>
 }
 
 
