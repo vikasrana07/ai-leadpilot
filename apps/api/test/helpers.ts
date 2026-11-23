@@ -9,6 +9,7 @@ import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap.js';
 import { loadEnv } from '../src/config/env.js';
 import { MailService } from '../src/mail/mail.module.js';
+import { JobsService } from '../src/ops/jobs.service.js';
 
 export interface SentMail { to: string; kind: 'verify' | 'reset' | 'invite' | 'exists' | 'billing' | 'mfa_reset' | 'alert' | 'portal_code'; token?: string; subject?: string; text?: string }
 
@@ -41,6 +42,9 @@ export async function createTestApp(overrides: { provide: unknown; useValue: unk
   const app = moduleRef.createNestApplication<NestExpressApplication>({ rawBody: true });
   configureApp(app, loadEnv());
   await app.init();
+  // Knowledge documents are processed by the `ai` worker tier in production (queued in Redis). Test apps run no worker, so make the enqueue fail:
+  // KnowledgeService then falls back to its tracked in-process path, which `knowledge.idle()` can await.
+  app.get(JobsService).enqueueDocProcessing = async () => { throw new Error('no ai worker in the test app'); };
   const server = app.getHttpServer() as Parameters<typeof request>[0];
   return { app, mail, http: () => request(server), close: () => app.close() };
 }
