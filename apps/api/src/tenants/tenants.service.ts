@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { bootstrapTenant, switchIndustryPack, type TxClient } from '@leadpilot/database';
-import { packForIndustry } from '@leadpilot/shared-types';
 import type { OnboardingProgress, UpdateTenantInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
@@ -31,9 +30,8 @@ export class TenantsService {
   update(ctx: TenantRequestContext, input: UpdateTenantInput) {
     return this.db.tenantTx(ctx, async (tx) => {
       const data = Object.fromEntries(Object.entries(input).filter(([, v]) => v !== undefined));
-      if (typeof input.industry === 'string') {
-        data.industryPackId = packForIndustry(input.industry).id;
-      }
+      // industryPackId is NOT set here: switchIndustryPack() compares the stored pack with the requested one to decide whether to re-seed, and
+      // it updates tenants.industry_pack_id itself. Setting it first made that comparison always equal, so the pack was never re-seeded.
       const updated = await tx.tenant.update({ where: { id: ctx.tenantId }, data });
       const switched = typeof input.industry === 'string' ? await switchIndustryPack(tx, ctx.tenantId, input.industry, uuidv7) : false;
       await this.audit.record(tx, {
