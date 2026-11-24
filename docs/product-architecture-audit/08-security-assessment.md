@@ -25,9 +25,10 @@ Defensive, static review. No exploitation was attempted and nothing was run agai
 | S-14 | Low | Static `/design/*` demo pages served in production | Confirmed |
 | S-15 | Low | Platform controller is fail-open by construction (mitigated by test) | Confirmed |
 | S-16 | Low | `connect` endpoint body not schema-validated; client-supplied `redirectUri` | Confirmed |
+| S-24 | Low | `api()` turned an empty 200 body (a `null` response) into `undefined`, so the billing-details query failed with "Query data cannot be undefined" | Fixed (#15) |
 | S-17 | Low (info) | No audit-log tamper evidence or export | Fact |
 
-**Status (updated after PR #11):** **fixed:** S-01 (#10), S-02 (#11), S-03 and S-16 (#8), S-04 (#2), S-05 (#9); S-19 partly (disconnect, #4); S-21 partly (#6). **Open:** S-06, S-07, S-08, S-09, S-10, S-18, S-19 (refresh + credential read), S-20, S-22, S-23 and the Low items. IDs are stable references used by other audit documents; the table is ordered by severity, not by ID. Counts: 4 High, 9 Medium (S-05–S-10, S-18–S-20), 6 Low (S-11–S-16), 1 informational (S-17).
+**Status (updated after PR #15):** **fixed:** S-01 (#10), S-02 (#11), S-03 and S-16 (#8), S-04 (#2), S-05 (#9), S-18 (#14), S-19 (#13); S-21 partly (#6); S-24 (#15). **In review:** S-08 (#16). **Open:** S-06, S-07, S-09, S-10, S-20, S-22, S-23 and the remaining Low items. IDs are stable references used by other audit documents; the table is ordered by severity, not by ID. Counts: 4 High, 9 Medium (S-05–S-10, S-18–S-20), 6 Low (S-11–S-16), 1 informational (S-17).
 
 No Critical findings. No SQL injection, XSS or tenant-isolation bypass was found in the areas inspected.
 
@@ -72,11 +73,11 @@ See doc 07 §4.7. `checkScheduledCampaigns` queries `broadcast_campaigns` throug
 ### S-10 Medium — External I/O inside DB transactions (see also S-19)
 `appointments.service.ts:282,303` pass the open `tx` into `gcal.syncAppointment` and discard errors with `.catch(() => null)`. Network stalls hold DB connections; failures leave calendars out of sync silently; token refresh failures are not surfaced.
 
-### S-18 Medium — Platform-admin MFA optional by default
-the platform console can suspend tenants, change plans and open time-boxed read-only support sessions. `platform-auth.ts:45-46` blocks admins without MFA only when `PLATFORM_REQUIRE_MFA` is true; the shipped example env disables it. Related safety flags with insecure-capable values exist (`ALLOW_LOCAL_KEY_IN_PRODUCTION`, `TURNSTILE_ALLOW_OFF_IN_PRODUCTION`). **Remediation:** default to enforced in production, fail boot in `NODE_ENV=production` if any of the three relaxations is set without an explicit acknowledgement, and add the check to the launch checklist.
+### S-18 Medium — Platform-admin MFA optional by default (fixed in #14)
+the platform console can suspend tenants, change plans and open time-boxed read-only support sessions. `platform-auth.ts:45-46` blocks admins without MFA only when `PLATFORM_REQUIRE_MFA` is true; the shipped example env disables it. **Correction:** the two related flags (`ALLOW_LOCAL_KEY_IN_PRODUCTION`, `TURNSTILE_ALLOW_OFF_IN_PRODUCTION`) already make production refuse to boot unless acknowledged (`config/env.ts`); only this one lacked the guard. **Fixed in #14:** unset now means ON in production, and production refuses an explicit `false` unless `PLATFORM_ALLOW_NO_MFA_IN_PRODUCTION=true`.
 
 
-### S-19 Medium — Google Calendar live path likely non-functional
+### S-19 Medium — Google Calendar live path likely non-functional (fixed in #13; confirmed by tests that fail on the old code)
 `google-calendar.service.ts` stores the access token and `expiresAt` but nothing ever exchanges the refresh token (only `grant_type: 'authorization_code'`, L157), so free/busy and event pushes would fail about an hour after connecting. Separately, `getDecryptedTokens` (L411-417) calls `this.db.prisma.integrationCredential.findUniqueOrThrow` with no `app.tenant_id`; `integration_credentials` has a `tenant_isolation` policy (`20261116190000_communication_rls`), so under the app role the row is invisible and the call throws; `appointments.service.ts:282,303` swallow it. Free/busy takes the tenant-scoped path and would only hit the expiry problem. Mock mode skips both, so tests pass. **Remediation:** pass the `tx` through, refresh tokens with expiry check and persist the new token, surface `status='error'` on the card, and add a live-mode test against RLS.
 
 
