@@ -31,6 +31,7 @@ export type BroadcastRecipientMinAggregateOutputType = {
   leadId: string | null
   phone: string | null
   status: $Enums.BroadcastRecipientStatus | null
+  claimedAt: Date | null
   conversationId: string | null
   messageId: string | null
   externalId: string | null
@@ -48,6 +49,7 @@ export type BroadcastRecipientMaxAggregateOutputType = {
   leadId: string | null
   phone: string | null
   status: $Enums.BroadcastRecipientStatus | null
+  claimedAt: Date | null
   conversationId: string | null
   messageId: string | null
   externalId: string | null
@@ -65,6 +67,7 @@ export type BroadcastRecipientCountAggregateOutputType = {
   leadId: number
   phone: number
   status: number
+  claimedAt: number
   conversationId: number
   messageId: number
   externalId: number
@@ -85,6 +88,7 @@ export type BroadcastRecipientMinAggregateInputType = {
   leadId?: true
   phone?: true
   status?: true
+  claimedAt?: true
   conversationId?: true
   messageId?: true
   externalId?: true
@@ -102,6 +106,7 @@ export type BroadcastRecipientMaxAggregateInputType = {
   leadId?: true
   phone?: true
   status?: true
+  claimedAt?: true
   conversationId?: true
   messageId?: true
   externalId?: true
@@ -119,6 +124,7 @@ export type BroadcastRecipientCountAggregateInputType = {
   leadId?: true
   phone?: true
   status?: true
+  claimedAt?: true
   conversationId?: true
   messageId?: true
   externalId?: true
@@ -210,6 +216,7 @@ export type BroadcastRecipientGroupByOutputType = {
   leadId: string
   phone: string
   status: $Enums.BroadcastRecipientStatus
+  claimedAt: Date | null
   conversationId: string | null
   messageId: string | null
   externalId: string | null
@@ -249,6 +256,7 @@ export type BroadcastRecipientWhereInput = {
   leadId?: Prisma.UuidFilter<"BroadcastRecipient"> | string
   phone?: Prisma.StringFilter<"BroadcastRecipient"> | string
   status?: Prisma.EnumBroadcastRecipientStatusFilter<"BroadcastRecipient"> | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
   conversationId?: Prisma.UuidNullableFilter<"BroadcastRecipient"> | string | null
   messageId?: Prisma.UuidNullableFilter<"BroadcastRecipient"> | string | null
   externalId?: Prisma.StringNullableFilter<"BroadcastRecipient"> | string | null
@@ -271,6 +279,7 @@ export type BroadcastRecipientOrderByWithRelationInput = {
   leadId?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  claimedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   conversationId?: Prisma.SortOrderInput | Prisma.SortOrder
   messageId?: Prisma.SortOrderInput | Prisma.SortOrder
   externalId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -297,6 +306,7 @@ export type BroadcastRecipientWhereUniqueInput = Prisma.AtLeast<{
   leadId?: Prisma.UuidFilter<"BroadcastRecipient"> | string
   phone?: Prisma.StringFilter<"BroadcastRecipient"> | string
   status?: Prisma.EnumBroadcastRecipientStatusFilter<"BroadcastRecipient"> | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
   conversationId?: Prisma.UuidNullableFilter<"BroadcastRecipient"> | string | null
   messageId?: Prisma.UuidNullableFilter<"BroadcastRecipient"> | string | null
   externalId?: Prisma.StringNullableFilter<"BroadcastRecipient"> | string | null
@@ -319,6 +329,7 @@ export type BroadcastRecipientOrderByWithAggregationInput = {
   leadId?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  claimedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   conversationId?: Prisma.SortOrderInput | Prisma.SortOrder
   messageId?: Prisma.SortOrderInput | Prisma.SortOrder
   externalId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -343,6 +354,7 @@ export type BroadcastRecipientScalarWhereWithAggregatesInput = {
   leadId?: Prisma.UuidWithAggregatesFilter<"BroadcastRecipient"> | string
   phone?: Prisma.StringWithAggregatesFilter<"BroadcastRecipient"> | string
   status?: Prisma.EnumBroadcastRecipientStatusWithAggregatesFilter<"BroadcastRecipient"> | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BroadcastRecipient"> | Date | string | null
   conversationId?: Prisma.UuidNullableWithAggregatesFilter<"BroadcastRecipient"> | string | null
   messageId?: Prisma.UuidNullableWithAggregatesFilter<"BroadcastRecipient"> | string | null
   externalId?: Prisma.StringNullableWithAggregatesFilter<"BroadcastRecipient"> | string | null
@@ -359,6 +371,7 @@ export type BroadcastRecipientCreateInput = {
   tenantId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   externalId?: string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Date | string | null
@@ -379,6 +392,7 @@ export type BroadcastRecipientUncheckedCreateInput = {
   leadId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   conversationId?: string | null
   messageId?: string | null
   externalId?: string | null
@@ -395,6 +409,7 @@ export type BroadcastRecipientUpdateInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -415,6 +430,7 @@ export type BroadcastRecipientUncheckedUpdateInput = {
   leadId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   conversationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -433,6 +449,7 @@ export type BroadcastRecipientCreateManyInput = {
   leadId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   conversationId?: string | null
   messageId?: string | null
   externalId?: string | null
@@ -449,6 +466,7 @@ export type BroadcastRecipientUpdateManyMutationInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -465,6 +483,7 @@ export type BroadcastRecipientUncheckedUpdateManyInput = {
   leadId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   conversationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -498,6 +517,7 @@ export type BroadcastRecipientCountOrderByAggregateInput = {
   leadId?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  claimedAt?: Prisma.SortOrder
   conversationId?: Prisma.SortOrder
   messageId?: Prisma.SortOrder
   externalId?: Prisma.SortOrder
@@ -516,6 +536,7 @@ export type BroadcastRecipientMaxOrderByAggregateInput = {
   leadId?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  claimedAt?: Prisma.SortOrder
   conversationId?: Prisma.SortOrder
   messageId?: Prisma.SortOrder
   externalId?: Prisma.SortOrder
@@ -533,6 +554,7 @@ export type BroadcastRecipientMinOrderByAggregateInput = {
   leadId?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  claimedAt?: Prisma.SortOrder
   conversationId?: Prisma.SortOrder
   messageId?: Prisma.SortOrder
   externalId?: Prisma.SortOrder
@@ -720,6 +742,7 @@ export type BroadcastRecipientCreateWithoutLeadInput = {
   tenantId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   externalId?: string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Date | string | null
@@ -738,6 +761,7 @@ export type BroadcastRecipientUncheckedCreateWithoutLeadInput = {
   campaignId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   conversationId?: string | null
   messageId?: string | null
   externalId?: string | null
@@ -785,6 +809,7 @@ export type BroadcastRecipientScalarWhereInput = {
   leadId?: Prisma.UuidFilter<"BroadcastRecipient"> | string
   phone?: Prisma.StringFilter<"BroadcastRecipient"> | string
   status?: Prisma.EnumBroadcastRecipientStatusFilter<"BroadcastRecipient"> | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
   conversationId?: Prisma.UuidNullableFilter<"BroadcastRecipient"> | string | null
   messageId?: Prisma.UuidNullableFilter<"BroadcastRecipient"> | string | null
   externalId?: Prisma.StringNullableFilter<"BroadcastRecipient"> | string | null
@@ -801,6 +826,7 @@ export type BroadcastRecipientCreateWithoutConversationInput = {
   tenantId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   externalId?: string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Date | string | null
@@ -820,6 +846,7 @@ export type BroadcastRecipientUncheckedCreateWithoutConversationInput = {
   leadId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   messageId?: string | null
   externalId?: string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -861,6 +888,7 @@ export type BroadcastRecipientCreateWithoutMessageInput = {
   tenantId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   externalId?: string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Date | string | null
@@ -880,6 +908,7 @@ export type BroadcastRecipientUncheckedCreateWithoutMessageInput = {
   leadId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   conversationId?: string | null
   externalId?: string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -921,6 +950,7 @@ export type BroadcastRecipientCreateWithoutCampaignInput = {
   tenantId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   externalId?: string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Date | string | null
@@ -939,6 +969,7 @@ export type BroadcastRecipientUncheckedCreateWithoutCampaignInput = {
   leadId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   conversationId?: string | null
   messageId?: string | null
   externalId?: string | null
@@ -982,6 +1013,7 @@ export type BroadcastRecipientCreateManyLeadInput = {
   campaignId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   conversationId?: string | null
   messageId?: string | null
   externalId?: string | null
@@ -998,6 +1030,7 @@ export type BroadcastRecipientUpdateWithoutLeadInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1016,6 +1049,7 @@ export type BroadcastRecipientUncheckedUpdateWithoutLeadInput = {
   campaignId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   conversationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1033,6 +1067,7 @@ export type BroadcastRecipientUncheckedUpdateManyWithoutLeadInput = {
   campaignId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   conversationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1051,6 +1086,7 @@ export type BroadcastRecipientCreateManyConversationInput = {
   leadId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   messageId?: string | null
   externalId?: string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1066,6 +1102,7 @@ export type BroadcastRecipientUpdateWithoutConversationInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1085,6 +1122,7 @@ export type BroadcastRecipientUncheckedUpdateWithoutConversationInput = {
   leadId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1102,6 +1140,7 @@ export type BroadcastRecipientUncheckedUpdateManyWithoutConversationInput = {
   leadId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1119,6 +1158,7 @@ export type BroadcastRecipientCreateManyMessageInput = {
   leadId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   conversationId?: string | null
   externalId?: string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1134,6 +1174,7 @@ export type BroadcastRecipientUpdateWithoutMessageInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1153,6 +1194,7 @@ export type BroadcastRecipientUncheckedUpdateWithoutMessageInput = {
   leadId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   conversationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1170,6 +1212,7 @@ export type BroadcastRecipientUncheckedUpdateManyWithoutMessageInput = {
   leadId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   conversationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -1186,6 +1229,7 @@ export type BroadcastRecipientCreateManyCampaignInput = {
   leadId: string
   phone: string
   status?: $Enums.BroadcastRecipientStatus
+  claimedAt?: Date | string | null
   conversationId?: string | null
   messageId?: string | null
   externalId?: string | null
@@ -1202,6 +1246,7 @@ export type BroadcastRecipientUpdateWithoutCampaignInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   error?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1220,6 +1265,7 @@ export type BroadcastRecipientUncheckedUpdateWithoutCampaignInput = {
   leadId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   conversationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1237,6 +1283,7 @@ export type BroadcastRecipientUncheckedUpdateManyWithoutCampaignInput = {
   leadId?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumBroadcastRecipientStatusFieldUpdateOperationsInput | $Enums.BroadcastRecipientStatus
+  claimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   conversationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1257,6 +1304,7 @@ export type BroadcastRecipientSelect<ExtArgs extends runtime.Types.Extensions.In
   leadId?: boolean
   phone?: boolean
   status?: boolean
+  claimedAt?: boolean
   conversationId?: boolean
   messageId?: boolean
   externalId?: boolean
@@ -1279,6 +1327,7 @@ export type BroadcastRecipientSelectCreateManyAndReturn<ExtArgs extends runtime.
   leadId?: boolean
   phone?: boolean
   status?: boolean
+  claimedAt?: boolean
   conversationId?: boolean
   messageId?: boolean
   externalId?: boolean
@@ -1301,6 +1350,7 @@ export type BroadcastRecipientSelectUpdateManyAndReturn<ExtArgs extends runtime.
   leadId?: boolean
   phone?: boolean
   status?: boolean
+  claimedAt?: boolean
   conversationId?: boolean
   messageId?: boolean
   externalId?: boolean
@@ -1323,6 +1373,7 @@ export type BroadcastRecipientSelectScalar = {
   leadId?: boolean
   phone?: boolean
   status?: boolean
+  claimedAt?: boolean
   conversationId?: boolean
   messageId?: boolean
   externalId?: boolean
@@ -1334,7 +1385,7 @@ export type BroadcastRecipientSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BroadcastRecipientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "campaignId" | "leadId" | "phone" | "status" | "conversationId" | "messageId" | "externalId" | "error" | "sentAt" | "deliveredAt" | "readAt" | "createdAt" | "updatedAt", ExtArgs["result"]["broadcastRecipient"]>
+export type BroadcastRecipientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "campaignId" | "leadId" | "phone" | "status" | "claimedAt" | "conversationId" | "messageId" | "externalId" | "error" | "sentAt" | "deliveredAt" | "readAt" | "createdAt" | "updatedAt", ExtArgs["result"]["broadcastRecipient"]>
 export type BroadcastRecipientInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   campaign?: boolean | Prisma.BroadcastCampaignDefaultArgs<ExtArgs>
   lead?: boolean | Prisma.LeadDefaultArgs<ExtArgs>
@@ -1369,6 +1420,10 @@ export type $BroadcastRecipientPayload<ExtArgs extends runtime.Types.Extensions.
     leadId: string
     phone: string
     status: $Enums.BroadcastRecipientStatus
+    /**
+     * Set when a dispatcher claims the row (QUEUED). A QUEUED row older than the lease is never re-sent: its delivery state is unknown.
+     */
+    claimedAt: Date | null
     conversationId: string | null
     messageId: string | null
     externalId: string | null
@@ -1811,6 +1866,7 @@ export interface BroadcastRecipientFieldRefs {
   readonly leadId: Prisma.FieldRef<"BroadcastRecipient", 'String'>
   readonly phone: Prisma.FieldRef<"BroadcastRecipient", 'String'>
   readonly status: Prisma.FieldRef<"BroadcastRecipient", 'BroadcastRecipientStatus'>
+  readonly claimedAt: Prisma.FieldRef<"BroadcastRecipient", 'DateTime'>
   readonly conversationId: Prisma.FieldRef<"BroadcastRecipient", 'String'>
   readonly messageId: Prisma.FieldRef<"BroadcastRecipient", 'String'>
   readonly externalId: Prisma.FieldRef<"BroadcastRecipient", 'String'>

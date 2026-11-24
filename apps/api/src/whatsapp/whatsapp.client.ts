@@ -42,7 +42,7 @@ export const WHATSAPP_CLIENT = Symbol('WHATSAPP_CLIENT');
 
 /** Error codes Meta documents as rate/throughput limits (130429 throughput, 131056 pair rate limit, 80007 WABA rate limit). */
 const MAX_MEDIA_BYTES = 25 * 1024 * 1024;
-const RATE_LIMIT_CODES = new Set([130429, 131056, 80007, 4, 17, 613]);
+export const RATE_LIMIT_CODES = new Set([130429, 131056, 80007, 4, 17, 613]);
 
 @Injectable()
 export class LiveWhatsAppClient implements WhatsAppClient {

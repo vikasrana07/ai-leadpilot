@@ -164,7 +164,7 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
   }
 
   /** Enqueues broadcast campaign batch dispatching */
-  async enqueueCampaignDispatch(tenantId: string, campaignId: string): Promise<void> {
+  async enqueueCampaignDispatch(tenantId: string, campaignId: string, delayMs = 0): Promise<void> {
     if (!this.campaignsQueue) {
       if (this.processCampaignBatch) {
         void this.processCampaignBatch(tenantId, campaignId).catch((e) =>
@@ -173,7 +173,7 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
       }
       return;
     }
-    await this.campaignsQueue.add('dispatch-batch', { tenantId, campaignId }, { jobId: `campaign:${campaignId}:${Date.now()}` });
+    await this.campaignsQueue.add('dispatch-batch', { tenantId, campaignId }, { jobId: `campaign:${campaignId}:${Date.now()}`, ...(delayMs > 0 ? { delay: delayMs } : {}) });
   }
 
   /** Enqueues heavy AI document parsing, chunking, and vector embedding calculation to the AI worker tier. */
