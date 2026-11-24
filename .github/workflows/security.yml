@@ -1,0 +1,62 @@
+name: Security
+
+# Supply-chain and secret scanning (audit S-08). Separate from ci.yml so a scanner outage never blocks the build/test job,
+# and so it can also run on a schedule: new advisories appear without any code change.
+on:
+  push: { branches: [main] }
+  pull_request:
+  schedule:
+    - cron: '17 3 * * 1' # Mondays 03:17 UTC
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    name: Dependency audit (high and critical block)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      # Resolves against the lockfile only: no install needed. Moderate/low findings are listed but do not fail the job.
+      - name: pnpm audit
+        run: |
+          pnpm audit --audit-level=high
+          echo '--- full report (informational) ---'
+          pnpm audit || true
+
+  secret-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 } # the whole history: a secret removed in a later commit is still public
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  codeql:
+    name: CodeQL (JavaScript/TypeScript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript-typescript

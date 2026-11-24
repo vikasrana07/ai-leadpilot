@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  effect@<3.22.1: 3.22.5
+
 importers:
 
   .:
@@ -34,7 +37,7 @@ importers:
         version: 7.1.1(eslint@10.15.0(jiti@2.7.0))
       orval:
         specifier: ^8.48.0
-        version: 8.48.0(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1))(effect@3.20.0)(valibot@1.4.2(typescript@6.0.3))(zod@4.6.7)
+        version: 8.48.0(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1))(effect@3.22.5)(valibot@1.4.2(typescript@6.0.3))(zod@4.6.7)
       pg:
         specifier: ^8.23.1
         version: 8.23.1
@@ -167,7 +170,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: ^7.0.6
-        version: 7.0.6(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.20.0)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.7)
+        version: 7.0.6(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.22.5)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.7)
       '@leadpilot/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
@@ -1240,7 +1243,7 @@ packages:
   '@orval/effect@8.48.0':
     resolution: {integrity: sha512-O9JZVJkU2zqcW5jD28IWs9z0jhBSQ1uJiCxMrAucYbyppUltPKO66OpSsazG2qxD3U4UdWnp1E3XJ2pRTtwnAQ==}
     peerDependencies:
-      effect: '>=3'
+      effect: 3.22.5
     peerDependenciesMeta:
       effect:
         optional: true
@@ -2859,8 +2862,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  effect@3.20.0:
-    resolution: {integrity: sha512-qMLfDJscrNG8p/aw+IkT9W7fgj50Z4wG5bLBy0Txsxz8iUHjDIkOgO3SV0WZfnQbNG2VJYb0b+rDLMrhM4+Krw==}
+  effect@3.22.5:
+    resolution: {integrity: sha512-AdIU4llI19BzhJ4xUBZix7kS8oiYSlCsJ61j3UM3UyJw9ecDrsrrweDFm/Ku1nHbJWMLoynK+1Me4it3Zkmjpw==}
 
   electron-to-chromium@1.5.486:
     resolution: {integrity: sha512-rpybw4Ac4ak/An6G1Me2+61xzwobowDGyuJe71QHHOVpkZv4fPVobsLl7WH6zHSKusAMpaHxGKTpOvpy7+r3dQ==}
@@ -4934,7 +4937,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@hookform/resolvers@7.0.6(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.20.0)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.7)':
+  '@hookform/resolvers@7.0.6(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.22.5)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(valibot@1.4.2(typescript@6.0.3))(zod@4.6.7)':
     dependencies:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.92.0(@types/react@19.3.0)(react@19.3.1)
@@ -4942,7 +4945,7 @@ snapshots:
       '@standard-schema/spec': 1.1.0
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
-      effect: 3.20.0
+      effect: 3.22.5
       valibot: 1.4.2(typescript@6.0.3)
       zod: 4.6.7
 
@@ -5255,11 +5258,11 @@ snapshots:
       jsesc: 3.1.0
       tinyglobby: 0.2.17
 
-  '@orval/effect@8.48.0(effect@3.20.0)':
+  '@orval/effect@8.48.0(effect@3.22.5)':
     dependencies:
       '@orval/core': 8.48.0
     optionalDependencies:
-      effect: 3.20.0
+      effect: 3.22.5
     transitivePeerDependencies:
       - '@faker-js/faker'
       - '@modelcontextprotocol/server'
@@ -5385,7 +5388,7 @@ snapshots:
     dependencies:
       c12: 3.3.4
       deepmerge-ts: 8.0.2
-      effect: 3.20.0
+      effect: 3.22.5
       empathic: 2.0.0
     transitivePeerDependencies:
       - magicast
@@ -6896,7 +6899,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  effect@3.20.0:
+  effect@3.22.5:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2
@@ -7670,13 +7673,13 @@ snapshots:
       type-check: 0.4.0
       word-wrap: 1.2.5
 
-  orval@8.48.0(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1))(effect@3.20.0)(valibot@1.4.2(typescript@6.0.3))(zod@4.6.7):
+  orval@8.48.0(@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.1))(effect@3.22.5)(valibot@1.4.2(typescript@6.0.3))(zod@4.6.7):
     dependencies:
       '@commander-js/extra-typings': 15.1.0(commander@15.1.0)
       '@orval/angular': 8.48.0
       '@orval/axios': 8.48.0
       '@orval/core': 8.48.0
-      '@orval/effect': 8.48.0(effect@3.20.0)
+      '@orval/effect': 8.48.0(effect@3.22.5)
       '@orval/fetch': 8.48.0
       '@orval/hono': 8.48.0(zod@4.6.7)
       '@orval/mcp': 8.48.0(zod@4.6.7)

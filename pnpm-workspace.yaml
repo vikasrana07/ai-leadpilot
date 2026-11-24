@@ -11,3 +11,8 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
   msgpackr-extract: true
+
+# Security overrides for transitive dependencies (audit S-08). Remove an entry once the parent packages ship a fixed range.
+overrides:
+  # GHSA-7589-6fvf-x4pw: ReDoS in effect's Schema.TemplateLiteral (<= 3.22.0), pulled in by @hookform/resolvers and @prisma/config.
+  'effect@<3.22.1': '3.22.5'
