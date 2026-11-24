@@ -18,6 +18,7 @@ import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { timeAgo } from '@/lib/format';
 import { handleApiError } from '@/lib/forms';
+import { useAuth } from '@/lib/auth';
 import type {
   EmailEngagementStatsDto,
   EmailSuppressionDto,
@@ -27,6 +28,8 @@ import type {
 
 export default function EmailTrackingPage() {
   const qc = useQueryClient();
+  const { can } = useAuth();
+  const canSuppress = can('email:suppress:manage');
   const [tab, setTab] = useState<'emails' | 'suppressions'>('emails');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [search, setSearch] = useState('');
@@ -202,6 +205,7 @@ export default function EmailTrackingPage() {
               Tracked Outbox
               {tab === 'emails' && <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-primary" />}
             </button>
+            {canSuppress && (
             <button
               role="tab"
               aria-selected={tab === 'suppressions'}
@@ -214,9 +218,10 @@ export default function EmailTrackingPage() {
               Suppression List
               {tab === 'suppressions' && <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-primary" />}
             </button>
+            )}
           </div>
 
-          {tab === 'suppressions' && (
+          {canSuppress && tab === 'suppressions' && (
             <Button size="sm" variant="primary" onClick={() => setSuppressOpen(true)}>
               <Plus className="mr-1 h-3.5 w-3.5" /> Suppress Email
             </Button>

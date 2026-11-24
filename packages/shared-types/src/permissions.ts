@@ -33,6 +33,10 @@ export const PERMISSIONS = {
   'automation:manage': 'Manage automations',
   'campaign:read': 'View broadcast campaigns',
   'campaign:manage': 'Create, edit, schedule, and cancel broadcast campaigns',
+  // Email tracking
+  'email:read:own': 'View tracked emails sent to my leads',
+  'email:read:all': 'View all tracked emails in the workspace',
+  'email:suppress:manage': 'View and change the email suppression list',
   // Analytics
   'analytics:read:own': 'View my performance',
   'analytics:read:team': 'View team analytics',
@@ -57,7 +61,7 @@ export type SystemRoleKey = 'owner' | 'manager' | 'agent';
 
 const AGENT: PermissionKey[] = [
   'lead:read:own', 'lead:write:own', 'conversation:read:own', 'conversation:reply',
-  'appointment:read:own', 'appointment:write', 'analytics:read:own', 'team:read', 'property:read',
+  'appointment:read:own', 'appointment:write', 'analytics:read:own', 'team:read', 'property:read', 'email:read:own',
 ];
 
 const MANAGER: PermissionKey[] = [
@@ -65,6 +69,7 @@ const MANAGER: PermissionKey[] = [
   'lead:read:all', 'lead:write:all', 'lead:assign', 'lead:import', 'lead:export', 'lead:score:override',
   'pipeline:manage', 'conversation:read:all', 'conversation:assign', 'appointment:read:all',
   'analytics:read:team', 'analytics:read:all', 'usage:read', 'automation:manage', 'campaign:read', 'campaign:manage', 'property:manage',
+  'email:read:all', 'email:suppress:manage',
 ];
 
 export const SYSTEM_ROLES: Record<SystemRoleKey, { name: string; permissions: readonly PermissionKey[] }> = {
