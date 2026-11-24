@@ -57,8 +57,10 @@ export class EmailTrackingService {
     @Inject(MailService) private readonly mail: MailService,
   ) {}
 
-  private get secret(): string {
-    return this.env.TRACKING_SECRET || this.env.JWT_ACCESS_SECRET || 'leadpilot-default-tracking-hmac-key-2026';
+  /** TRACKING_SECRET when set (required in production). Otherwise a domain-separated key derived from the session secret, never the secret itself. */
+  private get secret(): string | Buffer {
+    if (this.env.TRACKING_SECRET) return this.env.TRACKING_SECRET;
+    return createHmac('sha256', this.env.JWT_ACCESS_SECRET).update('leadpilot/email-tracking/v1').digest();
   }
 
   private get baseUrl(): string {

@@ -18,7 +18,7 @@ const production = (over: Record<string, string> = {}) => ({
   WHATSAPP_MODE: 'live', EMBEDDED_SIGNUP_MODE: 'off', VIRUS_SCAN_MODE: 'clamav', AI_PROVIDER: 'openai', OPENAI_API_KEY: 'sk-test',
   KEY_PROVIDER: 'kms', KMS_KEY_ID: 'alias/test', TURNSTILE_MODE: 'live', TURNSTILE_SECRET: 's', TURNSTILE_SITE_KEY: 'k',
   RAZORPAY_MODE: 'live', RAZORPAY_KEY_ID: 'rzp_live_x', RAZORPAY_KEY_SECRET: 's', RAZORPAY_WEBHOOK_SECRET: 'w'.repeat(24), SELLER_GSTIN: '29ABCDE1234F1Z5',
-  PLATFORM_JWT_SECRET: 'p'.repeat(48),
+  PLATFORM_JWT_SECRET: 'p'.repeat(48), TRACKING_SECRET: 't'.repeat(32),
   ...over,
 });
 
