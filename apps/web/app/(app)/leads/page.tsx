@@ -95,6 +95,13 @@ export default function LeadsPage() {
     setDensity,
     densityCellClass,
     densityHeaderClass,
+    orderedColumns,
+    visibleOrderedColumns,
+    pinnedColumnIds,
+    isColumnPinned,
+    togglePinColumn,
+    moveColumn,
+    reorderColumns,
   } = useTablePreferences('leads', columns);
 
   const params = {
@@ -267,31 +274,278 @@ export default function LeadsPage() {
     }
   };
 
-  const th = (label: string, key?: SortKey, cls = '') => (
-    <th
-      scope="col"
-      className={cn('font-medium', densityHeaderClass, cls)}
-      aria-sort={key && sort.key === key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
-    >
-      {key ? (
-        <button
-          className="inline-flex items-center gap-1 hover:text-foreground"
-          onClick={() => setSort((s) => ({ key, dir: s.key === key && s.dir === 'desc' ? 'asc' : 'desc' }))}
-        >
-          {label}
-          {sort.key === key ? (
-            sort.dir === 'asc' ? (
-              <ArrowUp className="h-3 w-3" aria-hidden />
+  // Compute sticky offsets for frozen columns
+  const getColumnWidth = (colId: string) => {
+    switch (colId) {
+      case 'lead':
+        return 220;
+      case 'stage':
+        return 140;
+      case 'temperature':
+        return 90;
+      case 'budget':
+      case 'interest':
+        return 120;
+      case 'assigned':
+        return 140;
+      case 'score':
+        return 80;
+      case 'followUp':
+        return 120;
+      case 'createdAt':
+        return 110;
+      case 'actions':
+        return 112;
+      default:
+        return 120;
+    }
+  };
+
+  const frozenOffsetMap = useMemo(() => {
+    const map = new Map<string, number>();
+    let offset = 40; // width of row checkbox column (w-10 = 40px)
+    for (const col of visibleOrderedColumns) {
+      if (isColumnPinned(col.id)) {
+        map.set(col.id, offset);
+        offset += getColumnWidth(col.id);
+      }
+    }
+    return map;
+  }, [visibleOrderedColumns, isColumnPinned]);
+
+  const th = (label: string, key?: SortKey, cls = '', colId?: string) => {
+    const isPinned = colId ? isColumnPinned(colId) : false;
+    const offset = colId ? frozenOffsetMap.get(colId) : undefined;
+    const style = isPinned && offset !== undefined ? { left: `${offset}px` } : undefined;
+
+    return (
+      <th
+        key={colId ?? label}
+        scope="col"
+        style={style}
+        className={cn(
+          'font-medium',
+          densityHeaderClass,
+          cls,
+          isPinned && 'sticky z-20 bg-surface/95 border-r border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]'
+        )}
+        aria-sort={key && sort.key === key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
+      >
+        {key ? (
+          <button
+            className="inline-flex items-center gap-1 hover:text-foreground"
+            onClick={() => setSort((s) => ({ key, dir: s.key === key && s.dir === 'desc' ? 'asc' : 'desc' }))}
+          >
+            {label}
+            {sort.key === key ? (
+              sort.dir === 'asc' ? (
+                <ArrowUp className="h-3 w-3" aria-hidden />
+              ) : (
+                <ArrowDown className="h-3 w-3" aria-hidden />
+              )
+            ) : null}
+          </button>
+        ) : (
+          label
+        )}
+      </th>
+    );
+  };
+
+  const renderHeaderCell = (colId: string) => {
+    switch (colId) {
+      case 'lead':
+        return th(terms.Lead, 'name', 'min-w-[200px]', 'lead');
+      case 'stage':
+        return th('Stage', undefined, 'min-w-[140px]', 'stage');
+      case 'temperature':
+        return th('Temp.', undefined, 'min-w-[90px]', 'temperature');
+      case 'budget':
+        return lf.budget ? th(lf.budget.label, undefined, 'min-w-[120px]', 'budget') : null;
+      case 'interest':
+        return !lf.budget && lf.interest ? th(lf.interest.label, undefined, 'min-w-[120px]', 'interest') : null;
+      case 'assigned':
+        return th('Assigned', undefined, 'min-w-[140px]', 'assigned');
+      case 'score':
+        return th('Score', 'score', 'text-right min-w-[80px]', 'score');
+      case 'followUp':
+        return th('Follow-up', 'nextFollowUpAt', 'min-w-[120px]', 'followUp');
+      case 'createdAt':
+        return th('Added', 'createdAt', 'min-w-[110px]', 'createdAt');
+      case 'actions': {
+        const isPinned = isColumnPinned('actions');
+        const offset = frozenOffsetMap.get('actions');
+        const style = isPinned && offset !== undefined ? { left: `${offset}px` } : undefined;
+        return (
+          <th
+            key="actions"
+            scope="col"
+            style={style}
+            className={cn(
+              'w-28 text-right pr-4 font-medium',
+              densityHeaderClass,
+              isPinned && 'sticky z-20 bg-surface/95 border-r border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]'
+            )}
+          >
+            Actions
+          </th>
+        );
+      }
+      default:
+        return null;
+    }
+  };
+
+  const renderRowCell = (colId: string, l: LeadDto) => {
+    const isPinned = isColumnPinned(colId);
+    const offset = frozenOffsetMap.get(colId);
+    const style = isPinned && offset !== undefined ? { left: `${offset}px` } : undefined;
+    const pinnedClass = isPinned
+      ? 'sticky z-10 bg-surface border-r border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]'
+      : '';
+
+    switch (colId) {
+      case 'lead':
+        return (
+          <td key="lead" style={style} className={cn(densityCellClass, pinnedClass)}>
+            <Link href={`/leads/${l.id}`} className="block">
+              <span className="font-medium hover:text-primary">{l.name}</span>
+              <span className="text-helper block">
+                {l.phone ?? l.email}
+                {l.location ? ` · ${l.location}` : ''}
+              </span>
+            </Link>
+          </td>
+        );
+      case 'stage':
+        return (
+          <td key="stage" style={style} className={cn(densityCellClass, pinnedClass)}>
+            <div className="flex items-center gap-1.5">
+              <StageBadge name={l.stage.name} kind={l.stage.kind} />
+              {(can('lead:write:all') || can('lead:write:own')) && stages.data?.stages ? (
+                <select
+                  aria-label={`Change stage for ${l.name}`}
+                  value={l.stage.id}
+                  onChange={(e) => {
+                    const nextStageId = e.target.value;
+                    if (nextStageId && nextStageId !== l.stage.id) {
+                      changeLeadStage.mutate({ id: l.id, stageId: nextStageId });
+                    }
+                  }}
+                  className="h-6 rounded border border-border bg-surface px-1 text-[11px] text-muted-foreground cursor-pointer"
+                  title="Quick change stage"
+                >
+                  {stages.data.stages.map((st) => (
+                    <option key={st.id} value={st.id}>
+                      {st.name}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
+            </div>
+          </td>
+        );
+      case 'temperature':
+        return (
+          <td key="temperature" style={style} className={cn(densityCellClass, pinnedClass)}>
+            <TemperatureBadge value={l.temperature} />
+          </td>
+        );
+      case 'budget':
+        return lf.budget ? (
+          <td key="budget" style={style} className={cn('num whitespace-nowrap', densityCellClass, pinnedClass)}>
+            {formatBudget(l.budgetMin, l.budgetMax)}
+          </td>
+        ) : null;
+      case 'interest':
+        return !lf.budget && lf.interest ? (
+          <td key="interest" style={style} className={cn('whitespace-nowrap', densityCellClass, pinnedClass)}>
+            <span className="text-[13px] text-foreground">{l.propertyType || '—'}</span>
+          </td>
+        ) : null;
+      case 'assigned':
+        return (
+          <td key="assigned" style={style} className={cn(densityCellClass, pinnedClass)}>
+            {l.assignee ? (
+              <span className="flex items-center gap-2">
+                <Avatar name={l.assignee.name} size={density === 'compact' ? 18 : 22} />
+                <span className="truncate">{l.assignee.name}</span>
+              </span>
             ) : (
-              <ArrowDown className="h-3 w-3" aria-hidden />
-            )
-          ) : null}
-        </button>
-      ) : (
-        label
-      )}
-    </th>
-  );
+              <span className="text-muted-foreground">Unassigned</span>
+            )}
+          </td>
+        );
+      case 'score':
+        return (
+          <td key="score" style={style} className={cn('num text-right', densityCellClass, pinnedClass)}>
+            {l.score ?? <span className="text-muted-foreground">—</span>}
+          </td>
+        );
+      case 'followUp': {
+        const overdue =
+          l.nextFollowUpAt !== null &&
+          new Date(l.nextFollowUpAt) < new Date() &&
+          l.stage.kind === 'OPEN';
+        return (
+          <td
+            key="followUp"
+            style={style}
+            className={cn('num whitespace-nowrap', densityCellClass, overdue && 'font-medium text-danger', pinnedClass)}
+          >
+            {l.nextFollowUpAt ? timeAgo(l.nextFollowUpAt) : <span className="text-muted-foreground">—</span>}
+          </td>
+        );
+      }
+      case 'createdAt':
+        return (
+          <td key="createdAt" style={style} className={cn('num whitespace-nowrap text-muted-foreground', densityCellClass, pinnedClass)}>
+            {timeAgo(l.createdAt)}
+          </td>
+        );
+      case 'actions':
+        return (
+          <td key="actions" style={style} className={cn('w-28 whitespace-nowrap text-right pr-4', densityCellClass, pinnedClass)}>
+            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+              {l.phone ? (
+                <a
+                  href={`https://wa.me/${l.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                    `Hi ${l.name}, reaching out regarding your enquiry.`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Chat with ${l.name} on WhatsApp`}
+                  title="Chat on WhatsApp"
+                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-primary transition-colors"
+                >
+                  <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+                </a>
+              ) : null}
+              {l.phone ? (
+                <a
+                  href={`tel:${l.phone}`}
+                  aria-label={`Call ${l.name}`}
+                  title={`Call ${l.phone}`}
+                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                >
+                  <Phone className="h-3.5 w-3.5" aria-hidden />
+                </a>
+              ) : null}
+              <Link
+                href={`/appointments?bookLeadId=${l.id}&bookLeadName=${encodeURIComponent(l.name)}`}
+                aria-label={`Book appointment for ${l.name}`}
+                title="Book appointment"
+                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              >
+                <CalendarPlus className="h-3.5 w-3.5" aria-hidden />
+              </Link>
+            </div>
+          </td>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
@@ -353,8 +607,14 @@ export default function LeadsPage() {
             },
           ]}
           columns={columns}
+          orderedColumns={orderedColumns}
           isColumnVisible={isColumnVisible}
           onToggleColumn={toggleColumn}
+          onMoveColumn={moveColumn}
+          onReorderColumns={reorderColumns}
+          onTogglePinColumn={togglePinColumn}
+          isColumnPinned={isColumnPinned}
+          pinnedColumnIds={pinnedColumnIds}
           onResetColumns={resetColumns}
           onShowAllColumns={showAllColumns}
           density={density}
@@ -498,7 +758,7 @@ export default function LeadsPage() {
               <table className="w-full min-w-[860px] text-left">
                 <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-label text-muted-foreground shadow-xs">
                   <tr>
-                    <th scope="col" className={cn('w-10 px-3', densityHeaderClass)}>
+                    <th scope="col" className={cn('sticky left-0 z-20 bg-surface/95 w-10 px-3', densityHeaderClass)}>
                       <input
                         type="checkbox"
                         aria-label="Select all on this page"
@@ -512,180 +772,33 @@ export default function LeadsPage() {
                         }
                       />
                     </th>
-                    {isColumnVisible('lead') && th(terms.Lead, 'name')}
-                    {isColumnVisible('stage') && th('Stage')}
-                    {isColumnVisible('temperature') && th('Temp.')}
-                    {lf.budget && isColumnVisible('budget') ? th(lf.budget.label) : null}
-                    {!lf.budget && lf.interest && isColumnVisible('interest') ? th(lf.interest.label) : null}
-                    {isColumnVisible('assigned') && th('Assigned')}
-                    {isColumnVisible('score') && th('Score', 'score', 'text-right')}
-                    {isColumnVisible('followUp') && th('Follow-up', 'nextFollowUpAt')}
-                    {isColumnVisible('createdAt') && th('Added', 'createdAt')}
-                    {isColumnVisible('actions') && (
-                      <th scope="col" className={cn('w-28 text-right pr-4 font-medium', densityHeaderClass)}>
-                        Actions
-                      </th>
-                    )}
+                    {visibleOrderedColumns.map((col) => renderHeaderCell(col.id))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {items.map((l) => {
-                    const overdue =
-                      l.nextFollowUpAt !== null &&
-                      new Date(l.nextFollowUpAt) < new Date() &&
-                      l.stage.kind === 'OPEN';
-
-                    return (
-                      <tr
-                        key={l.id}
-                        className={cn('hover:bg-muted/40 transition-colors', selected.has(l.id) && 'bg-primary-soft/50')}
-                      >
-                        <td className={cn('w-10 px-3', densityCellClass)}>
-                          <input
-                            type="checkbox"
-                            aria-label={`Select ${l.name}`}
-                            checked={selected.has(l.id)}
-                            onChange={(e) =>
-                              setSelected((s) => {
-                                const n = new Set(s);
-                                if (e.target.checked) n.add(l.id);
-                                else n.delete(l.id);
-                                return n;
-                              })
-                            }
-                          />
-                        </td>
-
-                        {isColumnVisible('lead') && (
-                          <td className={densityCellClass}>
-                            <Link href={`/leads/${l.id}`} className="block">
-                              <span className="font-medium hover:text-primary">{l.name}</span>
-                              <span className="text-helper block">
-                                {l.phone ?? l.email}
-                                {l.location ? ` · ${l.location}` : ''}
-                              </span>
-                            </Link>
-                          </td>
-                        )}
-
-                        {isColumnVisible('stage') && (
-                          <td className={densityCellClass}>
-                            <div className="flex items-center gap-1.5">
-                              <StageBadge name={l.stage.name} kind={l.stage.kind} />
-                              {(can('lead:write:all') || can('lead:write:own')) && stages.data?.stages ? (
-                                <select
-                                  aria-label={`Change stage for ${l.name}`}
-                                  value={l.stage.id}
-                                  onChange={(e) => {
-                                    const nextStageId = e.target.value;
-                                    if (nextStageId && nextStageId !== l.stage.id) {
-                                      changeLeadStage.mutate({ id: l.id, stageId: nextStageId });
-                                    }
-                                  }}
-                                  className="h-6 rounded border border-border bg-surface px-1 text-[11px] text-muted-foreground cursor-pointer"
-                                  title="Quick change stage"
-                                >
-                                  {stages.data.stages.map((st) => (
-                                    <option key={st.id} value={st.id}>
-                                      {st.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              ) : null}
-                            </div>
-                          </td>
-                        )}
-
-                        {isColumnVisible('temperature') && (
-                          <td className={densityCellClass}>
-                            <TemperatureBadge value={l.temperature} />
-                          </td>
-                        )}
-
-                        {lf.budget && isColumnVisible('budget') ? (
-                          <td className={cn('num whitespace-nowrap', densityCellClass)}>
-                            {formatBudget(l.budgetMin, l.budgetMax)}
-                          </td>
-                        ) : null}
-
-                        {!lf.budget && lf.interest && isColumnVisible('interest') ? (
-                          <td className={cn('whitespace-nowrap', densityCellClass)}>
-                            <span className="text-[13px] text-foreground">{l.propertyType || '—'}</span>
-                          </td>
-                        ) : null}
-
-                        {isColumnVisible('assigned') && (
-                          <td className={densityCellClass}>
-                            {l.assignee ? (
-                              <span className="flex items-center gap-2">
-                                <Avatar name={l.assignee.name} size={density === 'compact' ? 18 : 22} />
-                                <span className="truncate">{l.assignee.name}</span>
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">Unassigned</span>
-                            )}
-                          </td>
-                        )}
-
-                        {isColumnVisible('score') && (
-                          <td className={cn('num text-right', densityCellClass)}>
-                            {l.score ?? <span className="text-muted-foreground">—</span>}
-                          </td>
-                        )}
-
-                        {isColumnVisible('followUp') && (
-                          <td className={cn('num whitespace-nowrap', densityCellClass, overdue && 'font-medium text-danger')}>
-                            {l.nextFollowUpAt ? timeAgo(l.nextFollowUpAt) : <span className="text-muted-foreground">—</span>}
-                          </td>
-                        )}
-
-                        {isColumnVisible('createdAt') && (
-                          <td className={cn('num whitespace-nowrap text-muted-foreground', densityCellClass)}>
-                            {timeAgo(l.createdAt)}
-                          </td>
-                        )}
-
-                        {isColumnVisible('actions') && (
-                          <td className={cn('w-28 whitespace-nowrap text-right pr-4', densityCellClass)}>
-                            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                              {l.phone ? (
-                                <a
-                                  href={`https://wa.me/${l.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                                    `Hi ${l.name}, reaching out regarding your enquiry.`
-                                  )}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  aria-label={`Chat with ${l.name} on WhatsApp`}
-                                  title="Chat on WhatsApp"
-                                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-primary transition-colors"
-                                >
-                                  <MessageSquare className="h-3.5 w-3.5" aria-hidden />
-                                </a>
-                              ) : null}
-                              {l.phone ? (
-                                <a
-                                  href={`tel:${l.phone}`}
-                                  aria-label={`Call ${l.name}`}
-                                  title={`Call ${l.phone}`}
-                                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                                >
-                                  <Phone className="h-3.5 w-3.5" aria-hidden />
-                                </a>
-                              ) : null}
-                              <Link
-                                href={`/appointments?bookLeadId=${l.id}&bookLeadName=${encodeURIComponent(l.name)}`}
-                                aria-label={`Book appointment for ${l.name}`}
-                                title="Book appointment"
-                                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                              >
-                                <CalendarPlus className="h-3.5 w-3.5" aria-hidden />
-                              </Link>
-                            </div>
-                          </td>
-                        )}
-                      </tr>
-                    );
-                  })}
+                  {items.map((l) => (
+                    <tr
+                      key={l.id}
+                      className={cn('hover:bg-muted/40 transition-colors', selected.has(l.id) && 'bg-primary-soft/50')}
+                    >
+                      <td className={cn('sticky left-0 z-10 bg-surface w-10 px-3', densityCellClass)}>
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${l.name}`}
+                          checked={selected.has(l.id)}
+                          onChange={(e) =>
+                            setSelected((s) => {
+                              const n = new Set(s);
+                              if (e.target.checked) n.add(l.id);
+                              else n.delete(l.id);
+                              return n;
+                            })
+                          }
+                        />
+                      </td>
+                      {visibleOrderedColumns.map((col) => renderRowCell(col.id, l))}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

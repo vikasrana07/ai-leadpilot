@@ -29,10 +29,16 @@ export interface DataTableToolbarProps {
     onChange: (checked: boolean) => void;
   }[];
 
-  // Column Visibility
+  // Column Visibility & Ordering
   columns?: ColumnDef[];
+  orderedColumns?: ColumnDef[];
   isColumnVisible?: (id: string) => boolean;
   onToggleColumn?: (id: string) => void;
+  onMoveColumn?: (id: string, direction: 'up' | 'down') => void;
+  onReorderColumns?: (fromId: string, toId: string) => void;
+  onTogglePinColumn?: (id: string) => void;
+  isColumnPinned?: (id: string) => boolean;
+  pinnedColumnIds?: string[];
   onResetColumns?: () => void;
   onShowAllColumns?: () => void;
 
@@ -56,8 +62,14 @@ export function DataTableToolbar({
   onClearAllFilters,
   booleanFilters = [],
   columns,
+  orderedColumns,
   isColumnVisible,
   onToggleColumn,
+  onMoveColumn,
+  onReorderColumns,
+  onTogglePinColumn,
+  isColumnPinned,
+  pinnedColumnIds,
   onResetColumns,
   onShowAllColumns,
   density,
@@ -132,11 +144,17 @@ export function DataTableToolbar({
             <RowHeightDropdown density={density} onDensityChange={onDensityChange} />
           ) : null}
 
-          {columns && isColumnVisible && onToggleColumn && onResetColumns && onShowAllColumns ? (
+          {columns && isColumnVisible && onToggleColumn && onResetColumns ? (
             <ColumnVisibilityDropdown
               columns={columns}
+              orderedColumns={orderedColumns}
               isColumnVisible={isColumnVisible}
               onToggleColumn={onToggleColumn}
+              onMoveColumn={onMoveColumn}
+              onReorderColumns={onReorderColumns}
+              onTogglePinColumn={onTogglePinColumn}
+              isColumnPinned={isColumnPinned}
+              pinnedColumnIds={pinnedColumnIds}
               onResetColumns={onResetColumns}
               onShowAllColumns={onShowAllColumns}
             />
