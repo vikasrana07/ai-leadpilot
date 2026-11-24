@@ -40,6 +40,11 @@ jobs:
       - run: pnpm test
       - name: Boot the built API under plain Node (guards against tooling-specific DI breakage)
         run: pnpm --filter @leadpilot/api smoke
+      - name: Service status and logs (on failure)
+        if: failure()
+        run: |
+          docker compose -f infrastructure/docker/docker-compose.yml --env-file .env ps -a
+          docker compose -f infrastructure/docker/docker-compose.yml --env-file .env logs --tail=80 postgres redis
 
   e2e:
     runs-on: ubuntu-latest
@@ -65,6 +70,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:generate
+      # The migrate step runs TypeScript that imports the compiled shared packages (e.g. @leadpilot/shared-types), so build the database package and its dependencies first. Test/e2e scripts build the apps themselves.
+      - run: pnpm exec turbo run build --filter=@leadpilot/database...
       - run: pnpm db:migrate
       - name: Google Chrome (preinstalled on the runner; the suite drives it via channel "chrome", no browser download)
         run: google-chrome --version
@@ -79,3 +86,8 @@ jobs:
             playwright-report
             test-results
           retention-days: 7
+      - name: Service status and logs (on failure)
+        if: failure()
+        run: |
+          docker compose -f infrastructure/docker/docker-compose.yml --env-file .env ps -a
+          docker compose -f infrastructure/docker/docker-compose.yml --env-file .env logs --tail=80 postgres redis

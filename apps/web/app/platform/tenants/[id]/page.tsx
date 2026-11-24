@@ -16,7 +16,6 @@ import { SupportAccessButton } from '@/components/support/support-start';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { PlatformTenantDetailSkeleton } from '@/components/skeletons';
 import { Textarea } from '@/components/ui/textarea';
 import { ApiError } from '@/lib/api';
