@@ -7825,6 +7825,7 @@ export const BroadcastRecipientScalarFieldEnum = {
   leadId: 'leadId',
   phone: 'phone',
   status: 'status',
+  claimedAt: 'claimedAt',
   conversationId: 'conversationId',
   messageId: 'messageId',
   externalId: 'externalId',

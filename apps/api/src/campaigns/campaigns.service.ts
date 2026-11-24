@@ -24,7 +24,10 @@ import { DbService } from '../db/db.module.js';
 import { AuditService } from '../audit/audit.service.js';
 import { ChannelsService } from '../channels/channels.module.js';
 import { JobsService } from '../ops/jobs.service.js';
-import { WHATSAPP_CLIENT, type WhatsAppClient } from '../whatsapp/whatsapp.client.js';
+import { RATE_LIMIT_CODES, WHATSAPP_CLIENT, WhatsAppApiError, type WhatsAppClient } from '../whatsapp/whatsapp.client.js';
+
+/** A recipient left QUEUED longer than this is treated as interrupted (delivery unknown) and is never re-sent automatically. */
+const CLAIM_LEASE_SECONDS = 10 * 60;
 import { v7 as uuidv7 } from 'uuid';
 import type { TenantRequestContext } from '../common/request-context.js';
 
@@ -55,7 +58,7 @@ export class CampaignsService implements OnModuleInit {
   private readonly log = new Logger('CampaignsService');
 
   /** Callback registered by JobsService to schedule queue jobs */
-  enqueueDispatch?: (tenantId: string, campaignId: string) => Promise<void>;
+  enqueueDispatch?: (tenantId: string, campaignId: string, delayMs?: number) => Promise<void>;
 
   constructor(
     @Inject(DbService) private readonly db: DbService,
@@ -73,8 +76,8 @@ export class CampaignsService implements OnModuleInit {
       this.jobs.checkScheduledCampaigns = async () => {
         return this.checkScheduledCampaigns();
       };
-      this.enqueueDispatch = async (tenantId: string, campaignId: string) => {
-        await this.jobs!.enqueueCampaignDispatch(tenantId, campaignId);
+      this.enqueueDispatch = async (tenantId: string, campaignId: string, delayMs?: number) => {
+        await this.jobs!.enqueueCampaignDispatch(tenantId, campaignId, delayMs);
       };
     }
   }
@@ -417,6 +420,12 @@ export class CampaignsService implements OnModuleInit {
       if (c.status !== 'DRAFT' && c.status !== 'SCHEDULED') {
         throw new ConflictException({ code: 'invalid_status', message: `Cannot launch campaign in ${c.status} status` });
       }
+      // Compare-and-set: two concurrent launches (double click, a manual launch racing the scheduler) must not both proceed. The second
+      // blocks on this row lock until the first commits, then finds the status already changed and gets a 409.
+      const won = await tx.broadcastCampaign.updateMany({ where: { id, tenantId: ctx.tenantId, status: { in: ['DRAFT', 'SCHEDULED'] } }, data: { status: 'RUNNING' } });
+      if (won.count === 0) {
+        throw new ConflictException({ code: 'invalid_status', message: 'Campaign was already launched' });
+      }
 
       // Resolve audience matching segment
       const segment = c.segment as CampaignSegment;
@@ -589,23 +598,35 @@ export class CampaignsService implements OnModuleInit {
 
     const { creds, channel } = await this.channels.credentialsFor(tenantId, campaign.channelId);
 
-    // 2. Fetch batch of pending recipients
+    // 2. Interrupted work. A recipient left QUEUED past the lease was claimed by a worker that died (or lost its DB write) after possibly
+    //    sending. WhatsApp has no idempotency key, so a resend could message the lead twice: mark it FAILED with an explanation instead.
+    await this.db.tenantTx({ tenantId }, async (tx) => {
+      const stale = await tx.$queryRaw<{ id: string }[]>`
+        UPDATE broadcast_recipients
+           SET status = 'FAILED'::"BroadcastRecipientStatus", claimed_at = NULL,
+               error = ${JSON.stringify({ message: 'Delivery state unknown: the sender was interrupted. Not retried automatically to avoid sending twice.', code: 'interrupted' })}::jsonb
+         WHERE campaign_id = ${campaignId}::uuid AND tenant_id = ${tenantId}::uuid AND status = 'QUEUED'
+           AND claimed_at < now() - make_interval(secs => ${CLAIM_LEASE_SECONDS})
+        RETURNING id`;
+      if (stale.length > 0) await tx.broadcastCampaign.update({ where: { id: campaignId }, data: { failedCount: { increment: stale.length } } });
+    });
+
+    // 3. Claim a batch atomically (PENDING -> QUEUED). FOR UPDATE SKIP LOCKED makes concurrent dispatchers and retried jobs take disjoint rows.
     const pendingRecipients = await this.db.tenantTx({ tenantId }, async (tx) => {
-      return tx.broadcastRecipient.findMany({
-        where: { campaignId, status: 'PENDING' },
-        include: { lead: true },
-        take: batchSize,
-      });
+      const claimed = await tx.$queryRaw<{ id: string }[]>`
+        UPDATE broadcast_recipients
+           SET status = 'QUEUED'::"BroadcastRecipientStatus", claimed_at = now()
+         WHERE id IN (
+           SELECT id FROM broadcast_recipients
+            WHERE campaign_id = ${campaignId}::uuid AND tenant_id = ${tenantId}::uuid AND status = 'PENDING'
+            ORDER BY created_at, id LIMIT ${batchSize} FOR UPDATE SKIP LOCKED)
+        RETURNING id`;
+      if (claimed.length === 0) return [];
+      return tx.broadcastRecipient.findMany({ where: { id: { in: claimed.map((c) => c.id) } }, include: { lead: true }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] });
     });
 
     if (pendingRecipients.length === 0) {
-      // Mark campaign completed
-      await this.db.tenantTx({ tenantId }, async (tx) => {
-        await tx.broadcastCampaign.update({
-          where: { id: campaignId },
-          data: { status: 'COMPLETED', completedAt: new Date() },
-        });
-      });
+      await this.completeIfDone(tenantId, campaignId);
       return { processed: 0, remaining: 0 };
     }
 
@@ -621,7 +642,20 @@ export class CampaignsService implements OnModuleInit {
       })),
     );
 
-    for (const recipient of pendingRecipients) {
+    let rateLimitedForMs: number | null = null;
+    for (let i = 0; i < pendingRecipients.length; i++) {
+      const recipient = pendingRecipients[i]!;
+
+      // Stop promptly if the campaign was cancelled (or otherwise left RUNNING) while this batch was in flight.
+      const live = await this.db.tenantTx({ tenantId }, (tx) => tx.broadcastCampaign.findFirst({ where: { id: campaignId, tenantId }, select: { status: true } }));
+      if (live?.status !== 'RUNNING') {
+        await this.db.tenantTx({ tenantId }, (tx) => tx.broadcastRecipient.updateMany({
+          where: { id: { in: pendingRecipients.slice(i).map((r) => r.id) }, status: 'QUEUED' },
+          data: { status: 'FAILED', claimedAt: null, error: { message: 'Campaign was cancelled by user' } },
+        }));
+        return { processed: sentBatchCount + failedBatchCount, remaining: 0 };
+      }
+
       const disposition = consentDisposition(latestNow.get(recipient.leadId));
       if (disposition !== 'ELIGIBLE') {
         await this.db.tenantTx({ tenantId }, async (tx) => {
@@ -716,6 +750,17 @@ export class CampaignsService implements OnModuleInit {
 
         sentBatchCount++;
       } catch (err: unknown) {
+        // Provider throttling (Meta rate/throughput limits): nothing was sent, so release this recipient and the rest of the batch back to
+        // PENDING and continue later, instead of burning through the audience as failures.
+        if (err instanceof WhatsAppApiError && err.retryable && err.code !== undefined && RATE_LIMIT_CODES.has(err.code)) {
+          await this.db.tenantTx({ tenantId }, (tx) => tx.broadcastRecipient.updateMany({
+            where: { id: { in: pendingRecipients.slice(i).map((r) => r.id) }, status: 'QUEUED' },
+            data: { status: 'PENDING', claimedAt: null },
+          }));
+          rateLimitedForMs = Math.max(30, err.retryAfterSec ?? 60) * 1000;
+          this.log.warn(`Campaign ${campaignId} rate limited by WhatsApp (code ${err.code}); resuming in ${Math.round(rateLimitedForMs / 1000)}s`);
+          break;
+        }
         this.log.warn(`Delivery failure for recipient ${recipient.id}: ${err instanceof Error ? err.message : String(err)}`);
 
         await this.db.tenantTx({ tenantId }, async (tx) => {
@@ -740,24 +785,13 @@ export class CampaignsService implements OnModuleInit {
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
 
-    // Check remaining
-    const remaining = await this.db.tenantTx({ tenantId }, async (tx) => {
-      const count = await tx.broadcastRecipient.count({
-        where: { campaignId, status: 'PENDING' },
-      });
-      if (count === 0) {
-        await tx.broadcastCampaign.update({
-          where: { id: campaignId },
-          data: { status: 'COMPLETED', completedAt: new Date() },
-        });
-      }
-      return count;
-    });
+    const remaining = await this.db.tenantTx({ tenantId }, (tx) => tx.broadcastRecipient.count({ where: { campaignId, status: 'PENDING' } }));
+    if (remaining === 0) await this.completeIfDone(tenantId, campaignId);
 
     if (remaining > 0) {
       if (this.enqueueDispatch) {
-        await this.enqueueDispatch(tenantId, campaignId);
-      } else {
+        await this.enqueueDispatch(tenantId, campaignId, rateLimitedForMs ?? 0);
+      } else if (rateLimitedForMs === null) {
         void this.dispatchBatch(tenantId, campaignId, batchSize).catch((e) =>
           this.log.error(`Remaining batch dispatch error: ${e instanceof Error ? e.message : String(e)}`),
         );
@@ -765,6 +799,16 @@ export class CampaignsService implements OnModuleInit {
     }
 
     return { processed: sentBatchCount + failedBatchCount, remaining };
+  }
+
+  /** Completes a RUNNING campaign once nothing is PENDING and nothing is still claimed by a worker. Never overrides CANCELLED. */
+  private async completeIfDone(tenantId: string, campaignId: string): Promise<void> {
+    await this.db.tenantTx({ tenantId }, async (tx) => {
+      const open = await tx.broadcastRecipient.count({ where: { campaignId, status: { in: ['PENDING', 'QUEUED'] } } });
+      if (open === 0) {
+        await tx.broadcastCampaign.updateMany({ where: { id: campaignId, tenantId, status: 'RUNNING' }, data: { status: 'COMPLETED', completedAt: new Date() } });
+      }
+    });
   }
 
   /** Lists recipients of a campaign with status filters and search */

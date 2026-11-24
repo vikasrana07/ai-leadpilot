@@ -1737,6 +1737,8 @@ model BroadcastRecipient {
   leadId         String                   @map("lead_id") @db.Uuid
   phone          String
   status         BroadcastRecipientStatus @default(PENDING)
+  /// Set when a dispatcher claims the row (QUEUED). A QUEUED row older than the lease is never re-sent: its delivery state is unknown.
+  claimedAt      DateTime?                @map("claimed_at") @db.Timestamptz(3)
   conversationId String?                  @map("conversation_id") @db.Uuid
   messageId      String?                  @map("message_id") @db.Uuid
   externalId     String?                  @map("external_id")

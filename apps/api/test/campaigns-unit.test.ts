@@ -106,6 +106,7 @@ describe('CampaignsService Unit Tests', () => {
               status: 'DRAFT',
               segment: { stageIds: [] },
             }),
+            updateMany: vi.fn().mockResolvedValue({ count: 1 }),
             update: vi.fn().mockImplementation((args: any) => { campaignUpdates.push(args.data); return Promise.resolve({ id: campaignId, status: 'RUNNING' }); }),
           },
           lead: {
@@ -136,7 +137,7 @@ describe('CampaignsService Unit Tests', () => {
     it('completes immediately and sends nothing when nobody in the audience has opted in', async () => {
       let status = '';
       mockDbService.tenantTx = vi.fn(async (_ctx, fn) => fn({
-        broadcastCampaign: { findFirst: vi.fn().mockResolvedValue({ id: campaignId, tenantId, status: 'DRAFT', segment: {} }), update: vi.fn().mockImplementation((a: any) => { status = a.data.status; return Promise.resolve({}); }) },
+        broadcastCampaign: { findFirst: vi.fn().mockResolvedValue({ id: campaignId, tenantId, status: 'DRAFT', segment: {} }), updateMany: vi.fn().mockResolvedValue({ count: 1 }), update: vi.fn().mockImplementation((a: any) => { status = a.data.status; return Promise.resolve({}); }) },
         lead: { findMany: vi.fn().mockResolvedValue([{ id: 'lead-9', phone: '+919876543299', phoneNorm: '919876543299' }]) },
         consent: { findMany: vi.fn().mockResolvedValue([]) },
         broadcastRecipient: { createMany: vi.fn().mockResolvedValue({ count: 1 }) },
@@ -232,11 +233,14 @@ describe('CampaignsService Unit Tests', () => {
         lead: { id: 'lead-1', name: 'Bob Smith', assignedMembershipId: null },
       };
 
+      const queryRaw = vi.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: 'recip-1' }]); // 1st: stale-claim reaper, 2nd: atomic claim
       let findManyCall = 0;
       mockDbService.tenantTx = vi.fn(async (_ctx, fn) => {
         const mockTx = {
+          $queryRaw: queryRaw,
           broadcastCampaign: {
             findFirst: vi.fn().mockResolvedValue(campaign),
+            updateMany: vi.fn().mockResolvedValue({ count: 1 }),
             update: vi.fn().mockResolvedValue(campaign),
           },
           broadcastRecipient: {
@@ -296,13 +300,16 @@ describe('CampaignsService Unit Tests', () => {
         lead: { id: 'lead-1', name: 'Invalid User' },
       };
 
+      const queryRaw = vi.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: 'recip-1' }]); // 1st: stale-claim reaper, 2nd: atomic claim
       let updatedRecipientStatus = '';
       let campaignFailedIncrement = false;
 
       mockDbService.tenantTx = vi.fn(async (_ctx, fn) => {
         const mockTx = {
+          $queryRaw: queryRaw,
           broadcastCampaign: {
             findFirst: vi.fn().mockResolvedValue(campaign),
+            updateMany: vi.fn().mockResolvedValue({ count: 1 }),
             update: vi.fn().mockImplementation((args: any) => {
               if (args.data?.failedCount) campaignFailedIncrement = true;
               return Promise.resolve(campaign);
@@ -342,10 +349,12 @@ describe('CampaignsService Unit Tests', () => {
     it('does not send to a recipient who sent STOP after launch, and counts them as opted out', async () => {
       const campaign = { id: campaignId, tenantId, status: 'RUNNING', channelId, templateName: 't', templateLanguage: 'en', templateParams: [] };
       const recipient = { id: 'recip-1', campaignId, leadId: 'lead-1', phone: '919876543210', status: 'PENDING', lead: { id: 'lead-1', name: 'Bob' } };
+      const queryRaw = vi.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([{ id: 'recip-1' }]); // 1st: stale-claim reaper, 2nd: atomic claim
       const updates: Array<Record<string, unknown>> = [];
       const campaignUpdates: Array<Record<string, unknown>> = [];
       mockDbService.tenantTx = vi.fn(async (_ctx, fn) => fn({
-        broadcastCampaign: { findFirst: vi.fn().mockResolvedValue(campaign), update: vi.fn().mockImplementation((a: any) => { campaignUpdates.push(a.data); return Promise.resolve(campaign); }) },
+        $queryRaw: queryRaw,
+        broadcastCampaign: { findFirst: vi.fn().mockResolvedValue(campaign), updateMany: vi.fn().mockResolvedValue({ count: 1 }), update: vi.fn().mockImplementation((a: any) => { campaignUpdates.push(a.data); return Promise.resolve(campaign); }) },
         broadcastRecipient: { findMany: vi.fn().mockResolvedValue([recipient]), count: vi.fn().mockResolvedValue(0), update: vi.fn().mockImplementation((a: any) => { updates.push(a.data); return Promise.resolve({}); }) },
         consent: { findMany: vi.fn().mockResolvedValue([{ leadId: 'lead-1', status: 'OPTED_OUT' }, { leadId: 'lead-1', status: 'OPTED_IN' }]) },
       } as any));
