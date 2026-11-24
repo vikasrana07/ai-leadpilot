@@ -1,6 +1,6 @@
 # 14 — Technical Debt Register
 
-**Status 2026-11-24:** TD-03 resolved (PR #2); TD-01 resolved for lint (PR #3) but CI also depends on failing tests; TD-31 partly resolved (PR #4). Rows are sorted by priority (P0 first), then impact, then ID. Scoring: **Impact** H/M/L (customer, security or delivery harm if left) · **Effort** in engineering days · **Priority** P0 (before first customer) → P3 (opportunistic). "Roadmap" links to doc 13. Evidence is file/line from this checkout (`main` @ `dce256d`) or a command I ran.
+**Status (updated after PR #11):** resolved: TD-03 (#2), TD-04 (#11), TD-05 (#10), TD-06 (#9), TD-07 (#8), TD-01 for lint (#3). Partly resolved: TD-31 (#4). Rows are sorted by priority (P0 first), then impact, then ID. Scoring: **Impact** H/M/L (customer, security or delivery harm if left) · **Effort** in engineering days · **Priority** P0 (before first customer) → P3 (opportunistic). "Roadmap" links to doc 13. Evidence is file/line from this checkout (`main` @ `dce256d`) or a command I ran.
 
 | ID | Debt | Evidence | Impact | Effort | Priority | Roadmap |
 |---|---|---|:--:|---:|:--:|---|

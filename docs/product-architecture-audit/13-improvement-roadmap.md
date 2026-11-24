@@ -2,6 +2,9 @@
 
 **Estimation assumptions:** one senior full-stack engineer-day (productive, includes tests and review); ±30 % accuracy; excludes third-party lead times (Meta business verification and template approval, SES production access, Razorpay KYC); assumes the existing team knows the codebase; a team of 2–3 engineers can run Phase 1 in ~4 calendar weeks. Priorities: P0 must precede any customer; P1 before scale-up; P2 competitive; P3 on demand. IDs referenced in docs 08 (S-xx), 11 (E/W/N) and 14 (TD-xx).
 
+## Status after PR #11
+Done: R1 (#2), R2 (#11), R3 core (#10), R4 (#9), R5 (#8), R0 lint part (#3), A2-equivalent sweep test (#2). The effort totals below are the original plan, not remaining work; remaining Phase 1 work is R0 (CD, scanning, coverage), R6, R7, R8, R9, R10 (token refresh), R11 and the R3 follow-ups (consent ledger, import attestation), roughly 30 of the original 50 days.
+
 ## Summary
 
 | Phase | Theme | Initiatives | Effort (eng-days) |
