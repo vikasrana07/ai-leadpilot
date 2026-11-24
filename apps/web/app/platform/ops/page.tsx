@@ -1,133 +1,577 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, CheckCircle2, CircleHelp } from 'lucide-react';
+import {
+  Activity,
+  AlertOctagon,
+  AlertTriangle,
+  Bot,
+  CheckCircle2,
+  CircleHelp,
+  Clock,
+  Cpu,
+  Database,
+  ExternalLink,
+  MessageSquare,
+  Radio,
+  RefreshCw,
+  Server,
+  ShieldCheck,
+  Zap,
+} from 'lucide-react';
 import { PageHeader } from '@/components/page/page-header';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlatformOpsSkeleton } from '@/components/skeletons';
 import { platformApi, type OpsAlert, type OpsHealth, type OpsView } from '@/lib/platform';
+import { cn } from '@/lib/cn';
 
-const n = (v: number | null | undefined) => (v === null || v === undefined ? '—' : v.toLocaleString('en-IN'));
+const n = (v: number | null | undefined) =>
+  v === null || v === undefined ? '—' : v.toLocaleString('en-IN');
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString('en-IN') : '—');
-const ago = (seconds: number | null) => (seconds === null ? 'never' : seconds < 90 ? `${seconds} s ago` : seconds < 5400 ? `${Math.round(seconds / 60)} min ago` : `${Math.round(seconds / 3600)} h ago`);
-const sevTone = (s: number) => (s === 1 ? 'danger' : s === 2 ? 'warning' : 'neutral') as 'danger' | 'warning' | 'neutral';
-const values = (v: Record<string, number>) => Object.entries(v).map(([k, x]) => `${k}: ${n(x)}`).join(' · ') || '—';
+const ago = (seconds: number | null) =>
+  seconds === null
+    ? 'never'
+    : seconds < 90
+      ? `${seconds} s ago`
+      : seconds < 5400
+        ? `${Math.round(seconds / 60)} min ago`
+        : `${Math.round(seconds / 3600)} h ago`;
+const sevTone = (s: number) =>
+  s === 1 ? 'danger' : s === 2 ? 'warning' : 'neutral';
+const values = (v: Record<string, number>) =>
+  Object.entries(v)
+    .map(([k, x]) => `${k}: ${n(x)}`)
+    .join(' · ') || '—';
 
 function AlertCard({ a }: { a: OpsAlert }) {
   return (
-    <li className="rounded-md border border-border p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge tone={sevTone(a.severity)}><AlertTriangle className="h-3 w-3" aria-hidden />Sev {a.severity}</Badge>
-        <Badge tone="danger">Firing</Badge>
-        <span className="text-[13px] font-medium">{a.title}</span>
+    <div className="rounded-lg border border-danger/30 bg-danger-soft/40 p-4 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Badge tone={sevTone(a.severity)} className="font-semibold">
+            <AlertTriangle className="h-3 w-3 mr-1" aria-hidden />
+            Severity {a.severity}
+          </Badge>
+          <Badge tone="danger">FIRING</Badge>
+          <span className="text-[14px] font-semibold text-foreground">{a.title}</span>
+        </div>
+        <span className="num text-[11px] text-muted-foreground">Since: {when(a.since)}</span>
       </div>
-      <p className="text-helper mt-1.5">{a.hint}</p>
-      <dl className="mt-2 grid gap-x-6 gap-y-1 text-[12px] sm:grid-cols-2">
-        <div className="flex gap-2"><dt className="text-muted-foreground">Since</dt><dd className="num">{when(a.since)}</dd></div>
-        <div className="flex gap-2"><dt className="text-muted-foreground">Emails sent</dt><dd className="num">{n(a.notifyCount)}</dd></div>
-        <div className="flex gap-2 sm:col-span-2"><dt className="text-muted-foreground">Values</dt><dd className="num break-words">{values(a.values)}</dd></div>
-        <div className="flex gap-2 sm:col-span-2"><dt className="text-muted-foreground">Runbook</dt><dd className="break-all font-mono text-[12px]">{a.runbook}</dd></div>
-      </dl>
-    </li>
+
+      <p className="mt-2 text-[13px] text-foreground leading-relaxed">{a.hint}</p>
+
+      <div className="mt-3 grid gap-x-4 gap-y-2 rounded-md bg-surface p-3 text-[12px] sm:grid-cols-2 border border-border">
+        <div>
+          <span className="text-muted-foreground">Notification emails sent:</span>{' '}
+          <strong className="num text-foreground">{n(a.notifyCount)}</strong>
+        </div>
+        <div>
+          <span className="text-muted-foreground">Trigger values:</span>{' '}
+          <strong className="num text-foreground break-all">{values(a.values)}</strong>
+        </div>
+        <div className="sm:col-span-2 flex items-center gap-1.5 pt-1 border-t border-border/50">
+          <span className="text-muted-foreground font-medium">Runbook:</span>
+          <code className="font-mono text-[11px] text-primary break-all bg-muted/60 px-1.5 py-0.5 rounded">
+            {a.runbook}
+          </code>
+        </div>
+      </div>
+    </div>
   );
 }
 
-function Row({ label, value, bad }: { label: string; value: string; bad?: boolean }) {
-  return <div className="flex items-baseline justify-between gap-3 py-2 text-[13px]"><span className="text-muted-foreground">{label}</span><span className={`num font-medium ${bad ? 'text-danger' : ''}`}>{value}</span></div>;
-}
-
-function Health({ h }: { h: OpsHealth }) {
+function MetricRow({
+  label,
+  value,
+  bad,
+  hint,
+}: {
+  label: string;
+  value: string;
+  bad?: boolean;
+  hint?: string;
+}) {
   return (
-    <Card><CardHeader><CardTitle>Health</CardTitle></CardHeader><CardBody className="divide-y divide-border">
-      <Row label="Oldest pending outbox event" value={`${n(h.outbox.oldest_pending_seconds)} s`} bad={h.outbox.oldest_pending_seconds > 120} />
-      <Row label="Outbox events pending" value={n(h.outbox.pending)} />
-      <Row label="Outbox events failed" value={n(h.outbox.failed)} bad={h.outbox.failed > 0} />
-      <Row label="Automation runs stuck (running over 15 min)" value={n(h.automation_runs.stuck_running)} bad={h.automation_runs.stuck_running > 0} />
-      <Row label="Automation runs queued over 10 min" value={n(h.automation_runs.queued_old)} bad={h.automation_runs.queued_old > 0} />
-      <Row label="Automation waits overdue" value={n(h.automation_runs.waiting_overdue)} bad={h.automation_runs.waiting_overdue > 0} />
-      <Row label="Automation runs failed, last hour" value={n(h.automation_runs.failed_last_hour)} />
-      <Row label="Billing events needing attention" value={n(h.billing_events_needing_attention)} bad={h.billing_events_needing_attention > 0} />
-      <Row label="WhatsApp deliveries unprocessed" value={n(h.webhook_events_unprocessed)} bad={h.webhook_events_unprocessed > 0} />
-      <Row label="Outbound messages failed, last hour" value={n(h.outbound_messages_failed_last_hour)} />
-      <Row label="Customer webhook deliveries overdue" value={n(h.webhook_deliveries.overdue)} bad={h.webhook_deliveries.overdue > 0} />
-      <Row label="Customer webhook deliveries failed, last hour" value={n(h.webhook_deliveries.failed_last_hour)} />
-      <Row label="Webhook endpoints auto-disabled" value={n(h.webhook_endpoints_disabled)} bad={h.webhook_endpoints_disabled > 0} />
-      <Row label="AI runs / failed, last 15 min" value={`${n(h.ai.runs_last_15_min)} / ${n(h.ai.failed_last_15_min)}`} />
-      <Row label="AI latency p95, last 24 h" value={h.ai.p95_latency_ms_24h === null ? '—' : `${(h.ai.p95_latency_ms_24h / 1000).toFixed(1)} s`} />
-    </CardBody></Card>
+    <div className="flex items-baseline justify-between gap-3 py-2 text-[13px] border-b border-border/50 last:border-0">
+      <div>
+        <span className="text-muted-foreground">{label}</span>
+        {hint && <span className="block text-[11px] text-muted-foreground/80">{hint}</span>}
+      </div>
+      <span
+        className={cn(
+          'num font-semibold',
+          bad ? 'text-danger bg-danger-soft px-2 py-0.5 rounded' : 'text-foreground'
+        )}
+      >
+        {value}
+      </span>
+    </div>
   );
 }
 
 export default function PlatformOps() {
-  const q = useQuery({ queryKey: ['platform-ops'], queryFn: () => platformApi<OpsView>('/ops'), refetchInterval: 30_000 });
+  const q = useQuery({
+    queryKey: ['platform-ops'],
+    queryFn: () => platformApi<OpsView>('/ops'),
+    refetchInterval: 30_000,
+  });
+
   if (q.isPending) return <PlatformOpsSkeleton />;
-  if (q.isError) return <><PageHeader title="Ops status" /><p className="text-helper" role="alert">Could not load the ops status. It will retry automatically.</p></>;
+  if (q.isError) {
+    return (
+      <div className="space-y-4">
+        <PageHeader title="Ops Status & Reliability" />
+        <Card className="p-8 text-center">
+          <AlertOctagon className="mx-auto h-10 w-10 text-danger mb-2" />
+          <p className="text-[14px] font-semibold text-foreground">Could not load operations status</p>
+          <p className="text-helper mt-1">The operations metrics service returned an error. It will retry automatically.</p>
+          <Button variant="secondary" size="sm" className="mt-4" onClick={() => void q.refetch()}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+            Retry Now
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   const o = q.data;
   const updated = new Date(q.dataUpdatedAt).toLocaleTimeString('en-IN');
+  const firingCount = o.firing.length;
+  const isHealthy = firingCount === 0 && !o.snapshot.stale;
+
   return (
-    <>
-      <PageHeader title="Ops status" description={`Is the platform healthy right now? Refreshes every 30 seconds. Last updated ${updated}.`} />
-      {o.snapshot.stale ? (
-        <div role="status" className="mb-3 flex items-start gap-2 rounded-md border border-warning bg-warning-soft px-3 py-2 text-[13px] text-warning">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          <p><strong>Health data is stale.</strong> The last snapshot was {o.snapshot.generatedAt ? ago(o.snapshot.ageSeconds) : 'never taken'}. The background worker may not be running, so the numbers below can be out of date.</p>
+    <div className="space-y-6">
+      <PageHeader
+        title="Operations & Reliability"
+        description={`Real-time platform observability, worker heartbeats, and SLO telemetry. Auto-refreshes every 30s. Last synced at ${updated}.`}
+        actions={
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void q.refetch()}
+            loading={q.isFetching}
+          >
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+            Refresh
+          </Button>
+        }
+      />
+
+      {/* Global Status Banner */}
+      <div
+        className={cn(
+          'flex flex-wrap items-center justify-between gap-4 rounded-xl border p-5 shadow-xs transition-colors',
+          isHealthy
+            ? 'border-success/30 bg-success-soft/50 text-foreground'
+            : o.snapshot.stale
+              ? 'border-warning/30 bg-warning-soft/60 text-foreground'
+              : 'border-danger/30 bg-danger-soft/60 text-foreground'
+        )}
+      >
+        <div className="flex items-center gap-3.5">
+          <div
+            className={cn(
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
+              isHealthy
+                ? 'bg-emerald-500 text-white'
+                : o.snapshot.stale
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-rose-500 text-white'
+            )}
+          >
+            {isHealthy ? (
+              <CheckCircle2 className="h-6 w-6" />
+            ) : (
+              <AlertTriangle className="h-6 w-6" />
+            )}
+          </div>
+          <div>
+            <h2 className="text-[17px] font-bold text-foreground">
+              {isHealthy
+                ? 'All Platform Systems Operational'
+                : o.snapshot.stale
+                  ? 'Worker Telemetry Stale'
+                  : `${firingCount} Active Incident ${firingCount === 1 ? 'Rule' : 'Rules'} Firing`}
+            </h2>
+            <p className="text-[13px] text-muted-foreground mt-0.5">
+              {isHealthy
+                ? 'All background queues, event outbox pipelines, and AI proxies are functioning normally.'
+                : o.snapshot.stale
+                  ? `Snapshot age is ${ago(o.snapshot.ageSeconds)}. Background worker heartbeats may be delayed.`
+                  : 'Platform health alerts require attention. Review firing rules below.'}
+            </p>
+          </div>
         </div>
-      ) : null}
-      {!o.alertsEnabled ? <p className="text-helper mb-3">Alert emails are off (ALERTS_ENABLED is not set). Current rule state is still shown below.</p> : null}
 
-      <Card className="mb-3"><CardHeader><CardTitle>Firing alerts <span className="num ml-1 font-normal text-muted-foreground">{o.firing.length}</span></CardTitle></CardHeader><CardBody>
-        {o.firing.length === 0
-          ? <p className="flex items-center gap-2 text-[13px]"><CheckCircle2 className="h-4 w-4 text-success" aria-hidden />No alerts firing.</p>
-          : <ul className="space-y-2">{o.firing.map((a) => <AlertCard key={a.key} a={a} />)}</ul>}
-      </CardBody></Card>
-
-      <div className="mb-3 grid gap-3 lg:grid-cols-2">
-        {o.health ? <Health h={o.health} /> : <Card><CardHeader><CardTitle>Health</CardTitle></CardHeader><CardBody><p className="text-helper">No health snapshot yet. It appears once a worker has run for a minute.</p></CardBody></Card>}
-        <div className="space-y-3">
-          <Card><CardHeader><CardTitle>Workers and queues</CardTitle></CardHeader><CardBody>
-            <div className="divide-y divide-border">
-              <Row label="Workers alive" value={n(o.workers.alive)} bad={o.workers.alive === 0} />
-              <Row label="Snapshot age" value={o.snapshot.ageSeconds === null ? '—' : `${n(o.snapshot.ageSeconds)} s`} bad={o.snapshot.stale} />
-              {o.queues ? <><Row label="Automation queue: waiting" value={n(o.queues.waiting)} /><Row label="Automation queue: active" value={n(o.queues.active)} /><Row label="Automation queue: delayed" value={n(o.queues.delayed)} /><Row label="Automation queue: failed" value={n(o.queues.failed)} bad={o.queues.failed > 0} /></> : null}
-            </div>
-            {o.workers.instances.length > 0 ? (
-              <div className="mt-3 overflow-x-auto"><table className="w-full text-[12px]"><caption className="sr-only">Worker heartbeats</caption><thead><tr className="border-b border-border text-left text-muted-foreground"><th scope="col" className="py-1.5 pr-3 font-medium">Instance</th><th scope="col" className="py-1.5 pr-3 font-medium">Last heartbeat</th><th scope="col" className="py-1.5 font-medium">Version</th></tr></thead><tbody>
-                {o.workers.instances.map((w) => <tr key={w.instanceId} className="border-b border-border last:border-0"><td className="py-1.5 pr-3 font-mono">{w.instanceId}</td><td className="num py-1.5 pr-3">{ago(w.ageSeconds)}</td><td className="py-1.5">{w.version ?? '—'}</td></tr>)}
-              </tbody></table></div>
-            ) : <p className="text-helper mt-3">No live worker heartbeat.</p>}
-          </CardBody></Card>
-          <Card><CardHeader><CardTitle>Service levels</CardTitle></CardHeader><CardBody className="p-0">
-            <div className="overflow-x-auto"><table className="w-full text-[12px]"><caption className="sr-only">Service level objectives</caption><thead><tr className="border-b border-border text-left text-muted-foreground"><th scope="col" className="px-4 py-2 font-medium">Objective</th><th scope="col" className="px-4 py-2 font-medium">Target</th><th scope="col" className="px-4 py-2 font-medium">Now</th></tr></thead><tbody>
-              {o.slos.map((s) => (
-                <tr key={s.id} className="border-b border-border last:border-0 align-top">
-                  <td className="px-4 py-2">{s.name}</td><td className="px-4 py-2 text-muted-foreground">{s.objective}</td>
-                  <td className="px-4 py-2">{s.current ? <span className="inline-flex items-center gap-1 num">{s.current.ok === null ? null : s.current.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-success" aria-label="Meets target" /> : <AlertTriangle className="h-3.5 w-3.5 text-danger" aria-label="Misses target" />}{s.current.value}</span> : <span className="inline-flex items-center gap-1 text-muted-foreground"><CircleHelp className="h-3.5 w-3.5" aria-hidden />{s.source === 'external' ? 'External probe' : s.source === 'metrics' ? 'In CloudWatch / access log' : 'No data yet'}</span>}</td>
-                </tr>
-              ))}
-            </tbody></table></div>
-          </CardBody></Card>
+        <div className="flex items-center gap-2">
+          {!o.alertsEnabled && (
+            <Badge tone="neutral" className="px-2.5 py-1">
+              Email Notifications Off
+            </Badge>
+          )}
+          <Badge tone={isHealthy ? 'success' : o.snapshot.stale ? 'warning' : 'danger'}>
+            {isHealthy ? 'Operational' : o.snapshot.stale ? 'Stale' : 'Degraded'}
+          </Badge>
         </div>
       </div>
 
-      <Card className="mb-3"><CardHeader><CardTitle>All alert rules</CardTitle></CardHeader><CardBody className="p-0">
-        <div className="overflow-x-auto"><table className="w-full text-[12px]"><caption className="sr-only">Alert rules and their current state</caption><thead><tr className="border-b border-border text-left text-muted-foreground"><th scope="col" className="px-4 py-2 font-medium">Rule</th><th scope="col" className="px-4 py-2 font-medium">Severity</th><th scope="col" className="px-4 py-2 font-medium">State</th><th scope="col" className="px-4 py-2 font-medium">Values</th></tr></thead><tbody>
-          {o.rules.map((r) => (
-            <tr key={r.key} className="border-b border-border last:border-0 align-top">
-              <td className="px-4 py-2">{r.title}<span className="text-helper block font-mono">{r.key}</span></td>
-              <td className="px-4 py-2"><Badge tone={sevTone(r.severity)}>Sev {r.severity}</Badge></td>
-              <td className="px-4 py-2"><Badge tone={r.state === 'breached' ? 'danger' : r.state === 'ok' ? 'success' : 'neutral'}>{r.state === 'breached' ? 'Breached' : r.state === 'ok' ? 'OK' : 'Unknown'}</Badge></td>
-              <td className="num px-4 py-2 break-words text-muted-foreground">{values(r.values)}</td>
-            </tr>
-          ))}
-        </tbody></table></div>
-      </CardBody></Card>
+      {/* Firing Alerts Section */}
+      {firingCount > 0 && (
+        <Card className="border-danger/40">
+          <CardHeader className="bg-danger-soft/20">
+            <div className="flex items-center gap-2 text-danger">
+              <AlertTriangle className="h-4 w-4" />
+              <CardTitle className="text-danger">
+                Active Firing Incidents ({firingCount})
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardBody className="space-y-3">
+            {o.firing.map((a) => (
+              <AlertCard key={a.key} a={a} />
+            ))}
+          </CardBody>
+        </Card>
+      )}
 
-      <Card><CardHeader><CardTitle>Recently resolved</CardTitle></CardHeader><CardBody>
-        {o.recent.length === 0 ? <p className="text-helper">Nothing resolved yet.</p> : (
-          <ul className="divide-y divide-border text-[13px]">{o.recent.map((a) => <li key={a.key} className="flex flex-wrap items-center gap-2 py-2"><Badge tone={sevTone(a.severity)}>Sev {a.severity}</Badge><span>{a.title}</span><span className="text-helper ml-auto">resolved {when(a.resolvedAt)}</span></li>)}</ul>
-        )}
-      </CardBody></Card>
-    </>
+      {/* Primary Subsystem Health Grids */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Outbox & Event Pipeline */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Database className="h-4 w-4 text-primary" />
+              <CardTitle>Event Outbox & Pipeline</CardTitle>
+            </div>
+          </CardHeader>
+          <CardBody>
+            {o.health ? (
+              <div className="space-y-1">
+                <MetricRow
+                  label="Oldest Pending Outbox Event"
+                  value={`${n(o.health.outbox.oldest_pending_seconds)} s`}
+                  bad={o.health.outbox.oldest_pending_seconds > 120}
+                  hint="Threshold: > 120s indicates pipeline lag"
+                />
+                <MetricRow
+                  label="Outbox Events Pending"
+                  value={n(o.health.outbox.pending)}
+                />
+                <MetricRow
+                  label="Outbox Events Failed"
+                  value={n(o.health.outbox.failed)}
+                  bad={o.health.outbox.failed > 0}
+                />
+                <MetricRow
+                  label="Billing Events Requiring Attention"
+                  value={n(o.health.billing_events_needing_attention)}
+                  bad={o.health.billing_events_needing_attention > 0}
+                />
+              </div>
+            ) : (
+              <p className="py-6 text-center text-helper">No health telemetry recorded yet.</p>
+            )}
+          </CardBody>
+        </Card>
+
+        {/* Automation Execution Engine */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-primary" />
+              <CardTitle>Automation Execution Engine</CardTitle>
+            </div>
+          </CardHeader>
+          <CardBody>
+            {o.health ? (
+              <div className="space-y-1">
+                <MetricRow
+                  label="Runs Stuck Running (> 15 min)"
+                  value={n(o.health.automation_runs.stuck_running)}
+                  bad={o.health.automation_runs.stuck_running > 0}
+                />
+                <MetricRow
+                  label="Runs Queued (> 10 min)"
+                  value={n(o.health.automation_runs.queued_old)}
+                  bad={o.health.automation_runs.queued_old > 0}
+                />
+                <MetricRow
+                  label="Automation Waits Overdue"
+                  value={n(o.health.automation_runs.waiting_overdue)}
+                  bad={o.health.automation_runs.waiting_overdue > 0}
+                />
+                <MetricRow
+                  label="Failed Runs (Last Hour)"
+                  value={n(o.health.automation_runs.failed_last_hour)}
+                />
+              </div>
+            ) : (
+              <p className="py-6 text-center text-helper">No automation telemetry recorded yet.</p>
+            )}
+          </CardBody>
+        </Card>
+
+        {/* Messaging & Webhook Ingestion */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-primary" />
+              <CardTitle>Messaging & Customer Webhooks</CardTitle>
+            </div>
+          </CardHeader>
+          <CardBody>
+            {o.health ? (
+              <div className="space-y-1">
+                <MetricRow
+                  label="WhatsApp Deliveries Unprocessed"
+                  value={n(o.health.webhook_events_unprocessed)}
+                  bad={o.health.webhook_events_unprocessed > 0}
+                />
+                <MetricRow
+                  label="Outbound Messages Failed (Last Hour)"
+                  value={n(o.health.outbound_messages_failed_last_hour)}
+                />
+                <MetricRow
+                  label="Customer Webhook Deliveries Overdue"
+                  value={n(o.health.webhook_deliveries.overdue)}
+                  bad={o.health.webhook_deliveries.overdue > 0}
+                />
+                <MetricRow
+                  label="Customer Webhook Endpoints Auto-Disabled"
+                  value={n(o.health.webhook_endpoints_disabled)}
+                  bad={o.health.webhook_endpoints_disabled > 0}
+                  hint="Disabled after repeated backoff failures"
+                />
+              </div>
+            ) : (
+              <p className="py-6 text-center text-helper">No messaging telemetry recorded yet.</p>
+            )}
+          </CardBody>
+        </Card>
+
+        {/* AI Inference & Latency */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Bot className="h-4 w-4 text-primary" />
+              <CardTitle>AI Gateway & Model Performance</CardTitle>
+            </div>
+          </CardHeader>
+          <CardBody>
+            {o.health ? (
+              <div className="space-y-1">
+                <MetricRow
+                  label="Model Inference Runs (Last 15m)"
+                  value={n(o.health.ai.runs_last_15_min)}
+                />
+                <MetricRow
+                  label="Failed AI Calls (Last 15m)"
+                  value={n(o.health.ai.failed_last_15_min)}
+                  bad={o.health.ai.failed_last_15_min > 0}
+                />
+                <MetricRow
+                  label="AI Latency p95 (Last 24h)"
+                  value={
+                    o.health.ai.p95_latency_ms_24h === null
+                      ? '—'
+                      : `${(o.health.ai.p95_latency_ms_24h / 1000).toFixed(2)} s`
+                  }
+                />
+              </div>
+            ) : (
+              <p className="py-6 text-center text-helper">No AI telemetry recorded yet.</p>
+            )}
+          </CardBody>
+        </Card>
+      </div>
+
+      {/* Workers & Queue Architecture */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Server className="h-4 w-4 text-primary" />
+              <CardTitle>Worker Instances & Heartbeats</CardTitle>
+            </div>
+            <Badge tone={o.workers.alive && o.workers.alive > 0 ? 'success' : 'danger'}>
+              {n(o.workers.alive)} Alive
+            </Badge>
+          </CardHeader>
+          <CardBody>
+            {o.workers.instances.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-[12px]">
+                  <thead>
+                    <tr className="border-b border-border text-left text-muted-foreground">
+                      <th className="py-2 pr-3 font-medium">Instance ID</th>
+                      <th className="py-2 pr-3 font-medium">Last Heartbeat</th>
+                      <th className="py-2 font-medium">Version</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {o.workers.instances.map((w) => (
+                      <tr key={w.instanceId} className="hover:bg-muted/40">
+                        <td className="py-2 pr-3 font-mono font-medium text-foreground">
+                          {w.instanceId}
+                        </td>
+                        <td className="num py-2 pr-3 text-muted-foreground">{ago(w.ageSeconds)}</td>
+                        <td className="py-2 text-muted-foreground">{w.version ?? 'v1.0.0'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="py-6 text-center text-helper">No active worker heartbeat registered.</p>
+            )}
+          </CardBody>
+        </Card>
+
+        {/* Service Level Objectives (SLOs) */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              <CardTitle>Service Level Objectives (SLOs)</CardTitle>
+            </div>
+          </CardHeader>
+          <CardBody className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-[12px]">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30 text-left text-muted-foreground">
+                    <th className="px-4 py-2.5 font-medium">Objective Name</th>
+                    <th className="px-4 py-2.5 font-medium">Target</th>
+                    <th className="px-4 py-2.5 font-medium">Current Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {o.slos.map((s) => (
+                    <tr key={s.id} className="hover:bg-muted/30">
+                      <td className="px-4 py-2.5 font-medium text-foreground">{s.name}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground">{s.objective}</td>
+                      <td className="px-4 py-2.5">
+                        {s.current ? (
+                          <span className="inline-flex items-center gap-1.5 num font-medium">
+                            {s.current.ok === null ? null : s.current.ok ? (
+                              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                            ) : (
+                              <AlertTriangle className="h-4 w-4 text-rose-500" />
+                            )}
+                            <span
+                              className={
+                                s.current.ok === false
+                                  ? 'text-rose-600 font-semibold'
+                                  : 'text-foreground'
+                              }
+                            >
+                              {s.current.value}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-muted-foreground">
+                            <CircleHelp className="h-3.5 w-3.5" />
+                            {s.source === 'external' ? 'External probe' : 'Awaiting data'}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
+
+      {/* Alert Rules State Registry */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <Radio className="h-4 w-4 text-primary" />
+              <CardTitle>Alert Rules Registry ({o.rules.length})</CardTitle>
+            </div>
+            <span className="text-helper text-[12px]">Evaluated continuously by background monitor</span>
+          </div>
+        </CardHeader>
+        <CardBody className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-[12px]">
+              <thead>
+                <tr className="border-b border-border bg-muted/30 text-muted-foreground">
+                  <th className="px-4 py-2.5 font-medium">Rule Definition</th>
+                  <th className="px-4 py-2.5 font-medium">Severity</th>
+                  <th className="px-4 py-2.5 font-medium">State</th>
+                  <th className="px-4 py-2.5 font-medium">Evaluation Values</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {o.rules.map((r) => (
+                  <tr key={r.key} className="hover:bg-muted/30">
+                    <td className="px-4 py-2.5">
+                      <span className="font-medium text-foreground">{r.title}</span>
+                      <span className="block font-mono text-[11px] text-muted-foreground">
+                        {r.key}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <Badge tone={sevTone(r.severity)}>Sev {r.severity}</Badge>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <Badge
+                        tone={
+                          r.state === 'breached'
+                            ? 'danger'
+                            : r.state === 'ok'
+                              ? 'success'
+                              : 'neutral'
+                        }
+                      >
+                        {r.state === 'breached' ? 'Breached' : r.state === 'ok' ? 'Normal' : 'Unknown'}
+                      </Badge>
+                    </td>
+                    <td className="num px-4 py-2.5 text-muted-foreground font-mono text-[11px] break-all">
+                      {values(r.values)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardBody>
+      </Card>
+
+      {/* Recently Resolved Incidents */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-primary" />
+            <CardTitle>Recently Resolved Incidents</CardTitle>
+          </div>
+        </CardHeader>
+        <CardBody>
+          {o.recent.length === 0 ? (
+            <p className="py-4 text-center text-helper">No recent alert resolutions recorded.</p>
+          ) : (
+            <div className="divide-y divide-border text-[13px]">
+              {o.recent.map((a) => (
+                <div key={a.key} className="flex flex-wrap items-center justify-between gap-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <Badge tone={sevTone(a.severity)}>Sev {a.severity}</Badge>
+                    <span className="font-medium text-foreground">{a.title}</span>
+                  </div>
+                  <span className="text-[12px] text-muted-foreground">
+                    Resolved: {when(a.resolvedAt)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardBody>
+      </Card>
+    </div>
   );
 }

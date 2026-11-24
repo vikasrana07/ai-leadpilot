@@ -2,49 +2,204 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, KeyRound, Lock, Shield, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { ThemeSwitcher } from '@/components/shell/theme-switcher';
 import { ApiError } from '@/lib/api';
 import { platformApi } from '@/lib/platform';
 
 export default function PlatformLogin() {
   const router = useRouter();
-  const [email, setEmail] = useState(''); const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null); const [busy, setBusy] = useState(false);
-  const [challenge, setChallenge] = useState<string | null>(null); const [value, setValue] = useState(''); const [recovery, setRecovery] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [challenge, setChallenge] = useState<string | null>(null);
+  const [value, setValue] = useState('');
+  const [recovery, setRecovery] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      if (challenge) {
+        await platformApi('/auth/mfa', {
+          method: 'POST',
+          body: {
+            challengeToken: challenge,
+            ...(recovery ? { recoveryCode: value.trim() } : { code: value.replace(/\s/g, '') }),
+          },
+        });
+        router.replace('/platform');
+      } else {
+        const r = await platformApi<{ mfaRequired?: true; challengeToken?: string }>(
+          '/auth/login',
+          { method: 'POST', body: { email, password } }
+        );
+        if (r.mfaRequired && r.challengeToken) {
+          setChallenge(r.challengeToken);
+        } else {
+          router.replace('/platform');
+        }
+      }
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not sign in');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
-    <div className="flex min-h-dvh items-center justify-center p-4">
-      <Card className="w-full max-w-sm"><CardBody>
-        <h1 className="text-title">Platform sign-in</h1>
-        <p className="text-helper mb-4 mt-1">For LeadPilot staff. Workspace users sign in at the normal login.</p>
-        <form className="space-y-3" onSubmit={async (e) => {
-          e.preventDefault(); setBusy(true); setError(null);
-          try {
-            if (challenge) { await platformApi('/auth/mfa', { method: 'POST', body: { challengeToken: challenge, ...(recovery ? { recoveryCode: value.trim() } : { code: value.replace(/\s/g, '') }) } }); router.replace('/platform'); }
-            else {
-              const r = await platformApi<{ mfaRequired?: true; challengeToken?: string }>('/auth/login', { method: 'POST', body: { email, password } });
-              if (r.mfaRequired && r.challengeToken) setChallenge(r.challengeToken); else router.replace('/platform');
-            }
-          }
-          catch (err) { setError(err instanceof ApiError ? err.message : 'Could not sign in'); } finally { setBusy(false); }
-        }}>
-          {challenge ? (
-            <>
-              <Field label={recovery ? 'Recovery code' : 'Authentication code'} htmlFor="pm" error={error ?? undefined}><Input id="pm" autoFocus autoComplete="one-time-code" inputMode={recovery ? 'text' : 'numeric'} maxLength={recovery ? 16 : 7} value={value} onChange={(e) => setValue(e.target.value)} /></Field>
-              <Button type="submit" variant="primary" className="w-full" loading={busy} disabled={value.trim().length < (recovery ? 8 : 6)}>Verify</Button>
-              <div className="flex justify-between text-[13px]"><button type="button" className="text-primary underline underline-offset-2 hover:no-underline" onClick={() => { setRecovery(!recovery); setValue(''); setError(null); }}>{recovery ? 'Use authenticator code' : 'Use a recovery code'}</button><button type="button" className="text-muted-foreground hover:underline" onClick={() => { setChallenge(null); setValue(''); setError(null); }}>Back</button></div>
-            </>
-          ) : (
-            <>
-              <Field label="Email" htmlFor="pe"><Input id="pe" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus required /></Field>
-              <Field label="Password" htmlFor="pp" error={error ?? undefined}><Input id="pp" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></Field>
-              <Button type="submit" variant="primary" className="w-full" loading={busy}>Sign in</Button>
-            </>
-          )}
-        </form>
-      </CardBody></Card>
+    <div className="relative flex min-h-dvh flex-col items-center justify-center bg-background px-4 py-12">
+      {/* Top utility bar */}
+      <div className="absolute right-4 top-4">
+        <ThemeSwitcher />
+      </div>
+
+      <div className="w-full max-w-md">
+        {/* Brand Header */}
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/20">
+            <Shield className="h-6 w-6" aria-hidden />
+          </div>
+          <h1 className="text-[22px] font-bold tracking-tight text-foreground">
+            LeadPilot Staff Console
+          </h1>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            Internal administration and tenant operations
+          </p>
+        </div>
+
+        {/* Sign In Card */}
+        <Card className="border-border bg-card shadow-lg shadow-black/5">
+          <CardBody className="p-6 sm:p-8">
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              {challenge ? (
+                <>
+                  <div className="rounded-lg bg-primary-soft/60 p-3.5 text-center">
+                    <KeyRound className="mx-auto mb-1.5 h-5 w-5 text-primary" aria-hidden />
+                    <p className="text-[13px] font-medium text-foreground">
+                      {recovery ? 'Enter Backup Recovery Code' : 'Two-Factor Authentication'}
+                    </p>
+                    <p className="mt-0.5 text-[12px] text-muted-foreground">
+                      {recovery
+                        ? 'Enter one of your 16-character backup codes.'
+                        : 'Enter the 6-digit security code generated by your authenticator app.'}
+                    </p>
+                  </div>
+
+                  <Field
+                    label={recovery ? 'Recovery code' : 'Authentication code'}
+                    htmlFor="pm"
+                    error={error ?? undefined}
+                  >
+                    <Input
+                      id="pm"
+                      autoFocus
+                      autoComplete="one-time-code"
+                      inputMode={recovery ? 'text' : 'numeric'}
+                      maxLength={recovery ? 16 : 7}
+                      placeholder={recovery ? 'XXXX-XXXX-XXXX' : '123 456'}
+                      className="text-center text-lg tracking-widest font-mono"
+                      value={value}
+                      onChange={(e) => setValue(e.target.value)}
+                    />
+                  </Field>
+
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="w-full"
+                    loading={busy}
+                    disabled={value.trim().length < (recovery ? 8 : 6)}
+                  >
+                    <ShieldCheck className="h-4 w-4 mr-1.5" />
+                    Verify and Continue
+                  </Button>
+
+                  <div className="flex items-center justify-between pt-2 text-[12px]">
+                    <button
+                      type="button"
+                      className="text-primary hover:underline"
+                      onClick={() => {
+                        setRecovery(!recovery);
+                        setValue('');
+                        setError(null);
+                      }}
+                    >
+                      {recovery ? 'Use authenticator app' : 'Use a recovery code'}
+                    </button>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                      onClick={() => {
+                        setChallenge(null);
+                        setValue('');
+                        setError(null);
+                      }}
+                    >
+                      <ArrowLeft className="h-3 w-3" />
+                      Back
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Field label="Staff Email" htmlFor="pe">
+                    <Input
+                      id="pe"
+                      type="email"
+                      autoComplete="username"
+                      placeholder="admin@leadpilot.io"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoFocus
+                      required
+                    />
+                  </Field>
+
+                  <Field label="Password" htmlFor="pp" error={error ?? undefined}>
+                    <Input
+                      id="pp"
+                      type="password"
+                      autoComplete="current-password"
+                      placeholder="••••••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </Field>
+
+                  <Button type="submit" variant="primary" className="w-full" loading={busy}>
+                    <Lock className="h-4 w-4 mr-1.5" />
+                    Sign in to Platform
+                  </Button>
+                </>
+              )}
+            </form>
+
+            <div className="mt-6 border-t border-border pt-4 text-center">
+              <p className="text-[12px] text-muted-foreground">
+                Workspace customer?{' '}
+                <Link href="/login" className="font-medium text-primary hover:underline">
+                  Sign in to workspace
+                </Link>
+              </p>
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Security Notice */}
+        <p className="mt-6 flex items-center justify-center gap-1.5 text-center text-[11px] text-muted-foreground">
+          <Shield className="h-3.5 w-3.5 opacity-70" aria-hidden />
+          <span>Restricted administrative area. All activities are recorded and audited.</span>
+        </p>
+      </div>
     </div>
   );
 }
