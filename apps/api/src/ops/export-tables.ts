@@ -13,6 +13,10 @@ export const EXPORT_INCLUDED: Record<string, readonly string[]> = {
   memberships: [], messages: [], notification_preferences: [], notifications: [], payments: [], pipeline_stages: [], properties: [],
   role_permissions: [], roles: [], scoring_rule_sets: [], sla_breaches: [], stage_transitions: [], subscriptions: [], tags: [], tasks: [],
   whatsapp_templates: [], widget_configs: [],
+  // Outbound campaigns, tracked email and calendar links. The customer's own data is exported; provider message ids and token references are not.
+  broadcast_campaigns: [], broadcast_recipients: [], email_engagement_events: [], email_suppressions: [],
+  tracked_emails: ['ses_message_id', 'smtp_message_id'],
+  google_calendar_syncs: ['credential_id', 'sync_token', 'channel_id'],
   portal_configs: ['public_key'], // the customer-portal settings are exported; the address key is not (it is re-created when the portal is set up again)
 };
 

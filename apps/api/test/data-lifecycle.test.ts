@@ -102,7 +102,7 @@ describe('retention purge', () => {
 
 describe('workspace export', () => {
   it('classifies every tenant table (a new table must be consciously exported or excluded)', async () => {
-    const tables = (await q(`SELECT DISTINCT table_name FROM information_schema.columns WHERE table_schema='public' AND column_name='tenant_id'`)).rows.map((r) => r.table_name as string);
+    const tables = (await q(`SELECT DISTINCT table_name FROM information_schema.columns WHERE table_schema='public' AND column_name='tenant_id' AND table_name NOT IN (SELECT c.relname FROM pg_class c WHERE c.relispartition)`)).rows.map((r) => r.table_name as string); // partitions (audit_logs_y2026m01 ...) are exported through their parent audit_logs
     const classified = new Set([...Object.keys(EXPORT_INCLUDED), ...Object.keys(EXPORT_EXCLUDED)]);
     expect(tables.filter((t) => !classified.has(t)), 'add the table to EXPORT_INCLUDED or EXPORT_EXCLUDED in ops/export-tables.ts').toEqual([]);
     expect(Object.keys(EXPORT_INCLUDED).filter((t) => !tables.includes(t))).toEqual([]);
