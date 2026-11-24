@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
+import { UsageSkeleton } from '@/components/skeletons';
 import { api } from '@/lib/api';
 import type { UsageView } from '@/lib/ops';
 import { cn } from '@/lib/cn';
@@ -25,7 +25,7 @@ function Row({ label, value, hint }: { label: string; value: string; hint?: stri
 export default function UsagePage() {
   const terms = useTerms();
   const q = useQuery({ queryKey: ['usage'], queryFn: () => api<UsageView>('/usage') });
-  if (q.isPending) return <><PageHeader title="Usage" /><Skeleton className="h-64" /></>;
+  if (q.isPending) return <UsageSkeleton />;
   if (q.isError) return <><PageHeader title="Usage" /><Card><EmptyState icon={Gauge} title="Could not load usage" description="Please try again." action={<Button onClick={() => void q.refetch()}>Retry</Button>} /></Card></>;
   const u = q.data;
   const period = new Intl.DateTimeFormat('en-IN', { timeZone: u.period.timezone, month: 'long', year: 'numeric' }).format(new Date(u.period.from));

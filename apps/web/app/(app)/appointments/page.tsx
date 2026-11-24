@@ -19,6 +19,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AppointmentsCalendarSkeleton, AppointmentsTableSkeleton } from '@/components/skeletons';
 import { Textarea } from '@/components/ui/textarea';
 import { useDebounce } from '@/hooks/use-debounce';
 import { api, ApiError } from '@/lib/api';
@@ -451,7 +452,9 @@ export default function AppointmentsPage() {
           {view === 'week' ? <div className="flex items-center gap-1"><Button size="icon" variant="ghost" aria-label="Previous week" onClick={() => setWeekStart(addDays(weekStart, -7))}><ChevronLeft className="h-4 w-4" /></Button><Button size="sm" onClick={() => setWeekStart(mondayOf(today))}>Today</Button><Button size="icon" variant="ghost" aria-label="Next week" onClick={() => setWeekStart(addDays(weekStart, 7))}><ChevronRight className="h-4 w-4" /></Button><span className="text-[13px] font-medium">{fmtDay(`${weekStart}T12:00:00Z`, 'UTC')} – {fmtDay(`${addDays(weekStart, 6)}T12:00:00Z`, 'UTC')}</span></div> : <Select aria-label="Status" className="w-auto" value={status} onChange={(e) => setStatus(e.target.value)}><option value="">All statuses</option>{['PENDING', 'CONFIRMED', 'COMPLETED', 'NO_SHOW', 'CANCELLED'].map((s) => <option key={s} value={s}>{LABEL[s]}</option>)}</Select>}
           {manager ? <Select aria-label="Agent" className="ml-auto w-auto" value={agent} onChange={(e) => setAgent(e.target.value)}><option value="">All {appConfig.practitionerLabel.toLowerCase()}s</option>{(members.data ?? []).filter((m) => m.status === 'ACTIVE').map((m) => <option key={m.id} value={m.id}>{m.user.name}</option>)}</Select> : null}
         </div>
-        {list.isPending ? <div className="space-y-2 p-4">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-14" />)}</div> : list.isError ? <EmptyState icon={CalendarDays} title="Could not load appointments" description="Please try again." action={<Button onClick={() => void list.refetch()}>Retry</Button>} /> : view === 'week' ? (
+        {list.isPending ? (
+          view === 'week' ? <AppointmentsCalendarSkeleton /> : <AppointmentsTableSkeleton />
+        ) : list.isError ? <EmptyState icon={CalendarDays} title="Could not load appointments" description="Please try again." action={<Button onClick={() => void list.refetch()}>Retry</Button>} /> : view === 'week' ? (
           <div className="overflow-x-auto"><div className="grid min-w-[840px] grid-cols-7 divide-x divide-border">{days.map((d) => (
             <div key={d} className={cn('min-h-64 p-2', d === today && 'bg-primary-soft/40')}>
               <p className={cn('text-label mb-2', d === today && 'text-primary')}>{fmtDay(`${d}T12:00:00Z`, 'UTC')}</p>

@@ -28,7 +28,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { TasksListRowsSkeleton } from '@/components/skeletons';
 import { useTasksControllerList, useTasksControllerRemove, tasksControllerUpdate } from '@/lib/api-generated/tasks/tasks';
 import { useAuth } from '@/lib/auth';
 import { useMembers } from '@/lib/crm';
@@ -508,18 +508,7 @@ export default function TasksPage() {
 
         {/* Content Section */}
         {list.isPending ? (
-          <div className="space-y-3 p-4">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-3">
-                <Skeleton className="h-5 w-5 rounded-full" />
-                <div className="flex-1 space-y-1.5">
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-3 w-1/3" />
-                </div>
-                <Skeleton className="h-6 w-20 rounded" />
-              </div>
-            ))}
-          </div>
+          <TasksListRowsSkeleton count={6} />
         ) : filteredItems.length === 0 ? (
           <EmptyState
             icon={ListChecks}

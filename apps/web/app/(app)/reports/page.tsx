@@ -111,7 +111,36 @@ export default function ReportsPage() {
       </div>
 
       {!customReady ? <Card><EmptyState icon={BarChart3} title="Choose a start and end date" description="Pick both dates for a custom range." /></Card>
-        : q.isPending ? <div className="space-y-3"><Skeleton className="h-24" /><Skeleton className="h-64" /></div>
+        : q.isPending ? (
+          <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="rounded-lg border border-border bg-card p-4 space-y-2 shadow-xs">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-7 w-20" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              ))}
+            </div>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-4 w-36" />
+                <Skeleton className="h-3.5 w-24" />
+              </CardHeader>
+              <CardBody className="h-64 flex items-end gap-3 p-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                    <div
+                      className="w-full rounded-t bg-muted/60 skeleton"
+                      style={{ height: `${25 + ((i * 10) % 70)}%` }}
+                    />
+                    <Skeleton className="h-2.5 w-10" />
+                  </div>
+                ))}
+              </CardBody>
+            </Card>
+          </div>
+        )
         : q.isError ? <Card><EmptyState icon={BarChart3} title="Could not load this report" description={q.error instanceof Error ? q.error.message : 'Please try again.'} action={<Button onClick={() => void q.refetch()}>Retry</Button>} /></Card>
         : (
           <div className="space-y-4">

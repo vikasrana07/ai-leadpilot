@@ -21,7 +21,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Pagination } from '@/components/ui/pagination';
 import { Select } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PropertiesTableRowsSkeleton } from '@/components/skeletons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -354,11 +354,7 @@ export default function PropertiesPage() {
         />
 
         {list.isPending ? (
-          <div className="p-4 space-y-2">
-            {[0, 1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-12" />
-            ))}
-          </div>
+          <PropertiesTableRowsSkeleton count={6} />
         ) : list.data && list.data.items.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
