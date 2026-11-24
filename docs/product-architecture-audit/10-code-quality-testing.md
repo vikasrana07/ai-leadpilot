@@ -1,5 +1,7 @@
 # 10 — Code Quality & Testing
 
+> **Status 2026-11-24:** lint is now 0 errors (PR #3) and the failing tests listed in `01-executive-summary.md` (Remediation status) were reduced; the numbers below describe `dce256d` as audited.
+
 ## 0. What I actually ran (read-only, 2026-11-23, `main` @ `dce256d`)
 
 | Command | Result |

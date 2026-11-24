@@ -3,6 +3,29 @@
 **Audit date:** 2026-11-23 · **Repository state:** `main` @ `dce256d` (supersedes the audit committed in `567630c`, which predates the campaigns, email-tracking, Google Calendar, custom-role and worker-tier work)
 **Method:** static inspection of source, migrations, tests, CI and docs. I ran only read-only checks (typecheck, eslint, web and API unit tests); nothing was executed against a database, provider or browser. Labels used throughout: **[Fact]** verified in code · **[Inference]** reasoned from code · **[Unverified]** could not be confirmed · **[Rec]** recommendation.
 
+## Remediation status (updated 2026-11-24)
+
+The audit text below describes the repository at `dce256d`. Since then these PRs were merged into `main`:
+
+| PR | Change | Audit items |
+|---|---|---|
+| #2 | `list_due_campaigns()` SECURITY DEFINER + sweep fix; reproduction test (it failed before the fix, confirming the inference); security-matrix allow-list for `/webhooks/ses`, `/track/*` | **S-04 fixed and confirmed**, TD-03 |
+| #3 | `eslint .` 164 errors → 0 (10 warnings); typed `soft-delete.ts`; rls-isolation guard handles audit partitions | TD-01 (lint part). CI was also failing on tests, see below |
+| #4 | Google Calendar disconnect revokes credentials instead of an impossible `DELETE` | Part of S-19 (disconnect). **Token refresh and tenant-context read are still open** |
+| #5 | Test app processes knowledge documents in-process (8 tests) | Test-only; production behaviour unchanged |
+| #6 | Industry switch re-seeds the pack again (regression from `567630c`) | New finding S-21 |
+
+**Test baseline on merged `main` (full API suite, local Postgres/Redis, 2026-11-24): 795 of 799 pass, 4 fail** (was 14 of 797 failing at `dce256d`). Remaining failures: the two industry-pack tests that encode the old with-leads rule (decision pending), the workspace-export table classification (S-22), and `crm-extras` › "adds notes with author, and keeps history of merged leads on the survivor" (fails in the full run; it passed when run together with only two other files, so it may be order- or timing-dependent; not diagnosed). Playwright E2E not run.
+
+**New findings from this remediation pass**
+- **S-21 (Medium, regression):** `567630c` set `industryPackId` before `switchIndustryPack()`, which compares stored vs requested pack, so an empty workspace changing industry kept the old pipeline, fields and sources. Fixed in #6. The same commit also changed the with-leads rule (pack id now switches even when leads exist), contradicting ADR 0011 and two tests; **awaiting a product decision**.
+- **S-22 (Medium, privacy):** the workspace export classification test fails: `broadcast_campaigns`, `broadcast_recipients`, `tracked_emails`, `email_engagement_events`, `email_suppressions`, `google_calendar_syncs` are in neither `EXPORT_INCLUDED` nor `EXPORT_EXCLUDED` (`ops/export-tables.ts`), so DPDP workspace export omits them. The test also needs the same partition exception as the RLS guard. Open.
+- **S-23 (Low, operational):** knowledge uploads are queued for the `ai` worker tier; if no such worker runs, documents stay `PENDING` forever. Needs a stuck-document sweeper and an alert. Open.
+
+**Corrections to earlier statements:** a repository-wide RLS completeness test *does* exist (`rls-isolation.test.ts`); the repo's `security-matrix.test.ts` was failing on `main` because of three new public routes (fixed in #2).
+
+Still open from the roadmap: R2, R3, R4, R5, R6, R7, R8, R9, R10 (refresh part), R11, and Phase 2–4.
+
 ## 1. What the product is
 
 **LeadPilot** is a multi-tenant B2B SaaS for lead capture, qualification and follow-up, built for Indian SMEs that sell through WhatsApp: real estate first, with industry packs for coaching, healthcare and home services (`packages/shared-types/src/industry-packs.ts`, ADR 0011). It combines:
