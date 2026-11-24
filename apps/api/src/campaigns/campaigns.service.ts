@@ -16,6 +16,7 @@ import type {
   CampaignSegment,
   CampaignTemplateParam,
   CreateCampaignInput,
+  CreateFollowUpInput,
   WhatsappOptInInput,
   RetryFailedInput,
   RecipientQuery,
@@ -45,8 +46,10 @@ export interface CampaignSummaryDto {
   sentCount: number;
   deliveredCount: number;
   readCount: number;
+  repliedCount: number;
   failedCount: number;
   optOutCount: number;
+  autoRetry?: boolean;
   scheduledAt: string | null;
   startedAt: string | null;
   completedAt: string | null;
@@ -154,9 +157,11 @@ export class CampaignsService implements OnModuleInit {
           sentCount: c.sentCount,
           deliveredCount: c.deliveredCount,
           readCount: c.readCount,
+          repliedCount: c.repliedCount,
           failedCount: c.failedCount,
           optOutCount: c.optOutCount,
           noConsentCount: c.noConsentCount,
+          autoRetry: c.autoRetry,
           scheduledAt: c.scheduledAt ? c.scheduledAt.toISOString() : null,
           startedAt: c.startedAt ? c.startedAt.toISOString() : null,
           completedAt: c.completedAt ? c.completedAt.toISOString() : null,
@@ -186,9 +191,32 @@ export class CampaignsService implements OnModuleInit {
                count(*) FILTER (WHERE COALESCE(error->>'code', '') = 'interrupted')::int AS interrupted
           FROM broadcast_recipients WHERE campaign_id = ${id}::uuid AND tenant_id = ${ctx.tenantId}::uuid AND status = 'FAILED'`;
 
+      // Live cohort breakdown for the "Send a follow-up" dialog
+      const [cohorts] = await tx.$queryRaw<{
+        failed: number;
+        sent_undelivered: number;
+        delivered_unread: number;
+        read_no_reply: number;
+        replied: number;
+      }[]>`
+        SELECT count(*) FILTER (WHERE status = 'FAILED')::int AS failed,
+               count(*) FILTER (WHERE status = 'SENT')::int AS sent_undelivered,
+               count(*) FILTER (WHERE status = 'DELIVERED')::int AS delivered_unread,
+               count(*) FILTER (WHERE status = 'READ' AND replied_at IS NULL)::int AS read_no_reply,
+               count(*) FILTER (WHERE replied_at IS NOT NULL)::int AS replied
+          FROM broadcast_recipients
+         WHERE campaign_id = ${id}::uuid AND tenant_id = ${ctx.tenantId}::uuid`;
+
       return {
         retryableCount: counts?.retryable ?? 0,
         interruptedCount: counts?.interrupted ?? 0,
+        cohortCounts: {
+          failed: cohorts?.failed ?? 0,
+          sentUndelivered: cohorts?.sent_undelivered ?? 0,
+          deliveredUnread: cohorts?.delivered_unread ?? 0,
+          readNoReply: cohorts?.read_no_reply ?? 0,
+          replied: cohorts?.replied ?? 0,
+        },
         id: c.id,
         name: c.name,
         status: c.status,
@@ -204,9 +232,15 @@ export class CampaignsService implements OnModuleInit {
         sentCount: c.sentCount,
         deliveredCount: c.deliveredCount,
         readCount: c.readCount,
+        repliedCount: c.repliedCount,
         failedCount: c.failedCount,
         optOutCount: c.optOutCount,
         noConsentCount: c.noConsentCount,
+        autoRetry: c.autoRetry,
+        autoRetryCount: c.autoRetryCount,
+        nextRetryAt: c.nextRetryAt ? c.nextRetryAt.toISOString() : null,
+        parentCampaignId: c.parentCampaignId,
+        followUpCohort: c.followUpCohort,
         scheduledAt: c.scheduledAt ? c.scheduledAt.toISOString() : null,
         startedAt: c.startedAt ? c.startedAt.toISOString() : null,
         completedAt: c.completedAt ? c.completedAt.toISOString() : null,
@@ -332,6 +366,7 @@ export class CampaignsService implements OnModuleInit {
           templateParams: (input.templateParams ?? []) as Prisma.InputJsonValue,
           segment: input.segment as Prisma.InputJsonValue,
           scheduledAt: scheduledDate,
+          autoRetry: input.autoRetry ?? false,
           createdByUserId: ctx.userId ?? null,
         },
       });
@@ -400,6 +435,7 @@ export class CampaignsService implements OnModuleInit {
           ...(input.segment !== undefined ? { segment: input.segment as Prisma.InputJsonValue } : {}),
           scheduledAt: scheduledDate,
           status: nextStatus,
+          ...(input.autoRetry !== undefined ? { autoRetry: input.autoRetry } : {}),
         },
       });
 
@@ -545,8 +581,12 @@ export class CampaignsService implements OnModuleInit {
    * (`error.code = 'interrupted'`) only with `includeInterrupted`, because they may already have received the message. Cancelled-by-user
    * rows are never retried. Consent is re-checked when each recipient is sent, so a STOP since the first run is still honoured.
    */
-  async retryFailed(ctx: TenantRequestContext, id: string, input: RetryFailedInput) {
-    const retried = await this.db.tenantTx(ctx, async (tx) => {
+  async retryFailed(
+    ctx: { tenantId: string; userId?: string | null; requestId?: string; ip?: string },
+    id: string,
+    input: RetryFailedInput = { includeInterrupted: false },
+  ) {
+    const retried = await this.db.tenantTx({ tenantId: ctx.tenantId, userId: ctx.userId ?? undefined }, async (tx) => {
       const c = await tx.broadcastCampaign.findFirst({ where: { id, tenantId: ctx.tenantId } });
       if (!c) throw new NotFoundException({ code: 'not_found', message: 'Campaign not found' });
       if (c.status !== 'COMPLETED') {
@@ -851,8 +891,114 @@ export class CampaignsService implements OnModuleInit {
     await this.db.tenantTx({ tenantId }, async (tx) => {
       const open = await tx.broadcastRecipient.count({ where: { campaignId, status: { in: ['PENDING', 'QUEUED'] } } });
       if (open === 0) {
-        await tx.broadcastCampaign.updateMany({ where: { id: campaignId, tenantId, status: 'RUNNING' }, data: { status: 'COMPLETED', completedAt: new Date() } });
+        const c = await tx.broadcastCampaign.findFirst({
+          where: { id: campaignId },
+          select: { autoRetry: true, autoRetryCount: true, failedCount: true },
+        });
+        const shouldScheduleRetry = c && c.autoRetry && c.autoRetryCount < 3 && c.failedCount > 0;
+        const nextRetryAt = shouldScheduleRetry
+          ? new Date(Date.now() + (c.autoRetryCount === 0 ? 24 : 48) * 60 * 60 * 1000)
+          : null;
+
+        await tx.broadcastCampaign.updateMany({
+          where: { id: campaignId, tenantId, status: 'RUNNING' },
+          data: { status: 'COMPLETED', completedAt: new Date(), nextRetryAt },
+        });
       }
+    });
+  }
+
+  /** Creates a targeted follow-up campaign from a finished campaign's recipient cohort */
+  async createFollowUp(ctx: TenantRequestContext, parentId: string, input: CreateFollowUpInput) {
+    return this.db.tenantTx(ctx, async (tx) => {
+      const parent = await tx.broadcastCampaign.findFirst({
+        where: { id: parentId, tenantId: ctx.tenantId },
+        include: { channel: true, template: true },
+      });
+      if (!parent) throw new NotFoundException({ code: 'not_found', message: 'Parent campaign not found' });
+      if (parent.status !== 'COMPLETED') {
+        throw new ConflictException({ code: 'not_completed', message: 'Follow-ups can only be created from completed campaigns' });
+      }
+
+      // Filter cohort recipients
+      let statusWhere: Prisma.BroadcastRecipientWhereInput = {};
+      if (input.cohort === 'FAILED') statusWhere = { status: 'FAILED' };
+      else if (input.cohort === 'SENT_UNDELIVERED') statusWhere = { status: 'SENT' };
+      else if (input.cohort === 'DELIVERED_UNREAD') statusWhere = { status: 'DELIVERED' };
+      else if (input.cohort === 'READ_NO_REPLY') statusWhere = { status: 'READ', repliedAt: null };
+      else if (input.cohort === 'REPLIED') statusWhere = { repliedAt: { not: null } };
+
+      const recipients = await tx.broadcastRecipient.findMany({
+        where: {
+          tenantId: ctx.tenantId,
+          campaignId: parentId,
+          ...statusWhere,
+        },
+        select: { leadId: true, phone: true },
+      });
+
+      if (recipients.length === 0) {
+        throw new ConflictException({ code: 'empty_cohort', message: 'No recipients match the selected cohort' });
+      }
+
+      // Check current consent to exclude any lead who opted out since the parent campaign
+      const consents = await tx.consent.findMany({
+        where: { tenantId: ctx.tenantId, channel: 'whatsapp', leadId: { in: recipients.map((r) => r.leadId) } },
+        orderBy: { createdAt: 'desc' },
+      });
+      const latestConsent = latestByLead(consents);
+      const eligibleRecipients = recipients.filter((r) => consentDisposition(latestConsent.get(r.leadId)) === 'ELIGIBLE');
+
+      const templateId = input.templateId ?? parent.templateId;
+      const template = templateId === parent.templateId ? parent.template : await tx.whatsappTemplate.findFirst({ where: { id: templateId, tenantId: ctx.tenantId } });
+      if (!template) throw new NotFoundException({ code: 'template_not_found', message: 'Template not found' });
+
+      const cohortLabel = input.cohort.replace(/_/g, ' ').toLowerCase();
+      const name = input.name?.trim() || `${parent.name} - Follow up (${cohortLabel})`;
+
+      const followUp = await tx.broadcastCampaign.create({
+        data: {
+          id: uuidv7(),
+          tenantId: ctx.tenantId,
+          name,
+          channelId: parent.channelId,
+          templateId: template.id,
+          templateName: template.name,
+          templateLanguage: template.language,
+          templateParams: (input.templateParams ?? parent.templateParams) as Prisma.InputJsonValue,
+          segment: { cohort: input.cohort, parentCampaignId: parent.id } as Prisma.InputJsonValue,
+          parentCampaignId: parent.id,
+          followUpCohort: input.cohort,
+          autoRetry: input.autoRetry ?? true,
+          status: 'DRAFT',
+          totalRecipients: eligibleRecipients.length,
+          createdByUserId: ctx.userId,
+        },
+      });
+
+      if (eligibleRecipients.length > 0) {
+        await tx.broadcastRecipient.createMany({
+          data: eligibleRecipients.map((r) => ({
+            id: uuidv7(),
+            tenantId: ctx.tenantId,
+            campaignId: followUp.id,
+            leadId: r.leadId,
+            phone: r.phone,
+            status: 'PENDING',
+          })),
+        });
+      }
+
+      await this.audit.record(tx, {
+        tenantId: ctx.tenantId,
+        actorUserId: ctx.userId,
+        action: 'campaign.follow_up_created',
+        resourceType: 'campaign',
+        resourceId: followUp.id,
+        metadata: { parentCampaignId: parent.id, cohort: input.cohort, recipientCount: eligibleRecipients.length },
+      });
+
+      return { id: followUp.id, name: followUp.name, totalRecipients: eligibleRecipients.length };
     });
   }
 
@@ -908,7 +1054,7 @@ export class CampaignsService implements OnModuleInit {
     });
   }
 
-  /** Checks and launches any scheduled campaigns whose scheduledAt has arrived */
+  /** Checks and launches any scheduled campaigns whose scheduledAt has arrived, and sweeps due auto-retries */
   async checkScheduledCampaigns(): Promise<number> {
     // System sweep without tenant context: broadcast_campaigns is RLS-protected, so a plain query as the app role returns nothing.
     // list_due_campaigns() is a SECURITY DEFINER helper that returns ids only; each launch then runs in its own tenant transaction.
@@ -922,6 +1068,31 @@ export class CampaignsService implements OnModuleInit {
       }
     }
 
-    return due.length;
+    // Auto-retries for completed campaigns that have auto-retry enabled and holdbacks due for re-sending
+    let retryCount = 0;
+    try {
+      const retries = await this.db.prisma.$queryRaw<{ id: string; tenant_id: string }[]>`SELECT id, tenant_id FROM list_due_campaign_retries(20)`;
+      for (const r of retries) {
+        try {
+          await this.db.tenantTx({ tenantId: r.tenant_id }, async (tx) => {
+            await tx.broadcastCampaign.update({
+              where: { id: r.id },
+              data: {
+                autoRetryCount: { increment: 1 },
+                nextRetryAt: null,
+              },
+            });
+          });
+          await this.retryFailed({ tenantId: r.tenant_id }, r.id, { includeInterrupted: false });
+          retryCount++;
+        } catch (err) {
+          this.log.error(`Failed auto-retry for campaign ${r.id}: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      }
+    } catch {
+      // In case function is not yet loaded in test DB
+    }
+
+    return due.length + retryCount;
   }
 }

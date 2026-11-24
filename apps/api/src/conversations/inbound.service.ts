@@ -94,6 +94,30 @@ export class InboundService {
         const last = await tx.consent.findFirst({ where: { leadId, channel: 'whatsapp' }, orderBy: { createdAt: 'desc' } });
         if (optOut) await tx.consent.create({ data: { id: uuidv7(), tenantId: input.tenantId, leadId, channel: 'whatsapp', status: 'OPTED_OUT', source: 'inbound_stop_keyword' } });
         else if (!last || last.status === 'OPTED_OUT') await tx.consent.create({ data: { id: uuidv7(), tenantId: input.tenantId, leadId, channel: 'whatsapp', status: 'OPTED_IN', source: 'inbound_message' } });
+
+        // Attribute response to recent broadcast campaign if the recipient hasn't already replied (72h window)
+        const attributionCutoff = new Date(Date.now() - 72 * 60 * 60 * 1000);
+        const recentBroadcast = await tx.broadcastRecipient.findFirst({
+          where: {
+            tenantId: input.tenantId,
+            leadId,
+            status: { in: ['SENT', 'DELIVERED', 'READ'] },
+            repliedAt: null,
+            sentAt: { gte: attributionCutoff },
+          },
+          orderBy: { sentAt: 'desc' },
+          select: { id: true, campaignId: true },
+        });
+        if (recentBroadcast) {
+          await tx.broadcastRecipient.update({
+            where: { id: recentBroadcast.id },
+            data: { repliedAt: new Date() },
+          });
+          await tx.broadcastCampaign.update({
+            where: { id: recentBroadcast.campaignId },
+            data: { repliedCount: { increment: 1 } },
+          });
+        }
       }
       if (!isNewConversation && existingConvo?.status === 'CLOSED') await tx.leadActivity.create({ data: { id: uuidv7(), tenantId: input.tenantId, leadId, type: 'conversation_reopened', data: {} } });
       const assigned = existingConvo?.assignedMembershipId ?? lead.assignedMembershipId;

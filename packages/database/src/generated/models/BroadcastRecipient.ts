@@ -20,8 +20,18 @@ export type BroadcastRecipientModel = runtime.Types.Result.DefaultSelection<Pris
 
 export type AggregateBroadcastRecipient = {
   _count: BroadcastRecipientCountAggregateOutputType | null
+  _avg: BroadcastRecipientAvgAggregateOutputType | null
+  _sum: BroadcastRecipientSumAggregateOutputType | null
   _min: BroadcastRecipientMinAggregateOutputType | null
   _max: BroadcastRecipientMaxAggregateOutputType | null
+}
+
+export type BroadcastRecipientAvgAggregateOutputType = {
+  retryAttempts: number | null
+}
+
+export type BroadcastRecipientSumAggregateOutputType = {
+  retryAttempts: number | null
 }
 
 export type BroadcastRecipientMinAggregateOutputType = {
@@ -38,6 +48,9 @@ export type BroadcastRecipientMinAggregateOutputType = {
   sentAt: Date | null
   deliveredAt: Date | null
   readAt: Date | null
+  repliedAt: Date | null
+  retryAttempts: number | null
+  deliveryStage: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +69,9 @@ export type BroadcastRecipientMaxAggregateOutputType = {
   sentAt: Date | null
   deliveredAt: Date | null
   readAt: Date | null
+  repliedAt: Date | null
+  retryAttempts: number | null
+  deliveryStage: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -75,11 +91,22 @@ export type BroadcastRecipientCountAggregateOutputType = {
   sentAt: number
   deliveredAt: number
   readAt: number
+  repliedAt: number
+  retryAttempts: number
+  deliveryStage: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type BroadcastRecipientAvgAggregateInputType = {
+  retryAttempts?: true
+}
+
+export type BroadcastRecipientSumAggregateInputType = {
+  retryAttempts?: true
+}
 
 export type BroadcastRecipientMinAggregateInputType = {
   id?: true
@@ -95,6 +122,9 @@ export type BroadcastRecipientMinAggregateInputType = {
   sentAt?: true
   deliveredAt?: true
   readAt?: true
+  repliedAt?: true
+  retryAttempts?: true
+  deliveryStage?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -113,6 +143,9 @@ export type BroadcastRecipientMaxAggregateInputType = {
   sentAt?: true
   deliveredAt?: true
   readAt?: true
+  repliedAt?: true
+  retryAttempts?: true
+  deliveryStage?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -132,6 +165,9 @@ export type BroadcastRecipientCountAggregateInputType = {
   sentAt?: true
   deliveredAt?: true
   readAt?: true
+  repliedAt?: true
+  retryAttempts?: true
+  deliveryStage?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -175,6 +211,18 @@ export type BroadcastRecipientAggregateArgs<ExtArgs extends runtime.Types.Extens
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: BroadcastRecipientAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: BroadcastRecipientSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: BroadcastRecipientMinAggregateInputType
@@ -205,6 +253,8 @@ export type BroadcastRecipientGroupByArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   _count?: BroadcastRecipientCountAggregateInputType | true
+  _avg?: BroadcastRecipientAvgAggregateInputType
+  _sum?: BroadcastRecipientSumAggregateInputType
   _min?: BroadcastRecipientMinAggregateInputType
   _max?: BroadcastRecipientMaxAggregateInputType
 }
@@ -224,9 +274,14 @@ export type BroadcastRecipientGroupByOutputType = {
   sentAt: Date | null
   deliveredAt: Date | null
   readAt: Date | null
+  repliedAt: Date | null
+  retryAttempts: number
+  deliveryStage: string
   createdAt: Date
   updatedAt: Date
   _count: BroadcastRecipientCountAggregateOutputType | null
+  _avg: BroadcastRecipientAvgAggregateOutputType | null
+  _sum: BroadcastRecipientSumAggregateOutputType | null
   _min: BroadcastRecipientMinAggregateOutputType | null
   _max: BroadcastRecipientMaxAggregateOutputType | null
 }
@@ -264,6 +319,9 @@ export type BroadcastRecipientWhereInput = {
   sentAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
   readAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
+  repliedAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
+  retryAttempts?: Prisma.IntFilter<"BroadcastRecipient"> | number
+  deliveryStage?: Prisma.StringFilter<"BroadcastRecipient"> | string
   createdAt?: Prisma.DateTimeFilter<"BroadcastRecipient"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BroadcastRecipient"> | Date | string
   campaign?: Prisma.XOR<Prisma.BroadcastCampaignScalarRelationFilter, Prisma.BroadcastCampaignWhereInput>
@@ -287,6 +345,9 @@ export type BroadcastRecipientOrderByWithRelationInput = {
   sentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveredAt?: Prisma.SortOrderInput | Prisma.SortOrder
   readAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  repliedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  retryAttempts?: Prisma.SortOrder
+  deliveryStage?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   campaign?: Prisma.BroadcastCampaignOrderByWithRelationInput
@@ -314,6 +375,9 @@ export type BroadcastRecipientWhereUniqueInput = Prisma.AtLeast<{
   sentAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
   readAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
+  repliedAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
+  retryAttempts?: Prisma.IntFilter<"BroadcastRecipient"> | number
+  deliveryStage?: Prisma.StringFilter<"BroadcastRecipient"> | string
   createdAt?: Prisma.DateTimeFilter<"BroadcastRecipient"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BroadcastRecipient"> | Date | string
   campaign?: Prisma.XOR<Prisma.BroadcastCampaignScalarRelationFilter, Prisma.BroadcastCampaignWhereInput>
@@ -337,11 +401,16 @@ export type BroadcastRecipientOrderByWithAggregationInput = {
   sentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveredAt?: Prisma.SortOrderInput | Prisma.SortOrder
   readAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  repliedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  retryAttempts?: Prisma.SortOrder
+  deliveryStage?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.BroadcastRecipientCountOrderByAggregateInput
+  _avg?: Prisma.BroadcastRecipientAvgOrderByAggregateInput
   _max?: Prisma.BroadcastRecipientMaxOrderByAggregateInput
   _min?: Prisma.BroadcastRecipientMinOrderByAggregateInput
+  _sum?: Prisma.BroadcastRecipientSumOrderByAggregateInput
 }
 
 export type BroadcastRecipientScalarWhereWithAggregatesInput = {
@@ -362,6 +431,9 @@ export type BroadcastRecipientScalarWhereWithAggregatesInput = {
   sentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BroadcastRecipient"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BroadcastRecipient"> | Date | string | null
   readAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BroadcastRecipient"> | Date | string | null
+  repliedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BroadcastRecipient"> | Date | string | null
+  retryAttempts?: Prisma.IntWithAggregatesFilter<"BroadcastRecipient"> | number
+  deliveryStage?: Prisma.StringWithAggregatesFilter<"BroadcastRecipient"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BroadcastRecipient"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BroadcastRecipient"> | Date | string
 }
@@ -377,6 +449,9 @@ export type BroadcastRecipientCreateInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   campaign: Prisma.BroadcastCampaignCreateNestedOneWithoutRecipientsInput
@@ -400,6 +475,9 @@ export type BroadcastRecipientUncheckedCreateInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -415,6 +493,9 @@ export type BroadcastRecipientUpdateInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campaign?: Prisma.BroadcastCampaignUpdateOneRequiredWithoutRecipientsNestedInput
@@ -438,6 +519,9 @@ export type BroadcastRecipientUncheckedUpdateInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -457,6 +541,9 @@ export type BroadcastRecipientCreateManyInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -472,6 +559,9 @@ export type BroadcastRecipientUpdateManyMutationInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -491,6 +581,9 @@ export type BroadcastRecipientUncheckedUpdateManyInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -525,8 +618,15 @@ export type BroadcastRecipientCountOrderByAggregateInput = {
   sentAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
   readAt?: Prisma.SortOrder
+  repliedAt?: Prisma.SortOrder
+  retryAttempts?: Prisma.SortOrder
+  deliveryStage?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type BroadcastRecipientAvgOrderByAggregateInput = {
+  retryAttempts?: Prisma.SortOrder
 }
 
 export type BroadcastRecipientMaxOrderByAggregateInput = {
@@ -543,6 +643,9 @@ export type BroadcastRecipientMaxOrderByAggregateInput = {
   sentAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
   readAt?: Prisma.SortOrder
+  repliedAt?: Prisma.SortOrder
+  retryAttempts?: Prisma.SortOrder
+  deliveryStage?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -561,8 +664,15 @@ export type BroadcastRecipientMinOrderByAggregateInput = {
   sentAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
   readAt?: Prisma.SortOrder
+  repliedAt?: Prisma.SortOrder
+  retryAttempts?: Prisma.SortOrder
+  deliveryStage?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type BroadcastRecipientSumOrderByAggregateInput = {
+  retryAttempts?: Prisma.SortOrder
 }
 
 export type BroadcastRecipientCreateNestedManyWithoutLeadInput = {
@@ -748,6 +858,9 @@ export type BroadcastRecipientCreateWithoutLeadInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   campaign: Prisma.BroadcastCampaignCreateNestedOneWithoutRecipientsInput
@@ -769,6 +882,9 @@ export type BroadcastRecipientUncheckedCreateWithoutLeadInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -817,6 +933,9 @@ export type BroadcastRecipientScalarWhereInput = {
   sentAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
   readAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
+  repliedAt?: Prisma.DateTimeNullableFilter<"BroadcastRecipient"> | Date | string | null
+  retryAttempts?: Prisma.IntFilter<"BroadcastRecipient"> | number
+  deliveryStage?: Prisma.StringFilter<"BroadcastRecipient"> | string
   createdAt?: Prisma.DateTimeFilter<"BroadcastRecipient"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BroadcastRecipient"> | Date | string
 }
@@ -832,6 +951,9 @@ export type BroadcastRecipientCreateWithoutConversationInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   campaign: Prisma.BroadcastCampaignCreateNestedOneWithoutRecipientsInput
@@ -853,6 +975,9 @@ export type BroadcastRecipientUncheckedCreateWithoutConversationInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -894,6 +1019,9 @@ export type BroadcastRecipientCreateWithoutMessageInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   campaign: Prisma.BroadcastCampaignCreateNestedOneWithoutRecipientsInput
@@ -915,6 +1043,9 @@ export type BroadcastRecipientUncheckedCreateWithoutMessageInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -956,6 +1087,9 @@ export type BroadcastRecipientCreateWithoutCampaignInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   lead: Prisma.LeadCreateNestedOneWithoutBroadcastRecipientsInput
@@ -977,6 +1111,9 @@ export type BroadcastRecipientUncheckedCreateWithoutCampaignInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1021,6 +1158,9 @@ export type BroadcastRecipientCreateManyLeadInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1036,6 +1176,9 @@ export type BroadcastRecipientUpdateWithoutLeadInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campaign?: Prisma.BroadcastCampaignUpdateOneRequiredWithoutRecipientsNestedInput
@@ -1057,6 +1200,9 @@ export type BroadcastRecipientUncheckedUpdateWithoutLeadInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1075,6 +1221,9 @@ export type BroadcastRecipientUncheckedUpdateManyWithoutLeadInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1093,6 +1242,9 @@ export type BroadcastRecipientCreateManyConversationInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1108,6 +1260,9 @@ export type BroadcastRecipientUpdateWithoutConversationInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campaign?: Prisma.BroadcastCampaignUpdateOneRequiredWithoutRecipientsNestedInput
@@ -1129,6 +1284,9 @@ export type BroadcastRecipientUncheckedUpdateWithoutConversationInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1147,6 +1305,9 @@ export type BroadcastRecipientUncheckedUpdateManyWithoutConversationInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1165,6 +1326,9 @@ export type BroadcastRecipientCreateManyMessageInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1180,6 +1344,9 @@ export type BroadcastRecipientUpdateWithoutMessageInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campaign?: Prisma.BroadcastCampaignUpdateOneRequiredWithoutRecipientsNestedInput
@@ -1201,6 +1368,9 @@ export type BroadcastRecipientUncheckedUpdateWithoutMessageInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1219,6 +1389,9 @@ export type BroadcastRecipientUncheckedUpdateManyWithoutMessageInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1237,6 +1410,9 @@ export type BroadcastRecipientCreateManyCampaignInput = {
   sentAt?: Date | string | null
   deliveredAt?: Date | string | null
   readAt?: Date | string | null
+  repliedAt?: Date | string | null
+  retryAttempts?: number
+  deliveryStage?: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1252,6 +1428,9 @@ export type BroadcastRecipientUpdateWithoutCampaignInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lead?: Prisma.LeadUpdateOneRequiredWithoutBroadcastRecipientsNestedInput
@@ -1273,6 +1452,9 @@ export type BroadcastRecipientUncheckedUpdateWithoutCampaignInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1291,6 +1473,9 @@ export type BroadcastRecipientUncheckedUpdateManyWithoutCampaignInput = {
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  repliedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  retryAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveryStage?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1312,6 +1497,9 @@ export type BroadcastRecipientSelect<ExtArgs extends runtime.Types.Extensions.In
   sentAt?: boolean
   deliveredAt?: boolean
   readAt?: boolean
+  repliedAt?: boolean
+  retryAttempts?: boolean
+  deliveryStage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   campaign?: boolean | Prisma.BroadcastCampaignDefaultArgs<ExtArgs>
@@ -1335,6 +1523,9 @@ export type BroadcastRecipientSelectCreateManyAndReturn<ExtArgs extends runtime.
   sentAt?: boolean
   deliveredAt?: boolean
   readAt?: boolean
+  repliedAt?: boolean
+  retryAttempts?: boolean
+  deliveryStage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   campaign?: boolean | Prisma.BroadcastCampaignDefaultArgs<ExtArgs>
@@ -1358,6 +1549,9 @@ export type BroadcastRecipientSelectUpdateManyAndReturn<ExtArgs extends runtime.
   sentAt?: boolean
   deliveredAt?: boolean
   readAt?: boolean
+  repliedAt?: boolean
+  retryAttempts?: boolean
+  deliveryStage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   campaign?: boolean | Prisma.BroadcastCampaignDefaultArgs<ExtArgs>
@@ -1381,11 +1575,14 @@ export type BroadcastRecipientSelectScalar = {
   sentAt?: boolean
   deliveredAt?: boolean
   readAt?: boolean
+  repliedAt?: boolean
+  retryAttempts?: boolean
+  deliveryStage?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BroadcastRecipientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "campaignId" | "leadId" | "phone" | "status" | "claimedAt" | "conversationId" | "messageId" | "externalId" | "error" | "sentAt" | "deliveredAt" | "readAt" | "createdAt" | "updatedAt", ExtArgs["result"]["broadcastRecipient"]>
+export type BroadcastRecipientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "campaignId" | "leadId" | "phone" | "status" | "claimedAt" | "conversationId" | "messageId" | "externalId" | "error" | "sentAt" | "deliveredAt" | "readAt" | "repliedAt" | "retryAttempts" | "deliveryStage" | "createdAt" | "updatedAt", ExtArgs["result"]["broadcastRecipient"]>
 export type BroadcastRecipientInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   campaign?: boolean | Prisma.BroadcastCampaignDefaultArgs<ExtArgs>
   lead?: boolean | Prisma.LeadDefaultArgs<ExtArgs>
@@ -1431,6 +1628,9 @@ export type $BroadcastRecipientPayload<ExtArgs extends runtime.Types.Extensions.
     sentAt: Date | null
     deliveredAt: Date | null
     readAt: Date | null
+    repliedAt: Date | null
+    retryAttempts: number
+    deliveryStage: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["broadcastRecipient"]>
@@ -1874,6 +2074,9 @@ export interface BroadcastRecipientFieldRefs {
   readonly sentAt: Prisma.FieldRef<"BroadcastRecipient", 'DateTime'>
   readonly deliveredAt: Prisma.FieldRef<"BroadcastRecipient", 'DateTime'>
   readonly readAt: Prisma.FieldRef<"BroadcastRecipient", 'DateTime'>
+  readonly repliedAt: Prisma.FieldRef<"BroadcastRecipient", 'DateTime'>
+  readonly retryAttempts: Prisma.FieldRef<"BroadcastRecipient", 'Int'>
+  readonly deliveryStage: Prisma.FieldRef<"BroadcastRecipient", 'String'>
   readonly createdAt: Prisma.FieldRef<"BroadcastRecipient", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BroadcastRecipient", 'DateTime'>
 }

@@ -239,7 +239,20 @@ const actionLabels = (terms?: SummaryTerms): Record<AutomationAction['type'], (a
 
 export const describeTriggerData = (t: AutomationTrigger, terms?: SummaryTerms): string => `${triggerLabels(terms)[t.type] ?? t.type}${t.type === 'appointment.upcoming' && t.hoursBefore ? ` (${t.hoursBefore}h before)` : ''}${t.type === 'lead.inactive' && t.days ? ` (${t.days} days)` : ''}`;
 export const describeConditionData = (c: AutomationCondition): string => `${FIELD_LABEL[c.field] ?? c.field} ${OP_LABEL[c.op] ?? c.op} ${Array.isArray(c.value) ? c.value.join(', ') : String(c.value)}`;
-export const describeActionData = (a: AutomationAction, terms?: SummaryTerms): string => (actionLabels(terms)[a.type] as (a: AutomationAction) => string)(a);
+export const describeActionData = (a: AutomationAction, terms?: SummaryTerms): string => {
+  const labels = actionLabels(terms);
+  switch (a.type) {
+    case 'send_whatsapp_template': return labels.send_whatsapp_template(a as never);
+    case 'send_message': return labels.send_message(a as never);
+    case 'assign_round_robin': return labels.assign_round_robin(a as never);
+    case 'assign_to': return labels.assign_to(a as never);
+    case 'create_task': return labels.create_task(a as never);
+    case 'notify': return labels.notify(a as never);
+    case 'change_stage': return labels.change_stage(a as never);
+    case 'add_tag': return labels.add_tag(a as never);
+    default: return 'Unknown action';
+  }
+};
 export const describeWait = (minutes: number): string => (minutes % 1440 === 0 ? `${minutes / 1440} day${minutes === 1440 ? '' : 's'}` : minutes % 60 === 0 ? `${minutes / 60} hour${minutes === 60 ? '' : 's'}` : `${minutes} minutes`);
 
 /** Indented plain-English outline of a valid graph (also the accessible text alternative to the canvas). Invalid graphs return an empty list. */

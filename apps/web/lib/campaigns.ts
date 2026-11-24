@@ -1,6 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
-import type { AudiencePreviewInput, CampaignSegment, CampaignTemplateParam, CreateCampaignInput, RecipientQuery, UpdateCampaignInput } from '@leadpilot/validation';
+import type {
+  AudiencePreviewInput,
+  CampaignSegment,
+  CampaignTemplateParam,
+  CreateCampaignInput,
+  CreateFollowUpInput,
+  FollowUpCohort,
+  RecipientQuery,
+  UpdateCampaignInput,
+} from '@leadpilot/validation';
+import { FOLLOW_UP_COHORTS } from '@leadpilot/validation';
+
+export { FOLLOW_UP_COHORTS, type FollowUpCohort, type CreateFollowUpInput };
 
 export interface CampaignItem {
   id: string;
@@ -17,9 +29,15 @@ export interface CampaignItem {
   sentCount: number;
   deliveredCount: number;
   readCount: number;
+  repliedCount: number;
   failedCount: number;
   optOutCount: number;
   noConsentCount: number;
+  autoRetry?: boolean;
+  autoRetryCount?: number;
+  nextRetryAt?: string | null;
+  parentCampaignId?: string | null;
+  followUpCohort?: FollowUpCohort | null;
   scheduledAt: string | null;
   startedAt: string | null;
   completedAt: string | null;
@@ -37,6 +55,13 @@ export interface CampaignDetail extends CampaignItem {
   /** Failed recipients a retry would re-send, and those whose delivery state is unknown (re-sending them can message someone twice). */
   retryableCount?: number;
   interruptedCount?: number;
+  cohortCounts?: {
+    failed: number;
+    sentNotDelivered: number;
+    deliveredNotRead: number;
+    readNoReply: number;
+    replied: number;
+  };
 }
 
 export interface RecipientItem {
@@ -229,6 +254,20 @@ export function useCancelCampaign() {
     }),
     onSuccess: (_data, id) => {
       void qc.invalidateQueries({ queryKey: ['campaigns', id] });
+      void qc.invalidateQueries({ queryKey: ['campaigns'] });
+    },
+  });
+}
+
+export function useCreateFollowUp(parentId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateFollowUpInput) => api<{ id: string; status: string }>(`/campaigns/${parentId}/follow-up`, {
+      method: 'POST',
+      body: input,
+    }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['campaigns', parentId] });
       void qc.invalidateQueries({ queryKey: ['campaigns'] });
     },
   });

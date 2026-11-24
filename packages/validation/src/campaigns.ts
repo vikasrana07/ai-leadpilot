@@ -45,6 +45,7 @@ export const createCampaignSchema = z.object({
     temperatures: [],
   }),
   scheduledAt: z.string().datetime().optional().nullable(),
+  autoRetry: z.boolean().default(false),
 });
 export type CreateCampaignInput = z.infer<typeof createCampaignSchema>;
 
@@ -55,6 +56,7 @@ export const updateCampaignSchema = z.object({
   templateParams: z.array(campaignTemplateParamSchema).optional(),
   segment: campaignSegmentSchema.optional(),
   scheduledAt: z.string().datetime().optional().nullable(),
+  autoRetry: z.boolean().optional(),
 });
 export type UpdateCampaignInput = z.infer<typeof updateCampaignSchema>;
 
@@ -91,3 +93,21 @@ export type WhatsappOptInInput = z.infer<typeof whatsappOptInSchema>;
 /** Retry the recipients whose delivery definitely failed. `includeInterrupted` also retries those whose outcome is unknown (the sender was interrupted): they may already have been sent, so retrying can message someone twice. */
 export const retryFailedSchema = z.object({ includeInterrupted: z.boolean().default(false) });
 export type RetryFailedInput = z.infer<typeof retryFailedSchema>;
+
+export const FOLLOW_UP_COHORTS = [
+  'FAILED',
+  'SENT_UNDELIVERED',
+  'DELIVERED_UNREAD',
+  'READ_NO_REPLY',
+  'REPLIED',
+] as const;
+export type FollowUpCohort = (typeof FOLLOW_UP_COHORTS)[number];
+
+export const createFollowUpSchema = z.object({
+  cohort: z.enum(FOLLOW_UP_COHORTS),
+  name: z.string().trim().min(2).max(120).optional(),
+  templateId: z.string().uuid().optional(),
+  templateParams: z.array(campaignTemplateParamSchema).optional(),
+  autoRetry: z.boolean().default(true),
+});
+export type CreateFollowUpInput = z.infer<typeof createFollowUpSchema>;

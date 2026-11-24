@@ -31,9 +31,11 @@ export type BroadcastCampaignAvgAggregateOutputType = {
   sentCount: number | null
   deliveredCount: number | null
   readCount: number | null
+  repliedCount: number | null
   failedCount: number | null
   optOutCount: number | null
   noConsentCount: number | null
+  autoRetryCount: number | null
 }
 
 export type BroadcastCampaignSumAggregateOutputType = {
@@ -41,9 +43,11 @@ export type BroadcastCampaignSumAggregateOutputType = {
   sentCount: number | null
   deliveredCount: number | null
   readCount: number | null
+  repliedCount: number | null
   failedCount: number | null
   optOutCount: number | null
   noConsentCount: number | null
+  autoRetryCount: number | null
 }
 
 export type BroadcastCampaignMinAggregateOutputType = {
@@ -62,9 +66,15 @@ export type BroadcastCampaignMinAggregateOutputType = {
   sentCount: number | null
   deliveredCount: number | null
   readCount: number | null
+  repliedCount: number | null
   failedCount: number | null
   optOutCount: number | null
   noConsentCount: number | null
+  autoRetry: boolean | null
+  autoRetryCount: number | null
+  nextRetryAt: Date | null
+  parentCampaignId: string | null
+  followUpCohort: string | null
   createdByUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -86,9 +96,15 @@ export type BroadcastCampaignMaxAggregateOutputType = {
   sentCount: number | null
   deliveredCount: number | null
   readCount: number | null
+  repliedCount: number | null
   failedCount: number | null
   optOutCount: number | null
   noConsentCount: number | null
+  autoRetry: boolean | null
+  autoRetryCount: number | null
+  nextRetryAt: Date | null
+  parentCampaignId: string | null
+  followUpCohort: string | null
   createdByUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -112,9 +128,15 @@ export type BroadcastCampaignCountAggregateOutputType = {
   sentCount: number
   deliveredCount: number
   readCount: number
+  repliedCount: number
   failedCount: number
   optOutCount: number
   noConsentCount: number
+  autoRetry: number
+  autoRetryCount: number
+  nextRetryAt: number
+  parentCampaignId: number
+  followUpCohort: number
   createdByUserId: number
   createdAt: number
   updatedAt: number
@@ -127,9 +149,11 @@ export type BroadcastCampaignAvgAggregateInputType = {
   sentCount?: true
   deliveredCount?: true
   readCount?: true
+  repliedCount?: true
   failedCount?: true
   optOutCount?: true
   noConsentCount?: true
+  autoRetryCount?: true
 }
 
 export type BroadcastCampaignSumAggregateInputType = {
@@ -137,9 +161,11 @@ export type BroadcastCampaignSumAggregateInputType = {
   sentCount?: true
   deliveredCount?: true
   readCount?: true
+  repliedCount?: true
   failedCount?: true
   optOutCount?: true
   noConsentCount?: true
+  autoRetryCount?: true
 }
 
 export type BroadcastCampaignMinAggregateInputType = {
@@ -158,9 +184,15 @@ export type BroadcastCampaignMinAggregateInputType = {
   sentCount?: true
   deliveredCount?: true
   readCount?: true
+  repliedCount?: true
   failedCount?: true
   optOutCount?: true
   noConsentCount?: true
+  autoRetry?: true
+  autoRetryCount?: true
+  nextRetryAt?: true
+  parentCampaignId?: true
+  followUpCohort?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -182,9 +214,15 @@ export type BroadcastCampaignMaxAggregateInputType = {
   sentCount?: true
   deliveredCount?: true
   readCount?: true
+  repliedCount?: true
   failedCount?: true
   optOutCount?: true
   noConsentCount?: true
+  autoRetry?: true
+  autoRetryCount?: true
+  nextRetryAt?: true
+  parentCampaignId?: true
+  followUpCohort?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -208,9 +246,15 @@ export type BroadcastCampaignCountAggregateInputType = {
   sentCount?: true
   deliveredCount?: true
   readCount?: true
+  repliedCount?: true
   failedCount?: true
   optOutCount?: true
   noConsentCount?: true
+  autoRetry?: true
+  autoRetryCount?: true
+  nextRetryAt?: true
+  parentCampaignId?: true
+  followUpCohort?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -321,9 +365,15 @@ export type BroadcastCampaignGroupByOutputType = {
   sentCount: number
   deliveredCount: number
   readCount: number
+  repliedCount: number
   failedCount: number
   optOutCount: number
   noConsentCount: number
+  autoRetry: boolean
+  autoRetryCount: number
+  nextRetryAt: Date | null
+  parentCampaignId: string | null
+  followUpCohort: string | null
   createdByUserId: string | null
   createdAt: Date
   updatedAt: Date
@@ -370,14 +420,22 @@ export type BroadcastCampaignWhereInput = {
   sentCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   deliveredCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   readCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  repliedCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   failedCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   optOutCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   noConsentCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  autoRetry?: Prisma.BoolFilter<"BroadcastCampaign"> | boolean
+  autoRetryCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  nextRetryAt?: Prisma.DateTimeNullableFilter<"BroadcastCampaign"> | Date | string | null
+  parentCampaignId?: Prisma.UuidNullableFilter<"BroadcastCampaign"> | string | null
+  followUpCohort?: Prisma.StringNullableFilter<"BroadcastCampaign"> | string | null
   createdByUserId?: Prisma.UuidNullableFilter<"BroadcastCampaign"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
   channel?: Prisma.XOR<Prisma.ChannelScalarRelationFilter, Prisma.ChannelWhereInput>
   template?: Prisma.XOR<Prisma.WhatsappTemplateScalarRelationFilter, Prisma.WhatsappTemplateWhereInput>
+  parentCampaign?: Prisma.XOR<Prisma.BroadcastCampaignNullableScalarRelationFilter, Prisma.BroadcastCampaignWhereInput> | null
+  followUps?: Prisma.BroadcastCampaignListRelationFilter
   recipients?: Prisma.BroadcastRecipientListRelationFilter
 }
 
@@ -399,14 +457,22 @@ export type BroadcastCampaignOrderByWithRelationInput = {
   sentCount?: Prisma.SortOrder
   deliveredCount?: Prisma.SortOrder
   readCount?: Prisma.SortOrder
+  repliedCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
   noConsentCount?: Prisma.SortOrder
+  autoRetry?: Prisma.SortOrder
+  autoRetryCount?: Prisma.SortOrder
+  nextRetryAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  parentCampaignId?: Prisma.SortOrderInput | Prisma.SortOrder
+  followUpCohort?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   channel?: Prisma.ChannelOrderByWithRelationInput
   template?: Prisma.WhatsappTemplateOrderByWithRelationInput
+  parentCampaign?: Prisma.BroadcastCampaignOrderByWithRelationInput
+  followUps?: Prisma.BroadcastCampaignOrderByRelationAggregateInput
   recipients?: Prisma.BroadcastRecipientOrderByRelationAggregateInput
 }
 
@@ -431,14 +497,22 @@ export type BroadcastCampaignWhereUniqueInput = Prisma.AtLeast<{
   sentCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   deliveredCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   readCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  repliedCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   failedCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   optOutCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   noConsentCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  autoRetry?: Prisma.BoolFilter<"BroadcastCampaign"> | boolean
+  autoRetryCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  nextRetryAt?: Prisma.DateTimeNullableFilter<"BroadcastCampaign"> | Date | string | null
+  parentCampaignId?: Prisma.UuidNullableFilter<"BroadcastCampaign"> | string | null
+  followUpCohort?: Prisma.StringNullableFilter<"BroadcastCampaign"> | string | null
   createdByUserId?: Prisma.UuidNullableFilter<"BroadcastCampaign"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
   channel?: Prisma.XOR<Prisma.ChannelScalarRelationFilter, Prisma.ChannelWhereInput>
   template?: Prisma.XOR<Prisma.WhatsappTemplateScalarRelationFilter, Prisma.WhatsappTemplateWhereInput>
+  parentCampaign?: Prisma.XOR<Prisma.BroadcastCampaignNullableScalarRelationFilter, Prisma.BroadcastCampaignWhereInput> | null
+  followUps?: Prisma.BroadcastCampaignListRelationFilter
   recipients?: Prisma.BroadcastRecipientListRelationFilter
 }, "id">
 
@@ -460,9 +534,15 @@ export type BroadcastCampaignOrderByWithAggregationInput = {
   sentCount?: Prisma.SortOrder
   deliveredCount?: Prisma.SortOrder
   readCount?: Prisma.SortOrder
+  repliedCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
   noConsentCount?: Prisma.SortOrder
+  autoRetry?: Prisma.SortOrder
+  autoRetryCount?: Prisma.SortOrder
+  nextRetryAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  parentCampaignId?: Prisma.SortOrderInput | Prisma.SortOrder
+  followUpCohort?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -494,9 +574,15 @@ export type BroadcastCampaignScalarWhereWithAggregatesInput = {
   sentCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
   deliveredCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
   readCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
+  repliedCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
   failedCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
   optOutCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
   noConsentCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
+  autoRetry?: Prisma.BoolWithAggregatesFilter<"BroadcastCampaign"> | boolean
+  autoRetryCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
+  nextRetryAt?: Prisma.DateTimeNullableWithAggregatesFilter<"BroadcastCampaign"> | Date | string | null
+  parentCampaignId?: Prisma.UuidNullableWithAggregatesFilter<"BroadcastCampaign"> | string | null
+  followUpCohort?: Prisma.StringNullableWithAggregatesFilter<"BroadcastCampaign"> | string | null
   createdByUserId?: Prisma.UuidNullableWithAggregatesFilter<"BroadcastCampaign"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BroadcastCampaign"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BroadcastCampaign"> | Date | string
@@ -518,14 +604,21 @@ export type BroadcastCampaignCreateInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   channel: Prisma.ChannelCreateNestedOneWithoutBroadcastCampaignsInput
   template: Prisma.WhatsappTemplateCreateNestedOneWithoutBroadcastCampaignsInput
+  parentCampaign?: Prisma.BroadcastCampaignCreateNestedOneWithoutFollowUpsInput
+  followUps?: Prisma.BroadcastCampaignCreateNestedManyWithoutParentCampaignInput
   recipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutCampaignInput
 }
 
@@ -547,12 +640,19 @@ export type BroadcastCampaignUncheckedCreateInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  parentCampaignId?: string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  followUps?: Prisma.BroadcastCampaignUncheckedCreateNestedManyWithoutParentCampaignInput
   recipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutCampaignInput
 }
 
@@ -572,14 +672,21 @@ export type BroadcastCampaignUpdateInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channel?: Prisma.ChannelUpdateOneRequiredWithoutBroadcastCampaignsNestedInput
   template?: Prisma.WhatsappTemplateUpdateOneRequiredWithoutBroadcastCampaignsNestedInput
+  parentCampaign?: Prisma.BroadcastCampaignUpdateOneWithoutFollowUpsNestedInput
+  followUps?: Prisma.BroadcastCampaignUpdateManyWithoutParentCampaignNestedInput
   recipients?: Prisma.BroadcastRecipientUpdateManyWithoutCampaignNestedInput
 }
 
@@ -601,12 +708,19 @@ export type BroadcastCampaignUncheckedUpdateInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentCampaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  followUps?: Prisma.BroadcastCampaignUncheckedUpdateManyWithoutParentCampaignNestedInput
   recipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutCampaignNestedInput
 }
 
@@ -628,9 +742,15 @@ export type BroadcastCampaignCreateManyInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  parentCampaignId?: string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -652,9 +772,14 @@ export type BroadcastCampaignUpdateManyMutationInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -678,9 +803,15 @@ export type BroadcastCampaignUncheckedUpdateManyInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentCampaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -694,6 +825,11 @@ export type BroadcastCampaignListRelationFilter = {
 
 export type BroadcastCampaignOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type BroadcastCampaignNullableScalarRelationFilter = {
+  is?: Prisma.BroadcastCampaignWhereInput | null
+  isNot?: Prisma.BroadcastCampaignWhereInput | null
 }
 
 export type BroadcastCampaignCountOrderByAggregateInput = {
@@ -714,9 +850,15 @@ export type BroadcastCampaignCountOrderByAggregateInput = {
   sentCount?: Prisma.SortOrder
   deliveredCount?: Prisma.SortOrder
   readCount?: Prisma.SortOrder
+  repliedCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
   noConsentCount?: Prisma.SortOrder
+  autoRetry?: Prisma.SortOrder
+  autoRetryCount?: Prisma.SortOrder
+  nextRetryAt?: Prisma.SortOrder
+  parentCampaignId?: Prisma.SortOrder
+  followUpCohort?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -727,9 +869,11 @@ export type BroadcastCampaignAvgOrderByAggregateInput = {
   sentCount?: Prisma.SortOrder
   deliveredCount?: Prisma.SortOrder
   readCount?: Prisma.SortOrder
+  repliedCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
   noConsentCount?: Prisma.SortOrder
+  autoRetryCount?: Prisma.SortOrder
 }
 
 export type BroadcastCampaignMaxOrderByAggregateInput = {
@@ -748,9 +892,15 @@ export type BroadcastCampaignMaxOrderByAggregateInput = {
   sentCount?: Prisma.SortOrder
   deliveredCount?: Prisma.SortOrder
   readCount?: Prisma.SortOrder
+  repliedCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
   noConsentCount?: Prisma.SortOrder
+  autoRetry?: Prisma.SortOrder
+  autoRetryCount?: Prisma.SortOrder
+  nextRetryAt?: Prisma.SortOrder
+  parentCampaignId?: Prisma.SortOrder
+  followUpCohort?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -772,9 +922,15 @@ export type BroadcastCampaignMinOrderByAggregateInput = {
   sentCount?: Prisma.SortOrder
   deliveredCount?: Prisma.SortOrder
   readCount?: Prisma.SortOrder
+  repliedCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
   noConsentCount?: Prisma.SortOrder
+  autoRetry?: Prisma.SortOrder
+  autoRetryCount?: Prisma.SortOrder
+  nextRetryAt?: Prisma.SortOrder
+  parentCampaignId?: Prisma.SortOrder
+  followUpCohort?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -785,9 +941,11 @@ export type BroadcastCampaignSumOrderByAggregateInput = {
   sentCount?: Prisma.SortOrder
   deliveredCount?: Prisma.SortOrder
   readCount?: Prisma.SortOrder
+  repliedCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
   noConsentCount?: Prisma.SortOrder
+  autoRetryCount?: Prisma.SortOrder
 }
 
 export type BroadcastCampaignScalarRelationFilter = {
@@ -879,8 +1037,66 @@ export type BroadcastCampaignUncheckedUpdateManyWithoutTemplateNestedInput = {
   deleteMany?: Prisma.BroadcastCampaignScalarWhereInput | Prisma.BroadcastCampaignScalarWhereInput[]
 }
 
+export type BroadcastCampaignCreateNestedOneWithoutFollowUpsInput = {
+  create?: Prisma.XOR<Prisma.BroadcastCampaignCreateWithoutFollowUpsInput, Prisma.BroadcastCampaignUncheckedCreateWithoutFollowUpsInput>
+  connectOrCreate?: Prisma.BroadcastCampaignCreateOrConnectWithoutFollowUpsInput
+  connect?: Prisma.BroadcastCampaignWhereUniqueInput
+}
+
+export type BroadcastCampaignCreateNestedManyWithoutParentCampaignInput = {
+  create?: Prisma.XOR<Prisma.BroadcastCampaignCreateWithoutParentCampaignInput, Prisma.BroadcastCampaignUncheckedCreateWithoutParentCampaignInput> | Prisma.BroadcastCampaignCreateWithoutParentCampaignInput[] | Prisma.BroadcastCampaignUncheckedCreateWithoutParentCampaignInput[]
+  connectOrCreate?: Prisma.BroadcastCampaignCreateOrConnectWithoutParentCampaignInput | Prisma.BroadcastCampaignCreateOrConnectWithoutParentCampaignInput[]
+  createMany?: Prisma.BroadcastCampaignCreateManyParentCampaignInputEnvelope
+  connect?: Prisma.BroadcastCampaignWhereUniqueInput | Prisma.BroadcastCampaignWhereUniqueInput[]
+}
+
+export type BroadcastCampaignUncheckedCreateNestedManyWithoutParentCampaignInput = {
+  create?: Prisma.XOR<Prisma.BroadcastCampaignCreateWithoutParentCampaignInput, Prisma.BroadcastCampaignUncheckedCreateWithoutParentCampaignInput> | Prisma.BroadcastCampaignCreateWithoutParentCampaignInput[] | Prisma.BroadcastCampaignUncheckedCreateWithoutParentCampaignInput[]
+  connectOrCreate?: Prisma.BroadcastCampaignCreateOrConnectWithoutParentCampaignInput | Prisma.BroadcastCampaignCreateOrConnectWithoutParentCampaignInput[]
+  createMany?: Prisma.BroadcastCampaignCreateManyParentCampaignInputEnvelope
+  connect?: Prisma.BroadcastCampaignWhereUniqueInput | Prisma.BroadcastCampaignWhereUniqueInput[]
+}
+
 export type EnumBroadcastCampaignStatusFieldUpdateOperationsInput = {
   set?: $Enums.BroadcastCampaignStatus
+}
+
+export type BroadcastCampaignUpdateOneWithoutFollowUpsNestedInput = {
+  create?: Prisma.XOR<Prisma.BroadcastCampaignCreateWithoutFollowUpsInput, Prisma.BroadcastCampaignUncheckedCreateWithoutFollowUpsInput>
+  connectOrCreate?: Prisma.BroadcastCampaignCreateOrConnectWithoutFollowUpsInput
+  upsert?: Prisma.BroadcastCampaignUpsertWithoutFollowUpsInput
+  disconnect?: Prisma.BroadcastCampaignWhereInput | boolean
+  delete?: Prisma.BroadcastCampaignWhereInput | boolean
+  connect?: Prisma.BroadcastCampaignWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BroadcastCampaignUpdateToOneWithWhereWithoutFollowUpsInput, Prisma.BroadcastCampaignUpdateWithoutFollowUpsInput>, Prisma.BroadcastCampaignUncheckedUpdateWithoutFollowUpsInput>
+}
+
+export type BroadcastCampaignUpdateManyWithoutParentCampaignNestedInput = {
+  create?: Prisma.XOR<Prisma.BroadcastCampaignCreateWithoutParentCampaignInput, Prisma.BroadcastCampaignUncheckedCreateWithoutParentCampaignInput> | Prisma.BroadcastCampaignCreateWithoutParentCampaignInput[] | Prisma.BroadcastCampaignUncheckedCreateWithoutParentCampaignInput[]
+  connectOrCreate?: Prisma.BroadcastCampaignCreateOrConnectWithoutParentCampaignInput | Prisma.BroadcastCampaignCreateOrConnectWithoutParentCampaignInput[]
+  upsert?: Prisma.BroadcastCampaignUpsertWithWhereUniqueWithoutParentCampaignInput | Prisma.BroadcastCampaignUpsertWithWhereUniqueWithoutParentCampaignInput[]
+  createMany?: Prisma.BroadcastCampaignCreateManyParentCampaignInputEnvelope
+  set?: Prisma.BroadcastCampaignWhereUniqueInput | Prisma.BroadcastCampaignWhereUniqueInput[]
+  disconnect?: Prisma.BroadcastCampaignWhereUniqueInput | Prisma.BroadcastCampaignWhereUniqueInput[]
+  delete?: Prisma.BroadcastCampaignWhereUniqueInput | Prisma.BroadcastCampaignWhereUniqueInput[]
+  connect?: Prisma.BroadcastCampaignWhereUniqueInput | Prisma.BroadcastCampaignWhereUniqueInput[]
+  update?: Prisma.BroadcastCampaignUpdateWithWhereUniqueWithoutParentCampaignInput | Prisma.BroadcastCampaignUpdateWithWhereUniqueWithoutParentCampaignInput[]
+  updateMany?: Prisma.BroadcastCampaignUpdateManyWithWhereWithoutParentCampaignInput | Prisma.BroadcastCampaignUpdateManyWithWhereWithoutParentCampaignInput[]
+  deleteMany?: Prisma.BroadcastCampaignScalarWhereInput | Prisma.BroadcastCampaignScalarWhereInput[]
+}
+
+export type BroadcastCampaignUncheckedUpdateManyWithoutParentCampaignNestedInput = {
+  create?: Prisma.XOR<Prisma.BroadcastCampaignCreateWithoutParentCampaignInput, Prisma.BroadcastCampaignUncheckedCreateWithoutParentCampaignInput> | Prisma.BroadcastCampaignCreateWithoutParentCampaignInput[] | Prisma.BroadcastCampaignUncheckedCreateWithoutParentCampaignInput[]
+  connectOrCreate?: Prisma.BroadcastCampaignCreateOrConnectWithoutParentCampaignInput | Prisma.BroadcastCampaignCreateOrConnectWithoutParentCampaignInput[]
+  upsert?: Prisma.BroadcastCampaignUpsertWithWhereUniqueWithoutParentCampaignInput | Prisma.BroadcastCampaignUpsertWithWhereUniqueWithoutParentCampaignInput[]
+  createMany?: Prisma.BroadcastCampaignCreateManyParentCampaignInputEnvelope
+  set?: Prisma.BroadcastCampaignWhereUniqueInput | Prisma.BroadcastCampaignWhereUniqueInput[]
+  disconnect?: Prisma.BroadcastCampaignWhereUniqueInput | Prisma.BroadcastCampaignWhereUniqueInput[]
+  delete?: Prisma.BroadcastCampaignWhereUniqueInput | Prisma.BroadcastCampaignWhereUniqueInput[]
+  connect?: Prisma.BroadcastCampaignWhereUniqueInput | Prisma.BroadcastCampaignWhereUniqueInput[]
+  update?: Prisma.BroadcastCampaignUpdateWithWhereUniqueWithoutParentCampaignInput | Prisma.BroadcastCampaignUpdateWithWhereUniqueWithoutParentCampaignInput[]
+  updateMany?: Prisma.BroadcastCampaignUpdateManyWithWhereWithoutParentCampaignInput | Prisma.BroadcastCampaignUpdateManyWithWhereWithoutParentCampaignInput[]
+  deleteMany?: Prisma.BroadcastCampaignScalarWhereInput | Prisma.BroadcastCampaignScalarWhereInput[]
 }
 
 export type BroadcastCampaignCreateNestedOneWithoutRecipientsInput = {
@@ -913,13 +1129,20 @@ export type BroadcastCampaignCreateWithoutChannelInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   template: Prisma.WhatsappTemplateCreateNestedOneWithoutBroadcastCampaignsInput
+  parentCampaign?: Prisma.BroadcastCampaignCreateNestedOneWithoutFollowUpsInput
+  followUps?: Prisma.BroadcastCampaignCreateNestedManyWithoutParentCampaignInput
   recipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutCampaignInput
 }
 
@@ -940,12 +1163,19 @@ export type BroadcastCampaignUncheckedCreateWithoutChannelInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  parentCampaignId?: string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  followUps?: Prisma.BroadcastCampaignUncheckedCreateNestedManyWithoutParentCampaignInput
   recipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutCampaignInput
 }
 
@@ -996,9 +1226,15 @@ export type BroadcastCampaignScalarWhereInput = {
   sentCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   deliveredCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   readCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  repliedCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   failedCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   optOutCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   noConsentCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  autoRetry?: Prisma.BoolFilter<"BroadcastCampaign"> | boolean
+  autoRetryCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  nextRetryAt?: Prisma.DateTimeNullableFilter<"BroadcastCampaign"> | Date | string | null
+  parentCampaignId?: Prisma.UuidNullableFilter<"BroadcastCampaign"> | string | null
+  followUpCohort?: Prisma.StringNullableFilter<"BroadcastCampaign"> | string | null
   createdByUserId?: Prisma.UuidNullableFilter<"BroadcastCampaign"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
@@ -1020,13 +1256,20 @@ export type BroadcastCampaignCreateWithoutTemplateInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   channel: Prisma.ChannelCreateNestedOneWithoutBroadcastCampaignsInput
+  parentCampaign?: Prisma.BroadcastCampaignCreateNestedOneWithoutFollowUpsInput
+  followUps?: Prisma.BroadcastCampaignCreateNestedManyWithoutParentCampaignInput
   recipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutCampaignInput
 }
 
@@ -1047,12 +1290,19 @@ export type BroadcastCampaignUncheckedCreateWithoutTemplateInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  parentCampaignId?: string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  followUps?: Prisma.BroadcastCampaignUncheckedCreateNestedManyWithoutParentCampaignInput
   recipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutCampaignInput
 }
 
@@ -1082,6 +1332,246 @@ export type BroadcastCampaignUpdateManyWithWhereWithoutTemplateInput = {
   data: Prisma.XOR<Prisma.BroadcastCampaignUpdateManyMutationInput, Prisma.BroadcastCampaignUncheckedUpdateManyWithoutTemplateInput>
 }
 
+export type BroadcastCampaignCreateWithoutFollowUpsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  status?: $Enums.BroadcastCampaignStatus
+  templateName: string
+  templateLanguage?: string
+  templateParams?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  segment?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scheduledAt?: Date | string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  totalRecipients?: number
+  sentCount?: number
+  deliveredCount?: number
+  readCount?: number
+  repliedCount?: number
+  failedCount?: number
+  optOutCount?: number
+  noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  followUpCohort?: string | null
+  createdByUserId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  channel: Prisma.ChannelCreateNestedOneWithoutBroadcastCampaignsInput
+  template: Prisma.WhatsappTemplateCreateNestedOneWithoutBroadcastCampaignsInput
+  parentCampaign?: Prisma.BroadcastCampaignCreateNestedOneWithoutFollowUpsInput
+  recipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutCampaignInput
+}
+
+export type BroadcastCampaignUncheckedCreateWithoutFollowUpsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  status?: $Enums.BroadcastCampaignStatus
+  channelId: string
+  templateId: string
+  templateName: string
+  templateLanguage?: string
+  templateParams?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  segment?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scheduledAt?: Date | string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  totalRecipients?: number
+  sentCount?: number
+  deliveredCount?: number
+  readCount?: number
+  repliedCount?: number
+  failedCount?: number
+  optOutCount?: number
+  noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  parentCampaignId?: string | null
+  followUpCohort?: string | null
+  createdByUserId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  recipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutCampaignInput
+}
+
+export type BroadcastCampaignCreateOrConnectWithoutFollowUpsInput = {
+  where: Prisma.BroadcastCampaignWhereUniqueInput
+  create: Prisma.XOR<Prisma.BroadcastCampaignCreateWithoutFollowUpsInput, Prisma.BroadcastCampaignUncheckedCreateWithoutFollowUpsInput>
+}
+
+export type BroadcastCampaignCreateWithoutParentCampaignInput = {
+  id?: string
+  tenantId: string
+  name: string
+  status?: $Enums.BroadcastCampaignStatus
+  templateName: string
+  templateLanguage?: string
+  templateParams?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  segment?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scheduledAt?: Date | string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  totalRecipients?: number
+  sentCount?: number
+  deliveredCount?: number
+  readCount?: number
+  repliedCount?: number
+  failedCount?: number
+  optOutCount?: number
+  noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  followUpCohort?: string | null
+  createdByUserId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  channel: Prisma.ChannelCreateNestedOneWithoutBroadcastCampaignsInput
+  template: Prisma.WhatsappTemplateCreateNestedOneWithoutBroadcastCampaignsInput
+  followUps?: Prisma.BroadcastCampaignCreateNestedManyWithoutParentCampaignInput
+  recipients?: Prisma.BroadcastRecipientCreateNestedManyWithoutCampaignInput
+}
+
+export type BroadcastCampaignUncheckedCreateWithoutParentCampaignInput = {
+  id?: string
+  tenantId: string
+  name: string
+  status?: $Enums.BroadcastCampaignStatus
+  channelId: string
+  templateId: string
+  templateName: string
+  templateLanguage?: string
+  templateParams?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  segment?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scheduledAt?: Date | string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  totalRecipients?: number
+  sentCount?: number
+  deliveredCount?: number
+  readCount?: number
+  repliedCount?: number
+  failedCount?: number
+  optOutCount?: number
+  noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  followUpCohort?: string | null
+  createdByUserId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  followUps?: Prisma.BroadcastCampaignUncheckedCreateNestedManyWithoutParentCampaignInput
+  recipients?: Prisma.BroadcastRecipientUncheckedCreateNestedManyWithoutCampaignInput
+}
+
+export type BroadcastCampaignCreateOrConnectWithoutParentCampaignInput = {
+  where: Prisma.BroadcastCampaignWhereUniqueInput
+  create: Prisma.XOR<Prisma.BroadcastCampaignCreateWithoutParentCampaignInput, Prisma.BroadcastCampaignUncheckedCreateWithoutParentCampaignInput>
+}
+
+export type BroadcastCampaignCreateManyParentCampaignInputEnvelope = {
+  data: Prisma.BroadcastCampaignCreateManyParentCampaignInput | Prisma.BroadcastCampaignCreateManyParentCampaignInput[]
+  skipDuplicates?: boolean
+}
+
+export type BroadcastCampaignUpsertWithoutFollowUpsInput = {
+  update: Prisma.XOR<Prisma.BroadcastCampaignUpdateWithoutFollowUpsInput, Prisma.BroadcastCampaignUncheckedUpdateWithoutFollowUpsInput>
+  create: Prisma.XOR<Prisma.BroadcastCampaignCreateWithoutFollowUpsInput, Prisma.BroadcastCampaignUncheckedCreateWithoutFollowUpsInput>
+  where?: Prisma.BroadcastCampaignWhereInput
+}
+
+export type BroadcastCampaignUpdateToOneWithWhereWithoutFollowUpsInput = {
+  where?: Prisma.BroadcastCampaignWhereInput
+  data: Prisma.XOR<Prisma.BroadcastCampaignUpdateWithoutFollowUpsInput, Prisma.BroadcastCampaignUncheckedUpdateWithoutFollowUpsInput>
+}
+
+export type BroadcastCampaignUpdateWithoutFollowUpsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBroadcastCampaignStatusFieldUpdateOperationsInput | $Enums.BroadcastCampaignStatus
+  templateName?: Prisma.StringFieldUpdateOperationsInput | string
+  templateLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  templateParams?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  segment?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  totalRecipients?: Prisma.IntFieldUpdateOperationsInput | number
+  sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
+  readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  failedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  channel?: Prisma.ChannelUpdateOneRequiredWithoutBroadcastCampaignsNestedInput
+  template?: Prisma.WhatsappTemplateUpdateOneRequiredWithoutBroadcastCampaignsNestedInput
+  parentCampaign?: Prisma.BroadcastCampaignUpdateOneWithoutFollowUpsNestedInput
+  recipients?: Prisma.BroadcastRecipientUpdateManyWithoutCampaignNestedInput
+}
+
+export type BroadcastCampaignUncheckedUpdateWithoutFollowUpsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBroadcastCampaignStatusFieldUpdateOperationsInput | $Enums.BroadcastCampaignStatus
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  templateId?: Prisma.StringFieldUpdateOperationsInput | string
+  templateName?: Prisma.StringFieldUpdateOperationsInput | string
+  templateLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  templateParams?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  segment?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  totalRecipients?: Prisma.IntFieldUpdateOperationsInput | number
+  sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
+  readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  failedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentCampaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  recipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutCampaignNestedInput
+}
+
+export type BroadcastCampaignUpsertWithWhereUniqueWithoutParentCampaignInput = {
+  where: Prisma.BroadcastCampaignWhereUniqueInput
+  update: Prisma.XOR<Prisma.BroadcastCampaignUpdateWithoutParentCampaignInput, Prisma.BroadcastCampaignUncheckedUpdateWithoutParentCampaignInput>
+  create: Prisma.XOR<Prisma.BroadcastCampaignCreateWithoutParentCampaignInput, Prisma.BroadcastCampaignUncheckedCreateWithoutParentCampaignInput>
+}
+
+export type BroadcastCampaignUpdateWithWhereUniqueWithoutParentCampaignInput = {
+  where: Prisma.BroadcastCampaignWhereUniqueInput
+  data: Prisma.XOR<Prisma.BroadcastCampaignUpdateWithoutParentCampaignInput, Prisma.BroadcastCampaignUncheckedUpdateWithoutParentCampaignInput>
+}
+
+export type BroadcastCampaignUpdateManyWithWhereWithoutParentCampaignInput = {
+  where: Prisma.BroadcastCampaignScalarWhereInput
+  data: Prisma.XOR<Prisma.BroadcastCampaignUpdateManyMutationInput, Prisma.BroadcastCampaignUncheckedUpdateManyWithoutParentCampaignInput>
+}
+
 export type BroadcastCampaignCreateWithoutRecipientsInput = {
   id?: string
   tenantId: string
@@ -1098,14 +1588,21 @@ export type BroadcastCampaignCreateWithoutRecipientsInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   channel: Prisma.ChannelCreateNestedOneWithoutBroadcastCampaignsInput
   template: Prisma.WhatsappTemplateCreateNestedOneWithoutBroadcastCampaignsInput
+  parentCampaign?: Prisma.BroadcastCampaignCreateNestedOneWithoutFollowUpsInput
+  followUps?: Prisma.BroadcastCampaignCreateNestedManyWithoutParentCampaignInput
 }
 
 export type BroadcastCampaignUncheckedCreateWithoutRecipientsInput = {
@@ -1126,12 +1623,19 @@ export type BroadcastCampaignUncheckedCreateWithoutRecipientsInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  parentCampaignId?: string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  followUps?: Prisma.BroadcastCampaignUncheckedCreateNestedManyWithoutParentCampaignInput
 }
 
 export type BroadcastCampaignCreateOrConnectWithoutRecipientsInput = {
@@ -1166,14 +1670,21 @@ export type BroadcastCampaignUpdateWithoutRecipientsInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channel?: Prisma.ChannelUpdateOneRequiredWithoutBroadcastCampaignsNestedInput
   template?: Prisma.WhatsappTemplateUpdateOneRequiredWithoutBroadcastCampaignsNestedInput
+  parentCampaign?: Prisma.BroadcastCampaignUpdateOneWithoutFollowUpsNestedInput
+  followUps?: Prisma.BroadcastCampaignUpdateManyWithoutParentCampaignNestedInput
 }
 
 export type BroadcastCampaignUncheckedUpdateWithoutRecipientsInput = {
@@ -1194,12 +1705,19 @@ export type BroadcastCampaignUncheckedUpdateWithoutRecipientsInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentCampaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  followUps?: Prisma.BroadcastCampaignUncheckedUpdateManyWithoutParentCampaignNestedInput
 }
 
 export type BroadcastCampaignCreateManyChannelInput = {
@@ -1219,9 +1737,15 @@ export type BroadcastCampaignCreateManyChannelInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  parentCampaignId?: string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1243,13 +1767,20 @@ export type BroadcastCampaignUpdateWithoutChannelInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   template?: Prisma.WhatsappTemplateUpdateOneRequiredWithoutBroadcastCampaignsNestedInput
+  parentCampaign?: Prisma.BroadcastCampaignUpdateOneWithoutFollowUpsNestedInput
+  followUps?: Prisma.BroadcastCampaignUpdateManyWithoutParentCampaignNestedInput
   recipients?: Prisma.BroadcastRecipientUpdateManyWithoutCampaignNestedInput
 }
 
@@ -1270,12 +1801,19 @@ export type BroadcastCampaignUncheckedUpdateWithoutChannelInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentCampaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  followUps?: Prisma.BroadcastCampaignUncheckedUpdateManyWithoutParentCampaignNestedInput
   recipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutCampaignNestedInput
 }
 
@@ -1296,9 +1834,15 @@ export type BroadcastCampaignUncheckedUpdateManyWithoutChannelInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentCampaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1321,9 +1865,15 @@ export type BroadcastCampaignCreateManyTemplateInput = {
   sentCount?: number
   deliveredCount?: number
   readCount?: number
+  repliedCount?: number
   failedCount?: number
   optOutCount?: number
   noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  parentCampaignId?: string | null
+  followUpCohort?: string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1345,13 +1895,20 @@ export type BroadcastCampaignUpdateWithoutTemplateInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channel?: Prisma.ChannelUpdateOneRequiredWithoutBroadcastCampaignsNestedInput
+  parentCampaign?: Prisma.BroadcastCampaignUpdateOneWithoutFollowUpsNestedInput
+  followUps?: Prisma.BroadcastCampaignUpdateManyWithoutParentCampaignNestedInput
   recipients?: Prisma.BroadcastRecipientUpdateManyWithoutCampaignNestedInput
 }
 
@@ -1372,12 +1929,19 @@ export type BroadcastCampaignUncheckedUpdateWithoutTemplateInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentCampaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  followUps?: Prisma.BroadcastCampaignUncheckedUpdateManyWithoutParentCampaignNestedInput
   recipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutCampaignNestedInput
 }
 
@@ -1398,9 +1962,143 @@ export type BroadcastCampaignUncheckedUpdateManyWithoutTemplateInput = {
   sentCount?: Prisma.IntFieldUpdateOperationsInput | number
   deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
   noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  parentCampaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BroadcastCampaignCreateManyParentCampaignInput = {
+  id?: string
+  tenantId: string
+  name: string
+  status?: $Enums.BroadcastCampaignStatus
+  channelId: string
+  templateId: string
+  templateName: string
+  templateLanguage?: string
+  templateParams?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  segment?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scheduledAt?: Date | string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  totalRecipients?: number
+  sentCount?: number
+  deliveredCount?: number
+  readCount?: number
+  repliedCount?: number
+  failedCount?: number
+  optOutCount?: number
+  noConsentCount?: number
+  autoRetry?: boolean
+  autoRetryCount?: number
+  nextRetryAt?: Date | string | null
+  followUpCohort?: string | null
+  createdByUserId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BroadcastCampaignUpdateWithoutParentCampaignInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBroadcastCampaignStatusFieldUpdateOperationsInput | $Enums.BroadcastCampaignStatus
+  templateName?: Prisma.StringFieldUpdateOperationsInput | string
+  templateLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  templateParams?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  segment?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  totalRecipients?: Prisma.IntFieldUpdateOperationsInput | number
+  sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
+  readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  failedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  channel?: Prisma.ChannelUpdateOneRequiredWithoutBroadcastCampaignsNestedInput
+  template?: Prisma.WhatsappTemplateUpdateOneRequiredWithoutBroadcastCampaignsNestedInput
+  followUps?: Prisma.BroadcastCampaignUpdateManyWithoutParentCampaignNestedInput
+  recipients?: Prisma.BroadcastRecipientUpdateManyWithoutCampaignNestedInput
+}
+
+export type BroadcastCampaignUncheckedUpdateWithoutParentCampaignInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBroadcastCampaignStatusFieldUpdateOperationsInput | $Enums.BroadcastCampaignStatus
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  templateId?: Prisma.StringFieldUpdateOperationsInput | string
+  templateName?: Prisma.StringFieldUpdateOperationsInput | string
+  templateLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  templateParams?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  segment?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  totalRecipients?: Prisma.IntFieldUpdateOperationsInput | number
+  sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
+  readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  failedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  followUps?: Prisma.BroadcastCampaignUncheckedUpdateManyWithoutParentCampaignNestedInput
+  recipients?: Prisma.BroadcastRecipientUncheckedUpdateManyWithoutCampaignNestedInput
+}
+
+export type BroadcastCampaignUncheckedUpdateManyWithoutParentCampaignInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumBroadcastCampaignStatusFieldUpdateOperationsInput | $Enums.BroadcastCampaignStatus
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  templateId?: Prisma.StringFieldUpdateOperationsInput | string
+  templateName?: Prisma.StringFieldUpdateOperationsInput | string
+  templateLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  templateParams?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  segment?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  scheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  totalRecipients?: Prisma.IntFieldUpdateOperationsInput | number
+  sentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  deliveredCount?: Prisma.IntFieldUpdateOperationsInput | number
+  readCount?: Prisma.IntFieldUpdateOperationsInput | number
+  repliedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  failedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  autoRetryCount?: Prisma.IntFieldUpdateOperationsInput | number
+  nextRetryAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  followUpCohort?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1412,10 +2110,12 @@ export type BroadcastCampaignUncheckedUpdateManyWithoutTemplateInput = {
  */
 
 export type BroadcastCampaignCountOutputType = {
+  followUps: number
   recipients: number
 }
 
 export type BroadcastCampaignCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  followUps?: boolean | BroadcastCampaignCountOutputTypeCountFollowUpsArgs
   recipients?: boolean | BroadcastCampaignCountOutputTypeCountRecipientsArgs
 }
 
@@ -1427,6 +2127,13 @@ export type BroadcastCampaignCountOutputTypeDefaultArgs<ExtArgs extends runtime.
    * Select specific fields to fetch from the BroadcastCampaignCountOutputType
    */
   select?: Prisma.BroadcastCampaignCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * BroadcastCampaignCountOutputType without action
+ */
+export type BroadcastCampaignCountOutputTypeCountFollowUpsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BroadcastCampaignWhereInput
 }
 
 /**
@@ -1455,14 +2162,22 @@ export type BroadcastCampaignSelect<ExtArgs extends runtime.Types.Extensions.Int
   sentCount?: boolean
   deliveredCount?: boolean
   readCount?: boolean
+  repliedCount?: boolean
   failedCount?: boolean
   optOutCount?: boolean
   noConsentCount?: boolean
+  autoRetry?: boolean
+  autoRetryCount?: boolean
+  nextRetryAt?: boolean
+  parentCampaignId?: boolean
+  followUpCohort?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
   template?: boolean | Prisma.WhatsappTemplateDefaultArgs<ExtArgs>
+  parentCampaign?: boolean | Prisma.BroadcastCampaign$parentCampaignArgs<ExtArgs>
+  followUps?: boolean | Prisma.BroadcastCampaign$followUpsArgs<ExtArgs>
   recipients?: boolean | Prisma.BroadcastCampaign$recipientsArgs<ExtArgs>
   _count?: boolean | Prisma.BroadcastCampaignCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["broadcastCampaign"]>
@@ -1485,14 +2200,21 @@ export type BroadcastCampaignSelectCreateManyAndReturn<ExtArgs extends runtime.T
   sentCount?: boolean
   deliveredCount?: boolean
   readCount?: boolean
+  repliedCount?: boolean
   failedCount?: boolean
   optOutCount?: boolean
   noConsentCount?: boolean
+  autoRetry?: boolean
+  autoRetryCount?: boolean
+  nextRetryAt?: boolean
+  parentCampaignId?: boolean
+  followUpCohort?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
   template?: boolean | Prisma.WhatsappTemplateDefaultArgs<ExtArgs>
+  parentCampaign?: boolean | Prisma.BroadcastCampaign$parentCampaignArgs<ExtArgs>
 }, ExtArgs["result"]["broadcastCampaign"]>
 
 export type BroadcastCampaignSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1513,14 +2235,21 @@ export type BroadcastCampaignSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   sentCount?: boolean
   deliveredCount?: boolean
   readCount?: boolean
+  repliedCount?: boolean
   failedCount?: boolean
   optOutCount?: boolean
   noConsentCount?: boolean
+  autoRetry?: boolean
+  autoRetryCount?: boolean
+  nextRetryAt?: boolean
+  parentCampaignId?: boolean
+  followUpCohort?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
   template?: boolean | Prisma.WhatsappTemplateDefaultArgs<ExtArgs>
+  parentCampaign?: boolean | Prisma.BroadcastCampaign$parentCampaignArgs<ExtArgs>
 }, ExtArgs["result"]["broadcastCampaign"]>
 
 export type BroadcastCampaignSelectScalar = {
@@ -1541,28 +2270,38 @@ export type BroadcastCampaignSelectScalar = {
   sentCount?: boolean
   deliveredCount?: boolean
   readCount?: boolean
+  repliedCount?: boolean
   failedCount?: boolean
   optOutCount?: boolean
   noConsentCount?: boolean
+  autoRetry?: boolean
+  autoRetryCount?: boolean
+  nextRetryAt?: boolean
+  parentCampaignId?: boolean
+  followUpCohort?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BroadcastCampaignOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "status" | "channelId" | "templateId" | "templateName" | "templateLanguage" | "templateParams" | "segment" | "scheduledAt" | "startedAt" | "completedAt" | "totalRecipients" | "sentCount" | "deliveredCount" | "readCount" | "failedCount" | "optOutCount" | "noConsentCount" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["broadcastCampaign"]>
+export type BroadcastCampaignOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "status" | "channelId" | "templateId" | "templateName" | "templateLanguage" | "templateParams" | "segment" | "scheduledAt" | "startedAt" | "completedAt" | "totalRecipients" | "sentCount" | "deliveredCount" | "readCount" | "repliedCount" | "failedCount" | "optOutCount" | "noConsentCount" | "autoRetry" | "autoRetryCount" | "nextRetryAt" | "parentCampaignId" | "followUpCohort" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["broadcastCampaign"]>
 export type BroadcastCampaignInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
   template?: boolean | Prisma.WhatsappTemplateDefaultArgs<ExtArgs>
+  parentCampaign?: boolean | Prisma.BroadcastCampaign$parentCampaignArgs<ExtArgs>
+  followUps?: boolean | Prisma.BroadcastCampaign$followUpsArgs<ExtArgs>
   recipients?: boolean | Prisma.BroadcastCampaign$recipientsArgs<ExtArgs>
   _count?: boolean | Prisma.BroadcastCampaignCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BroadcastCampaignIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
   template?: boolean | Prisma.WhatsappTemplateDefaultArgs<ExtArgs>
+  parentCampaign?: boolean | Prisma.BroadcastCampaign$parentCampaignArgs<ExtArgs>
 }
 export type BroadcastCampaignIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
   template?: boolean | Prisma.WhatsappTemplateDefaultArgs<ExtArgs>
+  parentCampaign?: boolean | Prisma.BroadcastCampaign$parentCampaignArgs<ExtArgs>
 }
 
 export type $BroadcastCampaignPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1570,6 +2309,8 @@ export type $BroadcastCampaignPayload<ExtArgs extends runtime.Types.Extensions.I
   objects: {
     channel: Prisma.$ChannelPayload<ExtArgs>
     template: Prisma.$WhatsappTemplatePayload<ExtArgs>
+    parentCampaign: Prisma.$BroadcastCampaignPayload<ExtArgs> | null
+    followUps: Prisma.$BroadcastCampaignPayload<ExtArgs>[]
     recipients: Prisma.$BroadcastRecipientPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1590,9 +2331,15 @@ export type $BroadcastCampaignPayload<ExtArgs extends runtime.Types.Extensions.I
     sentCount: number
     deliveredCount: number
     readCount: number
+    repliedCount: number
     failedCount: number
     optOutCount: number
     noConsentCount: number
+    autoRetry: boolean
+    autoRetryCount: number
+    nextRetryAt: Date | null
+    parentCampaignId: string | null
+    followUpCohort: string | null
     createdByUserId: string | null
     createdAt: Date
     updatedAt: Date
@@ -1992,6 +2739,8 @@ export interface Prisma__BroadcastCampaignClient<T, Null = never, ExtArgs extend
   readonly [Symbol.toStringTag]: "PrismaPromise"
   channel<T extends Prisma.ChannelDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ChannelDefaultArgs<ExtArgs>>): Prisma.Prisma__ChannelClient<runtime.Types.Result.GetResult<Prisma.$ChannelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   template<T extends Prisma.WhatsappTemplateDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WhatsappTemplateDefaultArgs<ExtArgs>>): Prisma.Prisma__WhatsappTemplateClient<runtime.Types.Result.GetResult<Prisma.$WhatsappTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  parentCampaign<T extends Prisma.BroadcastCampaign$parentCampaignArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BroadcastCampaign$parentCampaignArgs<ExtArgs>>): Prisma.Prisma__BroadcastCampaignClient<runtime.Types.Result.GetResult<Prisma.$BroadcastCampaignPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  followUps<T extends Prisma.BroadcastCampaign$followUpsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BroadcastCampaign$followUpsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BroadcastCampaignPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   recipients<T extends Prisma.BroadcastCampaign$recipientsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BroadcastCampaign$recipientsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BroadcastRecipientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2039,9 +2788,15 @@ export interface BroadcastCampaignFieldRefs {
   readonly sentCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
   readonly deliveredCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
   readonly readCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
+  readonly repliedCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
   readonly failedCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
   readonly optOutCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
   readonly noConsentCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
+  readonly autoRetry: Prisma.FieldRef<"BroadcastCampaign", 'Boolean'>
+  readonly autoRetryCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
+  readonly nextRetryAt: Prisma.FieldRef<"BroadcastCampaign", 'DateTime'>
+  readonly parentCampaignId: Prisma.FieldRef<"BroadcastCampaign", 'String'>
+  readonly followUpCohort: Prisma.FieldRef<"BroadcastCampaign", 'String'>
   readonly createdByUserId: Prisma.FieldRef<"BroadcastCampaign", 'String'>
   readonly createdAt: Prisma.FieldRef<"BroadcastCampaign", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BroadcastCampaign", 'DateTime'>
@@ -2443,6 +3198,49 @@ export type BroadcastCampaignDeleteManyArgs<ExtArgs extends runtime.Types.Extens
    * Limit how many BroadcastCampaigns to delete.
    */
   limit?: number
+}
+
+/**
+ * BroadcastCampaign.parentCampaign
+ */
+export type BroadcastCampaign$parentCampaignArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BroadcastCampaign
+   */
+  select?: Prisma.BroadcastCampaignSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BroadcastCampaign
+   */
+  omit?: Prisma.BroadcastCampaignOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BroadcastCampaignInclude<ExtArgs> | null
+  where?: Prisma.BroadcastCampaignWhereInput
+}
+
+/**
+ * BroadcastCampaign.followUps
+ */
+export type BroadcastCampaign$followUpsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BroadcastCampaign
+   */
+  select?: Prisma.BroadcastCampaignSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BroadcastCampaign
+   */
+  omit?: Prisma.BroadcastCampaignOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BroadcastCampaignInclude<ExtArgs> | null
+  where?: Prisma.BroadcastCampaignWhereInput
+  orderBy?: Prisma.BroadcastCampaignOrderByWithRelationInput | Prisma.BroadcastCampaignOrderByWithRelationInput[]
+  cursor?: Prisma.BroadcastCampaignWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BroadcastCampaignScalarFieldEnum | Prisma.BroadcastCampaignScalarFieldEnum[]
 }
 
 /**

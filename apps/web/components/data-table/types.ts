@@ -10,6 +10,8 @@ export interface ColumnDef {
   alwaysVisible?: boolean;
   /** Whether the column starts visible by default (default true) */
   defaultVisible?: boolean;
+  /** Whether the column is pinned/frozen by default */
+  pinned?: boolean;
 }
 
 export interface FilterOption {

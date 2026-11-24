@@ -1714,19 +1714,28 @@ model BroadcastCampaign {
   sentCount        Int                     @default(0) @map("sent_count")
   deliveredCount   Int                     @default(0) @map("delivered_count")
   readCount        Int                     @default(0) @map("read_count")
+  repliedCount     Int                     @default(0) @map("replied_count")
   failedCount      Int                     @default(0) @map("failed_count")
   optOutCount      Int                     @default(0) @map("opt_out_count")
   noConsentCount   Int                     @default(0) @map("no_consent_count")
+  autoRetry        Boolean                 @default(false) @map("auto_retry")
+  autoRetryCount   Int                     @default(0) @map("auto_retry_count")
+  nextRetryAt      DateTime?               @map("next_retry_at") @db.Timestamptz(3)
+  parentCampaignId String?                 @map("parent_campaign_id") @db.Uuid
+  followUpCohort   String?                 @map("follow_up_cohort")
   createdByUserId  String?                 @map("created_by_user_id") @db.Uuid
   createdAt        DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt        DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   channel          Channel                 @relation(fields: [channelId], references: [id])
   template         WhatsappTemplate        @relation(fields: [templateId], references: [id])
+  parentCampaign   BroadcastCampaign?      @relation("CampaignFollowUps", fields: [parentCampaignId], references: [id], onDelete: SetNull)
+  followUps        BroadcastCampaign[]     @relation("CampaignFollowUps")
   recipients       BroadcastRecipient[]
 
   @@index([tenantId, createdAt(sort: Desc)])
   @@index([tenantId, status])
+  @@index([tenantId, parentCampaignId])
   @@map("broadcast_campaigns")
 }
 
@@ -1746,6 +1755,9 @@ model BroadcastRecipient {
   sentAt         DateTime?                @map("sent_at") @db.Timestamptz(3)
   deliveredAt    DateTime?                @map("delivered_at") @db.Timestamptz(3)
   readAt         DateTime?                @map("read_at") @db.Timestamptz(3)
+  repliedAt      DateTime?                @map("replied_at") @db.Timestamptz(3)
+  retryAttempts  Int                      @default(0) @map("retry_attempts")
+  deliveryStage  String                   @default("INITIAL") @map("delivery_stage")
   createdAt      DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -1757,6 +1769,7 @@ model BroadcastRecipient {
   @@unique([campaignId, leadId])
   @@index([tenantId, campaignId, status])
   @@index([tenantId, leadId])
+  @@index([tenantId, leadId, repliedAt])
   @@index([tenantId, externalId])
   @@map("broadcast_recipients")
 }

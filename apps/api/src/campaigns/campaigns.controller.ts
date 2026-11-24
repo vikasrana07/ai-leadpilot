@@ -15,6 +15,7 @@ import {
   audiencePreviewSchema,
   campaignQuerySchema,
   createCampaignSchema,
+  createFollowUpSchema,
   recipientQuerySchema,
   updateCampaignSchema,
   retryFailedSchema,
@@ -22,6 +23,7 @@ import {
   type AudiencePreviewInput,
   type CampaignQuery,
   type CreateCampaignInput,
+  type CreateFollowUpInput,
   type RecipientQuery,
   type RetryFailedInput,
   type UpdateCampaignInput,
@@ -102,6 +104,17 @@ export class CampaignsController {
     @Body(new ZodPipe(retryFailedSchema)) input: RetryFailedInput,
   ) {
     return this.svc.retryFailed(ctx, id, input);
+  }
+
+  @Post(':id/follow-up')
+  @HttpCode(201)
+  @RequirePermissions('campaign:manage')
+  createFollowUp(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Param('id') id: string,
+    @Body(new ZodPipe(createFollowUpSchema)) input: CreateFollowUpInput,
+  ) {
+    return this.svc.createFollowUp(ctx, id, input);
   }
 
   @Post(':id/cancel')

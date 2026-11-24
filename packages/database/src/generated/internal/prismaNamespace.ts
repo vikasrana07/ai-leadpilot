@@ -7807,9 +7807,15 @@ export const BroadcastCampaignScalarFieldEnum = {
   sentCount: 'sentCount',
   deliveredCount: 'deliveredCount',
   readCount: 'readCount',
+  repliedCount: 'repliedCount',
   failedCount: 'failedCount',
   optOutCount: 'optOutCount',
   noConsentCount: 'noConsentCount',
+  autoRetry: 'autoRetry',
+  autoRetryCount: 'autoRetryCount',
+  nextRetryAt: 'nextRetryAt',
+  parentCampaignId: 'parentCampaignId',
+  followUpCohort: 'followUpCohort',
   createdByUserId: 'createdByUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -7833,6 +7839,9 @@ export const BroadcastRecipientScalarFieldEnum = {
   sentAt: 'sentAt',
   deliveredAt: 'deliveredAt',
   readAt: 'readAt',
+  repliedAt: 'repliedAt',
+  retryAttempts: 'retryAttempts',
+  deliveryStage: 'deliveryStage',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

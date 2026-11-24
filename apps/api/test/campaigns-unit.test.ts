@@ -403,4 +403,103 @@ describe('CampaignsService Unit Tests', () => {
       );
     });
   });
+
+  describe('Follow-up Campaigns & Auto-Retries', () => {
+    it('creates a targeted follow-up campaign for READ_NO_REPLY cohort', async () => {
+      const parentCampaign = {
+        id: campaignId,
+        name: 'Festive Sale',
+        channelId,
+        templateId: 'tmpl-1',
+        template: {
+          id: 'tmpl-1',
+          name: 'festive_offer',
+          language: 'en',
+          category: 'MARKETING',
+        },
+        templateParams: [],
+        status: 'COMPLETED',
+      };
+
+      const cohortRecipients = [
+        { leadId: 'lead-1', lead: { id: 'lead-1', name: 'Alice', phone: '+1234567890' } },
+        { leadId: 'lead-2', lead: { id: 'lead-2', name: 'Bob', phone: '+1234567891' } },
+      ];
+
+      let createdCampaign: any;
+      let createdRecipients: any[] = [];
+
+      mockDbService.tenantTx = vi.fn(async (_ctx, fn) => {
+        const mockTx = {
+          broadcastCampaign: {
+            findFirst: vi.fn().mockResolvedValue(parentCampaign),
+            create: vi.fn().mockImplementation((args: any) => {
+              createdCampaign = { id: 'follow-up-1', ...args.data };
+              return Promise.resolve(createdCampaign);
+            }),
+          },
+          broadcastRecipient: {
+            findMany: vi.fn().mockResolvedValue(cohortRecipients),
+            createMany: vi.fn().mockImplementation((args: any) => {
+              createdRecipients = args.data;
+              return Promise.resolve({ count: args.data.length });
+            }),
+          },
+          consent: {
+            findMany: vi.fn().mockResolvedValue([
+              { leadId: 'lead-1', status: 'OPTED_IN' },
+              { leadId: 'lead-2', status: 'OPTED_IN' },
+            ]),
+          },
+        };
+        return fn(mockTx as any);
+      });
+
+      const res = await service.createFollowUp({ tenantId, userId } as any, campaignId, {
+        name: 'Festive Sale - Follow-up',
+        cohort: 'READ_NO_REPLY',
+        templateName: 'festive_reminder',
+      });
+
+      expect(res.id).toBeDefined();
+      expect(res.id).toBe(createdCampaign.id);
+      expect(createdCampaign.parentCampaignId).toBe(campaignId);
+      expect(createdCampaign.followUpCohort).toBe('READ_NO_REPLY');
+      expect(createdCampaign.totalRecipients).toBe(2);
+      expect(createdRecipients).toHaveLength(2);
+      expect(createdRecipients[0].leadId).toBe('lead-1');
+    });
+
+    it('resets transient failures when retrying failed recipients', async () => {
+      const parentCampaign = {
+        id: campaignId,
+        name: 'Festive Sale',
+        channelId,
+        autoRetry: true,
+        autoRetryCount: 0,
+        status: 'COMPLETED',
+      };
+
+      let updatedCampaign: any = null;
+
+      mockDbService.tenantTx = vi.fn(async (_ctx, fn) => {
+        const mockTx = {
+          broadcastCampaign: {
+            findFirst: vi.fn().mockResolvedValue(parentCampaign),
+            updateMany: vi.fn().mockImplementation((args: any) => {
+              updatedCampaign = args.data;
+              return Promise.resolve({ count: 1 });
+            }),
+          },
+          $queryRaw: vi.fn().mockResolvedValue([{ id: 'recip-1' }]),
+          $executeRaw: vi.fn().mockResolvedValue(1),
+        };
+        return fn(mockTx as any);
+      });
+
+      const res = await service.retryFailed({ tenantId, userId } as any, campaignId);
+      expect(res.retried).toBe(1);
+      expect(updatedCampaign.status).toBe('RUNNING');
+    });
+  });
 });

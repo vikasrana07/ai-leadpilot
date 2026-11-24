@@ -1,5 +1,7 @@
 /** Minimal RFC 4180 CSV parser (quotes, escaped quotes, CRLF, embedded newlines, BOM). */
 export function parseCsv(input: string): string[][] {
+  const MAX_CSV_BYTES = 5 * 1024 * 1024;
+  if (input.length > MAX_CSV_BYTES) throw new Error(`CSV exceeds the ${MAX_CSV_BYTES} byte limit`);
   const text = input.charCodeAt(0) === 0xfeff ? input.slice(1) : input;
   const rows: string[][] = [];
   let row: string[] = [];

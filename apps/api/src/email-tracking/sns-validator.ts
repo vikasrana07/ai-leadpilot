@@ -40,7 +40,7 @@ export function validateSnsCertUrl(urlStr: string): URL {
     throw new SnsVerificationError(`Invalid SigningCertURL hostname: ${parsed.hostname} is not an authorized AWS SNS domain`);
   }
 
-  if (!parsed.pathname.endsWith('.pem')) {
+  if (!/^\/[A-Za-z0-9._-]+\.pem$/.test(parsed.pathname)) {
     throw new SnsVerificationError('Invalid SigningCertURL path: must end with .pem');
   }
 
@@ -73,10 +73,16 @@ export function validateSnsSubscribeUrl(urlStr: string): URL {
  * Fetches and caches the X.509 certificate PEM from AWS SNS.
  */
 export async function getSnsCertificate(certUrlStr: string): Promise<string> {
-  validateSnsCertUrl(certUrlStr);
+  const parsed = validateSnsCertUrl(certUrlStr);
+  // Rebuild from the validated AWS host and the restricted certificate path so
+  // fetch never receives the original user-controlled URL string.
+  const certUrl = new URL('https://placeholder.invalid');
+  certUrl.hostname = parsed.hostname;
+  certUrl.pathname = parsed.pathname;
+  const requestUrl = certUrl.toString();
 
   const now = Date.now();
-  const cached = CERT_CACHE.get(certUrlStr);
+  const cached = CERT_CACHE.get(requestUrl);
   if (cached && cached.expiresAt > now) {
     return cached.pem;
   }
@@ -85,7 +91,7 @@ export async function getSnsCertificate(certUrlStr: string): Promise<string> {
   const timeout = setTimeout(() => controller.abort(), 5000);
 
   try {
-    const res = await fetch(certUrlStr, { signal: controller.signal });
+    const res = await fetch(requestUrl, { signal: controller.signal, redirect: 'error' });
     if (!res.ok) {
       throw new SnsVerificationError(`Failed to fetch SNS signing cert: HTTP ${res.status}`);
     }
@@ -99,7 +105,7 @@ export async function getSnsCertificate(certUrlStr: string): Promise<string> {
       if (oldestKey) CERT_CACHE.delete(oldestKey);
     }
 
-    CERT_CACHE.set(certUrlStr, { pem, expiresAt: now + CERT_CACHE_TTL_MS });
+    CERT_CACHE.set(requestUrl, { pem, expiresAt: now + CERT_CACHE_TTL_MS });
     return pem;
   } catch (err) {
     if (err instanceof SnsVerificationError) throw err;

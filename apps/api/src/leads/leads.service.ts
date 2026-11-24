@@ -166,10 +166,16 @@ export class LeadsService {
   async list(a: Actor, q: LeadListQuery) {
     return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, async (tx) => {
       const where = this.buildWhere(a, q);
-      const orderBy: Prisma.LeadOrderByWithRelationInput[] =
-        q.sort === 'name' ? [{ name: q.dir }, { id: 'asc' }]
-        : q.sort === 'score' || q.sort === 'nextFollowUpAt' ? [{ [q.sort]: { sort: q.dir, nulls: 'last' } }, { id: 'asc' }]
-        : [{ [q.sort]: q.dir }, { id: 'asc' }];
+      const orderBy: Prisma.LeadOrderByWithRelationInput[] = (() => {
+        switch (q.sort) {
+          case 'name': return [{ name: q.dir }, { id: 'asc' }];
+          case 'score': return [{ score: { sort: q.dir, nulls: 'last' } }, { id: 'asc' }];
+          case 'nextFollowUpAt': return [{ nextFollowUpAt: { sort: q.dir, nulls: 'last' } }, { id: 'asc' }];
+          case 'createdAt': return [{ createdAt: q.dir }, { id: 'asc' }];
+          case 'updatedAt': return [{ updatedAt: q.dir }, { id: 'asc' }];
+          default: return [{ id: 'asc' }];
+        }
+      })();
       const [total, rows] = await series([ () => tx.lead.count({ where }), () => tx.lead.findMany({ where, orderBy, skip: (q.page - 1) * q.pageSize, take: q.pageSize, include: LEAD_INCLUDE })]);
       return { items: await this.dto(tx, rows), total, page: q.page, pageSize: q.pageSize };
     });

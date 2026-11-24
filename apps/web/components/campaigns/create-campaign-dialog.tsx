@@ -33,6 +33,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
   const [templateParams, setTemplateParams] = useState<CampaignTemplateParam[]>([]);
   const [scheduleType, setScheduleType] = useState<'now' | 'later'>('now');
   const [scheduledAt, setScheduledAt] = useState('');
+  const [autoRetry, setAutoRetry] = useState(true);
 
   // Audience filters
   const [selectedStages, setSelectedStages] = useState<string[]>([]);
@@ -119,6 +120,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
         templateParams,
         segment,
         scheduledAt: scheduledDate,
+        autoRetry,
       });
       onOpenChange(false);
       // Reset
@@ -250,6 +252,47 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
                   </p>
                 </div>
               )}
+
+              {/* Template Category Guidelines (Marketing vs Utility) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className={`p-3 rounded-xl border transition-all ${
+                  selectedTemplate?.category === 'MARKETING'
+                    ? 'border-amber-500/50 bg-amber-500/5 ring-1 ring-amber-500/20'
+                    : 'border-border/60 bg-muted/20'
+                }`}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-400">
+                      Marketing template
+                    </span>
+                  </div>
+                  <h5 className="text-xs font-bold text-foreground">A promotion</h5>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                    Offers, sales, new arrivals, invites. People who opted out of promotions are skipped.
+                  </p>
+                  <p className="text-[11px] italic text-muted-foreground/80 bg-background/60 p-1.5 rounded mt-2 border border-border/40">
+                    &ldquo;Our festive sale is live. Up to 40% off, this weekend only.&rdquo;
+                  </p>
+                </div>
+
+                <div className={`p-3 rounded-xl border transition-all ${
+                  selectedTemplate?.category === 'UTILITY'
+                    ? 'border-emerald-500/50 bg-emerald-500/5 ring-1 ring-emerald-500/20'
+                    : 'border-border/60 bg-muted/20'
+                }`}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                      Utility template
+                    </span>
+                  </div>
+                  <h5 className="text-xs font-bold text-foreground">About an order or an alert</h5>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                    Order updates, appointment reminders, account alerts. These still reach people who opted out of promotions.
+                  </p>
+                  <p className="text-[11px] italic text-muted-foreground/80 bg-background/60 p-1.5 rounded mt-2 border border-border/40">
+                    &ldquo;Your order #1043 has shipped and arrives on Thursday.&rdquo;
+                  </p>
+                </div>
+              </div>
 
               {templateParams.length > 0 && (
                 <div className="space-y-3 pt-2">
@@ -476,6 +519,30 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
                 </Field>
               )}
 
+              {/* Smart Auto Retry Toggle */}
+              <div className="flex items-center justify-between rounded-xl border border-border/80 bg-muted/20 p-3.5">
+                <div className="space-y-0.5 max-w-[80%]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-foreground">Smart Auto-Retry</span>
+                    <Badge tone={autoRetry ? 'success' : 'neutral'} className="text-[10px]">
+                      {autoRetry ? 'ON' : 'OFF'}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    WhatsApp limits how many promotions one person gets each day. Turn on retry for a marketing template and the people WhatsApp held back for that reason are tried again (waits 24h & 48h, up to 3 tries).
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoRetry}
+                    onChange={(e) => setAutoRetry(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                </label>
+              </div>
+
               <div className="p-4 rounded-xl border bg-muted/40 space-y-2 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2 font-semibold text-foreground text-sm">
                   <CheckCircle className="w-4 h-4 text-success" />
@@ -486,6 +553,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
                   <li><strong>Template:</strong> {selectedTemplate?.name} ({selectedTemplate?.language})</li>
                   <li><strong>Target Audience:</strong> {previewMutation.data?.eligibleCount ?? 0} eligible recipients</li>
                   <li><strong>Timing:</strong> {scheduleType === 'now' ? 'Immediate' : scheduledAt || 'Scheduled'}</li>
+                  <li><strong>Auto Retry:</strong> {autoRetry ? 'Enabled (24h/48h)' : 'Disabled'}</li>
                 </ul>
               </div>
             </div>

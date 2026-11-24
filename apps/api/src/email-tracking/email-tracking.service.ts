@@ -395,8 +395,20 @@ export class EmailTrackingService {
         throw new BadRequestException('SubscriptionConfirmation missing SubscribeURL');
       }
       const safeUrl = validateSnsSubscribeUrl(rawMessage.SubscribeURL);
+      if (safeUrl.pathname !== '/' || safeUrl.searchParams.get('Action') !== 'ConfirmSubscription') {
+        throw new BadRequestException('SubscriptionConfirmation contains an unexpected SubscribeURL');
+      }
+      const topicArn = safeUrl.searchParams.get('TopicArn');
+      const token = safeUrl.searchParams.get('Token');
+      if (!topicArn || !token) throw new BadRequestException('SubscriptionConfirmation is missing required parameters');
+      const confirmUrl = new URL('https://placeholder.invalid');
+      confirmUrl.hostname = safeUrl.hostname;
+      confirmUrl.pathname = '/';
+      confirmUrl.searchParams.set('Action', 'ConfirmSubscription');
+      confirmUrl.searchParams.set('TopicArn', topicArn);
+      confirmUrl.searchParams.set('Token', token);
       this.log.log(`Confirming SNS subscription for topic ${rawMessage.TopicArn}`);
-      const res = await fetch(safeUrl.toString());
+      const res = await fetch(confirmUrl.toString(), { redirect: 'error' });
       if (!res.ok) {
         this.log.error(`Failed to confirm SNS subscription: HTTP ${res.status}`);
         throw new BadRequestException('Failed to confirm SNS subscription');
