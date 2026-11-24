@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { checkReply, timesIn } from '../src/ai/guards.js';
@@ -85,25 +85,30 @@ describe('AI books site visits through real availability', () => {
   });
 
   it('refuses a time that is not actually free and never double books', async () => {
+    let conversationId = '';
+    // The audit tables now have real foreign keys (S-09): a tool call needs a real conversation and AI run to be recorded against.
+    const channelId = randomUUID();
+    await owner$.query(`INSERT INTO channels (id, tenant_id, type, name, status, external_id, config, updated_at) VALUES ($1, $2, 'WHATSAPP', 'Tools', 'ACTIVE', $3, '{}'::jsonb, now())`, [channelId, owner.tenantId, `tools-${channelId}`]);
+    const realConversation = async (leadId: string) => { const id = randomUUID(); await owner$.query(`INSERT INTO conversations (id, tenant_id, channel_id, lead_id, external_thread_id) VALUES ($1, $2, $3, $4, $5)`, [id, owner.tenantId, channelId, leadId, `t-${id}`]); return id; };
+    const realRun = async (convId: string) => { const id = randomUUID(); await owner$.query(`INSERT INTO ai_runs (id, tenant_id, conversation_id, prompt_version, status) VALUES ($1, $2, $3, 'test', 'COMPLETED')`, [id, owner.tenantId, convId]); return id; };
     const ctxTool = async (): Promise<ToolContext> => {
       const t = await owner$.query(`SELECT id, name, email, phone, website, address, timezone, currency FROM tenants WHERE id = $1`, [owner.tenantId]);
       const l = await ctx.http().post('/leads').set(auth(owner.accessToken)).send({ name: `Tool Lead ${++n}`, phone: `98${String(40_000_000 + n * 7919).slice(0, 8)}` });
-      const conv = await owner$.query(`SELECT 1`);
-      void conv;
-      return { tenantId: owner.tenantId, conversationId: '00000000-0000-4000-8000-000000000000', leadId: l.body.id, runId: '00000000-0000-4000-8000-0000000000aa', allowed: new Set(['check_availability', 'create_appointment']), assistant: { workingHours: null, name: 'A', businessIdentity: 'B', businessDescription: '', languages: ['en'] }, tenant: { name: t.rows[0].name, email: t.rows[0].email, phone: null, website: null, address: null, timezone: t.rows[0].timezone, currency: 'INR' } };
+      conversationId = await realConversation(l.body.id);
+      return { tenantId: owner.tenantId, conversationId, leadId: l.body.id, runId: await realRun(conversationId), allowed: new Set(['check_availability', 'create_appointment']), assistant: { workingHours: null, name: 'A', businessIdentity: 'B', businessDescription: '', languages: ['en'] }, tenant: { name: t.rows[0].name, email: t.rows[0].email, phone: null, website: null, address: null, timezone: t.rows[0].timezone, currency: 'INR' } };
     };
     const tc = await ctxTool();
     const day = new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10);
-    const outside = await tools.execute({ ...tc, runId: crypto.randomUUID() }, 'create_appointment', JSON.stringify({ date: day, time: '15:00', notes: null }));
+    const outside = await tools.execute({ ...tc, runId: await realRun(tc.conversationId) }, 'create_appointment', JSON.stringify({ date: day, time: '15:00', notes: null }));
     expect(outside.ok).toBe(false); expect(outside.result).toMatchObject({ error: 'slot_unavailable' });
-    const past = await tools.execute({ ...tc, runId: crypto.randomUUID() }, 'create_appointment', JSON.stringify({ date: '2020-01-01', time: '10:00', notes: null }));
+    const past = await tools.execute({ ...tc, runId: await realRun(tc.conversationId) }, 'create_appointment', JSON.stringify({ date: '2020-01-01', time: '10:00', notes: null }));
     expect(past.ok).toBe(false);
-    const avail = await tools.execute({ ...tc, runId: crypto.randomUUID() }, 'check_availability', JSON.stringify({ date: day, durationMinutes: null }));
+    const avail = await tools.execute({ ...tc, runId: await realRun(tc.conversationId) }, 'check_availability', JSON.stringify({ date: day, durationMinutes: null }));
     expect(avail.ok).toBe(true);
     const slots = (avail.result as { slots: { date: string; time: string }[] }).slots;
     expect(slots.length).toBeGreaterThan(0);
     const s = slots[0] as { date: string; time: string };
-    const book = (leadId: string) => tools.execute({ ...tc, leadId, runId: crypto.randomUUID() }, 'create_appointment', JSON.stringify({ date: s.date, time: s.time, notes: null }));
+    const book = async (leadId: string) => { const conversationId = await realConversation(leadId); return tools.execute({ ...tc, leadId, conversationId, runId: await realRun(conversationId) }, 'create_appointment', JSON.stringify({ date: s.date, time: s.time, notes: null })); };
     const l2 = (await ctx.http().post('/leads').set(auth(owner.accessToken)).send({ name: `Tool Lead ${++n}`, phone: `98${String(50_000_000 + n * 7919).slice(0, 8)}` })).body.id as string;
     const l3 = (await ctx.http().post('/leads').set(auth(owner.accessToken)).send({ name: `Tool Lead ${++n}`, phone: `98${String(60_000_000 + n * 7919).slice(0, 8)}` })).body.id as string;
     const results = await Promise.all([book(tc.leadId), book(l2), book(l3)]);
