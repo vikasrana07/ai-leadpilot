@@ -138,10 +138,12 @@ describe('Google Calendar live mode under RLS', () => {
   });
 
   describe('strict mode (used by the outbox relay)', () => {
+    let slot = 0;
     const makeAppointment = async () => {
+      const day = String(10 + slot++).padStart(2, '0'); // each appointment gets its own slot: the DB forbids overlapping bookings for one member
       const lead = await ctx.http().post('/leads').set(auth(owner.accessToken)).send({ name: 'Strict Lead', phone: `+9198000007${Math.floor(Math.random() * 90 + 10)}` });
       const id = randomUUID();
-      await db.query(`INSERT INTO appointments (id, tenant_id, lead_id, membership_id, title, starts_at, ends_at, updated_at) VALUES ($1, $2, $3, $4, 'Visit', '2026-12-09T10:00:00Z', '2026-12-09T11:00:00Z', now())`, [id, owner.tenantId, lead.body.id, membershipId]);
+      await db.query(`INSERT INTO appointments (id, tenant_id, lead_id, membership_id, title, starts_at, ends_at, updated_at) VALUES ($1, $2, $3, $4, 'Visit', '2026-12-${day}T10:00:00Z', '2026-12-${day}T11:00:00Z', now())`, [id, owner.tenantId, lead.body.id, membershipId]);
       return id;
     };
     const sync = async (id: string) => ctx.app.get(DbService).tenantTx({ tenantId: owner.tenantId }, (tx) => svc.syncAppointment(tx, owner.tenantId, id, 'created', { strict: true }));
