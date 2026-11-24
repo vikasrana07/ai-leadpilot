@@ -43,12 +43,26 @@ describe('Google Calendar integration', () => {
     expect(res.body.url).toContain('gcal_mock=1');
   });
 
+  const stateFor = async (token: string) => new URL((await ctx.http().get('/integrations/google-calendar/auth-url').set(auth(token))).body.url).searchParams.get('state') as string;
+  const connect = (token: string, body: object) => ctx.http().post('/integrations/google-calendar/connect').set(auth(token)).send(body);
+
+  it('rejects a connect request with no state, a forged state, or a state issued for someone else (OAuth login-CSRF guard)', async () => {
+    expect((await connect(agent.accessToken, { code: 'mock_code_test' })).status).toBe(400);
+    expect((await connect(agent.accessToken, { code: 'mock_code_test', state: 'forged.value' })).status).toBe(400);
+    const good = await stateFor(agent.accessToken);
+    const [payload] = good.split('.');
+    expect((await connect(agent.accessToken, { code: 'mock_code_test', state: `${payload}.AAAA` })).status).toBe(400); // tampered signature
+    const other = await registerAccount(ctx, 'gcalother');
+    const othersState = await stateFor(other.accessToken);
+    const res = await connect(agent.accessToken, { code: 'mock_code_test', state: othersState }); // valid signature, wrong member
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('invalid_oauth_state');
+    const status = await ctx.http().get('/integrations/google-calendar').set(auth(agent.accessToken));
+    expect(status.body.connected).toBe(false);
+  });
+
   it('connects Google Calendar using mock authorization code', async () => {
-    const res = await ctx
-      .http()
-      .post('/integrations/google-calendar/connect')
-      .set(auth(agent.accessToken))
-      .send({ code: 'mock_code_test' });
+    const res = await connect(agent.accessToken, { code: 'mock_code_test', state: await stateFor(agent.accessToken) });
 
     expect(res.status).toBe(201);
     expect(res.body.ok).toBe(true);
