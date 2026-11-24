@@ -30,7 +30,9 @@ async function refreshSession(): Promise<boolean> {
 async function parse<T>(res: Response): Promise<T> {
   if (res.status === 204) return undefined as T;
   const text = await res.text();
-  const json: unknown = text ? JSON.parse(text) : undefined;
+  // An endpoint that returns `null` (e.g. GET /billing/profile before any profile exists) is sent by the API as an EMPTY 200 body. Return null for
+  // it, never undefined: TanStack Query rejects `undefined` query data ("Query data cannot be undefined").
+  const json: unknown = text ? JSON.parse(text) : null;
   if (res.status === 402 && typeof window !== 'undefined') window.dispatchEvent(new Event('lp:billing'));
   if (!res.ok) {
     const env = (json ?? {}) as ErrorEnvelope;
