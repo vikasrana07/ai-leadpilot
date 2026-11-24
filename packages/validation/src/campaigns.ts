@@ -87,3 +87,7 @@ export const whatsappOptInSchema = z.object({
   attestation: z.literal(true, { error: 'You must confirm these leads agreed to receive WhatsApp marketing messages' }),
 });
 export type WhatsappOptInInput = z.infer<typeof whatsappOptInSchema>;
+
+/** Retry the recipients whose delivery definitely failed. `includeInterrupted` also retries those whose outcome is unknown (the sender was interrupted): they may already have been sent, so retrying can message someone twice. */
+export const retryFailedSchema = z.object({ includeInterrupted: z.boolean().default(false) });
+export type RetryFailedInput = z.infer<typeof retryFailedSchema>;

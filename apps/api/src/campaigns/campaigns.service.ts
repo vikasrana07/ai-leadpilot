@@ -17,6 +17,7 @@ import type {
   CampaignTemplateParam,
   CreateCampaignInput,
   WhatsappOptInInput,
+  RetryFailedInput,
   RecipientQuery,
   UpdateCampaignInput,
 } from '@leadpilot/validation';
@@ -179,7 +180,15 @@ export class CampaignsService implements OnModuleInit {
       });
       if (!c) throw new NotFoundException({ code: 'not_found', message: 'Campaign not found' });
 
+      // What a retry could re-send: definite failures, and (only with explicit consent) those whose delivery state is unknown.
+      const [counts] = await tx.$queryRaw<{ retryable: number; interrupted: number }[]>`
+        SELECT count(*) FILTER (WHERE COALESCE(error->>'code', '') <> 'interrupted' AND COALESCE(error->>'message', '') <> 'Campaign was cancelled by user')::int AS retryable,
+               count(*) FILTER (WHERE COALESCE(error->>'code', '') = 'interrupted')::int AS interrupted
+          FROM broadcast_recipients WHERE campaign_id = ${id}::uuid AND tenant_id = ${ctx.tenantId}::uuid AND status = 'FAILED'`;
+
       return {
+        retryableCount: counts?.retryable ?? 0,
+        interruptedCount: counts?.interrupted ?? 0,
         id: c.id,
         name: c.name,
         status: c.status,
@@ -529,6 +538,42 @@ export class CampaignsService implements OnModuleInit {
     }
 
     return { id, status: shouldDispatch ? 'RUNNING' : 'COMPLETED' };
+  }
+
+  /**
+   * Re-queues failed recipients of a COMPLETED campaign. Definite failures are retried; recipients whose delivery state is unknown
+   * (`error.code = 'interrupted'`) only with `includeInterrupted`, because they may already have received the message. Cancelled-by-user
+   * rows are never retried. Consent is re-checked when each recipient is sent, so a STOP since the first run is still honoured.
+   */
+  async retryFailed(ctx: TenantRequestContext, id: string, input: RetryFailedInput) {
+    const retried = await this.db.tenantTx(ctx, async (tx) => {
+      const c = await tx.broadcastCampaign.findFirst({ where: { id, tenantId: ctx.tenantId } });
+      if (!c) throw new NotFoundException({ code: 'not_found', message: 'Campaign not found' });
+      if (c.status !== 'COMPLETED') {
+        throw new ConflictException({ code: 'invalid_status', message: 'Only a completed campaign can be retried' });
+      }
+      const rows = await tx.$queryRaw<{ id: string }[]>`
+        UPDATE broadcast_recipients SET status = 'PENDING'::"BroadcastRecipientStatus", claimed_at = NULL, error = NULL
+         WHERE campaign_id = ${id}::uuid AND tenant_id = ${ctx.tenantId}::uuid AND status = 'FAILED'
+           AND COALESCE(error->>'message', '') <> 'Campaign was cancelled by user'
+           AND (${input.includeInterrupted}::boolean OR COALESCE(error->>'code', '') <> 'interrupted')
+        RETURNING id`;
+      if (rows.length === 0) {
+        throw new ConflictException({ code: 'nothing_to_retry', message: 'There are no failed recipients that can be retried' });
+      }
+      // Compare-and-set so a double click cannot start two runs.
+      const won = await tx.broadcastCampaign.updateMany({ where: { id, tenantId: ctx.tenantId, status: 'COMPLETED' }, data: { status: 'RUNNING', completedAt: null } });
+      if (won.count === 0) throw new ConflictException({ code: 'invalid_status', message: 'Campaign is already running' });
+      await tx.$executeRaw`UPDATE broadcast_campaigns SET failed_count = GREATEST(failed_count - ${rows.length}, 0) WHERE id = ${id}::uuid`;
+      await this.audit.record(tx, {
+        tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'campaign.retry_failed', resourceType: 'broadcast_campaign', resourceId: id,
+        metadata: { retried: rows.length, includeInterrupted: input.includeInterrupted }, requestId: ctx.requestId, ip: ctx.ip,
+      });
+      return rows.length;
+    });
+    if (this.enqueueDispatch) await this.enqueueDispatch(ctx.tenantId, id);
+    else void this.dispatchBatch(ctx.tenantId, id).catch((e) => this.log.error(`Retry dispatch error for campaign ${id}: ${e instanceof Error ? e.message : String(e)}`));
+    return { id, status: 'RUNNING', retried };
   }
 
   /** Cancels a scheduled or running campaign */
