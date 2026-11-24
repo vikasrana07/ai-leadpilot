@@ -21,6 +21,7 @@ export class PrivacyService {
       const lead = await tx.lead.findFirst({ where: { id, tenantId: ctx.tenantId } });
       if (!lead) throw new NotFoundException({ code: 'not_found', message: 'Lead not found' });
       const ids = [id, ...(await tx.lead.findMany({ where: { tenantId: ctx.tenantId, mergedIntoId: id }, select: { id: true } })).map((l) => l.id)];
+      const addresses = [...new Set((await tx.lead.findMany({ where: { id: { in: ids }, tenantId: ctx.tenantId }, select: { email: true } })).map((l) => l.email?.trim().toLowerCase()).filter((e): e is string => !!e))];
       const convs = await tx.conversation.findMany({ where: { tenantId: ctx.tenantId, leadId: { in: ids } }, select: { id: true, createdAt: true } });
       const data = {
         exportedAt: new Date().toISOString(), subject: { leadId: id },
@@ -31,6 +32,13 @@ export class PrivacyService {
         scores: await tx.leadScore.findMany({ where: { leadId: { in: ids } }, orderBy: { createdAt: 'asc' } }),
         appointments: await tx.appointment.findMany({ where: { leadId: { in: ids } }, orderBy: { startsAt: 'asc' } }),
         tasks: await tx.task.findMany({ where: { leadId: { in: ids } } }),
+        // Email tracking (S-20): every email sent to this person, linked to the lead or only by address, with what the tracking pixel and links recorded.
+        emails: await tx.trackedEmail.findMany({
+          where: { tenantId: ctx.tenantId, OR: [{ leadId: { in: ids } }, ...(addresses.length ? [{ recipient: { in: addresses } }] : [])] },
+          orderBy: { createdAt: 'asc' },
+          include: { events: { orderBy: { timestamp: 'asc' }, select: { type: true, timestamp: true, ipAddress: true, userAgent: true, clickUrl: true } } },
+        }),
+        emailSuppressions: addresses.length ? await tx.emailSuppression.findMany({ where: { tenantId: ctx.tenantId, email: { in: addresses } }, select: { email: true, reason: true, source: true, createdAt: true } }) : [],
         conversations: [] as { id: string; startedAt: Date; messages: unknown[] }[],
       };
       for (const c of convs) data.conversations.push({ id: c.id, startedAt: c.createdAt, messages: await tx.message.findMany({ where: { conversationId: c.id }, orderBy: { createdAt: 'asc' }, select: { id: true, direction: true, senderType: true, type: true, body: true, status: true, createdAt: true } }) });
