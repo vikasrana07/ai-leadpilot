@@ -103,6 +103,8 @@ const schema = z.object({
   /** Platform console (separate from tenant auth). Unset = the console is disabled. */
   /** Platform admins without MFA are held at the Security page until they enrol (recommended for production). */
   PLATFORM_REQUIRE_MFA: bool,
+  /** Deliberate acknowledgement that the platform console may run WITHOUT mandatory MFA in production. Never recommended. */
+  PLATFORM_ALLOW_NO_MFA_IN_PRODUCTION: bool,
   PLATFORM_JWT_SECRET: z.string().min(32).optional(),
   // ---- Data lifecycle (Phase 8). Platform-wide defaults and hard minimums for per-workspace retention settings.
   RETENTION_WEBHOOK_PAYLOAD_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
@@ -137,6 +139,12 @@ const schema = z.object({
 
 export type Env = z.infer<typeof schema>;
 
+/** Defaults that depend on the environment: platform admin MFA is ON in production unless explicitly set, and off elsewhere (dev/tests). */
+function withSecureDefaults(raw: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  if (raw.PLATFORM_REQUIRE_MFA === undefined && raw.NODE_ENV === 'production') return { ...raw, PLATFORM_REQUIRE_MFA: 'true' };
+  return raw;
+}
+
 export function loadEnv(raw: NodeJS.ProcessEnv = process.env): Env {
   const parsed = schema.superRefine((e, ctx) => {
     if (e.NODE_ENV === 'production' && e.WHATSAPP_MODE === 'mock') ctx.addIssue({ code: 'custom', path: ['WHATSAPP_MODE'], message: 'mock mode is not allowed in production' });
@@ -155,9 +163,11 @@ export function loadEnv(raw: NodeJS.ProcessEnv = process.env): Env {
     if (e.RAZORPAY_MODE === 'live') for (const k of ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET'] as const) if (!e[k]) ctx.addIssue({ code: 'custom', path: [k], message: `${k} is required when RAZORPAY_MODE=live` });
     if (e.NODE_ENV === 'production' && !e.SELLER_GSTIN) ctx.addIssue({ code: 'custom', path: ['SELLER_GSTIN'], message: 'SELLER_GSTIN is required in production (printed on invoices)' });
     if (e.NODE_ENV === 'production' && e.WEBHOOK_ALLOW_PRIVATE_TARGETS) ctx.addIssue({ code: 'custom', path: ['WEBHOOK_ALLOW_PRIVATE_TARGETS'], message: 'private webhook targets are not allowed in production' });
+    // The platform console can suspend tenants and open support sessions: in production its admins must have MFA unless that is acknowledged.
+    if (e.NODE_ENV === 'production' && e.PLATFORM_JWT_SECRET && !e.PLATFORM_REQUIRE_MFA && !e.PLATFORM_ALLOW_NO_MFA_IN_PRODUCTION) ctx.addIssue({ code: 'custom', path: ['PLATFORM_REQUIRE_MFA'], message: 'platform admin MFA is mandatory in production: leave PLATFORM_REQUIRE_MFA unset (or true), or set PLATFORM_ALLOW_NO_MFA_IN_PRODUCTION=true to accept the risk' });
     if (!!e.SMTP_USER !== !!e.SMTP_PASS) ctx.addIssue({ code: 'custom', path: ['SMTP_PASS'], message: 'SMTP_USER and SMTP_PASS must be set together' });
     if (e.AI_PROVIDER === 'openai' && !e.OPENAI_API_KEY) ctx.addIssue({ code: 'custom', path: ['OPENAI_API_KEY'], message: 'OPENAI_API_KEY is required when AI_PROVIDER=openai' });
-  }).safeParse(Object.fromEntries(Object.entries(raw).filter(([, v]) => v !== ''))); // `KEY=` in a .env file means "unset"
+  }).safeParse(withSecureDefaults(Object.fromEntries(Object.entries(raw).filter(([, v]) => v !== '')))); // `KEY=` in a .env file means "unset"
   if (!parsed.success) {
     const lines = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid environment configuration:\n${lines}`);
