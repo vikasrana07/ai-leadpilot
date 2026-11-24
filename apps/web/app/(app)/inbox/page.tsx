@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { InboxThreadSkeleton } from '@/components/skeletons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -79,7 +80,18 @@ function InboxView() {
           <div className="flex gap-1.5 overflow-x-auto xl:hidden">{QUEUES.filter((x) => canAll || x.key !== 'unassigned').map((x) => <button key={x.key} aria-pressed={queue === x.key} onClick={() => setQueue(x.key)} className={cn('min-h-9 shrink-0 rounded-full px-3 py-1 text-[12px]', queue === x.key ? 'bg-primary-soft font-medium text-accent-foreground' : 'text-muted-foreground')}>{x.label}</button>)}</div>
         </div>
         <ul className="min-h-0 flex-1 overflow-y-auto">
-          {list.isPending ? [0, 1, 2, 3].map((i) => <li key={i} className="p-3"><Skeleton className="h-12" /></li>) : items.length === 0 ? (
+          {list.isPending ? Array.from({ length: 5 }).map((_, i) => (
+            <li key={i} className="flex gap-3 border-b border-border p-3">
+              <Skeleton className="h-9 w-9 rounded-full shrink-0" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-3 w-8" />
+                </div>
+                <Skeleton className="h-3 w-40" />
+              </div>
+            </li>
+          )) : items.length === 0 ? (
             <li><EmptyState icon={InboxIcon} title={q || channel || queue !== 'open' ? 'Nothing here' : 'No conversations yet'} description={q || channel || queue !== 'open' ? 'Try another queue or clear the search.' : 'Messages from WhatsApp and your website chat appear here the moment they arrive. Connect a channel in Integrations.'} action={can('integration:manage') && queue === 'open' && !q ? <Button asChild variant="primary" size="sm"><Link href="/integrations">Connect a channel</Link></Button> : undefined} /></li>
           ) : items.map((c) => (
             <li key={c.id}>
@@ -100,7 +112,7 @@ function InboxView() {
       {/* conversation */}
       <section aria-label="Conversation" className={cn('min-w-0 flex-1 flex-col bg-background', selectedId ? 'flex' : 'hidden md:flex')}>
         {!selectedId ? <div className="m-auto"><EmptyState icon={InboxIcon} title="Select a conversation" description="Pick one from the list to read and reply." /></div>
-          : detail.isPending ? <div className="space-y-3 p-6"><Skeleton className="h-10 w-64" /><Skeleton className="h-64" /></div>
+          : detail.isPending ? <InboxThreadSkeleton />
           : detail.isError ? <div className="m-auto"><EmptyState icon={XCircle} title="Conversation not found" description="It may belong to someone else, or it was removed." action={<Button onClick={() => select(null)}>Back to inbox</Button>} /></div>
           : (
             <>

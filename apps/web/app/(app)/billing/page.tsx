@@ -19,6 +19,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BillingSkeleton } from '@/components/skeletons';
 import { api, ApiError } from '@/lib/api';
 import { ENTITLEMENT_LABELS, FEATURE_KEYS, LIMIT_KEYS, STATE_CODES, STATUS_LABEL, STATUS_TONE, daysLeft, fmtDate, inr, limitText, problemList, type BillingProfile, type BillingSummary, type CheckoutInit, type Invoice, type PlanView } from '@/lib/billing';
 import { handleApiError } from '@/lib/forms';
@@ -234,7 +235,7 @@ export default function BillingPage() {
     onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Simulation failed'),
   });
 
-  if (sum.isPending || plans.isPending) return <><PageHeader title="Subscription & Billing" /><Skeleton className="h-64" /></>;
+  if (sum.isPending || plans.isPending) return <BillingSkeleton />;
   if (sum.isError || plans.isError) return <><PageHeader title="Subscription & Billing" /><Card><CardBody>Could not load billing. <Button variant="link" onClick={() => { void sum.refetch(); void plans.refetch(); }}>Retry</Button></CardBody></Card></>;
   const s = sum.data;
   const dateLine = s.status === 'TRIALING' ? `Trial ends ${fmtDate(s.trialEndsAt)} (${Math.max(0, daysLeft(s.trialEndsAt))} days left)` : s.status === 'PAST_DUE' ? `Grace period ends ${fmtDate(s.graceEndsAt)}` : s.cancelAtPeriodEnd || s.status === 'CANCELED' ? `Ends ${fmtDate(s.currentPeriodEnd)}` : s.currentPeriodEnd ? `Renews ${fmtDate(s.currentPeriodEnd)}` : '';

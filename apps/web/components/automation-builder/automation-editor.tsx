@@ -14,7 +14,7 @@ import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
+import { AutomationBuilderSkeleton } from '@/components/skeletons';
 import { Textarea } from '@/components/ui/textarea';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -58,7 +58,7 @@ export function AutomationEditor({ id }: { id?: string }) {
   const q = useQuery({ queryKey: ['automations', 'one', id], enabled: !!id && allowed, queryFn: () => api<AutomationItem>(`/automations/${id}`), gcTime: 0, refetchOnWindowFocus: false, retry: false });
   const blank = useMemo<Source>(() => ({ name: '', description: '', cooldownMinutes: 60, graph: blankGraph({ trigger: newId(), action: newId() }, leadWord), version: 1, enabled: false }), [leadWord]);
   if (!allowed) return <><PageHeader title="Automations" /><Card><EmptyState icon={Workflow} title="You do not have access" description="Ask a workspace owner or manager for the automations permission." /></Card></>;
-  if (id && q.isPending) return <><PageHeader title="Edit automation" /><Skeleton className="h-96" /></>;
+  if (id && q.isPending) return <AutomationBuilderSkeleton />;
   if (id && (q.isError || !q.data)) return <><PageHeader title="Edit automation" /><Card><EmptyState icon={Workflow} title="Automation not found" description="It may have been deleted, or the link is wrong." action={<Button asChild variant="primary"><Link href="/automations">Back to automations</Link></Button>} /></Card></>;
   const d = q.data;
   const source: Source = d ? { id: d.id, name: d.name, description: d.description ?? '', cooldownMinutes: d.cooldownMinutes, graph: d.graph, version: d.version, enabled: d.enabled } : blank;

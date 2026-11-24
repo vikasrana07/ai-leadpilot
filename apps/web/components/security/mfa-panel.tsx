@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/lib/api';
 
 export interface MfaStatus { enabled: boolean; enrollmentPending: boolean; recoveryCodesRemaining: number; workspaceRequiresMfa?: boolean }
@@ -36,7 +37,26 @@ export function MfaPanel({ call, queryKey }: { call: Call; queryKey: string[] })
   }
   const proofBody = () => (useRecovery ? { recoveryCode: proof.trim() } : { code: proof.replace(/\s/g, '') });
 
-  if (status.isPending) return <Card><CardBody><p className="text-helper">Loading…</p></CardBody></Card>;
+  if (status.isPending) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4 rounded-full" />
+            <Skeleton className="h-4 w-44" />
+          </div>
+          <Skeleton className="h-5 w-16 rounded-full" />
+        </CardHeader>
+        <CardBody className="space-y-3">
+          <Skeleton className="h-3.5 w-full" />
+          <Skeleton className="h-3.5 w-4/5" />
+          <div className="pt-2">
+            <Skeleton className="h-9 w-32 rounded-md" />
+          </div>
+        </CardBody>
+      </Card>
+    );
+  }
   if (status.isError) return <Card><CardBody><p className="text-helper">Could not load your security settings.</p></CardBody></Card>;
   const s = status.data;
 

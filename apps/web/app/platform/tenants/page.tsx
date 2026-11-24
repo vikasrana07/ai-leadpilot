@@ -25,7 +25,39 @@ export default function PlatformTenants() {
         <Select className="w-40" aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value)}><option value="">All statuses</option><option value="ACTIVE">Active</option><option value="SUSPENDED">Suspended</option></Select>
         <Select className="w-40" aria-label="Plan" value={plan} onChange={(e) => setPlan(e.target.value)}><option value="">All plans</option>{plans.data?.map((p) => <option key={p.key} value={p.key}>{p.name}</option>)}</Select>
       </div>
-      {q.isPending ? <Skeleton className="h-48" /> : (
+      {q.isPending ? (
+        <Card className="overflow-x-auto">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="border-b border-border text-left text-muted-foreground">
+                <th className="px-4 py-2 font-medium">Workspace</th>
+                <th className="px-4 py-2 font-medium">Plan</th>
+                <th className="px-4 py-2 font-medium">Status</th>
+                <th className="px-4 py-2 font-medium">Subscription</th>
+                <th className="px-4 py-2 text-right font-medium">Seats</th>
+                <th className="px-4 py-2 text-right font-medium">Leads</th>
+                <th className="px-4 py-2 font-medium">Created</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <tr key={i}>
+                  <td className="px-4 py-2.5">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="mt-1 h-3 w-40" />
+                  </td>
+                  <td className="px-4 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                  <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                  <td className="px-4 py-2.5"><Skeleton className="h-4 w-20" /></td>
+                  <td className="px-4 py-2.5 text-right"><Skeleton className="ml-auto h-4 w-8" /></td>
+                  <td className="px-4 py-2.5 text-right"><Skeleton className="ml-auto h-4 w-12" /></td>
+                  <td className="px-4 py-2.5"><Skeleton className="h-4 w-20" /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      ) : (
         <Card className="overflow-x-auto"><table className="w-full text-[13px]"><thead><tr className="border-b border-border text-left text-muted-foreground"><th className="px-4 py-2 font-medium">Workspace</th><th className="px-4 py-2 font-medium">Plan</th><th className="px-4 py-2 font-medium">Status</th><th className="px-4 py-2 font-medium">Subscription</th><th className="px-4 py-2 text-right font-medium">Seats</th><th className="px-4 py-2 text-right font-medium">Leads</th><th className="px-4 py-2 font-medium">Created</th></tr></thead><tbody>
           {q.data?.map((t) => <tr key={t.id} className="border-b border-border last:border-0 hover:bg-muted/50"><td className="px-4 py-2"><Link className="font-medium text-primary underline underline-offset-2 hover:no-underline" href={`/platform/tenants/${t.id}`}>{t.name}</Link><div className="text-helper">{t.email}</div></td><td className="px-4 py-2">{t.planKey}</td><td className="px-4 py-2"><Badge tone={t.status === 'ACTIVE' ? 'success' : 'danger'}>{t.status}</Badge></td><td className="px-4 py-2">{t.subscriptionStatus ?? '—'}{t.provider === 'manual' ? ' (complimentary)' : ''}</td><td className="num px-4 py-2 text-right">{t.seats}</td><td className="num px-4 py-2 text-right">{t.leads.toLocaleString('en-IN')}</td><td className="px-4 py-2">{fmtDate(t.createdAt)}</td></tr>)}
           {q.data?.length === 0 ? <tr><td colSpan={7} className="px-4 py-8 text-center text-helper">No workspaces match.</td></tr> : null}

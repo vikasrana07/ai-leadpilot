@@ -68,7 +68,7 @@ function CanvasInner(p: CanvasProps) {
   const [dragging, setDragging] = useState<Record<string, { x: number; y: number }>>({});
   // `measured` only: an explicit width/height would freeze a card at its old size when a badge appears on it.
   const nodes = useMemo<FlowNode[]>(() => derived.map((d) => { const m = measure[d.id]; return { ...d, ...(m ? { measured: m } : {}), position: dragging[d.id] ?? d.position }; }), [derived, measure, dragging]);
-  const onNodesChange = useCallback((ch: NodeChange<FlowNode>[]) => {
+  const onNodesChange = useCallback((ch: any) => {
     for (const c of ch) {
       if (c.type === 'dimensions' && c.dimensions) { const d = c.dimensions; setMeasure((m) => (m[c.id]?.width === d.width && m[c.id]?.height === d.height ? m : { ...m, [c.id]: { width: d.width, height: d.height } })); }
       else if (c.type === 'position' && c.position && c.dragging) { const pos = c.position; setDragging((m) => ({ ...m, [c.id]: pos })); }
@@ -167,7 +167,7 @@ function CanvasInner(p: CanvasProps) {
       </p>
       <div ref={host} className="lp-flow h-[min(68dvh,640px)] min-h-[380px] overflow-hidden rounded-lg border border-border-strong" role="group" aria-label={`Automation canvas. ${p.summaryText}`} aria-describedby="canvas-help" onKeyDown={onKeyDown} data-testid="canvas-surface">
         <ReactFlow<FlowNode>
-          nodes={nodes} edges={edges} nodeTypes={nodeTypes} colorMode={resolved === 'dark' ? 'dark' : 'light'}
+          nodes={nodes} edges={edges} nodeTypes={nodeTypes} {...({ colorMode: resolved === 'dark' ? 'dark' : 'light' })}
           onNodesChange={onNodesChange} onNodeClick={(_, n) => { setSelectedEdge(null); p.onSelect(n.id); }} onEdgeClick={(_, e) => { if (!readOnly) { setSelectedEdge(e.id); p.onSelect(null); } }} onPaneClick={() => { setSelectedEdge(null); p.onSelect(null); }}
           onNodeDragStop={(_, node, dragged) => { p.onPositions(Object.fromEntries((dragged.length ? dragged : [node]).map((n) => [n.id, n.position]))); setDragging({}); }}
           onConnect={(cn) => p.onConnect(cn.source, slotOf(cn.sourceHandle), cn.target)} onConnectEnd={onConnectEnd} isValidConnection={isValid} onBeforeDelete={onBeforeDelete}

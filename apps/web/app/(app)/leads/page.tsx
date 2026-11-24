@@ -19,7 +19,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Pagination } from '@/components/ui/pagination';
 import { Select } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { LeadsTableRowsSkeleton } from '@/components/skeletons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { API_URL, api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -414,11 +414,7 @@ export default function LeadsPage() {
 
         {/* Table Content */}
         {leads.isPending ? (
-          <div className="space-y-2 p-4">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-11" />
-            ))}
-          </div>
+          <LeadsTableRowsSkeleton count={8} />
         ) : leads.isError ? (
           <EmptyState
             icon={Users}

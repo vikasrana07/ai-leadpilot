@@ -16,7 +16,7 @@ import { Dropdown, DropdownItem } from '@/components/ui/dropdown';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PipelineColumnsSkeleton } from '@/components/skeletons';
 import { Textarea } from '@/components/ui/textarea';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -102,7 +102,7 @@ export default function PipelinePage() {
         <AnimatePresence mode="wait">{notice ? <motion.p key={notice.text} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={cn('inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-medium', notice.ok ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning')}>{notice.ok ? null : <TriangleAlert className="h-3.5 w-3.5" aria-hidden />}{notice.text}</motion.p> : null}</AnimatePresence>
       </div>
 
-      {board.isPending ? <div className="flex gap-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-96 w-64" />)}</div> : board.isError ? (
+      {board.isPending ? <PipelineColumnsSkeleton count={4} /> : board.isError ? (
         <EmptyState icon={KanbanSquare} title="Could not load the pipeline" description="Check your connection and try again." action={<Button onClick={() => void board.refetch()}>Retry</Button>} />
       ) : (
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6">

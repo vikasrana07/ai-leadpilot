@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import InvoiceLoading from './loading';
 import { Button } from '@/components/ui/button';
 import { api, ApiError } from '@/lib/api';
 import { STATE_CODES, fmtDate, inr, type InvoiceDetail, type InvoiceParty } from '@/lib/billing';
@@ -22,7 +23,7 @@ export default function InvoicePage() {
   const q = useQuery({ queryKey: ['invoice', id], queryFn: () => api<InvoiceDetail>(`/billing/invoices/${id}`), retry: false });
   const unauth = q.error instanceof ApiError && q.error.status === 401;
   useEffect(() => { if (unauth) router.replace(`/login?next=${encodeURIComponent(`/invoice/${id}`)}`); }, [unauth, router, id]);
-  if (q.isPending || unauth) return <p className="p-8 text-sm">Loading invoice…</p>;
+  if (q.isPending || unauth) return <InvoiceLoading />;
   if (q.isError) return <p className="p-8 text-sm">{q.error instanceof ApiError && q.error.status === 404 ? 'Invoice not found.' : 'Could not load this invoice.'}</p>;
   const i = q.data;
   const intra = i.igstMinor === 0;

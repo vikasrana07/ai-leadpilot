@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreateCampaignDialog } from '@/components/campaigns/create-campaign-dialog';
 import {
@@ -162,8 +163,30 @@ export default function CampaignsPage() {
       {/* Campaigns Listing */}
       {campaignsQuery.isLoading ? (
         <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 rounded-xl bg-muted/40 animate-pulse border" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="p-5 space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-48" />
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </div>
+                  <Skeleton className="h-3.5 w-64" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-8 w-20 rounded-md" />
+                  <Skeleton className="h-8 w-24 rounded-md" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 border-t border-border/50 pt-3">
+                {Array.from({ length: 4 }).map((_, m) => (
+                  <div key={m} className="space-y-1">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-4 w-12" />
+                  </div>
+                ))}
+              </div>
+            </Card>
           ))}
         </div>
       ) : campaigns.length === 0 ? (

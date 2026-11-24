@@ -40,7 +40,25 @@ export default function AuditPage() {
         </select>
       } />
       <Card className="overflow-hidden">
-        {q.isPending ? <div className="space-y-3 p-5">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-9" />)}</div> : items.length === 0 ? (
+        {q.isPending ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-[13px]">
+              <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-label text-muted-foreground shadow-xs">
+                <tr><th className="px-5 py-2.5 font-medium">When</th><th className="px-5 py-2.5 font-medium">Event</th><th className="px-5 py-2.5 font-medium">Details</th><th className="px-5 py-2.5 font-medium">IP</th></tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-5 py-3"><Skeleton className="h-3.5 w-24" /></td>
+                    <td className="px-5 py-3"><Skeleton className="h-5 w-24 rounded" /></td>
+                    <td className="px-5 py-3"><Skeleton className="h-3.5 w-48" /></td>
+                    <td className="px-5 py-3"><Skeleton className="h-3.5 w-20 font-mono text-xs" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : items.length === 0 ? (
           <EmptyState icon={ScrollText} title="No events yet" description="Sign-ins, invitations, role changes and settings updates will be recorded here." />
         ) : (
           <div className="overflow-x-auto">

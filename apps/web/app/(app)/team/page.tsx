@@ -156,7 +156,26 @@ export default function TeamPage() {
       <PageHeader title="Team" description="People who can access this workspace." actions={canInvite ? <Button variant="primary" onClick={() => setInviteOpen(true)}><UserPlus className="h-4 w-4" aria-hidden />Invite teammate</Button> : undefined} />
       <Card>
         <CardHeader><CardTitle>Members {members.data ? <span className="num ml-1 font-normal text-muted-foreground">{members.data.length}</span> : null}</CardTitle></CardHeader>
-        {members.isPending ? <div className="space-y-3 p-5">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}</div> : members.isError ? (
+        {members.isPending ? (
+          <div className="divide-y divide-border">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between gap-4 p-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-9 w-9 rounded-full shrink-0" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-44" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-5 w-20 rounded" />
+                  <Skeleton className="h-5 w-16 rounded-full hidden sm:block" />
+                  <Skeleton className="h-7 w-7 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : members.isError ? (
           <EmptyState icon={UserPlus} title="Could not load members" description="Please reload the page." />
         ) : (
           <ul className="divide-y divide-border">
