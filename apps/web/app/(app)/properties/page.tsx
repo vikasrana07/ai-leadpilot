@@ -298,9 +298,11 @@ export default function PropertiesPage() {
     const offset = frozenOffsetMap.get(colId);
     const width = getColWidth(colId);
     const style: React.CSSProperties = {
-      width: `${width}px`,
-      minWidth: `${width}px`,
-      maxWidth: `${width}px`,
+      ...(isPinned && width
+        ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` }
+        : width
+        ? { minWidth: `${width}px` }
+        : {}),
       ...(isPinned && offset !== undefined ? { left: `${offset}px` } : {}),
     };
     const pinnedClass = isPinned
@@ -374,9 +376,11 @@ export default function PropertiesPage() {
     const offset = frozenOffsetMap.get(colId);
     const width = getColWidth(colId);
     const style: React.CSSProperties = {
-      width: `${width}px`,
-      minWidth: `${width}px`,
-      maxWidth: `${width}px`,
+      ...(isPinned && width
+        ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` }
+        : width
+        ? { minWidth: `${width}px` }
+        : {}),
       ...(isPinned && offset !== undefined ? { left: `${offset}px` } : {}),
     };
     const pinnedClass = isPinned
@@ -538,13 +542,18 @@ export default function PropertiesPage() {
         ) : list.data && list.data.items.length > 0 ? (
           <div className="overflow-x-auto">
             <table
-              className="text-left table-fixed"
-              style={{ width: `${totalTableWidth}px`, minWidth: `${totalTableWidth}px` }}
+              className="w-full text-left table-fixed"
+              style={{ minWidth: `${totalTableWidth}px` }}
             >
               <colgroup>
-                {visibleOrderedColumns.map((col) => (
-                  <col key={col.id} style={{ width: `${getColWidth(col.id)}px` }} />
-                ))}
+                {visibleOrderedColumns.map((col) => {
+                  const isPinned = isColumnPinned(col.id);
+                  return isPinned ? (
+                    <col key={col.id} style={{ width: `${getColWidth(col.id)}px` }} />
+                  ) : (
+                    <col key={col.id} />
+                  );
+                })}
                 {editable ? <col style={{ width: '90px' }} /> : null}
               </colgroup>
               <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-muted-foreground shadow-xs">

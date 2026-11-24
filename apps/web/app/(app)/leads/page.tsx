@@ -317,8 +317,15 @@ export default function LeadsPage() {
     const isLastPinned = colId ? colId === lastPinnedColId : false;
     const offset = colId ? frozenOffsetMap.get(colId) : undefined;
     const width = colId ? getColWidth(colId) : undefined;
+    const isActionsCol = colId === 'actions';
     const style: React.CSSProperties = {
-      ...(width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}),
+      ...(isPinned && width
+        ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` }
+        : isActionsCol && width
+        ? { width: `${width}px`, minWidth: `${width}px` }
+        : width
+        ? { minWidth: `${width}px` }
+        : {}),
       ...(isPinned && offset !== undefined ? { left: `${offset}px` } : {}),
     };
 
@@ -390,7 +397,7 @@ export default function LeadsPage() {
         const style: React.CSSProperties = {
           width: `${width}px`,
           minWidth: `${width}px`,
-          maxWidth: `${width}px`,
+          maxWidth: isPinned ? `${width}px` : undefined,
           ...(isPinned && offset !== undefined ? { left: `${offset}px` } : {}),
         };
         return (
@@ -424,10 +431,15 @@ export default function LeadsPage() {
     const isLastPinned = colId === lastPinnedColId;
     const offset = frozenOffsetMap.get(colId);
     const width = getColWidth(colId);
+    const isActionsCol = colId === 'actions';
     const style: React.CSSProperties = {
-      width: `${width}px`,
-      minWidth: `${width}px`,
-      maxWidth: `${width}px`,
+      ...(isPinned && width
+        ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` }
+        : isActionsCol && width
+        ? { width: `${width}px`, minWidth: `${width}px` }
+        : width
+        ? { minWidth: `${width}px` }
+        : {}),
       ...(isPinned && offset !== undefined ? { left: `${offset}px` } : {}),
     };
     const pinnedClass = isPinned
@@ -791,14 +803,20 @@ export default function LeadsPage() {
             {/* Desktop Table View */}
             <div className="hidden overflow-x-auto md:block">
               <table
-                className="text-left table-fixed"
-                style={{ width: `${totalTableWidth}px`, minWidth: `${totalTableWidth}px` }}
+                className="w-full text-left table-fixed"
+                style={{ minWidth: `${totalTableWidth}px` }}
               >
                 <colgroup>
                   <col style={{ width: '40px' }} />
-                  {visibleOrderedColumns.map((col) => (
-                    <col key={col.id} style={{ width: `${getColWidth(col.id)}px` }} />
-                  ))}
+                  {visibleOrderedColumns.map((col) => {
+                    const isPinned = isColumnPinned(col.id);
+                    const isActionsCol = col.id === 'actions';
+                    return isPinned || isActionsCol ? (
+                      <col key={col.id} style={{ width: `${getColWidth(col.id)}px` }} />
+                    ) : (
+                      <col key={col.id} />
+                    );
+                  })}
                 </colgroup>
                 <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-label text-muted-foreground shadow-xs">
                   <tr>
