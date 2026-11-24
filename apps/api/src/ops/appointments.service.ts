@@ -391,6 +391,8 @@ export class AppointmentsService {
           } });
           await tx.appointmentEvent.create({ data: { id: uuidv7(), tenantId: a.tenantId, appointmentId: cur.id, type: 'rescheduled_from', actorUserId: a.userId, data: { toAppointmentId: created.id, ...(input.reason ? { reason: input.reason } : {}) } } });
           await this.afterBooked(tx, a, created, 'rescheduled', { fromAppointmentId: cur.id });
+          // The replacement gets its own Google event (afterBooked); the event of the appointment it replaces must go, or both stay on the calendar and the old time stays busy.
+          if (this.gcal?.isEnabled()) await this.outbox.emit(tx, a.tenantId, 'appointment.calendar_sync', { appointmentId: cur.id, action: 'cancelled' });
           return created.id;
         }));
       });
