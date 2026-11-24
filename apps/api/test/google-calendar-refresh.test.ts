@@ -137,6 +137,33 @@ describe('Google Calendar live mode under RLS', () => {
     expect((await db.query('SELECT google_event_id FROM appointments WHERE id = $1', [appointmentId])).rows[0].google_event_id).toBe('google-event-1');
   });
 
+  it('never (re)pushes an appointment that has been rescheduled away: its Google event is removed (a reschedule used to leave both on the calendar)', async () => {
+    useGoogle({ accessTokens: ['A-resched'] });
+    await connect();
+    const lead = await ctx.http().post('/leads').set(auth(owner.accessToken)).send({ name: 'Move Lead', phone: '+919800000602' });
+    const old = randomUUID();
+    await db.query(`INSERT INTO appointments (id, tenant_id, lead_id, membership_id, title, starts_at, ends_at, status, google_event_id, updated_at) VALUES ($1, $2, $3, $4, 'Visit', '2026-12-20T10:00:00Z', '2026-12-20T11:00:00Z', 'RESCHEDULED', 'old-google-event', now())`, [old, owner.tenantId, lead.body.id, membershipId]);
+    await ctx.app.get(DbService).tenantTx({ tenantId: owner.tenantId }, (tx) => svc.syncAppointment(tx, owner.tenantId, old, 'rescheduled')); // e.g. a retried event from before the reschedule
+    const del = calls.find((c) => c.method === 'DELETE' && c.url.includes('/events/old-google-event'));
+    expect(del, 'the old event is deleted in Google').toBeTruthy();
+    expect((await db.query('SELECT google_event_id FROM appointments WHERE id = $1', [old])).rows[0].google_event_id).toBeNull();
+  });
+
+  it('a reschedule through the API queues the removal of the old event as well as the new booking', async () => {
+    useGoogle({ accessTokens: ['A-queue'] });
+    await connect();
+    const lead = await ctx.http().post('/leads').set(auth(owner.accessToken)).send({ name: 'Queue Lead', phone: '+919800000603' });
+    await db.query(`INSERT INTO availability_rules (id, tenant_id, membership_id, day_of_week, start_minute, end_minute) SELECT gen_random_uuid(), $1, $2, d, 0, 1439 FROM generate_series(0, 6) d ON CONFLICT DO NOTHING`, [owner.tenantId, membershipId]).catch(() => null);
+    const day = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+    const booked = await ctx.http().post('/appointments').set(auth(owner.accessToken)).send({ leadId: lead.body.id, membershipId, startsAt: `${day(40)}T05:00:00.000Z`, durationMinutes: 60 });
+    expect(booked.status).toBe(201);
+    const moved = await ctx.http().post(`/appointments/${booked.body.id}/reschedule`).set(auth(owner.accessToken)).send({ startsAt: `${day(41)}T05:00:00.000Z`, membershipId });
+    expect(moved.status).toBe(200);
+    const { rows } = await db.query(`SELECT payload->>'appointmentId' AS id, payload->>'action' AS action FROM outbox_events WHERE tenant_id = $1 AND type = 'appointment.calendar_sync'`, [owner.tenantId]);
+    expect(rows).toContainEqual({ id: booked.body.id, action: 'cancelled' }); // the old appointment's event is removed
+    expect(rows).toContainEqual({ id: moved.body.id, action: 'rescheduled' }); // the new one gets its own
+  });
+
   describe('strict mode (used by the outbox relay)', () => {
     let slot = 0;
     const makeAppointment = async () => {

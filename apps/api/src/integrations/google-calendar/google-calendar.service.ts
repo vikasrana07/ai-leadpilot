@@ -385,7 +385,8 @@ export class GoogleCalendarService {
     });
     if (!sync || sync.status !== 'active') return;
 
-    if (action === 'cancelled' || apt.status === 'CANCELLED') {
+    // A rescheduled appointment is replaced by a new row with its own event, so its own event is removed exactly like a cancelled one.
+    if (action === 'cancelled' || apt.status === 'CANCELLED' || apt.status === 'RESCHEDULED') {
       if (apt.googleEventId) {
         if (this.mode === 'live') {
           try {
