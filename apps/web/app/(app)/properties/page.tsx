@@ -201,6 +201,7 @@ function PropertyDialog({
 
 export default function PropertiesPage() {
   const { can } = useAuth();
+  const editable = can('lead:write:all');
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -259,22 +260,20 @@ export default function PropertiesPage() {
     reorderColumns,
   } = useTablePreferences('properties', columns);
 
-  const getColumnWidth = (colId: string) => {
-    switch (colId) {
-      case 'property':
-        return 220;
-      case 'location':
-        return 160;
-      case 'type':
-        return 120;
-      case 'price':
-        return 120;
-      case 'status':
-        return 110;
-      default:
-        return 120;
-    }
+  const PROPERTY_COLUMN_WIDTHS: Record<string, number> = {
+    property: 260,
+    location: 160,
+    type: 130,
+    price: 130,
+    status: 120,
   };
+
+  const getColWidth = (colId: string) => PROPERTY_COLUMN_WIDTHS[colId] ?? 130;
+
+  const totalTableWidth = useMemo(
+    () => (editable ? 90 : 0) + visibleOrderedColumns.reduce((sum, col) => sum + getColWidth(col.id), 0),
+    [visibleOrderedColumns, editable]
+  );
 
   const frozenOffsetMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -282,18 +281,35 @@ export default function PropertiesPage() {
     for (const col of visibleOrderedColumns) {
       if (isColumnPinned(col.id)) {
         map.set(col.id, offset);
-        offset += getColumnWidth(col.id);
+        offset += getColWidth(col.id);
       }
     }
     return map;
   }, [visibleOrderedColumns, isColumnPinned]);
 
+  const lastPinnedColId = useMemo(() => {
+    const pinned = visibleOrderedColumns.filter((c) => isColumnPinned(c.id));
+    return pinned.length > 0 ? pinned[pinned.length - 1]?.id : null;
+  }, [visibleOrderedColumns, isColumnPinned]);
+
   const renderHeaderCell = (colId: string) => {
     const isPinned = isColumnPinned(colId);
+    const isLastPinned = colId === lastPinnedColId;
     const offset = frozenOffsetMap.get(colId);
-    const style = isPinned && offset !== undefined ? { left: `${offset}px` } : undefined;
+    const width = getColWidth(colId);
+    const style: React.CSSProperties = {
+      width: `${width}px`,
+      minWidth: `${width}px`,
+      maxWidth: `${width}px`,
+      ...(isPinned && offset !== undefined ? { left: `${offset}px` } : {}),
+    };
     const pinnedClass = isPinned
-      ? 'sticky z-20 bg-surface/95 border-r border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]'
+      ? cn(
+          'sticky z-20 bg-surface/95',
+          isLastPinned
+            ? 'border-r-2 border-border shadow-[3px_0_6px_-2px_rgba(0,0,0,0.12)]'
+            : 'border-r border-border/20'
+        )
       : '';
 
     switch (colId) {
@@ -302,7 +318,7 @@ export default function PropertiesPage() {
           <th
             key="property"
             style={style}
-            className={cn('font-medium min-w-[200px]', densityHeaderClass, pinnedClass)}
+            className={cn('font-medium truncate', densityHeaderClass, pinnedClass)}
           >
             Property
           </th>
@@ -312,7 +328,7 @@ export default function PropertiesPage() {
           <th
             key="location"
             style={style}
-            className={cn('font-medium min-w-[140px]', densityHeaderClass, pinnedClass)}
+            className={cn('font-medium truncate', densityHeaderClass, pinnedClass)}
           >
             Location
           </th>
@@ -322,7 +338,7 @@ export default function PropertiesPage() {
           <th
             key="type"
             style={style}
-            className={cn('font-medium min-w-[110px]', densityHeaderClass, pinnedClass)}
+            className={cn('font-medium truncate', densityHeaderClass, pinnedClass)}
           >
             Type
           </th>
@@ -332,7 +348,7 @@ export default function PropertiesPage() {
           <th
             key="price"
             style={style}
-            className={cn('font-medium text-right min-w-[110px]', densityHeaderClass, pinnedClass)}
+            className={cn('font-medium text-right truncate', densityHeaderClass, pinnedClass)}
           >
             Price
           </th>
@@ -342,7 +358,7 @@ export default function PropertiesPage() {
           <th
             key="status"
             style={style}
-            className={cn('font-medium min-w-[100px]', densityHeaderClass, pinnedClass)}
+            className={cn('font-medium truncate', densityHeaderClass, pinnedClass)}
           >
             Status
           </th>
@@ -354,18 +370,30 @@ export default function PropertiesPage() {
 
   const renderRowCell = (colId: string, p: Property) => {
     const isPinned = isColumnPinned(colId);
+    const isLastPinned = colId === lastPinnedColId;
     const offset = frozenOffsetMap.get(colId);
-    const style = isPinned && offset !== undefined ? { left: `${offset}px` } : undefined;
+    const width = getColWidth(colId);
+    const style: React.CSSProperties = {
+      width: `${width}px`,
+      minWidth: `${width}px`,
+      maxWidth: `${width}px`,
+      ...(isPinned && offset !== undefined ? { left: `${offset}px` } : {}),
+    };
     const pinnedClass = isPinned
-      ? 'sticky z-10 bg-surface border-r border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]'
+      ? cn(
+          'sticky z-10 bg-surface',
+          isLastPinned
+            ? 'border-r-2 border-border shadow-[3px_0_6px_-2px_rgba(0,0,0,0.12)]'
+            : 'border-r border-border/20'
+        )
       : '';
 
     switch (colId) {
       case 'property':
         return (
           <td key="property" style={style} className={cn(densityCellClass, pinnedClass)}>
-            <p className="font-medium text-foreground">{p.title}</p>
-            <p className="text-helper">
+            <p className="font-medium text-foreground truncate">{p.title}</p>
+            <p className="text-helper truncate">
               {p.bedrooms ? `${p.bedrooms} BHK · ` : ''}
               {p.areaSqft ? `${p.areaSqft.toLocaleString('en-IN')} sq ft` : ''}
             </p>
@@ -373,19 +401,19 @@ export default function PropertiesPage() {
         );
       case 'location':
         return (
-          <td key="location" style={style} className={cn('text-muted-foreground', densityCellClass, pinnedClass)}>
+          <td key="location" style={style} className={cn('text-muted-foreground truncate', densityCellClass, pinnedClass)}>
             {p.location}
           </td>
         );
       case 'type':
         return (
-          <td key="type" style={style} className={cn(densityCellClass, pinnedClass)}>
+          <td key="type" style={style} className={cn('truncate', densityCellClass, pinnedClass)}>
             {p.propertyType}
           </td>
         );
       case 'price':
         return (
-          <td key="price" style={style} className={cn('num text-right font-medium', densityCellClass, pinnedClass)}>
+          <td key="price" style={style} className={cn('num text-right font-medium truncate', densityCellClass, pinnedClass)}>
             {formatINR(p.price)}
           </td>
         );
@@ -451,8 +479,6 @@ export default function PropertiesPage() {
     setPage(1);
   };
 
-  const editable = can('lead:write:all');
-
   return (
     <>
       <PageHeader
@@ -511,11 +537,25 @@ export default function PropertiesPage() {
           <PropertiesTableRowsSkeleton count={6} />
         ) : list.data && list.data.items.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table
+              className="text-left table-fixed"
+              style={{ width: `${totalTableWidth}px`, minWidth: `${totalTableWidth}px` }}
+            >
+              <colgroup>
+                {visibleOrderedColumns.map((col) => (
+                  <col key={col.id} style={{ width: `${getColWidth(col.id)}px` }} />
+                ))}
+                {editable ? <col style={{ width: '90px' }} /> : null}
+              </colgroup>
               <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-muted-foreground shadow-xs">
                 <tr>
                   {visibleOrderedColumns.map((col) => renderHeaderCell(col.id))}
-                  {editable ? <th className={cn('font-medium', densityHeaderClass)} /> : null}
+                  {editable ? (
+                    <th
+                      style={{ width: '90px', minWidth: '90px', maxWidth: '90px' }}
+                      className={cn('font-medium text-right pr-4', densityHeaderClass)}
+                    />
+                  ) : null}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -523,7 +563,10 @@ export default function PropertiesPage() {
                   <tr key={p.id} className="hover:bg-muted/30 transition-colors">
                     {visibleOrderedColumns.map((col) => renderRowCell(col.id, p))}
                     {editable ? (
-                      <td className={cn('text-right', densityCellClass)}>
+                      <td
+                        style={{ width: '90px', minWidth: '90px', maxWidth: '90px' }}
+                        className={cn('text-right pr-4', densityCellClass)}
+                      >
                         <div className="flex justify-end gap-1">
                           <Button
                             size="icon"

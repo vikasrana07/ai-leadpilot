@@ -274,32 +274,26 @@ export default function LeadsPage() {
     }
   };
 
-  // Compute sticky offsets for frozen columns
-  const getColumnWidth = (colId: string) => {
-    switch (colId) {
-      case 'lead':
-        return 220;
-      case 'stage':
-        return 140;
-      case 'temperature':
-        return 90;
-      case 'budget':
-      case 'interest':
-        return 120;
-      case 'assigned':
-        return 140;
-      case 'score':
-        return 80;
-      case 'followUp':
-        return 120;
-      case 'createdAt':
-        return 110;
-      case 'actions':
-        return 112;
-      default:
-        return 120;
-    }
+  // Column fixed widths in pixels for precise sticky freeze alignment
+  const COLUMN_WIDTHS: Record<string, number> = {
+    lead: 260,
+    temperature: 110,
+    stage: 160,
+    budget: 130,
+    interest: 140,
+    assigned: 150,
+    score: 90,
+    followUp: 120,
+    createdAt: 110,
+    actions: 110,
   };
+
+  const getColWidth = (colId: string) => COLUMN_WIDTHS[colId] ?? 130;
+
+  const totalTableWidth = useMemo(
+    () => 40 + visibleOrderedColumns.reduce((sum, col) => sum + getColWidth(col.id), 0),
+    [visibleOrderedColumns]
+  );
 
   const frozenOffsetMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -307,16 +301,26 @@ export default function LeadsPage() {
     for (const col of visibleOrderedColumns) {
       if (isColumnPinned(col.id)) {
         map.set(col.id, offset);
-        offset += getColumnWidth(col.id);
+        offset += getColWidth(col.id);
       }
     }
     return map;
   }, [visibleOrderedColumns, isColumnPinned]);
 
+  const lastPinnedColId = useMemo(() => {
+    const pinned = visibleOrderedColumns.filter((c) => isColumnPinned(c.id));
+    return pinned.length > 0 ? pinned[pinned.length - 1]?.id : null;
+  }, [visibleOrderedColumns, isColumnPinned]);
+
   const th = (label: string, key?: SortKey, cls = '', colId?: string) => {
     const isPinned = colId ? isColumnPinned(colId) : false;
+    const isLastPinned = colId ? colId === lastPinnedColId : false;
     const offset = colId ? frozenOffsetMap.get(colId) : undefined;
-    const style = isPinned && offset !== undefined ? { left: `${offset}px` } : undefined;
+    const width = colId ? getColWidth(colId) : undefined;
+    const style: React.CSSProperties = {
+      ...(width ? { width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` } : {}),
+      ...(isPinned && offset !== undefined ? { left: `${offset}px` } : {}),
+    };
 
     return (
       <th
@@ -324,10 +328,16 @@ export default function LeadsPage() {
         scope="col"
         style={style}
         className={cn(
-          'font-medium',
+          'font-medium truncate',
           densityHeaderClass,
           cls,
-          isPinned && 'sticky z-20 bg-surface/95 border-r border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]'
+          isPinned &&
+            cn(
+              'sticky z-20 bg-surface/95',
+              isLastPinned
+                ? 'border-r-2 border-border shadow-[3px_0_6px_-2px_rgba(0,0,0,0.12)]'
+                : 'border-r border-border/20'
+            )
         )}
         aria-sort={key && sort.key === key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
       >
@@ -355,36 +365,49 @@ export default function LeadsPage() {
   const renderHeaderCell = (colId: string) => {
     switch (colId) {
       case 'lead':
-        return th(terms.Lead, 'name', 'min-w-[200px]', 'lead');
+        return th(terms.Lead, 'name', '', 'lead');
       case 'stage':
-        return th('Stage', undefined, 'min-w-[140px]', 'stage');
+        return th('Stage', undefined, '', 'stage');
       case 'temperature':
-        return th('Temp.', undefined, 'min-w-[90px]', 'temperature');
+        return th('Temp.', undefined, '', 'temperature');
       case 'budget':
-        return lf.budget ? th(lf.budget.label, undefined, 'min-w-[120px]', 'budget') : null;
+        return lf.budget ? th(lf.budget.label, undefined, '', 'budget') : null;
       case 'interest':
-        return !lf.budget && lf.interest ? th(lf.interest.label, undefined, 'min-w-[120px]', 'interest') : null;
+        return !lf.budget && lf.interest ? th(lf.interest.label, undefined, '', 'interest') : null;
       case 'assigned':
-        return th('Assigned', undefined, 'min-w-[140px]', 'assigned');
+        return th('Assigned', undefined, '', 'assigned');
       case 'score':
-        return th('Score', 'score', 'text-right min-w-[80px]', 'score');
+        return th('Score', 'score', 'text-right', 'score');
       case 'followUp':
-        return th('Follow-up', 'nextFollowUpAt', 'min-w-[120px]', 'followUp');
+        return th('Follow-up', 'nextFollowUpAt', '', 'followUp');
       case 'createdAt':
-        return th('Added', 'createdAt', 'min-w-[110px]', 'createdAt');
+        return th('Added', 'createdAt', '', 'createdAt');
       case 'actions': {
         const isPinned = isColumnPinned('actions');
+        const isLastPinned = 'actions' === lastPinnedColId;
         const offset = frozenOffsetMap.get('actions');
-        const style = isPinned && offset !== undefined ? { left: `${offset}px` } : undefined;
+        const width = getColWidth('actions');
+        const style: React.CSSProperties = {
+          width: `${width}px`,
+          minWidth: `${width}px`,
+          maxWidth: `${width}px`,
+          ...(isPinned && offset !== undefined ? { left: `${offset}px` } : {}),
+        };
         return (
           <th
             key="actions"
             scope="col"
             style={style}
             className={cn(
-              'w-28 text-right pr-4 font-medium',
+              'text-right pr-4 font-medium truncate',
               densityHeaderClass,
-              isPinned && 'sticky z-20 bg-surface/95 border-r border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]'
+              isPinned &&
+                cn(
+                  'sticky z-20 bg-surface/95',
+                  isLastPinned
+                    ? 'border-r-2 border-border shadow-[3px_0_6px_-2px_rgba(0,0,0,0.12)]'
+                    : 'border-r border-border/20'
+                )
             )}
           >
             Actions
@@ -398,19 +421,31 @@ export default function LeadsPage() {
 
   const renderRowCell = (colId: string, l: LeadDto) => {
     const isPinned = isColumnPinned(colId);
+    const isLastPinned = colId === lastPinnedColId;
     const offset = frozenOffsetMap.get(colId);
-    const style = isPinned && offset !== undefined ? { left: `${offset}px` } : undefined;
+    const width = getColWidth(colId);
+    const style: React.CSSProperties = {
+      width: `${width}px`,
+      minWidth: `${width}px`,
+      maxWidth: `${width}px`,
+      ...(isPinned && offset !== undefined ? { left: `${offset}px` } : {}),
+    };
     const pinnedClass = isPinned
-      ? 'sticky z-10 bg-surface border-r border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]'
+      ? cn(
+          'sticky z-10 bg-surface',
+          isLastPinned
+            ? 'border-r-2 border-border shadow-[3px_0_6px_-2px_rgba(0,0,0,0.12)]'
+            : 'border-r border-border/20'
+        )
       : '';
 
     switch (colId) {
       case 'lead':
         return (
           <td key="lead" style={style} className={cn(densityCellClass, pinnedClass)}>
-            <Link href={`/leads/${l.id}`} className="block">
-              <span className="font-medium hover:text-primary">{l.name}</span>
-              <span className="text-helper block">
+            <Link href={`/leads/${l.id}`} className="block truncate">
+              <span className="font-medium hover:text-primary truncate block">{l.name}</span>
+              <span className="text-helper block truncate">
                 {l.phone ?? l.email}
                 {l.location ? ` · ${l.location}` : ''}
               </span>
@@ -420,7 +455,7 @@ export default function LeadsPage() {
       case 'stage':
         return (
           <td key="stage" style={style} className={cn(densityCellClass, pinnedClass)}>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
               <StageBadge name={l.stage.name} kind={l.stage.kind} />
               {(can('lead:write:all') || can('lead:write:own')) && stages.data?.stages ? (
                 <select
@@ -432,7 +467,7 @@ export default function LeadsPage() {
                       changeLeadStage.mutate({ id: l.id, stageId: nextStageId });
                     }
                   }}
-                  className="h-6 rounded border border-border bg-surface px-1 text-[11px] text-muted-foreground cursor-pointer"
+                  className="h-6 rounded border border-border bg-surface px-1 text-[11px] text-muted-foreground cursor-pointer truncate max-w-[90px]"
                   title="Quick change stage"
                 >
                   {stages.data.stages.map((st) => (
@@ -453,32 +488,32 @@ export default function LeadsPage() {
         );
       case 'budget':
         return lf.budget ? (
-          <td key="budget" style={style} className={cn('num whitespace-nowrap', densityCellClass, pinnedClass)}>
+          <td key="budget" style={style} className={cn('num whitespace-nowrap truncate', densityCellClass, pinnedClass)}>
             {formatBudget(l.budgetMin, l.budgetMax)}
           </td>
         ) : null;
       case 'interest':
         return !lf.budget && lf.interest ? (
-          <td key="interest" style={style} className={cn('whitespace-nowrap', densityCellClass, pinnedClass)}>
-            <span className="text-[13px] text-foreground">{l.propertyType || '—'}</span>
+          <td key="interest" style={style} className={cn('whitespace-nowrap truncate', densityCellClass, pinnedClass)}>
+            <span className="text-[13px] text-foreground truncate block">{l.propertyType || '—'}</span>
           </td>
         ) : null;
       case 'assigned':
         return (
           <td key="assigned" style={style} className={cn(densityCellClass, pinnedClass)}>
             {l.assignee ? (
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2 truncate">
                 <Avatar name={l.assignee.name} size={density === 'compact' ? 18 : 22} />
                 <span className="truncate">{l.assignee.name}</span>
               </span>
             ) : (
-              <span className="text-muted-foreground">Unassigned</span>
+              <span className="text-muted-foreground truncate">Unassigned</span>
             )}
           </td>
         );
       case 'score':
         return (
-          <td key="score" style={style} className={cn('num text-right', densityCellClass, pinnedClass)}>
+          <td key="score" style={style} className={cn('num text-right truncate', densityCellClass, pinnedClass)}>
             {l.score ?? <span className="text-muted-foreground">—</span>}
           </td>
         );
@@ -491,7 +526,7 @@ export default function LeadsPage() {
           <td
             key="followUp"
             style={style}
-            className={cn('num whitespace-nowrap', densityCellClass, overdue && 'font-medium text-danger', pinnedClass)}
+            className={cn('num whitespace-nowrap truncate', densityCellClass, overdue && 'font-medium text-danger', pinnedClass)}
           >
             {l.nextFollowUpAt ? timeAgo(l.nextFollowUpAt) : <span className="text-muted-foreground">—</span>}
           </td>
@@ -499,13 +534,13 @@ export default function LeadsPage() {
       }
       case 'createdAt':
         return (
-          <td key="createdAt" style={style} className={cn('num whitespace-nowrap text-muted-foreground', densityCellClass, pinnedClass)}>
+          <td key="createdAt" style={style} className={cn('num whitespace-nowrap text-muted-foreground truncate', densityCellClass, pinnedClass)}>
             {timeAgo(l.createdAt)}
           </td>
         );
       case 'actions':
         return (
-          <td key="actions" style={style} className={cn('w-28 whitespace-nowrap text-right pr-4', densityCellClass, pinnedClass)}>
+          <td key="actions" style={style} className={cn('whitespace-nowrap text-right pr-4', densityCellClass, pinnedClass)}>
             <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
               {l.phone ? (
                 <a
@@ -755,10 +790,27 @@ export default function LeadsPage() {
 
             {/* Desktop Table View */}
             <div className="hidden overflow-x-auto md:block">
-              <table className="w-full min-w-[860px] text-left">
+              <table
+                className="text-left table-fixed"
+                style={{ width: `${totalTableWidth}px`, minWidth: `${totalTableWidth}px` }}
+              >
+                <colgroup>
+                  <col style={{ width: '40px' }} />
+                  {visibleOrderedColumns.map((col) => (
+                    <col key={col.id} style={{ width: `${getColWidth(col.id)}px` }} />
+                  ))}
+                </colgroup>
                 <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-label text-muted-foreground shadow-xs">
                   <tr>
-                    <th scope="col" className={cn('sticky left-0 z-20 bg-surface/95 w-10 px-3', densityHeaderClass)}>
+                    <th
+                      scope="col"
+                      style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}
+                      className={cn(
+                        'sticky left-0 z-20 bg-surface/95 w-10 px-3',
+                        densityHeaderClass,
+                        !lastPinnedColId ? 'border-r border-border/40' : 'border-r border-border/20'
+                      )}
+                    >
                       <input
                         type="checkbox"
                         aria-label="Select all on this page"
@@ -781,7 +833,14 @@ export default function LeadsPage() {
                       key={l.id}
                       className={cn('hover:bg-muted/40 transition-colors', selected.has(l.id) && 'bg-primary-soft/50')}
                     >
-                      <td className={cn('sticky left-0 z-10 bg-surface w-10 px-3', densityCellClass)}>
+                      <td
+                        style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}
+                        className={cn(
+                          'sticky left-0 z-10 bg-surface w-10 px-3',
+                          densityCellClass,
+                          !lastPinnedColId ? 'border-r border-border/40' : 'border-r border-border/20'
+                        )}
+                      >
                         <input
                           type="checkbox"
                           aria-label={`Select ${l.name}`}

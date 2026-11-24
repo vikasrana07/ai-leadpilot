@@ -82,6 +82,17 @@ export function ColumnVisibilityDropdown({
     [hiddenColumns, q]
   );
 
+  // Group shown columns into pinned (frozen) and unpinned
+  const pinnedShownColumns = useMemo(
+    () => filteredShownColumns.filter((c) => (isColumnPinned ? isColumnPinned(c.id) : !!c.pinned)),
+    [filteredShownColumns, isColumnPinned]
+  );
+
+  const unpinnedShownColumns = useMemo(
+    () => filteredShownColumns.filter((c) => (isColumnPinned ? !isColumnPinned(c.id) : !c.pinned)),
+    [filteredShownColumns, isColumnPinned]
+  );
+
   // Global pointerup listener for handle-drag reordering
   useEffect(() => {
     if (!pointerDragId) return;
@@ -138,7 +149,136 @@ export function ColumnVisibilityDropdown({
     setDragOverId(null);
   };
 
-  const frozenCount = shownColumns.filter((c) => (isColumnPinned ? isColumnPinned(c.id) : !!c.pinned)).length;
+  const frozenCount = pinnedShownColumns.length;
+
+  const renderColumnItem = (col: ColumnDef, isFirst: boolean, isLast: boolean) => {
+    const disabled = !!col.alwaysVisible;
+    const pinned = isColumnPinned ? isColumnPinned(col.id) : !!col.pinned;
+    const isDragging = draggedId === col.id || pointerDragId === col.id;
+    const isOver = dragOverId === col.id;
+
+    return (
+      <div
+        key={col.id}
+        draggable
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerEnter={() => handleRowPointerEnter(col.id)}
+        onDragStart={(e) => handleDragStart(e, col.id)}
+        onDragOver={(e) => handleDragOver(e, col.id)}
+        onDrop={(e) => handleDrop(e, col.id)}
+        onDragEnd={handleDragEnd}
+        className={cn(
+          'group flex items-center justify-between rounded-lg px-2 py-1.5 text-[13px] transition-colors',
+          'hover:bg-muted/60',
+          isDragging && 'opacity-50 ring-2 ring-primary/40 bg-primary/10 shadow-sm',
+          isOver && 'bg-primary/10 border-b-2 border-primary'
+        )}
+      >
+        {/* Left: Drag Handle, Checkbox, Column Label */}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <span
+            onPointerDown={(e) => handleHandlePointerDown(e, col.id)}
+            className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground group-hover:text-muted-foreground p-0.5 rounded transition-colors touch-none select-none"
+            title="Drag to reorder"
+          >
+            <GripVertical className="h-4 w-4" aria-hidden />
+          </span>
+
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              if (!disabled) onToggleColumn(col.id);
+            }}
+            aria-label={`Hide ${col.label}`}
+            className={cn(
+              'flex h-4 w-4 shrink-0 items-center justify-center rounded-[3px] bg-primary text-primary-foreground transition-colors',
+              disabled
+                ? 'cursor-not-allowed opacity-60'
+                : 'cursor-pointer hover:bg-primary-hover'
+            )}
+            title={disabled ? 'Fixed column' : `Hide ${col.label}`}
+          >
+            <Check className="h-3 w-3 stroke-[3]" aria-hidden />
+          </button>
+
+          <span className="truncate font-medium text-foreground select-none">
+            {col.label}
+          </span>
+        </div>
+
+        {/* Right: Up, Down, Pin Buttons */}
+        <div className="flex items-center gap-1 pl-2 select-none">
+          {/* Move Buttons (only shown for unpinned items, matching Airtable reference behavior) */}
+          {!pinned && (
+            <>
+              {/* Move Up Button */}
+              <button
+                type="button"
+                disabled={isFirst || !onMoveColumn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMoveColumn?.(col.id, 'up');
+                }}
+                aria-label={`Move ${col.label} up`}
+                title="Move up"
+                className={cn(
+                  'rounded p-0.5 transition-colors',
+                  isFirst || !onMoveColumn
+                    ? 'cursor-not-allowed text-muted-foreground/25'
+                    : 'cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <ArrowUp className="h-3.5 w-3.5" aria-hidden />
+              </button>
+
+              {/* Move Down Button */}
+              <button
+                type="button"
+                disabled={isLast || !onMoveColumn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMoveColumn?.(col.id, 'down');
+                }}
+                aria-label={`Move ${col.label} down`}
+                title="Move down"
+                className={cn(
+                  'rounded p-0.5 transition-colors',
+                  isLast || !onMoveColumn
+                    ? 'cursor-not-allowed text-muted-foreground/25'
+                    : 'cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <ArrowDown className="h-3.5 w-3.5" aria-hidden />
+              </button>
+            </>
+          )}
+
+          {/* Pin Button */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onTogglePinColumn?.(col.id);
+            }}
+            aria-label={pinned ? `Unpin ${col.label}` : `Pin ${col.label} to freeze`}
+            title={pinned ? 'Unpin column' : 'Pin to freeze'}
+            className={cn(
+              'rounded p-0.5 transition-colors',
+              pinned
+                ? 'text-primary fill-primary hover:text-primary-hover'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            )}
+          >
+            <Pin
+              className={cn('h-3.5 w-3.5', pinned && 'fill-primary')}
+              aria-hidden
+            />
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Menu.Root open={open} onOpenChange={setOpen}>
@@ -214,132 +354,34 @@ export function ColumnVisibilityDropdown({
                         Shown · {filteredShownColumns.length}
                         {frozenCount > 0 ? ` · ${frozenCount} frozen` : ''}
                       </div>
+
                       <div className="space-y-0.5">
-                        {filteredShownColumns.map((col, index) => {
-                          const disabled = !!col.alwaysVisible;
-                          const pinned = isColumnPinned ? isColumnPinned(col.id) : !!col.pinned;
-                          const isFirst = index === 0;
-                          const isLast = index === filteredShownColumns.length - 1;
-                          const isDragging = draggedId === col.id || pointerDragId === col.id;
-                          const isOver = dragOverId === col.id;
+                        {/* Pinned / Frozen Fields Group */}
+                        {pinnedShownColumns.map((col, index) =>
+                          renderColumnItem(
+                            col,
+                            index === 0,
+                            index === pinnedShownColumns.length - 1
+                          )
+                        )}
 
-                          return (
-                            <div
-                              key={col.id}
-                              draggable
-                              onPointerDown={(e) => e.stopPropagation()}
-                              onPointerEnter={() => handleRowPointerEnter(col.id)}
-                              onDragStart={(e) => handleDragStart(e, col.id)}
-                              onDragOver={(e) => handleDragOver(e, col.id)}
-                              onDrop={(e) => handleDrop(e, col.id)}
-                              onDragEnd={handleDragEnd}
-                              className={cn(
-                                'group flex items-center justify-between rounded-lg px-2 py-1.5 text-[13px] transition-colors',
-                                'hover:bg-muted/60',
-                                isDragging && 'opacity-50 ring-2 ring-primary/40 bg-primary/10 shadow-sm',
-                                isOver && 'bg-primary/10 border-b-2 border-primary'
-                              )}
-                            >
-                              {/* Left: Drag Handle, Checkbox, Column Label */}
-                              <div className="flex min-w-0 flex-1 items-center gap-2">
-                                <span
-                                  onPointerDown={(e) => handleHandlePointerDown(e, col.id)}
-                                  className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground group-hover:text-muted-foreground p-0.5 rounded transition-colors touch-none select-none"
-                                  title="Drag to reorder"
-                                >
-                                  <GripVertical className="h-4 w-4" aria-hidden />
-                                </span>
+                        {/* Dashed Separator Line at the end of frozen columns */}
+                        {pinnedShownColumns.length > 0 && unpinnedShownColumns.length > 0 && (
+                          <div
+                            className="my-1.5 border-b border-dashed border-border"
+                            role="separator"
+                            aria-hidden
+                          />
+                        )}
 
-                                <button
-                                  type="button"
-                                  disabled={disabled}
-                                  onClick={() => {
-                                    if (!disabled) onToggleColumn(col.id);
-                                  }}
-                                  aria-label={`Hide ${col.label}`}
-                                  className={cn(
-                                    'flex h-4 w-4 shrink-0 items-center justify-center rounded-[3px] bg-primary text-primary-foreground transition-colors',
-                                    disabled
-                                      ? 'cursor-not-allowed opacity-60'
-                                      : 'cursor-pointer hover:bg-primary-hover'
-                                  )}
-                                  title={disabled ? 'Fixed column' : `Hide ${col.label}`}
-                                >
-                                  <Check className="h-3 w-3 stroke-[3]" aria-hidden />
-                                </button>
-
-                                <span className="truncate font-medium text-foreground select-none">
-                                  {col.label}
-                                </span>
-                              </div>
-
-                              {/* Right: Up, Down, Pin Buttons */}
-                              <div className="flex items-center gap-1 pl-2 select-none">
-                                {/* Move Up Button */}
-                                <button
-                                  type="button"
-                                  disabled={isFirst || !onMoveColumn}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onMoveColumn?.(col.id, 'up');
-                                  }}
-                                  aria-label={`Move ${col.label} up`}
-                                  title="Move up"
-                                  className={cn(
-                                    'rounded p-0.5 transition-colors',
-                                    isFirst || !onMoveColumn
-                                      ? 'cursor-not-allowed text-muted-foreground/30'
-                                      : 'cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground'
-                                  )}
-                                >
-                                  <ArrowUp className="h-3.5 w-3.5" aria-hidden />
-                                </button>
-
-                                {/* Move Down Button */}
-                                <button
-                                  type="button"
-                                  disabled={isLast || !onMoveColumn}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onMoveColumn?.(col.id, 'down');
-                                  }}
-                                  aria-label={`Move ${col.label} down`}
-                                  title="Move down"
-                                  className={cn(
-                                    'rounded p-0.5 transition-colors',
-                                    isLast || !onMoveColumn
-                                      ? 'cursor-not-allowed text-muted-foreground/30'
-                                      : 'cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground'
-                                  )}
-                                >
-                                  <ArrowDown className="h-3.5 w-3.5" aria-hidden />
-                                </button>
-
-                                {/* Pin Button */}
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onTogglePinColumn?.(col.id);
-                                  }}
-                                  aria-label={pinned ? `Unpin ${col.label}` : `Pin ${col.label} to freeze`}
-                                  title={pinned ? 'Unpin column' : 'Pin to freeze'}
-                                  className={cn(
-                                    'rounded p-0.5 transition-colors',
-                                    pinned
-                                      ? 'text-primary fill-primary hover:text-primary-hover'
-                                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                                  )}
-                                >
-                                  <Pin
-                                    className={cn('h-3.5 w-3.5', pinned && 'fill-primary')}
-                                    aria-hidden
-                                  />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
+                        {/* Unpinned Fields Group */}
+                        {unpinnedShownColumns.map((col, index) =>
+                          renderColumnItem(
+                            col,
+                            index === 0,
+                            index === unpinnedShownColumns.length - 1
+                          )
+                        )}
                       </div>
                     </div>
                   )}
