@@ -1,4 +1,5 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { GoogleCalendarService } from '../integrations/google-calendar/google-calendar.service.js';
 import { DbService } from '../db/db.module.js';
 import { metrics } from '../observability/metrics.js';
 import { AutomationEngine, type DomainEvent } from './automation-engine.js';
@@ -27,6 +28,7 @@ export class OutboxRelay {
     @Inject(AutomationEngine) private readonly engine: AutomationEngine,
     @Inject(NotificationsService) private readonly notifications: NotificationsService,
     @Inject(WebhookDispatcher) private readonly webhooks: WebhookDispatcher,
+    @Optional() @Inject(GoogleCalendarService) private readonly gcal?: GoogleCalendarService,
   ) {}
 
   async drainOnce(limit = 50): Promise<number> {
@@ -37,6 +39,13 @@ export class OutboxRelay {
         const out = await this.db.tenantTx({ tenantId: ev.tenantId }, async (tx) => {
           const mark = await tx.eventMark.createMany({ data: [{ tenantId: ev.tenantId, key: `relay:${ev.id}` }], skipDuplicates: true });
           if (mark.count === 0) return { created: [], runs: [] as string[], deliveries: [] as string[] };
+          if (ev.type === 'appointment.calendar_sync') {
+            // Its own event type so a Google outage never delays notifications or automations for the same appointment. A failure here
+            // rolls this transaction back (including the mark), the outer catch schedules the retry with backoff.
+            const p = ev.payload as { appointmentId?: string; action?: 'created' | 'rescheduled' | 'cancelled' };
+            if (this.gcal && p.appointmentId && p.action) await this.gcal.syncAppointment(tx, ev.tenantId, p.appointmentId, p.action, { strict: true });
+            return { created: [], runs: [] as string[], deliveries: [] as string[] };
+          }
           const created = await this.notifier.handle(tx, ev);
           const runs = await this.engine.matchEvent(tx, ev);
           const deliveries = await this.webhooks.enqueue(tx, ev); // outbound webhooks: returns created delivery IDs

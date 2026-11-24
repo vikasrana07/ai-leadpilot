@@ -25,6 +25,9 @@ export interface GoogleCalendarStatus {
   status: string | null;
 }
 
+/** The member's Google connection can no longer be used (revoked/expired grant): retrying cannot help, only reconnecting does. */
+export class GoogleReauthRequired extends Error {}
+
 /** Refresh a little before expiry so a token never lapses mid-request. */
 const TOKEN_REFRESH_SKEW_MS = 60_000;
 /** The columns of a calendar connection that the Google helpers need. */
@@ -62,6 +65,11 @@ export class GoogleCalendarService {
   /**
    * Returns current sync status for a team member's Google Calendar.
    */
+  /** True when the integration is switched on (mock or live). */
+  isEnabled(): boolean {
+    return this.mode !== 'off';
+  }
+
   async getStatus(tenantId: string, membershipId: string): Promise<GoogleCalendarStatus> {
     if (this.mode === 'off') {
       return { mode: 'off', connected: false, email: null, calendarId: null, lastSyncedAt: null, status: null };
@@ -361,8 +369,11 @@ export class GoogleCalendarService {
     tenantId: string,
     appointmentId: string,
     action: 'created' | 'rescheduled' | 'cancelled',
+    opts: { strict?: boolean } = {},
   ): Promise<void> {
     if (this.mode === 'off') return;
+    // Serialise syncs of one appointment (two relays, or a retry racing a newer event) so googleEventId is never created twice.
+    await tx.$queryRaw`SELECT 1 FROM appointments WHERE id = ${appointmentId}::uuid FOR UPDATE`;
 
     const apt = await tx.appointment.findFirst({
       where: { id: appointmentId, tenantId },
@@ -377,7 +388,14 @@ export class GoogleCalendarService {
     if (action === 'cancelled' || apt.status === 'CANCELLED') {
       if (apt.googleEventId) {
         if (this.mode === 'live') {
-          await this.deleteGoogleEvent(tx, tenantId, sync, apt.googleEventId).catch((e: unknown) => this.log.error(`Failed to remove Google event for appointment ${apt.id}: ${e instanceof Error ? e.message : String(e)}`));
+          try {
+            await this.deleteGoogleEvent(tx, tenantId, sync, apt.googleEventId);
+          } catch (e) {
+            if (e instanceof GoogleReauthRequired) { this.log.warn(`Google Calendar needs reconnecting; event for appointment ${apt.id} not removed`); return; }
+            if (opts.strict) throw e; // the outbox relay retries with backoff
+            this.log.error(`Failed to remove Google event for appointment ${apt.id}: ${e instanceof Error ? e.message : String(e)}`);
+            return;
+          }
         }
         await tx.appointment.update({
           where: { id: apt.id },
@@ -429,6 +447,8 @@ export class GoogleCalendarService {
         }
       }
     } catch (e) {
+      if (e instanceof GoogleReauthRequired) { this.log.warn(`Google Calendar needs reconnecting; appointment ${apt.id} not pushed`); return; }
+      if (opts.strict) throw e; // the outbox relay retries with backoff
       this.log.error(`Failed to push appointment ${apt.id} to Google Calendar: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
@@ -447,7 +467,7 @@ export class GoogleCalendarService {
 
     if (!tokens.refreshToken) {
       await this.markNeedsReauth(tx, sync);
-      throw new Error('Google Calendar needs to be reconnected (no refresh token)');
+      throw new GoogleReauthRequired('Google Calendar needs to be reconnected (no refresh token)');
     }
     const clientId = this.env.GOOGLE_CALENDAR_CLIENT_ID;
     const clientSecret = this.env.GOOGLE_CALENDAR_CLIENT_SECRET;
@@ -463,7 +483,7 @@ export class GoogleCalendarService {
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (body.error === 'invalid_grant' || res.status === 401) {
         await this.markNeedsReauth(tx, sync); // the user revoked access or the token was invalidated: only reconnecting helps
-        throw new Error('Google Calendar access was revoked; the member needs to reconnect');
+        throw new GoogleReauthRequired('Google Calendar access was revoked; the member needs to reconnect');
       }
       throw new Error(`Google token refresh failed (${res.status})`); // transient: try again next time
     }

@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { addMember, auth, cleanup, createTestApp, registerAccount, type Account, type TestCtx } from './helpers.js';
 import { DbService } from '../src/db/db.module.js';
+import { OutboxRelay } from '../src/ops/outbox-relay.js';
 
 let ctx: TestCtx;
 let owner: Account;
@@ -97,8 +98,10 @@ describe('Google Calendar integration', () => {
     expect(bookRes.status).toBe(201);
     const aptId = bookRes.body.id;
 
-    // Verify appointment has googleEventId in database
+    // Booking does not wait for Google: the push is an outbox event handled by the worker/relay.
     const db = ctx.app.get(DbService);
+    expect((await db.tenantTx(owner, (tx) => tx.appointment.findUnique({ where: { id: aptId } })))?.googleEventId).toBeNull();
+    await ctx.app.get(OutboxRelay).drainOnce();
     const dbApt = await db.tenantTx(owner, (tx) => tx.appointment.findUnique({ where: { id: aptId } }));
     expect(dbApt?.googleEventId).toBeTruthy();
     expect(dbApt?.googleEventId).toContain('gcal_event_');
@@ -111,6 +114,7 @@ describe('Google Calendar integration', () => {
       .send({ reason: 'Client requested reschedule' });
 
     expect(cancelRes.status).toBe(200);
+    await ctx.app.get(OutboxRelay).drainOnce();
     const dbCancelled = await db.tenantTx(owner, (tx) => tx.appointment.findUnique({ where: { id: aptId } }));
     expect(dbCancelled?.googleEventId).toBeNull();
   });

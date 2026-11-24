@@ -136,4 +136,28 @@ describe('Google Calendar live mode under RLS', () => {
     expect(post?.bearer).toBe('A-push');
     expect((await db.query('SELECT google_event_id FROM appointments WHERE id = $1', [appointmentId])).rows[0].google_event_id).toBe('google-event-1');
   });
+
+  describe('strict mode (used by the outbox relay)', () => {
+    const makeAppointment = async () => {
+      const lead = await ctx.http().post('/leads').set(auth(owner.accessToken)).send({ name: 'Strict Lead', phone: `+9198000007${Math.floor(Math.random() * 90 + 10)}` });
+      const id = randomUUID();
+      await db.query(`INSERT INTO appointments (id, tenant_id, lead_id, membership_id, title, starts_at, ends_at, updated_at) VALUES ($1, $2, $3, $4, 'Visit', '2026-12-09T10:00:00Z', '2026-12-09T11:00:00Z', now())`, [id, owner.tenantId, lead.body.id, membershipId]);
+      return id;
+    };
+    const sync = async (id: string) => ctx.app.get(DbService).tenantTx({ tenantId: owner.tenantId }, (tx) => svc.syncAppointment(tx, owner.tenantId, id, 'created', { strict: true }));
+
+    it('rethrows a transient Google failure so the relay retries it', async () => {
+      useGoogle({ refreshError: { status: 503, error: 'backend_error' } });
+      await connect();
+      await expect(sync(await makeAppointment())).rejects.toThrow(/token refresh failed/);
+      expect((await syncRow())?.status).toBe('active'); // still connected
+    });
+
+    it('does NOT throw for a revoked grant: retrying cannot help, the member must reconnect', async () => {
+      useGoogle({ refreshError: { status: 400, error: 'invalid_grant' } });
+      await connect();
+      await expect(sync(await makeAppointment())).resolves.toBeUndefined();
+      expect((await syncRow())?.status).toBe('needs_reauth');
+    });
+  });
 });

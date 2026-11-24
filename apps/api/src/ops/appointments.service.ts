@@ -278,9 +278,8 @@ export class AppointmentsService {
     await tx.leadActivity.create({ data: { id: uuidv7(), tenantId: a.tenantId, leadId: row.leadId, type: 'appointment_booked', actorUserId: a.userId, data: { appointmentId: row.id, startsAt: row.startsAt.toISOString(), source: row.source } } });
     await this.audit.record(tx, { tenantId: a.tenantId, actorUserId: a.userId, action: `appointment.${kind}`, resourceType: 'appointment', resourceId: row.id, metadata: { source: row.source, ...(a.apiKeyId ? { apiKeyId: a.apiKeyId } : {}) }, ...(a.requestId ? { requestId: a.requestId } : {}), ...(a.ip ? { ip: a.ip } : {}) });
     await this.outbox.emit(tx, a.tenantId, kind === 'booked' ? 'appointment.booked' : 'appointment.rescheduled', { appointmentId: row.id, leadId: row.leadId, membershipId: row.membershipId, source: row.source, byUserId: a.userId });
-    if (this.gcal) {
-      await this.gcal.syncAppointment(tx, a.tenantId, row.id, kind === 'booked' ? 'created' : 'rescheduled').catch(() => null);
-    }
+    // Google Calendar is updated by a worker from this event (retried with backoff), never inside the booking transaction.
+    if (this.gcal?.isEnabled()) await this.outbox.emit(tx, a.tenantId, 'appointment.calendar_sync', { appointmentId: row.id, action: kind === 'booked' ? 'created' : 'rescheduled' });
   }
 
   // ------------------------------------------------------------------ lifecycle
@@ -299,8 +298,8 @@ export class AppointmentsService {
       await tx.leadActivity.create({ data: { id: uuidv7(), tenantId: a.tenantId, leadId: cur.leadId, type: `appointment_${to.toLowerCase()}`, actorUserId: a.userId, data: { appointmentId: id } } });
       await this.audit.record(tx, { tenantId: a.tenantId, actorUserId: a.userId, action: `appointment.${to.toLowerCase()}`, resourceType: 'appointment', resourceId: id, metadata: {}, ...(a.requestId ? { requestId: a.requestId } : {}), ...(a.ip ? { ip: a.ip } : {}) });
       await this.outbox.emit(tx, a.tenantId, `appointment.${to.toLowerCase()}`, { appointmentId: id, leadId: cur.leadId, membershipId: cur.membershipId, byUserId: a.userId });
-      if (this.gcal && to === 'CANCELLED') {
-        await this.gcal.syncAppointment(tx, a.tenantId, id, 'cancelled').catch(() => null);
+      if (this.gcal?.isEnabled() && to === 'CANCELLED') {
+        await this.outbox.emit(tx, a.tenantId, 'appointment.calendar_sync', { appointmentId: id, action: 'cancelled' });
       }
     });
     return this.get({ ...a, permissions: new Set([...a.permissions, 'appointment:read:all']) }, id);
