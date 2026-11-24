@@ -53,8 +53,8 @@ for (const ind of INDUSTRIES) {
     await expect(page.getByLabel(ind.interest)).toBeVisible();
     await expect(page.getByLabel(ind.customField)).toBeVisible();
     for (const hidden of ind.absent) await expect(page.getByLabel(hidden)).toHaveCount(0);
-    await page.getByLabel('Name').fill(`Pack ${ind.label} Lead`);
-    await page.getByLabel('Phone').fill('98765 43211');
+    await page.getByLabel(/^Name\b/).fill(`Pack ${ind.label} Lead`);
+    await page.getByLabel(/^Phone\b/).fill('98765 43211');
     await page.getByLabel(ind.interest).fill('Starter interest');
     await page.getByRole('button', { name: `Add ${ind.lead}` }).last().click();
     await expect(page.getByRole('link', { name: new RegExp(`Pack ${ind.label} Lead`) }).first()).toBeVisible();

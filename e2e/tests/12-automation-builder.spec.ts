@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { api, registerViaApi, signInViaApi, type Account } from '../helpers.ts';
+import { api, chooseOption, registerViaApi, selectOptions, signInViaApi, type Account } from '../helpers.ts';
 
 /**
  * The automation builder (Outline editor): built with the KEYBOARD only (menus and buttons are operated with Enter and arrow keys; text
@@ -158,18 +158,18 @@ test('invalid automations are explained in place and cannot be saved; loops are 
   await menu(page, /Actions for the trigger/, /Add a condition/);
   const select = page.getByTestId('inspector').getByLabel('Otherwise', { exact: true });
   await expect(select).toBeVisible();
-  const options = await select.locator('option').allTextContents();
+  const options = await selectOptions(page, select);
   expect(options.some((o) => /Notify managers/.test(o))).toBe(true);
-  await select.selectOption({ label: options.find((o) => /Notify managers/.test(o)) as string });
+  await chooseOption(page, select, options.find((o) => /Notify managers/.test(o)) as string);
   await expect(outline.getByText(/Continues with the step/)).toBeVisible();   // both paths now meet at one step
   await expect(page.getByTestId('summary')).toContainText('Otherwise');
   // a loop is not even offered: the action cannot point back at the condition
   await step(page, /^Step 2 · Action/).click();
   const next = page.getByTestId('inspector').getByLabel('Next', { exact: true });
-  const nextOptions = await next.locator('option').allTextContents();
+  const nextOptions = await selectOptions(page, next);
   expect(nextOptions.some((o) => /^If /.test(o))).toBe(false);
   // an empty required value shows a problem and blocks saving
-  await page.getByTestId('inspector').getByLabel('What should happen?').selectOption('change_stage');
+  await chooseOption(page, page.getByTestId('inspector').getByLabel('What should happen?'), /Move to a stage/);
   await expect(page.getByTestId('inspector').getByText('These changes are not applied yet')).toBeVisible();
   // delete the only action on a path: the other still stands, and undo brings it back
   await page.getByRole('button', { name: /Actions for step 2/ }).focus(); await page.keyboard.press('Enter');
