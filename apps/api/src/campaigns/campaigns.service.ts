@@ -1,4 +1,5 @@
 import { consentDisposition, latestConsentByLead as latestByLead } from './consent.js';
+import { msUntilNextDaylight } from './daylight.js';
 import {
   BadRequestException,
   ConflictException,
@@ -679,6 +680,22 @@ export class CampaignsService implements OnModuleInit {
 
     if (!campaign || campaign.status !== 'RUNNING') {
       return { processed: 0, remaining: 0 };
+    }
+
+    // Daylight sending window check: avoid delivering marketing broadcasts during night hours
+    const tenant = await this.db.tenantTx({ tenantId }, async (tx) =>
+      tx.tenant?.findUnique ? tx.tenant.findUnique({ where: { id: tenantId }, select: { timezone: true } }) : null,
+    );
+    const timezone = (tenant as { timezone?: string } | null)?.timezone ?? 'Asia/Kolkata';
+    const daylightDelayMs = msUntilNextDaylight(timezone);
+    if (daylightDelayMs > 0) {
+      this.log.log(
+        `Campaign ${campaignId} paused outside daylight hours (${timezone}); resuming in ${Math.round(daylightDelayMs / 60000)}m at 09:00 AM local time`,
+      );
+      if (this.enqueueDispatch) {
+        await this.enqueueDispatch(tenantId, campaignId, daylightDelayMs);
+      }
+      return { processed: 0, remaining: 1 };
     }
 
     const { creds, channel } = await this.channels.credentialsFor(tenantId, campaign.channelId);

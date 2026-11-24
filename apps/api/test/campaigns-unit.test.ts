@@ -458,7 +458,7 @@ describe('CampaignsService Unit Tests', () => {
       const res = await service.createFollowUp({ tenantId, userId } as any, campaignId, {
         name: 'Festive Sale - Follow-up',
         cohort: 'READ_NO_REPLY',
-        templateName: 'festive_reminder',
+        autoRetry: false,
       });
 
       expect(res.id).toBeDefined();
