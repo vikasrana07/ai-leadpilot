@@ -33,6 +33,7 @@ export type BroadcastCampaignAvgAggregateOutputType = {
   readCount: number | null
   failedCount: number | null
   optOutCount: number | null
+  noConsentCount: number | null
 }
 
 export type BroadcastCampaignSumAggregateOutputType = {
@@ -42,6 +43,7 @@ export type BroadcastCampaignSumAggregateOutputType = {
   readCount: number | null
   failedCount: number | null
   optOutCount: number | null
+  noConsentCount: number | null
 }
 
 export type BroadcastCampaignMinAggregateOutputType = {
@@ -62,6 +64,7 @@ export type BroadcastCampaignMinAggregateOutputType = {
   readCount: number | null
   failedCount: number | null
   optOutCount: number | null
+  noConsentCount: number | null
   createdByUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -85,6 +88,7 @@ export type BroadcastCampaignMaxAggregateOutputType = {
   readCount: number | null
   failedCount: number | null
   optOutCount: number | null
+  noConsentCount: number | null
   createdByUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -110,6 +114,7 @@ export type BroadcastCampaignCountAggregateOutputType = {
   readCount: number
   failedCount: number
   optOutCount: number
+  noConsentCount: number
   createdByUserId: number
   createdAt: number
   updatedAt: number
@@ -124,6 +129,7 @@ export type BroadcastCampaignAvgAggregateInputType = {
   readCount?: true
   failedCount?: true
   optOutCount?: true
+  noConsentCount?: true
 }
 
 export type BroadcastCampaignSumAggregateInputType = {
@@ -133,6 +139,7 @@ export type BroadcastCampaignSumAggregateInputType = {
   readCount?: true
   failedCount?: true
   optOutCount?: true
+  noConsentCount?: true
 }
 
 export type BroadcastCampaignMinAggregateInputType = {
@@ -153,6 +160,7 @@ export type BroadcastCampaignMinAggregateInputType = {
   readCount?: true
   failedCount?: true
   optOutCount?: true
+  noConsentCount?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -176,6 +184,7 @@ export type BroadcastCampaignMaxAggregateInputType = {
   readCount?: true
   failedCount?: true
   optOutCount?: true
+  noConsentCount?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -201,6 +210,7 @@ export type BroadcastCampaignCountAggregateInputType = {
   readCount?: true
   failedCount?: true
   optOutCount?: true
+  noConsentCount?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -313,6 +323,7 @@ export type BroadcastCampaignGroupByOutputType = {
   readCount: number
   failedCount: number
   optOutCount: number
+  noConsentCount: number
   createdByUserId: string | null
   createdAt: Date
   updatedAt: Date
@@ -361,6 +372,7 @@ export type BroadcastCampaignWhereInput = {
   readCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   failedCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   optOutCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  noConsentCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   createdByUserId?: Prisma.UuidNullableFilter<"BroadcastCampaign"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
@@ -389,6 +401,7 @@ export type BroadcastCampaignOrderByWithRelationInput = {
   readCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
+  noConsentCount?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -420,6 +433,7 @@ export type BroadcastCampaignWhereUniqueInput = Prisma.AtLeast<{
   readCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   failedCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   optOutCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  noConsentCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   createdByUserId?: Prisma.UuidNullableFilter<"BroadcastCampaign"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
@@ -448,6 +462,7 @@ export type BroadcastCampaignOrderByWithAggregationInput = {
   readCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
+  noConsentCount?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -481,6 +496,7 @@ export type BroadcastCampaignScalarWhereWithAggregatesInput = {
   readCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
   failedCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
   optOutCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
+  noConsentCount?: Prisma.IntWithAggregatesFilter<"BroadcastCampaign"> | number
   createdByUserId?: Prisma.UuidNullableWithAggregatesFilter<"BroadcastCampaign"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BroadcastCampaign"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BroadcastCampaign"> | Date | string
@@ -504,6 +520,7 @@ export type BroadcastCampaignCreateInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -532,6 +549,7 @@ export type BroadcastCampaignUncheckedCreateInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -556,6 +574,7 @@ export type BroadcastCampaignUpdateInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -584,6 +603,7 @@ export type BroadcastCampaignUncheckedUpdateInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -610,6 +630,7 @@ export type BroadcastCampaignCreateManyInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -633,6 +654,7 @@ export type BroadcastCampaignUpdateManyMutationInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -658,6 +680,7 @@ export type BroadcastCampaignUncheckedUpdateManyInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -693,6 +716,7 @@ export type BroadcastCampaignCountOrderByAggregateInput = {
   readCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
+  noConsentCount?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -705,6 +729,7 @@ export type BroadcastCampaignAvgOrderByAggregateInput = {
   readCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
+  noConsentCount?: Prisma.SortOrder
 }
 
 export type BroadcastCampaignMaxOrderByAggregateInput = {
@@ -725,6 +750,7 @@ export type BroadcastCampaignMaxOrderByAggregateInput = {
   readCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
+  noConsentCount?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -748,6 +774,7 @@ export type BroadcastCampaignMinOrderByAggregateInput = {
   readCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
+  noConsentCount?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -760,6 +787,7 @@ export type BroadcastCampaignSumOrderByAggregateInput = {
   readCount?: Prisma.SortOrder
   failedCount?: Prisma.SortOrder
   optOutCount?: Prisma.SortOrder
+  noConsentCount?: Prisma.SortOrder
 }
 
 export type BroadcastCampaignScalarRelationFilter = {
@@ -887,6 +915,7 @@ export type BroadcastCampaignCreateWithoutChannelInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -913,6 +942,7 @@ export type BroadcastCampaignUncheckedCreateWithoutChannelInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -968,6 +998,7 @@ export type BroadcastCampaignScalarWhereInput = {
   readCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   failedCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   optOutCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
+  noConsentCount?: Prisma.IntFilter<"BroadcastCampaign"> | number
   createdByUserId?: Prisma.UuidNullableFilter<"BroadcastCampaign"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BroadcastCampaign"> | Date | string
@@ -991,6 +1022,7 @@ export type BroadcastCampaignCreateWithoutTemplateInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1017,6 +1049,7 @@ export type BroadcastCampaignUncheckedCreateWithoutTemplateInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1067,6 +1100,7 @@ export type BroadcastCampaignCreateWithoutRecipientsInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1094,6 +1128,7 @@ export type BroadcastCampaignUncheckedCreateWithoutRecipientsInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1133,6 +1168,7 @@ export type BroadcastCampaignUpdateWithoutRecipientsInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1160,6 +1196,7 @@ export type BroadcastCampaignUncheckedUpdateWithoutRecipientsInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1184,6 +1221,7 @@ export type BroadcastCampaignCreateManyChannelInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1207,6 +1245,7 @@ export type BroadcastCampaignUpdateWithoutChannelInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1233,6 +1272,7 @@ export type BroadcastCampaignUncheckedUpdateWithoutChannelInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1258,6 +1298,7 @@ export type BroadcastCampaignUncheckedUpdateManyWithoutChannelInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1282,6 +1323,7 @@ export type BroadcastCampaignCreateManyTemplateInput = {
   readCount?: number
   failedCount?: number
   optOutCount?: number
+  noConsentCount?: number
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1305,6 +1347,7 @@ export type BroadcastCampaignUpdateWithoutTemplateInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1331,6 +1374,7 @@ export type BroadcastCampaignUncheckedUpdateWithoutTemplateInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1356,6 +1400,7 @@ export type BroadcastCampaignUncheckedUpdateManyWithoutTemplateInput = {
   readCount?: Prisma.IntFieldUpdateOperationsInput | number
   failedCount?: Prisma.IntFieldUpdateOperationsInput | number
   optOutCount?: Prisma.IntFieldUpdateOperationsInput | number
+  noConsentCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1412,6 +1457,7 @@ export type BroadcastCampaignSelect<ExtArgs extends runtime.Types.Extensions.Int
   readCount?: boolean
   failedCount?: boolean
   optOutCount?: boolean
+  noConsentCount?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1441,6 +1487,7 @@ export type BroadcastCampaignSelectCreateManyAndReturn<ExtArgs extends runtime.T
   readCount?: boolean
   failedCount?: boolean
   optOutCount?: boolean
+  noConsentCount?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1468,6 +1515,7 @@ export type BroadcastCampaignSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   readCount?: boolean
   failedCount?: boolean
   optOutCount?: boolean
+  noConsentCount?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1495,12 +1543,13 @@ export type BroadcastCampaignSelectScalar = {
   readCount?: boolean
   failedCount?: boolean
   optOutCount?: boolean
+  noConsentCount?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BroadcastCampaignOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "status" | "channelId" | "templateId" | "templateName" | "templateLanguage" | "templateParams" | "segment" | "scheduledAt" | "startedAt" | "completedAt" | "totalRecipients" | "sentCount" | "deliveredCount" | "readCount" | "failedCount" | "optOutCount" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["broadcastCampaign"]>
+export type BroadcastCampaignOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "status" | "channelId" | "templateId" | "templateName" | "templateLanguage" | "templateParams" | "segment" | "scheduledAt" | "startedAt" | "completedAt" | "totalRecipients" | "sentCount" | "deliveredCount" | "readCount" | "failedCount" | "optOutCount" | "noConsentCount" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["broadcastCampaign"]>
 export type BroadcastCampaignInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
   template?: boolean | Prisma.WhatsappTemplateDefaultArgs<ExtArgs>
@@ -1543,6 +1592,7 @@ export type $BroadcastCampaignPayload<ExtArgs extends runtime.Types.Extensions.I
     readCount: number
     failedCount: number
     optOutCount: number
+    noConsentCount: number
     createdByUserId: string | null
     createdAt: Date
     updatedAt: Date
@@ -1991,6 +2041,7 @@ export interface BroadcastCampaignFieldRefs {
   readonly readCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
   readonly failedCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
   readonly optOutCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
+  readonly noConsentCount: Prisma.FieldRef<"BroadcastCampaign", 'Int'>
   readonly createdByUserId: Prisma.FieldRef<"BroadcastCampaign", 'String'>
   readonly createdAt: Prisma.FieldRef<"BroadcastCampaign", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BroadcastCampaign", 'DateTime'>

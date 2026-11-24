@@ -1693,6 +1693,7 @@ enum BroadcastRecipientStatus {
   READ
   FAILED
   SKIPPED_OPT_OUT
+  SKIPPED_NO_CONSENT
 }
 
 model BroadcastCampaign {
@@ -1715,6 +1716,7 @@ model BroadcastCampaign {
   readCount        Int                     @default(0) @map("read_count")
   failedCount      Int                     @default(0) @map("failed_count")
   optOutCount      Int                     @default(0) @map("opt_out_count")
+  noConsentCount   Int                     @default(0) @map("no_consent_count")
   createdByUserId  String?                 @map("created_by_user_id") @db.Uuid
   createdAt        DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt        DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)

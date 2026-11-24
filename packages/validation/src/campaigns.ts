@@ -78,3 +78,12 @@ export const audiencePreviewSchema = z.object({
   channelId: z.string().uuid().optional(),
 });
 export type AudiencePreviewInput = z.infer<typeof audiencePreviewSchema>;
+
+/** A manager attests that the leads gave permission to receive WhatsApp marketing (audit S-01). Never overrides a STOP. */
+export const OPT_IN_BASES = ['existing_customer', 'signed_form_or_checkbox', 'verbal_recorded', 'other'] as const;
+export const whatsappOptInSchema = z.object({
+  leadIds: z.array(z.string().uuid()).min(1).max(500),
+  basis: z.enum(OPT_IN_BASES),
+  attestation: z.literal(true, { error: 'You must confirm these leads agreed to receive WhatsApp marketing messages' }),
+});
+export type WhatsappOptInInput = z.infer<typeof whatsappOptInSchema>;

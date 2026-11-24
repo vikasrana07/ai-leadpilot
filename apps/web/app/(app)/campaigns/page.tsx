@@ -294,6 +294,13 @@ function CampaignRow({
               />
             </div>
 
+            {campaign.noConsentCount > 0 && (
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <ShieldAlert className="w-3 h-3" />
+                {campaign.noConsentCount} leads skipped (no opt-in)
+              </p>
+            )}
+
             {campaign.optOutCount > 0 && (
               <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
                 <ShieldAlert className="w-3 h-3" />

@@ -288,7 +288,8 @@ export const BroadcastRecipientStatus = {
   DELIVERED: 'DELIVERED',
   READ: 'READ',
   FAILED: 'FAILED',
-  SKIPPED_OPT_OUT: 'SKIPPED_OPT_OUT'
+  SKIPPED_OPT_OUT: 'SKIPPED_OPT_OUT',
+  SKIPPED_NO_CONSENT: 'SKIPPED_NO_CONSENT'
 } as const
 
 export type BroadcastRecipientStatus = (typeof BroadcastRecipientStatus)[keyof typeof BroadcastRecipientStatus]

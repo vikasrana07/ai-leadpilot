@@ -228,6 +228,12 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
             {(campaign.segment.minScore !== undefined || campaign.segment.maxScore !== undefined) && (
               <p>Score Range: <strong className="text-foreground">{campaign.segment.minScore ?? 0} - {campaign.segment.maxScore ?? 100}</strong></p>
             )}
+            {campaign.noConsentCount > 0 && (
+              <p className="text-muted-foreground flex items-center gap-1 font-medium pt-1">
+                <ShieldAlert className="w-3.5 h-3.5" />
+                {campaign.noConsentCount} leads skipped because they have not opted in to WhatsApp marketing.
+              </p>
+            )}
             {campaign.optOutCount > 0 && (
               <p className="text-warning flex items-center gap-1 font-medium pt-1">
                 <ShieldAlert className="w-3.5 h-3.5" />
