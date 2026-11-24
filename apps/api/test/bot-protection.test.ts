@@ -40,7 +40,7 @@ describe('Turnstile verification (unit)', () => {
   });
 
   it('production refuses off/mock unless the risk is explicitly accepted, and live needs its keys', () => {
-    const prod = { ...baseEnv, NODE_ENV: 'production', KEY_PROVIDER: 'kms', KMS_KEY_ID: 'k', RAZORPAY_MODE: 'live', RAZORPAY_KEY_ID: 'a', RAZORPAY_KEY_SECRET: 'b', RAZORPAY_WEBHOOK_SECRET: 'c'.repeat(20), SELLER_GSTIN: '29ABCDE1234F1Z5', WHATSAPP_MODE: 'live', VIRUS_SCAN_MODE: 'clamav', AI_PROVIDER: 'openai', OPENAI_API_KEY: 'sk' };
+    const prod = { ...baseEnv, NODE_ENV: 'production', TRACKING_SECRET: 't'.repeat(32), KEY_PROVIDER: 'kms', KMS_KEY_ID: 'k', RAZORPAY_MODE: 'live', RAZORPAY_KEY_ID: 'a', RAZORPAY_KEY_SECRET: 'b', RAZORPAY_WEBHOOK_SECRET: 'c'.repeat(20), SELLER_GSTIN: '29ABCDE1234F1Z5', WHATSAPP_MODE: 'live', VIRUS_SCAN_MODE: 'clamav', AI_PROVIDER: 'openai', OPENAI_API_KEY: 'sk' };
     expect(() => loadEnv(prod)).toThrow(/TURNSTILE_MODE=off is not allowed in production/);
     expect(() => loadEnv({ ...prod, TURNSTILE_MODE: 'mock' })).toThrow(/mock bot check/);
     expect(() => loadEnv({ ...prod, TURNSTILE_MODE: 'live' })).toThrow(/TURNSTILE_SECRET/);

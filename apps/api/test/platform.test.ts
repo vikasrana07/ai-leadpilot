@@ -168,8 +168,12 @@ describe('plans are data, editable by platform admins', () => {
   });
 
   it('reports how many workspaces are on each plan', async () => {
+    // Self-contained: new workspaces sign up on the configured SIGNUP_PLAN ('internal' by default). Do not rely on tenants left in a developer's database.
+    const before = ((await ctx.http().get(`${P}/plans`).set(bearer())).body as { key: string; tenants: number }[]).find((p) => p.key === 'internal')?.tenants ?? 0;
+    await registerAccount(ctx, 'planCountA');
+    await registerAccount(ctx, 'planCountB');
     const plans = (await ctx.http().get(`${P}/plans`).set(bearer())).body as { key: string; tenants: number }[];
-    expect(plans.find((p) => p.key === 'internal')?.tenants).toBeGreaterThanOrEqual(2);
+    expect(plans.find((p) => p.key === 'internal')?.tenants).toBe(before + 2);
   });
 
   it('protects the internal plan from being switched off', async () => {
