@@ -472,7 +472,7 @@ export default function AppointmentsPage() {
         ) : list.data.items.length === 0 ? <EmptyState icon={CalendarDays} title={`No upcoming ${vw.visits}`} description={`Book ${vw.a} from ${terms.aLead}, or let the AI assistant arrange them from chat.`} action={write ? <Button variant="primary" onClick={() => setBook(true)}>Book {vw.visit}</Button> : undefined} /> : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[13px]">
-              <thead className="sticky top-[57px] z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-label text-muted-foreground shadow-xs">
+              <thead className="border-b border-border bg-surface text-label text-muted-foreground">
                 <tr>
                   <th className="px-4 py-2.5 font-medium">When</th>
                   <th className="px-4 py-2.5 font-medium">{appConfig.customerLabel || terms.Lead}</th>

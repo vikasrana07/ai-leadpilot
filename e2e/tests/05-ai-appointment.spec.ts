@@ -48,5 +48,6 @@ test('AI books a site visit through real availability and it shows up as needing
   const visit = page.getByRole('row', { name: /Karan Customer/ });
   await expect(visit).toBeVisible();
   await expect(visit).toContainText('Needs confirmation');
-  await expect(visit.getByRole('button', { name: 'Confirm' })).toBeVisible(); // a person still has to confirm an AI booking
+  await visit.click();
+  await expect(page.getByRole('dialog').getByRole('button', { name: 'Confirm' })).toBeVisible(); // a person still has to confirm an AI booking
 });
