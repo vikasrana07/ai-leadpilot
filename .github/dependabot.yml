@@ -1,0 +1,33 @@
+# Automated dependency updates (audit S-08). Weekly, grouped so a week of patch/minor bumps arrives as one PR per ecosystem.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    # Major bumps of the framework core are deliberate upgrades, not weekly chores.
+    ignore:
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+      - dependency-name: '@nestjs/*'
+        update-types: [version-update:semver-major]
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      - dependency-name: zod
+        update-types: [version-update:semver-major]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    groups:
+      actions:
+        patterns: ['*']
+  - package-ecosystem: docker
+    directory: /infrastructure/docker
+    schedule: { interval: weekly, day: monday }
