@@ -1,5 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardBody, CardHeader } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
 import { PageHeaderSkeleton, PageSkeleton } from './skeleton-primitives';
 
 export function BillingPlansGridSkeleton() {
