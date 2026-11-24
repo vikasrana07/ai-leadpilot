@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 import { AppShell } from '@/components/shell/app-shell';
-import { Skeleton } from '@/components/ui/skeleton';
+import { AppShellSkeleton } from '@/components/skeletons';
 import { ApiError } from '@/lib/api';
 import { AuthProvider, useMe } from '@/lib/auth';
 
@@ -18,12 +18,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }, [unauthenticated, router, pathname]);
 
   if (me.isPending || unauthenticated) {
-    return (
-      <div className="flex h-dvh" aria-busy="true" aria-label="Loading">
-        <div className="hidden shrink-0 bg-sidebar lg:block transition-none" style={{ width: 'var(--sidebar-width, 248px)' }} />
-        <div className="flex-1 space-y-4 p-8"><Skeleton className="h-8 w-64" /><Skeleton className="h-40" /><Skeleton className="h-40" /></div>
-      </div>
-    );
+    return <AppShellSkeleton pathname={pathname} />;
   }
   if (me.isError) {
     return <div className="flex h-dvh items-center justify-center p-8 text-center"><div><p className="text-heading">We could not load your workspace</p><p className="text-helper mt-1">Check your connection and reload the page.</p></div></div>;

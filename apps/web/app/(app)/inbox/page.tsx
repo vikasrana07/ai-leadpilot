@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { InboxThreadSkeleton } from '@/components/skeletons';
+import { InboxSkeleton, InboxThreadSkeleton } from '@/components/skeletons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -57,6 +57,10 @@ function InboxView() {
 
   const close = useMutation({ mutationFn: (a: { id: string; action: 'close' | 'reopen' }) => api(`/conversations/${a.id}/${a.action}`, { method: 'POST' }), onSuccess: () => qc.invalidateQueries({ queryKey: ['conversations'] }), onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Action failed') });
   const items = list.data?.items ?? [];
+
+  if (list.isPending && !list.data) {
+    return <InboxSkeleton />;
+  }
 
   return (
     <div className="flex h-full w-full min-h-0 flex-1">
@@ -137,5 +141,9 @@ function InboxView() {
 }
 
 export default function InboxPage() {
-  return <Suspense><InboxView /></Suspense>;
+  return (
+    <Suspense fallback={<InboxSkeleton />}>
+      <InboxView />
+    </Suspense>
+  );
 }

@@ -74,7 +74,7 @@ export function InboxSkeleton() {
       role="status"
       aria-busy="true"
       aria-label="Loading inbox"
-      className="flex h-[calc(100vh-4rem)] w-full min-h-0 flex-1 overflow-hidden"
+      className="flex h-full w-full min-h-0 flex-1 overflow-hidden"
     >
       <span className="sr-only">Loading inbox...</span>
 

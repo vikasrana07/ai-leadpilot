@@ -18,3 +18,4 @@ export * from './security-skeleton';
 export * from './integrations-skeleton';
 export * from './knowledge-skeleton';
 export * from './platform-skeletons';
+export * from './app-shell-skeleton';

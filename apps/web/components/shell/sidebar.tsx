@@ -51,7 +51,7 @@ export function SidebarContent({ collapsed, onToggle, onNavigate }: { collapsed:
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className={cn('flex h-14 shrink-0 items-center border-b border-sidebar-border px-4', collapsed && 'justify-center px-0')}><Logo tone="light" collapsed={collapsed} /></div>
-      <nav aria-label="Main" className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
+      <nav aria-label="Main" className="no-scrollbar flex-1 space-y-6 overflow-y-auto px-3 py-4">
         <ul className="space-y-0.5">{WORKSPACE_NAV.filter((i) => (!i.permission || can(i.permission)) && (!i.module || modules[i.module])).map((i) => <li key={i.href}><NavLink item={i} collapsed={collapsed} onNavigate={onNavigate} /></li>)}</ul>
         <div>
           {collapsed ? <div className="mx-2 mb-2 h-px bg-sidebar-border" /> : <p className="text-label mb-2 px-2.5 !text-sidebar-muted">Administration</p>}
