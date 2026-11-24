@@ -250,7 +250,155 @@ export default function PropertiesPage() {
     setDensity,
     densityCellClass,
     densityHeaderClass,
+    orderedColumns,
+    visibleOrderedColumns,
+    pinnedColumnIds,
+    isColumnPinned,
+    togglePinColumn,
+    moveColumn,
+    reorderColumns,
   } = useTablePreferences('properties', columns);
+
+  const getColumnWidth = (colId: string) => {
+    switch (colId) {
+      case 'property':
+        return 220;
+      case 'location':
+        return 160;
+      case 'type':
+        return 120;
+      case 'price':
+        return 120;
+      case 'status':
+        return 110;
+      default:
+        return 120;
+    }
+  };
+
+  const frozenOffsetMap = useMemo(() => {
+    const map = new Map<string, number>();
+    let offset = 0;
+    for (const col of visibleOrderedColumns) {
+      if (isColumnPinned(col.id)) {
+        map.set(col.id, offset);
+        offset += getColumnWidth(col.id);
+      }
+    }
+    return map;
+  }, [visibleOrderedColumns, isColumnPinned]);
+
+  const renderHeaderCell = (colId: string) => {
+    const isPinned = isColumnPinned(colId);
+    const offset = frozenOffsetMap.get(colId);
+    const style = isPinned && offset !== undefined ? { left: `${offset}px` } : undefined;
+    const pinnedClass = isPinned
+      ? 'sticky z-20 bg-surface/95 border-r border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]'
+      : '';
+
+    switch (colId) {
+      case 'property':
+        return (
+          <th
+            key="property"
+            style={style}
+            className={cn('font-medium min-w-[200px]', densityHeaderClass, pinnedClass)}
+          >
+            Property
+          </th>
+        );
+      case 'location':
+        return (
+          <th
+            key="location"
+            style={style}
+            className={cn('font-medium min-w-[140px]', densityHeaderClass, pinnedClass)}
+          >
+            Location
+          </th>
+        );
+      case 'type':
+        return (
+          <th
+            key="type"
+            style={style}
+            className={cn('font-medium min-w-[110px]', densityHeaderClass, pinnedClass)}
+          >
+            Type
+          </th>
+        );
+      case 'price':
+        return (
+          <th
+            key="price"
+            style={style}
+            className={cn('font-medium text-right min-w-[110px]', densityHeaderClass, pinnedClass)}
+          >
+            Price
+          </th>
+        );
+      case 'status':
+        return (
+          <th
+            key="status"
+            style={style}
+            className={cn('font-medium min-w-[100px]', densityHeaderClass, pinnedClass)}
+          >
+            Status
+          </th>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderRowCell = (colId: string, p: Property) => {
+    const isPinned = isColumnPinned(colId);
+    const offset = frozenOffsetMap.get(colId);
+    const style = isPinned && offset !== undefined ? { left: `${offset}px` } : undefined;
+    const pinnedClass = isPinned
+      ? 'sticky z-10 bg-surface border-r border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]'
+      : '';
+
+    switch (colId) {
+      case 'property':
+        return (
+          <td key="property" style={style} className={cn(densityCellClass, pinnedClass)}>
+            <p className="font-medium text-foreground">{p.title}</p>
+            <p className="text-helper">
+              {p.bedrooms ? `${p.bedrooms} BHK · ` : ''}
+              {p.areaSqft ? `${p.areaSqft.toLocaleString('en-IN')} sq ft` : ''}
+            </p>
+          </td>
+        );
+      case 'location':
+        return (
+          <td key="location" style={style} className={cn('text-muted-foreground', densityCellClass, pinnedClass)}>
+            {p.location}
+          </td>
+        );
+      case 'type':
+        return (
+          <td key="type" style={style} className={cn(densityCellClass, pinnedClass)}>
+            {p.propertyType}
+          </td>
+        );
+      case 'price':
+        return (
+          <td key="price" style={style} className={cn('num text-right font-medium', densityCellClass, pinnedClass)}>
+            {formatINR(p.price)}
+          </td>
+        );
+      case 'status':
+        return (
+          <td key="status" style={style} className={cn(densityCellClass, pinnedClass)}>
+            <Badge tone={TONE[p.status]}>{p.status.toLowerCase()}</Badge>
+          </td>
+        );
+      default:
+        return null;
+    }
+  };
 
   const dimensions: FilterDimension[] = useMemo(
     () => [
@@ -345,8 +493,14 @@ export default function PropertiesPage() {
           onFilterChange={handleFilterChange}
           onClearAllFilters={handleClearAll}
           columns={columns}
+          orderedColumns={orderedColumns}
           isColumnVisible={isColumnVisible}
           onToggleColumn={toggleColumn}
+          onMoveColumn={moveColumn}
+          onReorderColumns={reorderColumns}
+          onTogglePinColumn={togglePinColumn}
+          isColumnPinned={isColumnPinned}
+          pinnedColumnIds={pinnedColumnIds}
           onResetColumns={resetColumns}
           onShowAllColumns={showAllColumns}
           density={density}
@@ -360,40 +514,14 @@ export default function PropertiesPage() {
             <table className="w-full text-left">
               <thead className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-xs text-muted-foreground shadow-xs">
                 <tr>
-                  {isColumnVisible('property') && <th className={cn('font-medium', densityHeaderClass)}>Property</th>}
-                  {isColumnVisible('location') && <th className={cn('font-medium', densityHeaderClass)}>Location</th>}
-                  {isColumnVisible('type') && <th className={cn('font-medium', densityHeaderClass)}>Type</th>}
-                  {isColumnVisible('price') && <th className={cn('font-medium text-right', densityHeaderClass)}>Price</th>}
-                  {isColumnVisible('status') && <th className={cn('font-medium', densityHeaderClass)}>Status</th>}
+                  {visibleOrderedColumns.map((col) => renderHeaderCell(col.id))}
                   {editable ? <th className={cn('font-medium', densityHeaderClass)} /> : null}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {list.data.items.map((p) => (
                   <tr key={p.id} className="hover:bg-muted/30 transition-colors">
-                    {isColumnVisible('property') && (
-                      <td className={densityCellClass}>
-                        <p className="font-medium text-foreground">{p.title}</p>
-                        <p className="text-helper">
-                          {p.bedrooms ? `${p.bedrooms} BHK · ` : ''}
-                          {p.areaSqft ? `${p.areaSqft.toLocaleString('en-IN')} sq ft` : ''}
-                        </p>
-                      </td>
-                    )}
-                    {isColumnVisible('location') && (
-                      <td className={cn('text-muted-foreground', densityCellClass)}>{p.location}</td>
-                    )}
-                    {isColumnVisible('type') && (
-                      <td className={densityCellClass}>{p.propertyType}</td>
-                    )}
-                    {isColumnVisible('price') && (
-                      <td className={cn('num text-right font-medium', densityCellClass)}>{formatINR(p.price)}</td>
-                    )}
-                    {isColumnVisible('status') && (
-                      <td className={densityCellClass}>
-                        <Badge tone={TONE[p.status]}>{p.status.toLowerCase()}</Badge>
-                      </td>
-                    )}
+                    {visibleOrderedColumns.map((col) => renderRowCell(col.id, p))}
                     {editable ? (
                       <td className={cn('text-right', densityCellClass)}>
                         <div className="flex justify-end gap-1">
