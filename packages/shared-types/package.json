@@ -12,5 +12,5 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests"
   },
-  "devDependencies": { "vitest": "5.1.0" }
+  "devDependencies": { "vitest": "5.1.1" }
 }
