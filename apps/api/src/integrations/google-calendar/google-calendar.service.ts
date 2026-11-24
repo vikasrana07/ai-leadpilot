@@ -25,6 +25,10 @@ export interface GoogleCalendarStatus {
   status: string | null;
 }
 
+/** Refresh a little before expiry so a token never lapses mid-request. */
+const TOKEN_REFRESH_SKEW_MS = 60_000;
+/** The columns of a calendar connection that the Google helpers need. */
+type SyncRef = { id: string; credentialId: string; calendarId: string; membershipId: string };
 const STATE_TTL_MS = 10 * 60_000;
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -321,28 +325,13 @@ export class GoogleCalendarService {
             continue;
           }
 
-          // Live mode: decrypt tokens, call Google Free/Busy API
-          const cred = await tx.integrationCredential.findUnique({ where: { id: sync.credentialId } });
-          if (!cred) continue;
-
-          const tokens = (await this.box.open(
-            { ciphertext: cred.ciphertext, wrappedKey: cred.wrappedKey, keyId: cred.keyId },
-            this.aad(tenantId),
-          )) as unknown as GoogleCalendarTokens;
-
-          const res = await fetch(`${GOOGLE_CALENDAR_API}/freeBusy`, {
+          // Live mode: Google Free/Busy API with a refreshed token when needed
+          const res = await this.callGoogle(tx, tenantId, sync, (token) => fetch(`${GOOGLE_CALENDAR_API}/freeBusy`, {
             method: 'POST',
-            headers: {
-              authorization: `Bearer ${tokens.accessToken}`,
-              'content-type': 'application/json',
-            },
-            body: JSON.stringify({
-              timeMin: start.toISOString(),
-              timeMax: end.toISOString(),
-              items: [{ id: sync.calendarId || 'primary' }],
-            }),
+            headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+            body: JSON.stringify({ timeMin: start.toISOString(), timeMax: end.toISOString(), items: [{ id: sync.calendarId || 'primary' }] }),
             signal: AbortSignal.timeout(5000),
-          });
+          }));
 
           if (res.ok) {
             const data = (await res.json()) as { calendars?: Record<string, { busy?: { start: string; end: string }[] }> };
@@ -388,7 +377,7 @@ export class GoogleCalendarService {
     if (action === 'cancelled' || apt.status === 'CANCELLED') {
       if (apt.googleEventId) {
         if (this.mode === 'live') {
-          await this.deleteGoogleEvent(tenantId, sync, apt.googleEventId);
+          await this.deleteGoogleEvent(tx, tenantId, sync, apt.googleEventId).catch((e: unknown) => this.log.error(`Failed to remove Google event for appointment ${apt.id}: ${e instanceof Error ? e.message : String(e)}`));
         }
         await tx.appointment.update({
           where: { id: apt.id },
@@ -429,9 +418,9 @@ export class GoogleCalendarService {
     // Live mode
     try {
       if (apt.googleEventId) {
-        await this.patchGoogleEvent(tenantId, sync, apt.googleEventId, eventPayload);
+        await this.patchGoogleEvent(tx, tenantId, sync, apt.googleEventId, eventPayload);
       } else {
-        const newEventId = await this.insertGoogleEvent(tenantId, sync, eventPayload);
+        const newEventId = await this.insertGoogleEvent(tx, tenantId, sync, eventPayload);
         if (newEventId) {
           await tx.appointment.update({
             where: { id: apt.id },
@@ -444,25 +433,71 @@ export class GoogleCalendarService {
     }
   }
 
-  private async getDecryptedTokens(tenantId: string, sync: { credentialId: string }): Promise<GoogleCalendarTokens> {
-    const cred = await this.db.prisma.integrationCredential.findUniqueOrThrow({ where: { id: sync.credentialId } });
-    return (await this.box.open(
-      { ciphertext: cred.ciphertext, wrappedKey: cred.wrappedKey, keyId: cred.keyId },
-      this.aad(tenantId),
-    )) as unknown as GoogleCalendarTokens;
+  /**
+   * Returns a valid access token for a connection, refreshing it first when it is expired or about to expire. Everything runs on the
+   * caller's tenant transaction: `integration_credentials` is RLS-protected, so reading it through the bare Prisma client (no tenant
+   * context) finds nothing. A revoked or invalid refresh token marks the connection `needs_reauth` so the UI can ask the user to reconnect.
+   */
+  private async accessToken(tx: TxClient, tenantId: string, sync: SyncRef, forceRefresh = false): Promise<string> {
+    const cred = await tx.integrationCredential.findUnique({ where: { id: sync.credentialId } });
+    if (!cred) throw new Error('Google Calendar credential is missing');
+    const tokens = (await this.box.open({ ciphertext: cred.ciphertext, wrappedKey: cred.wrappedKey, keyId: cred.keyId }, this.aad(tenantId))) as unknown as GoogleCalendarTokens;
+    const expiresSoon = !tokens.expiresAt || Date.parse(tokens.expiresAt) - Date.now() < TOKEN_REFRESH_SKEW_MS;
+    if (tokens.accessToken && !expiresSoon && !forceRefresh) return tokens.accessToken;
+
+    if (!tokens.refreshToken) {
+      await this.markNeedsReauth(tx, sync);
+      throw new Error('Google Calendar needs to be reconnected (no refresh token)');
+    }
+    const clientId = this.env.GOOGLE_CALENDAR_CLIENT_ID;
+    const clientSecret = this.env.GOOGLE_CALENDAR_CLIENT_SECRET;
+    if (!clientId || !clientSecret) throw new Error('Google Calendar client credentials missing');
+
+    const res = await fetch(GOOGLE_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: tokens.refreshToken, grant_type: 'refresh_token' }).toString(),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      if (body.error === 'invalid_grant' || res.status === 401) {
+        await this.markNeedsReauth(tx, sync); // the user revoked access or the token was invalidated: only reconnecting helps
+        throw new Error('Google Calendar access was revoked; the member needs to reconnect');
+      }
+      throw new Error(`Google token refresh failed (${res.status})`); // transient: try again next time
+    }
+    const data = (await res.json()) as { access_token: string; expires_in?: number; refresh_token?: string; scope?: string; token_type?: string };
+    const next: GoogleCalendarTokens = {
+      ...tokens,
+      accessToken: data.access_token,
+      // Google normally keeps the same refresh token; keep ours unless a new one is issued
+      refreshToken: data.refresh_token ?? tokens.refreshToken,
+      expiresAt: new Date(Date.now() + (data.expires_in ?? 3600) * 1000).toISOString(),
+    };
+    const sealed = await this.box.seal(Object.fromEntries(Object.entries(next).filter((e): e is [string, string] => typeof e[1] === 'string')), this.aad(tenantId));
+    await tx.integrationCredential.update({ where: { id: sync.credentialId }, data: { ...sealed, lastVerifiedAt: new Date() } });
+    return next.accessToken;
   }
 
-  private async insertGoogleEvent(tenantId: string, sync: { credentialId: string; calendarId: string }, payload: unknown): Promise<string | null> {
-    const tokens = await this.getDecryptedTokens(tenantId, sync);
-    const res = await fetch(`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(sync.calendarId)}/events`, {
+  private async markNeedsReauth(tx: TxClient, sync: SyncRef): Promise<void> {
+    await tx.googleCalendarSync.update({ where: { id: sync.id }, data: { status: 'needs_reauth' } });
+  }
+
+  /** Calls a Google API with a valid token; on a 401 it refreshes once and retries (access tokens can be revoked before they expire). */
+  private async callGoogle(tx: TxClient, tenantId: string, sync: SyncRef, request: (token: string) => Promise<Response>): Promise<Response> {
+    const res = await request(await this.accessToken(tx, tenantId, sync));
+    if (res.status !== 401) return res;
+    return request(await this.accessToken(tx, tenantId, sync, true));
+  }
+
+  private async insertGoogleEvent(tx: TxClient, tenantId: string, sync: SyncRef, payload: unknown): Promise<string | null> {
+    const res = await this.callGoogle(tx, tenantId, sync, (token) => fetch(`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(sync.calendarId)}/events`, {
       method: 'POST',
-      headers: {
-        authorization: `Bearer ${tokens.accessToken}`,
-        'content-type': 'application/json',
-      },
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(8000),
-    });
+    }));
     if (!res.ok) {
       throw new Error(`Google Calendar insert failed (${res.status}): ${await res.text()}`);
     }
@@ -470,28 +505,26 @@ export class GoogleCalendarService {
     return data.id ?? null;
   }
 
-  private async patchGoogleEvent(tenantId: string, sync: { credentialId: string; calendarId: string }, eventId: string, payload: unknown): Promise<void> {
-    const tokens = await this.getDecryptedTokens(tenantId, sync);
-    const res = await fetch(`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(sync.calendarId)}/events/${encodeURIComponent(eventId)}`, {
+  private async patchGoogleEvent(tx: TxClient, tenantId: string, sync: SyncRef, eventId: string, payload: unknown): Promise<void> {
+    const res = await this.callGoogle(tx, tenantId, sync, (token) => fetch(`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(sync.calendarId)}/events/${encodeURIComponent(eventId)}`, {
       method: 'PATCH',
-      headers: {
-        authorization: `Bearer ${tokens.accessToken}`,
-        'content-type': 'application/json',
-      },
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(8000),
-    });
+    }));
     if (!res.ok) {
       throw new Error(`Google Calendar patch failed (${res.status}): ${await res.text()}`);
     }
   }
 
-  private async deleteGoogleEvent(tenantId: string, sync: { credentialId: string; calendarId: string }, eventId: string): Promise<void> {
-    const tokens = await this.getDecryptedTokens(tenantId, sync);
-    await fetch(`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(sync.calendarId)}/events/${encodeURIComponent(eventId)}`, {
+  private async deleteGoogleEvent(tx: TxClient, tenantId: string, sync: SyncRef, eventId: string): Promise<void> {
+    const res = await this.callGoogle(tx, tenantId, sync, (token) => fetch(`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(sync.calendarId)}/events/${encodeURIComponent(eventId)}`, {
       method: 'DELETE',
-      headers: { authorization: `Bearer ${tokens.accessToken}` },
+      headers: { authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(8000),
-    }).catch(() => null);
+    }));
+    if (!res.ok && res.status !== 404 && res.status !== 410) { // already gone is fine
+      throw new Error(`Google Calendar delete failed (${res.status})`);
+    }
   }
 }

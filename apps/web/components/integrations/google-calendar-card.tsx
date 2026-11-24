@@ -97,6 +97,7 @@ export function GoogleCalendarCard() {
 
   const data = statusQuery.data;
   const isConnected = data?.connected ?? false;
+  const needsReconnect = data?.status === 'needs_reauth';
 
   return (
     <Card className="mb-6">
@@ -106,11 +107,13 @@ export function GoogleCalendarCard() {
           <div className="flex-1">
             <CardTitle>Google Calendar</CardTitle>
             <p className="text-helper mt-0.5">
-              Two-way synchronization for {terms.visits} and appointments.
+              Checks your availability and adds new {terms.visits} to your Google Calendar.
             </p>
           </div>
           {isConnected ? (
             <Badge tone="success">Connected</Badge>
+          ) : needsReconnect ? (
+            <Badge tone="warning">Reconnect needed</Badge>
           ) : (
             <Badge tone="neutral">Not connected</Badge>
           )}
@@ -128,7 +131,7 @@ export function GoogleCalendarCard() {
                 <p className="text-helper">
                   {data?.lastSyncedAt
                     ? `Last active ${timeAgo(data.lastSyncedAt)}`
-                    : 'Two-way sync active'}
+                    : 'Sync active'}
                 </p>
               </div>
               <Button
@@ -141,11 +144,16 @@ export function GoogleCalendarCard() {
               </Button>
             </div>
             <p className="text-[13px] text-muted-foreground">
-              New {terms.visits} booked in LeadPilot are pushed to your Google Calendar automatically. External busy events on your Google Calendar prevent double-booking in LeadPilot.
+              New {terms.visits} booked in LeadPilot are added to your Google Calendar automatically. Busy events on your Google Calendar block those times in LeadPilot.
             </p>
           </div>
         ) : (
           <div className="space-y-3">
+            {needsReconnect ? (
+              <p className="text-[13px] font-medium text-warning">
+                Google stopped accepting the saved sign-in (access was revoked or expired). New {terms.visits} are not being added to your calendar until you reconnect.
+              </p>
+            ) : null}
             <p className="text-[13px] text-muted-foreground">
               Connect your Google Calendar so LeadPilot can check your real-time availability and push upcoming {terms.visits} directly to your personal schedule.
             </p>
@@ -156,7 +164,7 @@ export function GoogleCalendarCard() {
                 onClick={() => void handleConnect()}
               >
                 <CalendarDays className="mr-1.5 h-4 w-4" aria-hidden />
-                Connect Google Calendar
+                {needsReconnect ? 'Reconnect Google Calendar' : 'Connect Google Calendar'}
               </Button>
             </div>
           </div>
