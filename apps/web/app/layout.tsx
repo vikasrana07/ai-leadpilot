@@ -45,7 +45,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} nonce={nonce} />
         <script dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT_SCRIPT }} nonce={nonce} />
       </head>
-      <body><Providers initialSidebarCollapsed={initialSidebarCollapsed}>{children}</Providers></body>
+      <body suppressHydrationWarning>
+        <Providers initialSidebarCollapsed={initialSidebarCollapsed}>{children}</Providers>
+      </body>
     </html>
   );
 }
