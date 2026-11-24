@@ -240,7 +240,9 @@ describe('tool contract: every call is validated, tenant-bound, idempotent and a
   let tctx: ToolContext; let leadId: string; let convoId: string;
   beforeAll(async () => {
     await inbound('919700000040', 'Hi'); const c = await convoOf('919700000040'); convoId = c.id; leadId = c.lead.id;
-    tctx = { tenantId: owner.tenantId, conversationId: convoId, leadId, runId: randomUUID(), allowed: new Set(ASSISTANT.allowedTools), assistant: { workingHours: null, name: 'Asha', businessIdentity: 'Skyline Realty', businessDescription: 'x', languages: ['en'] }, tenant: { name: 'Skyline', email: 'a@b.test', phone: null, website: null, address: null, timezone: 'Asia/Kolkata', currency: 'INR' } };
+    const runId = randomUUID(); // tool calls are recorded against a real run (S-09 foreign keys)
+    await owner$.query(`INSERT INTO ai_runs (id, tenant_id, conversation_id, prompt_version, status) VALUES ($1, $2, $3, 'test', 'COMPLETED')`, [runId, owner.tenantId, convoId]);
+    tctx = { tenantId: owner.tenantId, conversationId: convoId, leadId, runId, allowed: new Set(ASSISTANT.allowedTools), assistant: { workingHours: null, name: 'Asha', businessIdentity: 'Skyline Realty', businessDescription: 'x', languages: ['en'] }, tenant: { name: 'Skyline', email: 'a@b.test', phone: null, website: null, address: null, timezone: 'Asia/Kolkata', currency: 'INR' } };
   });
   const nulls = { budgetMin: null, budgetMax: null, location: null, propertyType: null, requirements: null, buyingTimeline: null, siteVisitRequested: null, name: null };
   it('rejects unknown tools, tools not enabled for the tenant, and scheduling tools with bad arguments', async () => {
