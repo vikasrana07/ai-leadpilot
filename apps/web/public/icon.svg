@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="lp-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3F55E8" />
+      <stop offset="100%" stop-color="#192284" />
+    </linearGradient>
+    <linearGradient id="lp-highlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.32" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.04" />
+    </linearGradient>
+    <linearGradient id="lp-wing-r" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EDF2FE" />
+      <stop offset="100%" stop-color="#BAC8F8" />
+    </linearGradient>
+    <filter id="lp-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#0E1433" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Base -->
+  <rect width="32" height="32" rx="7.5" fill="url(#lp-bg)" />
+  <!-- Inset Border Glow -->
+  <rect x="0.5" y="0.5" width="31" height="31" rx="7" stroke="url(#lp-highlight)" />
+
+  <!-- Supersonic Delta Wings -->
+  <g filter="url(#lp-glow)">
+    <!-- Left Wing (brilliant primary facet) -->
+    <path d="M16 6.5 L7.8 23.5 L16 19.5 Z" fill="#FFFFFF" />
+    <!-- Right Wing (sculpted dimensional facet) -->
+    <path d="M16 6.5 L16 19.5 L24.2 23.5 Z" fill="url(#lp-wing-r)" />
+    <!-- Center Spine Keel -->
+    <line x1="16" y1="6.5" x2="16" y2="19.5" stroke="#FFFFFF" stroke-width="0.4" stroke-linecap="round" />
+  </g>
+
+  <!-- AI Guidance Beacon Pulse -->
+  <circle cx="16" cy="22.2" r="1.8" fill="#38BDF8" opacity="0.9" />
+  <circle cx="16" cy="22.2" r="0.75" fill="#FFFFFF" />
+</svg>

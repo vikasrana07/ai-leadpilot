@@ -11,6 +11,17 @@ import './globals.css';
 export const metadata: Metadata = {
   title: { default: 'LeadPilot', template: '%s · LeadPilot' },
   description: 'Never lose a lead to a missed enquiry, a slow reply or a forgotten follow-up.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/manifest.json',
 };
 
 export const viewport: Viewport = {
