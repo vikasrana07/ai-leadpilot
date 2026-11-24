@@ -19,6 +19,7 @@ export interface CampaignItem {
   readCount: number;
   failedCount: number;
   optOutCount: number;
+  noConsentCount: number;
   scheduledAt: string | null;
   startedAt: string | null;
   completedAt: string | null;
@@ -60,6 +61,7 @@ export interface AudiencePreviewResponse {
   totalMatching: number;
   eligibleCount: number;
   optOutCount: number;
+  noConsentCount: number;
   sampleLeads: Array<{
     id: string;
     name: string;
@@ -67,8 +69,16 @@ export interface AudiencePreviewResponse {
     score: number | null;
     stageName: string;
     isOptedOut: boolean;
+    consent: 'ELIGIBLE' | 'OPTED_OUT' | 'NO_CONSENT';
   }>;
 }
+
+export const OPT_IN_BASES = [
+  { value: 'existing_customer', label: 'Existing customer who agreed' },
+  { value: 'signed_form_or_checkbox', label: 'Signed form or checkbox' },
+  { value: 'verbal_recorded', label: 'Verbal, recorded in my notes' },
+  { value: 'other', label: 'Other (explain in lead notes)' },
+] as const;
 
 export interface WaChannelItem {
   id: string;

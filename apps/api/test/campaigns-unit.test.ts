@@ -86,10 +86,16 @@ describe('CampaignsService Unit Tests', () => {
       const lead1 = { id: 'lead-1', phone: '+919876543210', phoneNorm: '919876543210' };
       const lead2 = { id: 'lead-2', phone: '+919876543211', phoneNorm: '919876543211' };
 
-      // lead-2 has opted out
+      const lead3 = { id: 'lead-3', phone: '+919876543212', phoneNorm: '919876543212' };
+
+      // lead-1 opted in, lead-2 later sent STOP, lead-3 has no consent record at all (e.g. imported from CSV)
       const consents = [
         { leadId: 'lead-2', channel: 'whatsapp', status: 'OPTED_OUT', createdAt: new Date() },
+        { leadId: 'lead-2', channel: 'whatsapp', status: 'OPTED_IN', createdAt: new Date(Date.now() - 1000) },
+        { leadId: 'lead-1', channel: 'whatsapp', status: 'OPTED_IN', createdAt: new Date() },
       ];
+      const created: Array<{ leadId: string; status: string }> = [];
+      const campaignUpdates: Array<Record<string, unknown>> = [];
 
       mockDbService.tenantTx = vi.fn(async (_ctx, fn) => {
         const mockTx = {
@@ -100,16 +106,16 @@ describe('CampaignsService Unit Tests', () => {
               status: 'DRAFT',
               segment: { stageIds: [] },
             }),
-            update: vi.fn().mockResolvedValue({ id: campaignId, status: 'RUNNING' }),
+            update: vi.fn().mockImplementation((args: any) => { campaignUpdates.push(args.data); return Promise.resolve({ id: campaignId, status: 'RUNNING' }); }),
           },
           lead: {
-            findMany: vi.fn().mockResolvedValue([lead1, lead2]),
+            findMany: vi.fn().mockResolvedValue([lead1, lead2, lead3]),
           },
           consent: {
             findMany: vi.fn().mockResolvedValue(consents),
           },
           broadcastRecipient: {
-            createMany: vi.fn().mockResolvedValue({ count: 2 }),
+            createMany: vi.fn().mockImplementation((args: any) => { created.push(...args.data); return Promise.resolve({ count: args.data.length }); }),
           },
         };
         return fn(mockTx as any);
@@ -120,20 +126,42 @@ describe('CampaignsService Unit Tests', () => {
       const result = await service.launch({ tenantId, userId }, campaignId);
       expect(result.status).toBe('RUNNING');
       expect(service.enqueueDispatch).toHaveBeenCalledWith(tenantId, campaignId);
+      // Only the explicitly opted-in lead is sendable; the STOP (latest wins) and the never-asked lead are skipped for different reasons.
+      expect(Object.fromEntries(created.map((c) => [c.leadId, c.status]))).toEqual({
+        'lead-1': 'PENDING', 'lead-2': 'SKIPPED_OPT_OUT', 'lead-3': 'SKIPPED_NO_CONSENT',
+      });
+      expect(campaignUpdates[0]).toMatchObject({ totalRecipients: 3, optOutCount: 1, noConsentCount: 1 });
+    });
+
+    it('completes immediately and sends nothing when nobody in the audience has opted in', async () => {
+      let status = '';
+      mockDbService.tenantTx = vi.fn(async (_ctx, fn) => fn({
+        broadcastCampaign: { findFirst: vi.fn().mockResolvedValue({ id: campaignId, tenantId, status: 'DRAFT', segment: {} }), update: vi.fn().mockImplementation((a: any) => { status = a.data.status; return Promise.resolve({}); }) },
+        lead: { findMany: vi.fn().mockResolvedValue([{ id: 'lead-9', phone: '+919876543299', phoneNorm: '919876543299' }]) },
+        consent: { findMany: vi.fn().mockResolvedValue([]) },
+        broadcastRecipient: { createMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      } as any));
+      service.enqueueDispatch = vi.fn();
+      const result = await service.launch({ tenantId, userId }, campaignId);
+      expect(result.status).toBe('COMPLETED');
+      expect(status).toBe('COMPLETED');
+      expect(service.enqueueDispatch).not.toHaveBeenCalled();
     });
 
     it('previews audience count with accurate opt-out split', async () => {
       const lead1 = { id: 'lead-1', name: 'John Doe', phone: '+919876543210', phoneNorm: '919876543210', score: 85, stage: { name: 'Site Visit' } };
       const lead2 = { id: 'lead-2', name: 'Jane Smith', phone: '+919876543211', phoneNorm: '919876543211', score: 90, stage: { name: 'Site Visit' } };
+      const lead3 = { id: 'lead-3', name: 'Imported Ivan', phone: '+919876543212', phoneNorm: '919876543212', score: 10, stage: { name: 'New' } };
 
       mockDbService.tenantTx = vi.fn(async (_ctx, fn) => {
         const mockTx = {
           lead: {
-            findMany: vi.fn().mockResolvedValue([lead1, lead2]),
+            findMany: vi.fn().mockResolvedValue([lead1, lead2, lead3]),
           },
           consent: {
             findMany: vi.fn().mockResolvedValue([
               { leadId: 'lead-2', channel: 'whatsapp', status: 'OPTED_OUT', createdAt: new Date() },
+              { leadId: 'lead-1', channel: 'whatsapp', status: 'OPTED_IN', createdAt: new Date() },
             ]),
           },
         };
@@ -145,13 +173,15 @@ describe('CampaignsService Unit Tests', () => {
         { segment: { stageIds: [], tagIds: [], sourceIds: [], temperatures: [] } },
       );
 
-      expect(preview.totalMatching).toBe(2);
+      expect(preview.totalMatching).toBe(3);
       expect(preview.eligibleCount).toBe(1);
       expect(preview.optOutCount).toBe(1);
+      expect(preview.noConsentCount).toBe(1);
       expect(preview.sampleLeads[0]?.name).toBe('John Doe');
       expect(preview.sampleLeads[0]?.isOptedOut).toBe(false);
       expect(preview.sampleLeads[1]?.name).toBe('Jane Smith');
       expect(preview.sampleLeads[1]?.isOptedOut).toBe(true);
+      expect(preview.sampleLeads.map((l) => l.consent)).toEqual(['ELIGIBLE', 'OPTED_OUT', 'NO_CONSENT']);
     });
   });
 
@@ -196,6 +226,7 @@ describe('CampaignsService Unit Tests', () => {
       const recipient = {
         id: 'recip-1',
         campaignId,
+        leadId: 'lead-1',
         phone: '919876543210',
         status: 'PENDING',
         lead: { id: 'lead-1', name: 'Bob Smith', assignedMembershipId: null },
@@ -226,6 +257,7 @@ describe('CampaignsService Unit Tests', () => {
           lead: {
             update: vi.fn().mockResolvedValue({ id: 'lead-1' }),
           },
+          consent: { findMany: vi.fn().mockResolvedValue([{ leadId: 'lead-1', status: 'OPTED_IN' }]) },
         };
         return fn(mockTx as any);
       });
@@ -258,6 +290,7 @@ describe('CampaignsService Unit Tests', () => {
       const recipient = {
         id: 'recip-1',
         campaignId,
+        leadId: 'lead-1',
         phone: '919999999999',
         status: 'PENDING',
         lead: { id: 'lead-1', name: 'Invalid User' },
@@ -293,6 +326,7 @@ describe('CampaignsService Unit Tests', () => {
           lead: {
             update: vi.fn(),
           },
+          consent: { findMany: vi.fn().mockResolvedValue([{ leadId: 'lead-1', status: 'OPTED_IN' }]) },
         };
         return fn(mockTx as any);
       });
@@ -301,6 +335,39 @@ describe('CampaignsService Unit Tests', () => {
       expect(result.processed).toBe(1);
       expect(updatedRecipientStatus).toBe('FAILED');
       expect(campaignFailedIncrement).toBe(true);
+    });
+  });
+
+  describe('Consent at send time and opt-in recording', () => {
+    it('does not send to a recipient who sent STOP after launch, and counts them as opted out', async () => {
+      const campaign = { id: campaignId, tenantId, status: 'RUNNING', channelId, templateName: 't', templateLanguage: 'en', templateParams: [] };
+      const recipient = { id: 'recip-1', campaignId, leadId: 'lead-1', phone: '919876543210', status: 'PENDING', lead: { id: 'lead-1', name: 'Bob' } };
+      const updates: Array<Record<string, unknown>> = [];
+      const campaignUpdates: Array<Record<string, unknown>> = [];
+      mockDbService.tenantTx = vi.fn(async (_ctx, fn) => fn({
+        broadcastCampaign: { findFirst: vi.fn().mockResolvedValue(campaign), update: vi.fn().mockImplementation((a: any) => { campaignUpdates.push(a.data); return Promise.resolve(campaign); }) },
+        broadcastRecipient: { findMany: vi.fn().mockResolvedValue([recipient]), count: vi.fn().mockResolvedValue(0), update: vi.fn().mockImplementation((a: any) => { updates.push(a.data); return Promise.resolve({}); }) },
+        consent: { findMany: vi.fn().mockResolvedValue([{ leadId: 'lead-1', status: 'OPTED_OUT' }, { leadId: 'lead-1', status: 'OPTED_IN' }]) },
+      } as any));
+      await service.dispatchBatch(tenantId, campaignId, 10);
+      expect(mockWaClient.sendTemplate).not.toHaveBeenCalled();
+      expect(updates).toContainEqual({ status: 'SKIPPED_OPT_OUT' });
+      expect(campaignUpdates).toContainEqual({ optOutCount: { increment: 1 } });
+    });
+
+    it('records an attested opt-in only for leads with no consent record, never overriding a STOP', async () => {
+      const created: Array<Record<string, unknown>> = [];
+      mockDbService.tenantTx = vi.fn(async (_ctx, fn) => fn({
+        lead: { findMany: vi.fn().mockResolvedValue([{ id: 'a' }, { id: 'b' }, { id: 'c' }]) },
+        consent: {
+          findMany: vi.fn().mockResolvedValue([{ leadId: 'b', status: 'OPTED_IN' }, { leadId: 'c', status: 'OPTED_OUT' }]),
+          createMany: vi.fn().mockImplementation((args: any) => { created.push(...args.data); return Promise.resolve({ count: args.data.length }); }),
+        },
+      } as any));
+      const res = await service.recordWhatsappOptIn({ tenantId, userId } as any, { leadIds: ['a', 'b', 'c', 'missing'], basis: 'existing_customer', attestation: true });
+      expect(res).toEqual({ recorded: 1, alreadyOptedIn: 1, skippedOptedOut: 1, notFound: 1 });
+      expect(created).toHaveLength(1);
+      expect(created[0]).toMatchObject({ leadId: 'a', status: 'OPTED_IN', channel: 'whatsapp', source: 'manager_attested:existing_customer' });
     });
   });
 

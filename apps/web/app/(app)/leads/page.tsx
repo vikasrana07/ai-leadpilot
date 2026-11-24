@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ImportDialog } from '@/components/crm/import-dialog';
 import { LeadFormDialog } from '@/components/crm/lead-form-dialog';
+import { WhatsappOptInDialog } from '@/components/crm/whatsapp-opt-in-dialog';
 import { StageBadge, TemperatureBadge } from '@/components/crm/lead-badges';
 import { DataTableToolbar, QuickViews, useTablePreferences, type ColumnDef, type FilterDimension, type QuickViewItem } from '@/components/data-table';
 import { PageHeader } from '@/components/page/page-header';
@@ -56,6 +57,7 @@ export default function LeadsPage() {
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'createdAt', dir: 'desc' });
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [optInOpen, setOptInOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -394,6 +396,11 @@ export default function LeadsPage() {
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </Select>
+            {can('campaign:manage') && can('lead:write:all') ? (
+              <Button size="sm" onClick={() => setOptInOpen(true)}>
+                Record WhatsApp opt-in
+              </Button>
+            ) : null}
             {can('lead:delete') ? (
               <Button size="sm" variant="danger" onClick={() => setDeleteOpen(true)}>
                 Delete
@@ -707,6 +714,7 @@ export default function LeadsPage() {
         }
         invalidate={[['leads'], ['pipeline'], ['analytics']]}
       />
+      <WhatsappOptInDialog open={optInOpen} onOpenChange={setOptInOpen} leadIds={[...selected]} onDone={() => setSelected(new Set())} />
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}

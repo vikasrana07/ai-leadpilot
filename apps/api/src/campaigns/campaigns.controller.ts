@@ -17,11 +17,13 @@ import {
   createCampaignSchema,
   recipientQuerySchema,
   updateCampaignSchema,
+  whatsappOptInSchema,
   type AudiencePreviewInput,
   type CampaignQuery,
   type CreateCampaignInput,
   type RecipientQuery,
   type UpdateCampaignInput,
+  type WhatsappOptInInput,
 } from '@leadpilot/validation';
 import { CampaignsService } from './campaigns.service.js';
 
@@ -56,6 +58,14 @@ export class CampaignsController {
     @Body(new ZodPipe(createCampaignSchema)) input: CreateCampaignInput,
   ) {
     return this.svc.create(ctx, input);
+  }
+
+  /** Records a manager's attestation that these leads opted in to WhatsApp marketing. Declared before `:id` routes. */
+  @Post('consent/opt-in')
+  @HttpCode(200)
+  @RequirePermissions('campaign:manage', 'lead:write:all')
+  recordOptIn(@CurrentTenant() ctx: TenantRequestContext, @Body(new ZodPipe(whatsappOptInSchema)) input: WhatsappOptInInput) {
+    return this.svc.recordWhatsappOptIn(ctx, input);
   }
 
   @Get(':id')

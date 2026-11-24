@@ -1,3 +1,4 @@
+import { consentDisposition, latestConsentByLead as latestByLead } from './consent.js';
 import {
   BadRequestException,
   ConflictException,
@@ -15,6 +16,7 @@ import type {
   CampaignSegment,
   CampaignTemplateParam,
   CreateCampaignInput,
+  WhatsappOptInInput,
   RecipientQuery,
   UpdateCampaignInput,
 } from '@leadpilot/validation';
@@ -150,6 +152,7 @@ export class CampaignsService implements OnModuleInit {
           readCount: c.readCount,
           failedCount: c.failedCount,
           optOutCount: c.optOutCount,
+          noConsentCount: c.noConsentCount,
           scheduledAt: c.scheduledAt ? c.scheduledAt.toISOString() : null,
           startedAt: c.startedAt ? c.startedAt.toISOString() : null,
           completedAt: c.completedAt ? c.completedAt.toISOString() : null,
@@ -191,6 +194,7 @@ export class CampaignsService implements OnModuleInit {
         readCount: c.readCount,
         failedCount: c.failedCount,
         optOutCount: c.optOutCount,
+        noConsentCount: c.noConsentCount,
         scheduledAt: c.scheduledAt ? c.scheduledAt.toISOString() : null,
         startedAt: c.startedAt ? c.startedAt.toISOString() : null,
         completedAt: c.completedAt ? c.completedAt.toISOString() : null,
@@ -213,34 +217,30 @@ export class CampaignsService implements OnModuleInit {
 
       const leadIds = matchingLeads.map((l) => l.id);
 
-      // Check opt-out consents
+      // Marketing needs an explicit opt-in: split the audience into eligible / opted out / no consent record
       const consents = await tx.consent.findMany({
         where: { tenantId: ctx.tenantId, channel: 'whatsapp', leadId: { in: leadIds } },
         orderBy: { createdAt: 'desc' },
       });
 
-      const latestConsentByLead = new Map<string, string>();
-      for (const cs of consents) {
-        if (!latestConsentByLead.has(cs.leadId)) {
-          latestConsentByLead.set(cs.leadId, cs.status);
-        }
-      }
+      const latestConsentByLead = latestByLead(consents);
 
       let optOutCount = 0;
+      let noConsentCount = 0;
       let eligibleCount = 0;
 
       for (const lead of matchingLeads) {
-        if (latestConsentByLead.get(lead.id) === 'OPTED_OUT') {
-          optOutCount++;
-        } else {
-          eligibleCount++;
-        }
+        const d = consentDisposition(latestConsentByLead.get(lead.id));
+        if (d === 'OPTED_OUT') optOutCount++;
+        else if (d === 'NO_CONSENT') noConsentCount++;
+        else eligibleCount++;
       }
 
       return {
         totalMatching: matchingLeads.length,
         eligibleCount,
         optOutCount,
+        noConsentCount,
         sampleLeads: matchingLeads.slice(0, 5).map((l) => ({
           id: l.id,
           name: l.name,
@@ -248,8 +248,35 @@ export class CampaignsService implements OnModuleInit {
           score: l.score,
           stageName: l.stage.name,
           isOptedOut: latestConsentByLead.get(l.id) === 'OPTED_OUT',
+          consent: consentDisposition(latestConsentByLead.get(l.id)),
         })),
       };
+    });
+  }
+
+  /**
+   * Records an attested WhatsApp opt-in for leads (audit S-01). A lead whose latest consent is a STOP is never re-opted-in by a
+   * manager: only the lead can opt back in (by messaging us). Returns counts only, never lead data.
+   */
+  async recordWhatsappOptIn(ctx: TenantRequestContext, input: WhatsappOptInInput) {
+    return this.db.tenantTx(ctx, async (tx) => {
+      const leads = await tx.lead.findMany({ where: { tenantId: ctx.tenantId, id: { in: input.leadIds } }, select: { id: true } });
+      const ids = leads.map((l) => l.id);
+      const latest = latestByLead(await tx.consent.findMany({ where: { tenantId: ctx.tenantId, channel: 'whatsapp', leadId: { in: ids } }, orderBy: { createdAt: 'desc' } }));
+      const toRecord = ids.filter((id) => latest.get(id) === undefined);
+      const alreadyOptedIn = ids.filter((id) => latest.get(id) === 'OPTED_IN').length;
+      const skippedOptedOut = ids.filter((id) => latest.get(id) === 'OPTED_OUT').length;
+      if (toRecord.length > 0) {
+        await tx.consent.createMany({
+          data: toRecord.map((leadId) => ({ id: uuidv7(), tenantId: ctx.tenantId, leadId, channel: 'whatsapp', status: 'OPTED_IN' as const, source: `manager_attested:${input.basis}` })),
+        });
+      }
+      await this.audit.record(tx, {
+        tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'consent.whatsapp_opt_in_recorded', resourceType: 'consent',
+        metadata: { basis: input.basis, recorded: toRecord.length, alreadyOptedIn, skippedOptedOut, notFound: input.leadIds.length - ids.length },
+        requestId: ctx.requestId, ip: ctx.ip,
+      });
+      return { recorded: toRecord.length, alreadyOptedIn, skippedOptedOut, notFound: input.leadIds.length - ids.length };
     });
   }
 
@@ -408,15 +435,11 @@ export class CampaignsService implements OnModuleInit {
         orderBy: { createdAt: 'desc' },
       });
 
-      const latestConsentByLead = new Map<string, string>();
-      for (const cs of consents) {
-        if (!latestConsentByLead.has(cs.leadId)) {
-          latestConsentByLead.set(cs.leadId, cs.status);
-        }
-      }
+      const latestConsentByLead = latestByLead(consents);
 
       let eligibleCount = 0;
       let optOutCount = 0;
+      let noConsentCount = 0;
 
       const recipientRows: Array<{
         id: string;
@@ -424,35 +447,25 @@ export class CampaignsService implements OnModuleInit {
         campaignId: string;
         leadId: string;
         phone: string;
-        status: 'PENDING' | 'SKIPPED_OPT_OUT';
+        status: 'PENDING' | 'SKIPPED_OPT_OUT' | 'SKIPPED_NO_CONSENT';
       }> = [];
 
       for (const lead of matchingLeads) {
         const phone = lead.phoneNorm || lead.phone || '';
         if (!phone) continue;
 
-        const isOptedOut = latestConsentByLead.get(lead.id) === 'OPTED_OUT';
-        if (isOptedOut) {
-          optOutCount++;
-          recipientRows.push({
-            id: uuidv7(),
-            tenantId: ctx.tenantId,
-            campaignId: c.id,
-            leadId: lead.id,
-            phone,
-            status: 'SKIPPED_OPT_OUT',
-          });
-        } else {
-          eligibleCount++;
-          recipientRows.push({
-            id: uuidv7(),
-            tenantId: ctx.tenantId,
-            campaignId: c.id,
-            leadId: lead.id,
-            phone,
-            status: 'PENDING',
-          });
-        }
+        const disposition = consentDisposition(latestConsentByLead.get(lead.id));
+        if (disposition === 'ELIGIBLE') eligibleCount++;
+        else if (disposition === 'OPTED_OUT') optOutCount++;
+        else noConsentCount++;
+        recipientRows.push({
+          id: uuidv7(),
+          tenantId: ctx.tenantId,
+          campaignId: c.id,
+          leadId: lead.id,
+          phone,
+          status: disposition === 'ELIGIBLE' ? 'PENDING' : disposition === 'OPTED_OUT' ? 'SKIPPED_OPT_OUT' : 'SKIPPED_NO_CONSENT',
+        });
       }
 
       // Batch insert recipients
@@ -472,6 +485,7 @@ export class CampaignsService implements OnModuleInit {
           completedAt: eligibleCount === 0 ? new Date() : null,
           totalRecipients: recipientRows.length,
           optOutCount,
+          noConsentCount,
         },
       });
 
@@ -485,6 +499,7 @@ export class CampaignsService implements OnModuleInit {
           totalRecipients: recipientRows.length,
           eligibleCount,
           optOutCount,
+          noConsentCount,
         },
         requestId: ctx.requestId,
         ip: ctx.ip,
@@ -598,7 +613,23 @@ export class CampaignsService implements OnModuleInit {
     let sentBatchCount = 0;
     let failedBatchCount = 0;
 
+    // Re-check consent at send time: a STOP received after launch (or a revoked opt-in) must stop the message.
+    const latestNow = await this.db.tenantTx({ tenantId }, async (tx) =>
+      latestByLead(await tx.consent.findMany({
+        where: { tenantId, channel: 'whatsapp', leadId: { in: pendingRecipients.map((r) => r.leadId) } },
+        orderBy: { createdAt: 'desc' },
+      })),
+    );
+
     for (const recipient of pendingRecipients) {
+      const disposition = consentDisposition(latestNow.get(recipient.leadId));
+      if (disposition !== 'ELIGIBLE') {
+        await this.db.tenantTx({ tenantId }, async (tx) => {
+          await tx.broadcastRecipient.update({ where: { id: recipient.id }, data: { status: disposition === 'OPTED_OUT' ? 'SKIPPED_OPT_OUT' : 'SKIPPED_NO_CONSENT' } });
+          await tx.broadcastCampaign.update({ where: { id: campaignId }, data: disposition === 'OPTED_OUT' ? { optOutCount: { increment: 1 } } : { noConsentCount: { increment: 1 } } });
+        });
+        continue;
+      }
       const to = recipient.phone;
       const lead = recipient.lead;
       const params = this.resolveParams(lead, templateParams);

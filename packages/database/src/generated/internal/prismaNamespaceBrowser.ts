@@ -1429,6 +1429,7 @@ export const BroadcastCampaignScalarFieldEnum = {
   readCount: 'readCount',
   failedCount: 'failedCount',
   optOutCount: 'optOutCount',
+  noConsentCount: 'noConsentCount',
   createdByUserId: 'createdByUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

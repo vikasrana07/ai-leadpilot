@@ -392,7 +392,7 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
                 </div>
 
                 {previewMutation.data && (
-                  <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
                     <div className="p-2.5 rounded-lg bg-muted/40 border">
                       <p className="text-xs text-muted-foreground font-medium">Total Matched</p>
                       <p className="text-lg font-bold text-foreground">{previewMutation.data.totalMatching}</p>
@@ -405,8 +405,21 @@ export function CreateCampaignDialog({ open, onOpenChange, onCreated }: CreateCa
                       <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">Suppressed (Opt-Out)</p>
                       <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{previewMutation.data.optOutCount}</p>
                     </div>
+                    <div className="p-2.5 rounded-lg bg-muted/40 border">
+                      <p className="text-xs text-muted-foreground font-medium">No opt-in yet</p>
+                      <p className="text-lg font-bold text-foreground">{previewMutation.data.noConsentCount}</p>
+                    </div>
                   </div>
                 )}
+
+                {previewMutation.data?.noConsentCount ? (
+                  <div className="flex items-start gap-2 p-2 bg-muted/60 rounded border text-xs text-foreground">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-warning mt-0.5" />
+                    <span>
+                      {previewMutation.data.noConsentCount} leads have not opted in to WhatsApp marketing and will <strong>not</strong> receive this campaign. Leads who message you first are opted in automatically; for others, select them on the Leads page and use &ldquo;Record WhatsApp opt-in&rdquo; if they agreed.
+                    </span>
+                  </div>
+                ) : null}
 
                 {previewMutation.data?.optOutCount ? (
                   <div className="flex items-start gap-2 p-2 bg-amber-500/10 rounded border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300">
