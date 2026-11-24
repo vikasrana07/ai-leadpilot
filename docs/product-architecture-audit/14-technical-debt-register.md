@@ -1,6 +1,6 @@
 # 14 — Technical Debt Register
 
-**Status (updated after PR #11):** resolved: TD-03 (#2), TD-04 (#11), TD-05 (#10), TD-06 (#9), TD-07 (#8), TD-01 for lint (#3). Partly resolved: TD-31 (#4). Rows are sorted by priority (P0 first), then impact, then ID. Scoring: **Impact** H/M/L (customer, security or delivery harm if left) · **Effort** in engineering days · **Priority** P0 (before first customer) → P3 (opportunistic). "Roadmap" links to doc 13. Evidence is file/line from this checkout (`main` @ `dce256d`) or a command I ran.
+**Status (updated after PR #15):** resolved: TD-01 for lint (#3), TD-03 (#2), TD-04 (#11), TD-05 (#10), TD-06 (#9), TD-07 (#8), TD-31 (#13); TD-02 in review (#16, scanning only). TD-10 partly (platform-admin MFA, #14; `/docs`, `/design` and the tracking-secret literal remain). Rows are sorted by priority (P0 first), then impact, then ID. Scoring: **Impact** H/M/L (customer, security or delivery harm if left) · **Effort** in engineering days · **Priority** P0 (before first customer) → P3 (opportunistic). "Roadmap" links to doc 13. Evidence is file/line from this checkout (`main` @ `dce256d`) or a command I ran.
 
 | ID | Debt | Evidence | Impact | Effort | Priority | Roadmap |
 |---|---|---|:--:|---:|:--:|---|

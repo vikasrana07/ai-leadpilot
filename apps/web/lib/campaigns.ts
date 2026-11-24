@@ -34,6 +34,9 @@ export interface CampaignListResponse {
 
 export interface CampaignDetail extends CampaignItem {
   templateBodyPreview?: string;
+  /** Failed recipients a retry would re-send, and those whose delivery state is unknown (re-sending them can message someone twice). */
+  retryableCount?: number;
+  interruptedCount?: number;
 }
 
 export interface RecipientItem {
@@ -198,6 +201,20 @@ export function useLaunchCampaign() {
       method: 'POST',
     }),
     onSuccess: (_data, id) => {
+      void qc.invalidateQueries({ queryKey: ['campaigns', id] });
+      void qc.invalidateQueries({ queryKey: ['campaigns'] });
+    },
+  });
+}
+
+export function useRetryFailed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, includeInterrupted }: { id: string; includeInterrupted: boolean }) => api<{ id: string; status: string; retried: number }>(`/campaigns/${id}/retry-failed`, {
+      method: 'POST',
+      body: { includeInterrupted },
+    }),
+    onSuccess: (_data, { id }) => {
       void qc.invalidateQueries({ queryKey: ['campaigns', id] });
       void qc.invalidateQueries({ queryKey: ['campaigns'] });
     },

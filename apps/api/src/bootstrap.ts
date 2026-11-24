@@ -30,11 +30,12 @@ export function configureApp(app: NestExpressApplication, env: ReturnType<typeof
       ? { origin: true, credentials: false, methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['content-type', 'authorization', 'x-turnstile-token'], maxAge: 600 }
       : { origin: [env.WEB_ORIGIN], credentials: true, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], allowedHeaders: ['content-type', 'authorization', 'x-request-id', 'x-token-delivery', 'x-turnstile-token'] });
   });
-  setupSwagger(app);
+  // The interactive docs list every route, including /platform/*: serve them outside production, or when explicitly enabled.
+  setupSwagger(app, env.NODE_ENV !== 'production' || env.API_DOCS_ENABLED);
   app.enableShutdownHooks();
 }
 
-export function setupSwagger(app: NestExpressApplication): OpenAPIObject {
+export function setupSwagger(app: NestExpressApplication, serveUi = true): OpenAPIObject {
   const config = new DocumentBuilder()
     .setTitle('LeadPilot API')
     .setDescription('LeadPilot REST API specification')
@@ -43,7 +44,7 @@ export function setupSwagger(app: NestExpressApplication): OpenAPIObject {
     .addCookieAuth('session')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  if (serveUi) SwaggerModule.setup('docs', app, document);
   return document;
 }
 

@@ -105,6 +105,8 @@ const schema = z.object({
   PLATFORM_REQUIRE_MFA: bool,
   /** Deliberate acknowledgement that the platform console may run WITHOUT mandatory MFA in production. Never recommended. */
   PLATFORM_ALLOW_NO_MFA_IN_PRODUCTION: bool,
+  /** Serve the interactive API docs (`/docs`) in production. Off by default: the docs list every route, including /platform/*. */
+  API_DOCS_ENABLED: bool,
   PLATFORM_JWT_SECRET: z.string().min(32).optional(),
   // ---- Data lifecycle (Phase 8). Platform-wide defaults and hard minimums for per-workspace retention settings.
   RETENTION_WEBHOOK_PAYLOAD_DAYS: z.coerce.number().int().min(1).max(3650).default(30),
@@ -165,6 +167,8 @@ export function loadEnv(raw: NodeJS.ProcessEnv = process.env): Env {
     if (e.NODE_ENV === 'production' && e.WEBHOOK_ALLOW_PRIVATE_TARGETS) ctx.addIssue({ code: 'custom', path: ['WEBHOOK_ALLOW_PRIVATE_TARGETS'], message: 'private webhook targets are not allowed in production' });
     // The platform console can suspend tenants and open support sessions: in production its admins must have MFA unless that is acknowledged.
     if (e.NODE_ENV === 'production' && e.PLATFORM_JWT_SECRET && !e.PLATFORM_REQUIRE_MFA && !e.PLATFORM_ALLOW_NO_MFA_IN_PRODUCTION) ctx.addIssue({ code: 'custom', path: ['PLATFORM_REQUIRE_MFA'], message: 'platform admin MFA is mandatory in production: leave PLATFORM_REQUIRE_MFA unset (or true), or set PLATFORM_ALLOW_NO_MFA_IN_PRODUCTION=true to accept the risk' });
+    // Email tracking links are signed with this key. Without a dedicated secret they would be tied to JWT_ACCESS_SECRET, and rotating that would break every link already sent.
+    if (e.NODE_ENV === 'production' && !e.TRACKING_SECRET) ctx.addIssue({ code: 'custom', path: ['TRACKING_SECRET'], message: 'TRACKING_SECRET is required in production (it signs email open/click links and must outlive JWT secret rotation)' });
     if (!!e.SMTP_USER !== !!e.SMTP_PASS) ctx.addIssue({ code: 'custom', path: ['SMTP_PASS'], message: 'SMTP_USER and SMTP_PASS must be set together' });
     if (e.AI_PROVIDER === 'openai' && !e.OPENAI_API_KEY) ctx.addIssue({ code: 'custom', path: ['OPENAI_API_KEY'], message: 'OPENAI_API_KEY is required when AI_PROVIDER=openai' });
   }).safeParse(withSecureDefaults(Object.fromEntries(Object.entries(raw).filter(([, v]) => v !== '')))); // `KEY=` in a .env file means "unset"
