@@ -582,7 +582,7 @@ export default function LeadsPage() {
                                       changeLeadStage.mutate({ id: l.id, stageId: nextStageId });
                                     }
                                   }}
-                                  className="h-6 rounded border border-border bg-surface px-1 text-[11px] text-muted-foreground opacity-30 hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
+                                  className="h-6 rounded border border-border bg-surface px-1 text-[11px] text-muted-foreground cursor-pointer"
                                   title="Quick change stage"
                                 >
                                   {stages.data.stages.map((st) => (

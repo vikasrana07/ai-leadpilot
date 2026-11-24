@@ -10,6 +10,7 @@ import { api, registerViaApi, signInViaApi, waSignature } from '../helpers.ts';
 const ASSISTANT = { enabled: true, name: 'Asha', businessIdentity: 'E2E Realty', businessDescription: 'Homes in Pune.', languages: ['en'], tone: 'friendly', welcomeMessage: '', systemInstructions: '', workingHours: { enabled: false, days: { mon: null, tue: null, wed: null, thu: null, fri: null, sat: null, sun: null } }, handoverRules: { keywords: [], onNegotiation: true, onComplaint: true }, allowedTools: ['get_business_info', 'update_lead', 'check_availability', 'create_appointment', 'handover_to_human'], model: null, temperature: 0.3, maxReplyChars: 600, fallbackMessage: 'A team member will reply shortly.', disclosureText: '', monthlyTokenCap: null };
 
 test('AI books a site visit through real availability and it shows up as needing confirmation', async ({ page, request }) => {
+  test.setTimeout(120_000); // the AI conversation takes several round trips
   const acct = await registerViaApi(request, 'ai');
   const secret = 'e2e-wa-secret-1234567890';
   const phoneId = `73${Date.now()}`.slice(0, 15);
@@ -44,9 +45,8 @@ test('AI books a site visit through real availability and it shows up as needing
   await signInViaApi(page, acct);
   await page.goto('/appointments');
   await page.getByRole('button', { name: 'Upcoming' }).click();
-  const visit = page.getByRole('button', { name: /Karan Customer/ });
+  const visit = page.getByRole('row', { name: /Karan Customer/ });
   await expect(visit).toBeVisible();
   await expect(visit).toContainText('Needs confirmation');
-  await visit.click();
-  await expect(page.getByRole('dialog').getByRole('button', { name: 'Confirm' })).toBeVisible(); // a person still has to confirm an AI booking
+  await expect(visit.getByRole('button', { name: 'Confirm' })).toBeVisible(); // a person still has to confirm an AI booking
 });

@@ -73,9 +73,12 @@ test('dialogs fit the phone screen', async ({ page }) => {
   await page.getByRole('button', { name: /Add lead/i }).first().tap();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  const b = await dialog.boundingBox();
   const vp = page.viewportSize();
-  expect(b && vp && b.x >= 0 && b.x + b.width <= vp.width && b.y >= 0 && b.y + b.height <= vp.height, 'dialog inside the viewport').toBe(true);
+  // poll: the dialog animates in, so measure once it has settled
+  await expect.poll(async () => {
+    const b = await dialog.boundingBox();
+    return !!(b && vp && b.x >= 0 && b.x + b.width <= vp.width && b.y >= 0 && b.y + b.height <= vp.height);
+  }, { message: 'dialog inside the viewport' }).toBe(true);
 });
 
 for (const width of [375, 768]) {
@@ -97,7 +100,7 @@ for (const width of [375, 768]) {
     const box = await panel.boundingBox(); expect(box && box.x >= 0 && box.x + box.width <= width + 1, `panel inside the ${width}px screen`).toBeTruthy();
     // controls in the editor are at least 40px tall on touch layouts
     if (width < 1024) {
-      const small = await page.evaluate(() => [...document.querySelectorAll('[data-testid="outline"] button, [data-testid="inspector"] select, [data-testid="inspector"] input:not([type=checkbox])')].filter((el) => { const b = el.getBoundingClientRect(); return b.width > 0 && (b.height < 40); }).map((el) => `${el.tagName} ${(el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 30)} ${Math.round(el.getBoundingClientRect().height)}`));
+      const small = await page.evaluate(() => [...document.querySelectorAll('[data-testid="outline"] button, [data-testid="inspector"] [role=combobox], [data-testid="inspector"] input:not([type=checkbox])')].filter((el) => { const b = el.getBoundingClientRect(); return b.width > 0 && (b.height < 40); }).map((el) => `${el.tagName} ${(el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 30)} ${Math.round(el.getBoundingClientRect().height)}`));
       expect(small, small.join('\n')).toEqual([]);
     }
   });

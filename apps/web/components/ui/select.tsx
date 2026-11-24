@@ -11,6 +11,7 @@ import {
   type ChangeEvent,
   type ComponentPropsWithoutRef,
   type ElementRef,
+  type FocusEventHandler,
   type ReactNode,
   type SelectHTMLAttributes,
 } from 'react';
@@ -53,9 +54,19 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
  * 2. Composable Radix Select primitives (`SelectTrigger`, `SelectContent`, `SelectItem`, etc.)
  */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { className, children, value, defaultValue, onChange, placeholder, disabled, ...props },
+  { className, children, value, defaultValue, onChange, placeholder, disabled, id, name, required, title, tabIndex, autoFocus, onBlur, onFocus, ...props },
   _ref
 ) {
+  // The trigger is the focusable control, so it must carry what a native <select> would: its id (so <label htmlFor> and e2e/axe can find it),
+  // and its accessible name/description/validity. Dropping these left every labelled select without an accessible name (axe `button-name`).
+  const triggerProps = {
+    id, title, tabIndex, autoFocus,
+    // The handlers are typed for a <select>; the trigger is a <button>, and callers only read `.target.name`/`.value` if at all.
+    onBlur: onBlur as unknown as FocusEventHandler<HTMLButtonElement> | undefined,
+    onFocus: onFocus as unknown as FocusEventHandler<HTMLButtonElement> | undefined,
+    'aria-label': props['aria-label'], 'aria-labelledby': props['aria-labelledby'], 'aria-describedby': props['aria-describedby'], 'aria-invalid': props['aria-invalid'],
+    ...Object.fromEntries(Object.entries(props).filter(([k]) => k.startsWith('data-'))),
+  };
   // Check if children are `<option>` elements
   const options = extractOptions(children);
   const isOptionBased = options.length > 0;
@@ -85,11 +96,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         onValueChange={(val) => {
           if (!isControlled) setInternalValue(val);
           onChange?.({
-            target: { value: val, name: props.name },
-            currentTarget: { value: val, name: props.name },
+            target: { value: val, name },
+            currentTarget: { value: val, name },
           } as unknown as ChangeEvent<HTMLSelectElement>);
         }}
         disabled={disabled}
+        {...(name !== undefined ? { name } : {})}
+        {...(required !== undefined ? { required } : {})}
       >
         {children}
       </SelectPrimitive.Root>
@@ -105,8 +118,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       setInternalValue(realVal);
     }
     onChange?.({
-      target: { value: realVal, name: props.name },
-      currentTarget: { value: realVal, name: props.name },
+      target: { value: realVal, name },
+      currentTarget: { value: realVal, name },
     } as unknown as ChangeEvent<HTMLSelectElement>);
   };
 
@@ -117,20 +130,19 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       value={radixValue}
       onValueChange={handleValueChange}
       disabled={disabled}
+      {...(name !== undefined ? { name } : {})}
+      {...(required !== undefined ? { required } : {})}
     >
       <SelectPrimitive.Trigger
         className={cn(
           'flex h-10 w-full items-center justify-between rounded-md border border-input bg-surface px-3 py-2 text-base lg:h-9 lg:text-[13px] text-foreground shadow-sm transition-colors hover:border-border-strong focus:outline-none focus:ring-2 focus:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-danger',
           className
         )}
-        aria-label={props['aria-label']}
+        {...triggerProps}
       >
-        <span className="truncate">
-          {selectedOption ? (
-            selectedOption.label
-          ) : (
-            <SelectPrimitive.Value placeholder={placeholder ?? 'Select an option…'} />
-          )}
+        {/* Always real text: Radix <Value> renders nothing until the list has been opened, which left the button with no name at all. */}
+        <span className={cn('truncate', !selectedOption && 'text-muted-foreground')}>
+          {selectedOption ? selectedOption.label : (placeholder ?? 'Select an option…')}
         </span>
         <SelectPrimitive.Icon asChild>
           <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground opacity-70 ml-2" />

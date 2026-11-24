@@ -149,7 +149,7 @@ export function DataTableToolbar({
       {/* Secondary Row: Linear / Clockify Filter Pills Bar */}
       {(dimensions.length > 0 || booleanFilters.length > 0) && (
         <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-          <span className="mr-1 text-[11px] font-semibold tracking-wider text-muted-foreground/80 uppercase">
+          <span className="mr-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
             Filters:
           </span>
 

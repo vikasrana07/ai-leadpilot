@@ -1,7 +1,7 @@
 import { createHmac, randomBytes } from 'node:crypto';
 import argon2 from 'argon2';
 import pg from 'pg';
-import { expect, type APIRequestContext, type Page } from '@playwright/test';
+import { expect, type APIRequestContext, type Locator, type Page } from '@playwright/test';
 
 export const API = 'http://localhost:4100';
 export const WEB = 'http://localhost:3200';
@@ -57,4 +57,18 @@ export async function loginViaUi(page: Page, a: Pick<Account, 'email' | 'passwor
   await page.getByLabel('Email').fill(a.email);
   await page.getByLabel('Password').fill(a.password);
   await page.getByRole('button', { name: 'Sign in' }).click();
+}
+
+// ---- the app's Select is a custom (Radix) listbox, not a native <select>: open the combobox, then work with role=option.
+/** The labels of every option of a select, read by opening it (and closing it again without changing anything). */
+export async function selectOptions(page: Page, combobox: Locator): Promise<string[]> {
+  await combobox.click();
+  const labels = (await page.getByRole('option').allTextContents()).map((t) => t.trim());
+  await page.keyboard.press('Escape');
+  return labels;
+}
+/** Choose an option of a select by its visible label. */
+export async function chooseOption(page: Page, combobox: Locator, label: string | RegExp): Promise<void> {
+  await combobox.click();
+  await page.getByRole('option', { name: label, ...(typeof label === 'string' ? { exact: true } : {}) }).click();
 }
