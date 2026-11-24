@@ -239,7 +239,23 @@ export default function PlatformPlans() {
         actions={<Button variant="primary" onClick={() => setD(blank())}>New plan</Button>}
       />
       {q.isPending ? (
-        <Skeleton className="h-48" />
+        <div className="grid gap-3 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="p-4 space-y-3">
+              <CardHeader className="flex justify-between items-center p-0 pb-2 border-b border-border/50">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-8 w-16 rounded-md" />
+              </CardHeader>
+              <CardBody className="p-0 space-y-2">
+                <Skeleton className="h-6 w-24" />
+                <div className="space-y-1 pt-2">
+                  <Skeleton className="h-3.5 w-full" />
+                  <Skeleton className="h-3.5 w-3/4" />
+                </div>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {q.data?.map((p) => (

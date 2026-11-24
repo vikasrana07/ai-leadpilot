@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/page/page-header';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PlatformOverviewSkeleton } from '@/components/skeletons';
 import { inr } from '@/lib/billing';
 import { platformApi, type PlatformMetrics } from '@/lib/platform';
 
@@ -13,7 +13,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
 
 export default function PlatformOverview() {
   const q = useQuery({ queryKey: ['platform-metrics'], queryFn: () => platformApi<PlatformMetrics>('/metrics') });
-  if (q.isPending) return <><PageHeader title="Overview" /><Skeleton className="h-48" /></>;
+  if (q.isPending) return <PlatformOverviewSkeleton />;
   if (q.isError) return <><PageHeader title="Overview" /><p className="text-helper">Could not load metrics.</p></>;
   const m = q.data; const n = (v: number) => v.toLocaleString('en-IN');
   return (

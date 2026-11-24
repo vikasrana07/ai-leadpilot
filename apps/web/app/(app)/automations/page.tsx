@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AutomationCardsSkeleton } from '@/components/skeletons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -107,7 +108,7 @@ export default function AutomationsPage() {
             <p className="text-helper mt-1.5">{applyTerms(t.description, terms)}</p><p className="mt-2 text-[12px]"><span className="text-muted-foreground">When:</span> {describeTrigger(t.trigger, terms)}</p>
             <p className="text-[12px]"><span className="text-muted-foreground">Then:</span> {t.actions.map((a) => ACTION_LABELS[a.type] ?? a.type).join(', ')}</p>
             {t.requiresWhatsappTemplates.length ? <p className="text-helper mt-1.5">Needs WhatsApp template{t.requiresWhatsappTemplates.length > 1 ? 's' : ''}: {t.requiresWhatsappTemplates.map((n) => <code key={n} className="mx-0.5 rounded bg-muted px-1">{n}</code>)}</p> : null}</Card>))}</div>
-      ) : list.isPending ? <Skeleton className="h-48" /> : list.data?.items.length === 0 ? (
+      ) : list.isPending ? <AutomationCardsSkeleton count={4} /> : list.data?.items.length === 0 ? (
         <Card><EmptyState icon={Workflow} title="No automations yet" description={`Start from a template: welcome messages, ${terms.event} reminders, hot-${terms.lead} alerts and more.`} action={<Button variant="primary" onClick={() => setTab('gallery')}>Browse templates</Button>} /></Card>
       ) : <div className="space-y-2">{list.data?.items.map((a) => (
         <Card key={a.id} className="p-4"><div className="flex flex-wrap items-start gap-3">

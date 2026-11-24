@@ -5,7 +5,7 @@ import { AlertTriangle, CheckCircle2, CircleHelp } from 'lucide-react';
 import { PageHeader } from '@/components/page/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PlatformOpsSkeleton } from '@/components/skeletons';
 import { platformApi, type OpsAlert, type OpsHealth, type OpsView } from '@/lib/platform';
 
 const n = (v: number | null | undefined) => (v === null || v === undefined ? '—' : v.toLocaleString('en-IN'));
@@ -61,7 +61,7 @@ function Health({ h }: { h: OpsHealth }) {
 
 export default function PlatformOps() {
   const q = useQuery({ queryKey: ['platform-ops'], queryFn: () => platformApi<OpsView>('/ops'), refetchInterval: 30_000 });
-  if (q.isPending) return <><PageHeader title="Ops status" /><Skeleton className="h-64" /></>;
+  if (q.isPending) return <PlatformOpsSkeleton />;
   if (q.isError) return <><PageHeader title="Ops status" /><p className="text-helper" role="alert">Could not load the ops status. It will retry automatically.</p></>;
   const o = q.data;
   const updated = new Date(q.dataUpdatedAt).toLocaleTimeString('en-IN');

@@ -17,6 +17,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PlatformTenantDetailSkeleton } from '@/components/skeletons';
 import { Textarea } from '@/components/ui/textarea';
 import { ApiError } from '@/lib/api';
 import { handleApiError } from '@/lib/forms';
@@ -149,7 +150,7 @@ export default function PlatformTenant() {
   const plans = useQuery({ queryKey: ['platform-plans'], queryFn: () => platformApi<PlatformPlan[]>('/plans') });
   const [action, setAction] = useState<Action>(null);
 
-  if (q.isPending) return <><PageHeader title="Workspace" /><Skeleton className="h-64" /></>;
+  if (q.isPending) return <PlatformTenantDetailSkeleton />;
   if (q.isError) return <><PageHeader title="Workspace" /><p className="text-helper">{q.error instanceof ApiError && q.error.status === 404 ? 'Workspace not found.' : 'Could not load this workspace.'}</p></>;
   const d = q.data; const t = d.tenant; const e = d.entitlements; const s = d.subscription;
   const suspended = t.status === 'SUSPENDED';

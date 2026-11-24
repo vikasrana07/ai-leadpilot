@@ -17,7 +17,7 @@ import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { KpiCard } from '@/components/ui/kpi-card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { DashboardContentSkeleton } from '@/components/skeletons';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useTerms } from '@/lib/pack';
@@ -83,7 +83,7 @@ export default function DashboardPage() {
       </div>
 
       {!customReady ? <Card><EmptyState icon={CalendarClock} title="Choose a date range" description="Pick a start and end date to see this period." /></Card> : q.isPending ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-28" />)}</div>
+        <DashboardContentSkeleton />
       ) : q.isError || !d ? <Card><EmptyState icon={CalendarClock} title="Could not load your dashboard" description="Check your connection and try again." action={<Button onClick={() => void q.refetch()}>Retry</Button>} /></Card> : (
         <div className={cn('space-y-4 transition-opacity', q.isPlaceholderData && 'opacity-60')}>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">

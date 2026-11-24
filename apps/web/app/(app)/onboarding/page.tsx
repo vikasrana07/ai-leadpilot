@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/page/page-header';
+import OnboardingLoading from './loading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
@@ -213,7 +214,7 @@ export default function OnboardingPage() {
     await persist({ step: nextStep, completed: mode === 'completed' ? [...new Set([...p.completed, key])] : p.completed, skipped: mode === 'skipped' ? [...new Set([...p.skipped, key])] : p.skipped });
   };
 
-  if (progress.isPending || tenant.isPending) return <><PageHeader title="Set up your workspace" /><Skeleton className="h-96" /></>;
+  if (progress.isPending || tenant.isPending) return <OnboardingLoading />;
   if (progress.isError || tenant.isError) return <p className="text-[13px] text-danger">Could not load your setup progress.</p>;
   const done = new Set([...progress.data.completed, ...progress.data.skipped]);
   const idx = Math.max(0, STEPS.findIndex((s) => s.key === active));

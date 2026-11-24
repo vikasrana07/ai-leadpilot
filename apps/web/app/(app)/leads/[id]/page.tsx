@@ -28,6 +28,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { LeadDetailSkeleton } from '@/components/skeletons';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { api, ApiError } from '@/lib/api';
@@ -231,7 +232,7 @@ export default function LeadDetailPage() {
   const addNote = useMutation({ mutationFn: (body: string) => api(`/leads/${id}/notes`, { method: 'POST', body: { body } }), onSuccess: async () => { setNoteText(''); await refresh(); }, onError: (e) => handleApiError(e) });
   const setTags = useMutation({ mutationFn: (names: string[]) => api(`/leads/${id}/tags`, { method: 'PUT', body: { names } }), onSuccess: async () => { setTagText(''); await refresh(); }, onError: (e) => handleApiError(e) });
 
-  if (lead.isPending) return <><PageHeader title={terms.Lead} /><div className="space-y-3"><Skeleton className="h-24" /><Skeleton className="h-64" /></div></>;
+  if (lead.isPending) return <LeadDetailSkeleton />;
   if (lead.isError) return <Card><EmptyState icon={Pencil} title={`${terms.Lead} not found`} description={`It may have been deleted, merged into another ${terms.lead}, or assigned to someone else.`} action={<Button asChild><Link href="/leads">Back to leads</Link></Button>} /></Card>;
   const l = lead.data;
   const openStages = stages.data?.stages ?? [];
