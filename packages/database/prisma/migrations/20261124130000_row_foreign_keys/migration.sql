@@ -1,4 +1,4 @@
--- Audit finding S-09 (phase 2): 38 columns that point at another row (lead_id, membership_id, channel_id, ...) had no foreign key, so a
+-- Audit finding S-09 (phase 2): 35 columns that point at another row (lead_id, membership_id, channel_id, ...) had no foreign key, so a
 -- dangling reference was possible and, worse, RLS only checks the child's tenant_id: a buggy service could attach a row to ANOTHER tenant's lead.
 -- Every key here is COMPOSITE (tenant_id, <col>) -> parent (tenant_id, id), so the database also refuses a cross-tenant reference.
 --
