@@ -17,11 +17,13 @@ import {
   createCampaignSchema,
   recipientQuerySchema,
   updateCampaignSchema,
+  retryFailedSchema,
   whatsappOptInSchema,
   type AudiencePreviewInput,
   type CampaignQuery,
   type CreateCampaignInput,
   type RecipientQuery,
+  type RetryFailedInput,
   type UpdateCampaignInput,
   type WhatsappOptInInput,
 } from '@leadpilot/validation';
@@ -89,6 +91,17 @@ export class CampaignsController {
   @RequirePermissions('campaign:manage')
   launch(@CurrentTenant() ctx: TenantRequestContext, @Param('id') id: string) {
     return this.svc.launch(ctx, id);
+  }
+
+  @Post(':id/retry-failed')
+  @HttpCode(200)
+  @RequirePermissions('campaign:manage')
+  retryFailed(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Param('id') id: string,
+    @Body(new ZodPipe(retryFailedSchema)) input: RetryFailedInput,
+  ) {
+    return this.svc.retryFailed(ctx, id, input);
   }
 
   @Post(':id/cancel')

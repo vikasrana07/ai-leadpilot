@@ -9,9 +9,13 @@ import {
   XCircle,
   AlertCircle,
   Search,
+  RotateCcw,
   ShieldAlert,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useAuth } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,6 +24,7 @@ import {
   useCampaignRecipients,
   useLaunchCampaign,
   useCancelCampaign,
+  useRetryFailed,
   type RecipientItem,
 } from '@/lib/campaigns';
 
@@ -36,6 +41,10 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
 
   const launchMutation = useLaunchCampaign();
   const cancelMutation = useCancelCampaign();
+  const retryMutation = useRetryFailed();
+  const { can } = useAuth();
+  const [retryOpen, setRetryOpen] = useState(false);
+  const [includeUnknown, setIncludeUnknown] = useState(false);
 
   const campaign = campaignQuery.data;
   const recipients = recipientsQuery.data?.items || [];
@@ -127,6 +136,13 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
               </Button>
             )}
 
+            {campaign.status === 'COMPLETED' && can('campaign:manage') && ((campaign.retryableCount ?? 0) > 0 || (campaign.interruptedCount ?? 0) > 0) && (
+              <Button className="gap-2" onClick={() => { setIncludeUnknown((campaign.retryableCount ?? 0) === 0); setRetryOpen(true); }}>
+                <RotateCcw className="w-4 h-4" />
+                Retry failed
+              </Button>
+            )}
+
             {(campaign.status === 'SCHEDULED' || campaign.status === 'RUNNING') && (
               <Button
                 variant="danger"
@@ -141,6 +157,31 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={retryOpen}
+        onOpenChange={setRetryOpen}
+        title="Retry failed messages?"
+        description={`${campaign.retryableCount ?? 0} message${(campaign.retryableCount ?? 0) === 1 ? '' : 's'} that failed to send will be tried again. Anyone who has since sent STOP is skipped.`}
+        confirmLabel="Retry"
+        onConfirm={async () => {
+          try {
+            const r = await retryMutation.mutateAsync({ id, includeInterrupted: includeUnknown });
+            toast.success(`${r.retried} message${r.retried === 1 ? '' : 's'} queued again`);
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Could not retry');
+          }
+        }}
+      >
+        {(campaign.interruptedCount ?? 0) > 0 ? (
+          <label className="mt-3 flex items-start gap-2 rounded-md border border-border p-3 text-[13px]">
+            <input type="checkbox" className="mt-0.5" checked={includeUnknown} onChange={(e) => setIncludeUnknown(e.target.checked)} />
+            <span>
+              Also retry {campaign.interruptedCount} message{campaign.interruptedCount === 1 ? '' : 's'} whose delivery is <strong>unknown</strong> (the sender stopped part-way). They may already have been delivered, so retrying can message someone twice.
+            </span>
+          </label>
+        ) : null}
+      </ConfirmDialog>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
