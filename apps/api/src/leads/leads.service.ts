@@ -179,7 +179,8 @@ export class LeadsService {
     return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, async (tx) => {
       const row = await tx.lead.findFirst({ where: { id, tenantId: a.tenantId, deletedAt: null, ...this.readScope(a) }, include: LEAD_INCLUDE });
       if (!row) throw new NotFoundException({ code: 'not_found', message: 'Lead not found' });
-      const merged = await tx.lead.findMany({ where: { mergedIntoId: id }, select: { id: true, name: true } });
+      // A merge soft-deletes the duplicate; the soft-delete extension hides such rows unless `deletedAt` is stated explicitly.
+      const merged = await tx.lead.findMany({ where: { mergedIntoId: id, deletedAt: { not: null } }, select: { id: true, name: true } });
       const [dto] = await this.dto(tx, [row]);
       return { ...(dto as LeadDto), mergedLeads: merged, canWrite: this.canWriteLead(a, row) };
     });
@@ -424,7 +425,9 @@ export class LeadsService {
 
   /** Notes and history include those of leads merged into this one (history rows are append-only and are not moved). */
   private async relatedIds(tx: TxClient, id: string): Promise<string[]> {
-    const merged = await tx.lead.findMany({ where: { mergedIntoId: id }, select: { id: true } });
+    // Merged duplicates are soft-deleted, so ask for them explicitly (see the soft-delete extension): without this their notes and
+    // activity silently disappear from the surviving lead.
+    const merged = await tx.lead.findMany({ where: { mergedIntoId: id, deletedAt: { not: null } }, select: { id: true } });
     return [id, ...merged.map((m) => m.id)];
   }
 
