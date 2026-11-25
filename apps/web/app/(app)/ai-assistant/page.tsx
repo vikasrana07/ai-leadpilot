@@ -58,7 +58,7 @@ function AssistantForm({ data }: { data: Assistant }) {
         <div role="note" className="flex gap-3 rounded-lg border border-warning/40 bg-warning-soft p-3 text-[13px] text-warning"><TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden /><p><strong>Demo mode.</strong> Replies come from a simple offline stand-in, not a real language model, so they are basic. Everything else (knowledge, tools, scoring, handover, limits) is real. Connect an OpenAI key (<code>AI_PROVIDER=openai</code>) for natural conversations.</p></div>
       ) : null}
 
-      <Card>
+      <Card data-tour="ai-persona">
         <CardHeader><div><CardTitle>Status</CardTitle><p className="text-helper mt-0.5">When on, the assistant starts every new conversation and hands over to your team when needed.</p></div>
           <label className="flex items-center gap-2 text-[13px] font-medium"><input type="checkbox" role="switch" checked={f.enabled} onChange={(e) => set('enabled', e.target.checked)} />{f.enabled ? 'On' : 'Off'}</label></CardHeader>
         <CardBody className="grid gap-4 sm:grid-cols-2">
@@ -213,7 +213,7 @@ export default function AiAssistantPage() {
     <>
       <PageHeader title="AI assistant" description="Greets new enquiries, asks the right questions, answers from your inventory and documents, and brings in your team when it should." actions={assistant.data ? <Badge tone={assistant.data.enabled ? 'success' : 'neutral'}><Bot className="h-3 w-3" aria-hidden />{assistant.data.enabled ? 'On' : 'Off'}</Badge> : undefined} />
       {usage.data ? <UsageMeter u={usage.data} /> : null}
-      <div role="tablist" aria-label="Assistant sections" className="mb-4 flex gap-1 border-b border-border">
+      <div data-tour="ai-scoring" role="tablist" aria-label="Assistant sections" className="mb-4 flex gap-1 border-b border-border">
         {TABS.map(([k, rawLabel]) => { const label = applyTerms(rawLabel, terms); return <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cn('relative px-3 py-2.5 text-[13px] font-medium', tab === k ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>{label}{tab === k ? <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" /> : null}</button>; })}
       </div>
       {tab === 'assistant' ? (assistant.isPending ? <Skeleton className="h-96" /> : assistant.isError || !assistant.data ? <p className="flex items-center gap-2 text-[13px] text-danger"><Info className="h-4 w-4" aria-hidden />Could not load the assistant settings.</p> : <AssistantForm key={JSON.stringify(assistant.data).length} data={assistant.data} />) : tab === 'scoring' ? <ScoringTab /> : <ActivityTab />}

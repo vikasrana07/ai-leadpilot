@@ -256,7 +256,7 @@ export default function BillingPage() {
       {!s.canManage ? <Card className="mb-4"><CardBody className="text-[13px]">Only owners can change the plan or see invoices. Ask an owner of this workspace if you need billing changes. See <Link href="/usage" className="text-primary underline underline-offset-2 hover:no-underline">Usage</Link> for what your plan includes.</CardBody></Card> : null}
       {inlineError ? <div role="alert" className="mb-4 rounded-md border border-border bg-danger-soft px-3 py-2 text-[13px] text-danger">{inlineError}{problems.length ? <ul className="mt-1 list-disc pl-5">{problems.map((p) => <li key={p.label}>{p.label}: using {p.used.toLocaleString('en-IN')}, new plan allows {p.allowed.toLocaleString('en-IN')}</li>)}</ul> : null}</div> : null}
 
-      <div className="mb-4 grid gap-3 md:grid-cols-3">
+      <div data-tour="billing-plan" className="mb-4 grid gap-3 md:grid-cols-3">
         {plans.data.map((p) => <PlanCard key={p.key} plan={p} summary={s} plans={plans.data} busy={busyPlan === p.key} onChoose={() => void choose(p.key)} />)}
       </div>
       <p className="text-helper mb-4">Prices exclude GST. Upgrades apply immediately (the provider prorates the difference); downgrades start at the next renewal and need your usage to fit the new plan.</p>
@@ -269,7 +269,7 @@ export default function BillingPage() {
       ) : null}
 
       {s.canManage ? (
-        <Card><CardHeader><CardTitle>Invoices</CardTitle></CardHeader>
+        <Card data-tour="billing-invoices"><CardHeader><CardTitle>Invoices</CardTitle></CardHeader>
           {invoices.isPending ? <CardBody><Skeleton className="h-16" /></CardBody> : invoices.data?.length ? (
             <div className="overflow-x-auto"><table className="w-full text-[13px]"><thead><tr className="border-b border-border text-left text-muted-foreground"><th className="px-4 py-2 font-medium">Invoice</th><th className="px-4 py-2 font-medium">Date</th><th className="px-4 py-2 font-medium">Description</th><th className="px-4 py-2 text-right font-medium">Total (incl. GST)</th><th /></tr></thead><tbody>
               {invoices.data.map((i) => <tr key={i.id} className="border-b border-border last:border-0"><td className="num px-4 py-2 font-medium">{i.number}</td><td className="px-4 py-2">{fmtDate(i.issuedAt)}</td><td className="px-4 py-2 text-muted-foreground">{i.description}</td><td className="num px-4 py-2 text-right">{inr(i.totalMinor)}</td><td className="px-4 py-2 text-right"><Link href={`/invoice/${i.id}`} target="_blank" className="text-primary underline underline-offset-2 hover:no-underline">View</Link></td></tr>)}

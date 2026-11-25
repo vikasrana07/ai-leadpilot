@@ -57,7 +57,7 @@ export default function RolesPage() {
         description="Configure granular access profiles. System roles provide standard baselines, while custom roles allow tailored privilege delegation."
         actions={
           canManageRoles ? (
-            <Button variant="primary" onClick={handleCreate}>
+            <Button data-tour="roles-create" variant="primary" onClick={handleCreate}>
               <Plus className="h-4 w-4" aria-hidden />
               Create custom role
             </Button>
@@ -98,7 +98,7 @@ export default function RolesPage() {
       ) : roles.isError ? (
         <p className="text-[13px] text-danger">Could not load roles.</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div data-tour="roles-list" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {roles.data.map((r) => {
             const groups = new Map<string, RoleData['permissions']>();
             r.permissions.forEach((p) => {

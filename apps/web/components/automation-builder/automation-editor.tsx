@@ -199,13 +199,13 @@ function EditorBody({ initial, reload }: { initial: Source; reload: (() => Promi
         title={server.id ? (name.trim() || 'Edit automation') : 'New automation'}
         breadcrumbs={[{ label: 'Automations', href: '/automations' }, { label: server.id ? 'Edit' : 'New' }]}
         description="Build what happens, step by step. Each step runs in order; a condition splits the path into If and Otherwise; a wait pauses until later."
-        actions={<>
+        actions={<div data-tour={server.id ? 'automations-edit-header' : 'automations-new-header'} className="flex flex-wrap items-center gap-2">
           <Button type="button" size="icon" aria-label="Undo (Ctrl+Z)" title="Undo (Ctrl+Z)" disabled={state.past.length === 0} onClick={() => dispatch({ type: 'undo' })}><Undo2 className="h-4 w-4" aria-hidden /></Button>
           <Button type="button" size="icon" aria-label="Redo (Ctrl+Shift+Z)" title="Redo (Ctrl+Shift+Z)" disabled={state.future.length === 0} onClick={() => dispatch({ type: 'redo' })}><Redo2 className="h-4 w-4" aria-hidden /></Button>
           <Button type="button" onClick={() => setTestOpen(true)} disabled={!server.id || !valid} title={!server.id ? 'Save once to be able to test' : !valid ? 'Fix the problems first' : undefined}><FlaskConical className="h-4 w-4" aria-hidden />Test</Button>
           {server.id ? <Button type="button" variant={server.enabled ? 'secondary' : 'primary'} loading={toggle.isPending} disabled={dirty || toggle.isPending} title={dirty ? 'Save your changes first' : undefined} onClick={() => toggle.mutate(!server.enabled)}><Power className="h-4 w-4" aria-hidden />{server.enabled ? 'Turn off' : 'Turn on'}</Button> : null}
           <Button type="button" variant="primary" loading={saving} disabled={!dirty && !!server.id} onClick={() => void save()}><Save className="h-4 w-4" aria-hidden />Save</Button>
-        </>}
+        </div>}
       />
 
       <div className="sr-only" role="status" aria-live="polite" data-testid="announcer">{announce}</div>
@@ -264,7 +264,7 @@ function EditorBody({ initial, reload }: { initial: Source; reload: (() => Promi
                   className={`inline-flex min-h-9 items-center gap-1.5 rounded px-3 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-lg:min-h-11 ${(showCanvas ? v === 'canvas' : v === 'outline') ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted'}`}>
                   <Icon className="h-3.5 w-3.5" aria-hidden />{label}</button>))}
             </div>
-            <div id="view-panel" role="tabpanel" aria-labelledby={`view-tab-${showCanvas ? 'canvas' : 'outline'}`}>
+            <div id="view-panel" data-tour={server.id ? 'automations-edit-canvas' : 'automations-new-canvas'} role="tabpanel" aria-labelledby={`view-tab-${showCanvas ? 'canvas' : 'outline'}`}>
             {showCanvas ? (
               <Canvas graph={graph} selected={state.selected} issues={issues} marks={marks} taken={taken} readOnly={canvasReadOnly} summaryText={summaryText} focus={state.focus} onFocused={onFocused}
                 onSelect={(id) => dispatch({ type: 'select', id })} onEdit={onEdit} onInsert={onInsert} onRemove={(id) => dispatch({ type: 'remove', id })}

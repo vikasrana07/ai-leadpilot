@@ -381,7 +381,7 @@ export default function WebhooksPage() {
         title="Webhooks"
         description="Get a signed HTTPS request the moment something happens in your workspace."
         actions={
-          <Button variant="primary" onClick={() => setOpen(true)} disabled={gated}>
+          <Button data-tour="webhooks-create" variant="primary" onClick={() => setOpen(true)} disabled={gated}>
             Add endpoint
           </Button>
         }
@@ -403,7 +403,7 @@ export default function WebhooksPage() {
       ) : list.isPending ? (
         <Skeleton className="h-40" />
       ) : list.data && list.data.length > 0 ? (
-        <div className="space-y-3">
+        <div data-tour="webhooks-list" className="space-y-3">
           {list.data.map((e) => (
             <Card key={e.id}>
               <CardBody className="space-y-3">

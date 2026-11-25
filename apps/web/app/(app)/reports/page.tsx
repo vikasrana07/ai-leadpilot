@@ -101,7 +101,7 @@ export default function ReportsPage() {
   return (
     <>
       <PageHeader title="Reports" description={T(meta?.blurb ?? '')} actions={(
-        <div className="flex flex-wrap items-center gap-2">
+        <div data-tour="reports-controls" className="flex flex-wrap items-center gap-2">
           <Select aria-label="Date range" value={range} onChange={(e) => setRange(e.target.value as RangeKey)} className="w-40">{RANGES.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}</Select>
           {range === 'custom' ? <><Input aria-label="From date" type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-40" /><Input aria-label="To date" type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className="w-40" /></> : null}
         </div>
@@ -148,7 +148,7 @@ export default function ReportsPage() {
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {Object.entries(q.data.summary).map(([k, v]) => { const [rawLabel, suffix] = LABELS[k] ?? [k, '']; const label = T(rawLabel); return <div key={k} className="rounded-lg border border-border bg-card p-3.5 shadow-sm"><p className="text-[12px] font-medium text-muted-foreground">{label}</p><p className="num mt-1.5 text-[22px] font-semibold leading-none">{fmt(v, suffix)}</p></div>; })}
             </div>
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div data-tour="reports-charts" className="grid gap-4 lg:grid-cols-2">
               {CHARTS[key].map((c) => <Card key={c.title}><CardHeader><CardTitle>{T(c.title)}</CardTitle></CardHeader><CardBody><Chart spec={c} data={q.data.series[c.data] ?? []} /></CardBody></Card>)}
             </div>
             {q.data.tables.map((t) => (

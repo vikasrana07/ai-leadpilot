@@ -153,8 +153,8 @@ export default function TeamPage() {
 
   return (
     <>
-      <PageHeader title="Team" description="People who can access this workspace." actions={canInvite ? <Button variant="primary" onClick={() => setInviteOpen(true)}><UserPlus className="h-4 w-4" aria-hidden />Invite teammate</Button> : undefined} />
-      <Card>
+      <PageHeader title="Team" description="People who can access this workspace." actions={canInvite ? <Button data-tour="team-invite" variant="primary" onClick={() => setInviteOpen(true)}><UserPlus className="h-4 w-4" aria-hidden />Invite teammate</Button> : undefined} />
+      <Card data-tour="team-list">
         <CardHeader><CardTitle>Members {members.data ? <span className="num ml-1 font-normal text-muted-foreground">{members.data.length}</span> : null}</CardTitle></CardHeader>
         {members.isPending ? (
           <div className="divide-y divide-border">

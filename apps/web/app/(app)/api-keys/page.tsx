@@ -260,13 +260,13 @@ export default function ApiKeysPage() {
         title="API keys"
         description="Let your own systems read and write your LeadPilot data."
         actions={
-          <Button variant="primary" onClick={() => setOpen(true)}>
+          <Button data-tour="api-keys-create" variant="primary" onClick={() => setOpen(true)}>
             Create API key
           </Button>
         }
       />
       <div className="grid gap-6">
-        <Card>
+        <Card data-tour="api-keys-list">
           <CardHeader>
             <CardTitle>
               <KeyRound className="mr-1.5 inline h-4 w-4" aria-hidden />

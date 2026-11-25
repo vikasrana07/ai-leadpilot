@@ -65,7 +65,7 @@ function InboxView() {
   return (
     <div className="flex h-full w-full min-h-0 flex-1">
       {/* queues (wide screens) */}
-      <nav aria-label="Queues" className="hidden w-52 shrink-0 flex-col gap-1 border-r border-border bg-header p-3 xl:flex">
+      <nav data-tour="inbox-queues" aria-label="Queues" className="hidden w-52 shrink-0 flex-col gap-1 border-r border-border bg-header p-3 xl:flex">
         <h1 className="text-title px-2 pb-2 pt-1">Inbox</h1>
         {QUEUES.filter((x) => canAll || x.key !== 'unassigned').map((x) => (
           <button key={x.key} onClick={() => { setQueue(x.key); select(null); }} aria-current={queue === x.key} className={cn('flex items-center justify-between rounded-md px-2.5 py-2 text-[13px]', queue === x.key ? 'bg-surface font-medium shadow-sm' : 'text-muted-foreground hover:bg-muted')}>
@@ -77,7 +77,7 @@ function InboxView() {
       </nav>
 
       {/* list */}
-      <section aria-label="Conversations" className={cn('flex w-full shrink-0 flex-col border-r border-border bg-surface md:w-80', selectedId ? 'hidden md:flex' : 'flex')}>
+      <section data-tour="inbox-list" aria-label="Conversations" className={cn('flex w-full shrink-0 flex-col border-r border-border bg-surface md:w-80', selectedId ? 'hidden md:flex' : 'flex')}>
         <div className="space-y-2 border-b border-border p-3">
           <h1 className="text-title xl:hidden">Inbox</h1>
           <div className="relative"><Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden /><input aria-label="Search conversations" placeholder="Search by name, phone or email" value={search} onChange={(e) => setSearch(e.target.value)} className="h-9 w-full rounded-md border border-border bg-background pl-8 pr-3 text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-ring/25" /></div>
@@ -114,7 +114,7 @@ function InboxView() {
       </section>
 
       {/* conversation */}
-      <section aria-label="Conversation" className={cn('min-w-0 flex-1 flex-col bg-background', selectedId ? 'flex' : 'hidden md:flex')}>
+      <section data-tour="inbox-thread" aria-label="Conversation" className={cn('min-w-0 flex-1 flex-col bg-background', selectedId ? 'flex' : 'hidden md:flex')}>
         {!selectedId ? <div className="m-auto"><EmptyState icon={InboxIcon} title="Select a conversation" description="Pick one from the list to read and reply." /></div>
           : detail.isPending ? <InboxThreadSkeleton />
           : detail.isError ? <div className="m-auto"><EmptyState icon={XCircle} title="Conversation not found" description="It may belong to someone else, or it was removed." action={<Button onClick={() => select(null)}>Back to inbox</Button>} /></div>
@@ -134,7 +134,7 @@ function InboxView() {
       </section>
 
       {/* details (wide screens) */}
-      {detail.data ? <aside aria-label="Customer details" className="hidden w-72 shrink-0 overflow-y-auto border-l border-border bg-surface xl:block"><DetailsPanel convo={detail.data} /></aside> : null}
+      {detail.data ? <aside data-tour="inbox-details" aria-label="Customer details" className="hidden w-72 shrink-0 overflow-y-auto border-l border-border bg-surface xl:block"><DetailsPanel convo={detail.data} /></aside> : null}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}><DialogContent title="Customer details" className="max-w-md">{detail.data ? <DetailsPanel convo={detail.data} /> : null}</DialogContent></Dialog>
     </div>
   );

@@ -92,11 +92,11 @@ export default function PipelinePage() {
 
   return (
     <>
-      <PageHeader title="Sales pipeline" description="Drag a card to another stage, or use the move menu on the card." actions={<>
+      <PageHeader title="Sales pipeline" description="Drag a card to another stage, or use the move menu on the card." actions={<div data-tour="pipeline-toolbar" className="flex flex-wrap items-center gap-2">
         {can('lead:write:all') ? <Select aria-label="Assigned to" className="w-auto" value={filters.assigned} onChange={(e) => setFilters((f) => ({ ...f, assigned: e.target.value }))}><option value="">Everyone</option><option value="me">Mine</option><option value="unassigned">Unassigned</option>{members.data?.map((m) => <option key={m.id} value={m.id}>{m.user.name}</option>)}</Select> : null}
         <Select aria-label="Temperature" className="w-auto" value={filters.temperature} onChange={(e) => setFilters((f) => ({ ...f, temperature: e.target.value }))}><option value="">Any temperature</option><option value="HOT">Hot</option><option value="WARM">Warm</option><option value="COLD">Cold</option></Select>
         {can('pipeline:manage') ? <Button onClick={() => setConfigOpen(true)}><Settings2 className="h-4 w-4" aria-hidden />Configure</Button> : null}
-      </>} />
+      </div>} />
 
       <div aria-live="polite" className="mb-3 h-8">
         <AnimatePresence mode="wait">{notice ? <motion.p key={notice.text} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={cn('inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-medium', notice.ok ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning')}>{notice.ok ? null : <TriangleAlert className="h-3.5 w-3.5" aria-hidden />}{notice.text}</motion.p> : null}</AnimatePresence>
@@ -105,7 +105,7 @@ export default function PipelinePage() {
       {board.isPending ? <PipelineColumnsSkeleton count={4} /> : board.isError ? (
         <EmptyState icon={KanbanSquare} title="Could not load the pipeline" description="Check your connection and try again." action={<Button onClick={() => void board.refetch()}>Retry</Button>} />
       ) : (
-        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6">
+        <div data-tour="pipeline-board" className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6">
           {board.data.columns.map((col) => (
             <section key={col.stage.id} aria-label={`${col.stage.name}, ${col.total} ${terms.leads}`} onDragOver={(e) => { e.preventDefault(); setOver(col.stage.id); }} onDragLeave={() => setOver((o) => (o === col.stage.id ? null : o))} onDrop={() => { if (drag) request(drag, col.stage.id); setDrag(null); setOver(null); }}
               className={cn('flex max-h-[calc(100dvh-14rem)] w-64 shrink-0 flex-col rounded-lg border bg-muted/50 transition-colors', over === col.stage.id ? 'border-primary bg-primary-soft/40' : 'border-border')}>

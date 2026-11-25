@@ -2,10 +2,11 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import { Command } from 'cmdk';
-import { Search, User } from 'lucide-react';
+import { CheckSquare, HelpCircle, RotateCcw, Search, User, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useHelpTour } from '@/components/tour/help-tour-provider';
 import { useDebounce } from '@/hooks/use-debounce';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -15,13 +16,22 @@ import { usePack, useTerms } from '@/lib/pack';
 import { BLOCKED_DURING_SUPPORT, useSupportSession } from '@/lib/support';
 import { useTheme } from '@/lib/theme';
 
-export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+export function CommandPalette({
+  open,
+  onOpenChange,
+  onQuickCreate,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  onQuickCreate?: (kind: 'lead' | 'task') => void;
+}) {
   const router = useRouter();
   const { can, logout, activeWorkspace } = useAuth();
   const terms = useTerms();
   const pack = usePack();
   const modules = activeWorkspace?.industryChosen ? pack.modules : { properties: false };
   const { setPreference } = useTheme();
+  const { hasTourForCurrentRoute, startTour, resetSeenTours } = useHelpTour();
   // Modal behaviour: remember what had focus, keep Tab inside, give the dialog a name, and hand focus back on close.
   const opener = useRef<HTMLElement | null>(null);
   const wasOpen = useRef(false);
@@ -102,12 +112,55 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                   </Command.Group>
                 ) : null}
 
+                {!support && onQuickCreate ? (
+                  <Command.Group heading="Create" className="[&_[cmdk-group-heading]]:text-label [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-muted-foreground">
+                    {can('lead:write:own') || can('lead:write:all') ? (
+                      <Command.Item
+                        value={`Create new ${terms.lead.toLowerCase()}`}
+                        onSelect={() => run(() => onQuickCreate('lead'))}
+                        className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-[13px] data-[selected=true]:bg-muted"
+                      >
+                        <UserPlus className="h-4 w-4 text-muted-foreground" aria-hidden />
+                        New {terms.lead.toLowerCase()}
+                      </Command.Item>
+                    ) : null}
+                    <Command.Item
+                      value="Create new task"
+                      onSelect={() => run(() => onQuickCreate('task'))}
+                      className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-[13px] data-[selected=true]:bg-muted"
+                    >
+                      <CheckSquare className="h-4 w-4 text-muted-foreground" aria-hidden />
+                      New task
+                    </Command.Item>
+                  </Command.Group>
+                ) : null}
+
                 <Command.Group heading="Go to" className="[&_[cmdk-group-heading]]:text-label [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-muted-foreground">
                   {nav.map((n) => (
                     <Command.Item key={n.href} value={navLabel(n, terms)} onSelect={() => run(() => router.push(n.href))} className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-[13px] data-[selected=true]:bg-muted">
                       <n.icon className="h-4 w-4 text-muted-foreground" aria-hidden />{navLabel(n, terms)}
                     </Command.Item>
                   ))}
+                </Command.Group>
+                <Command.Group heading="Help" className="[&_[cmdk-group-heading]]:text-label [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-muted-foreground">
+                  {hasTourForCurrentRoute ? (
+                    <Command.Item
+                      value="Start page help tour"
+                      onSelect={() => run(() => startTour())}
+                      className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-[13px] data-[selected=true]:bg-muted"
+                    >
+                      <HelpCircle className="h-4 w-4 text-muted-foreground" aria-hidden />
+                      Start page help tour
+                    </Command.Item>
+                  ) : null}
+                  <Command.Item
+                    value="Reset completed help tours"
+                    onSelect={() => run(() => resetSeenTours())}
+                    className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-[13px] data-[selected=true]:bg-muted"
+                  >
+                    <RotateCcw className="h-4 w-4 text-muted-foreground" aria-hidden />
+                    Reset completed help tours
+                  </Command.Item>
                 </Command.Group>
                 <Command.Group heading="Preferences" className="[&_[cmdk-group-heading]]:text-label [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-muted-foreground">
                   {(['light', 'dark', 'system'] as const).map((t) => (

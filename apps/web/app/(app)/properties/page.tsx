@@ -490,7 +490,7 @@ export default function PropertiesPage() {
         description="Your available inventory. Match properties to buyers and share units in chat."
         actions={
           editable ? (
-            <>
+            <div data-tour="properties-actions" className="flex flex-wrap items-center gap-2">
               <Button onClick={() => setImporting(true)}>
                 <Upload className="h-4 w-4" aria-hidden />
                 Import CSV
@@ -505,12 +505,12 @@ export default function PropertiesPage() {
                 <Plus className="h-4 w-4" aria-hidden />
                 Add property
               </Button>
-            </>
+            </div>
           ) : null
         }
       />
 
-      <Card className="mb-4 overflow-hidden">
+      <Card data-tour="properties-list" className="mb-4 overflow-hidden">
         <DataTableToolbar
           search={search}
           onSearchChange={(v) => {

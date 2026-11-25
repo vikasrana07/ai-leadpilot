@@ -12,6 +12,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { ActivityTimeline, type ActivityItem } from '@/components/crm/activity-timeline';
+import { LeadAttachmentsCard } from '@/components/crm/lead-attachments-card';
 import { SendEmailDialog } from '@/components/crm/send-email-dialog';
 import { StageBadge, TemperatureBadge } from '@/components/crm/lead-badges';
 import { ScoreCard } from '@/components/ai/score-card';
@@ -248,15 +249,15 @@ export default function LeadDetailPage() {
 
   return (
     <>
-      <PageHeader title={l.name} breadcrumbs={[{ label: terms.Leads, href: '/leads' }, { label: l.name }]} actions={<>
+      <PageHeader title={l.name} breadcrumbs={[{ label: terms.Leads, href: '/leads' }, { label: l.name }]} actions={<div data-tour="lead-detail-header" className="flex flex-wrap items-center gap-2">
         {can('lead:write:all') ? <Button onClick={() => setMergeOpen(true)}><GitMerge className="h-4 w-4" aria-hidden />Merge duplicates</Button> : null}
         {l.canWrite ? <Button variant="secondary" onClick={() => setEmailOpen(true)}><Mail className="h-4 w-4" aria-hidden />Send email</Button> : null}
         {l.canWrite ? <Button onClick={() => setEditOpen(true)}><Pencil className="h-4 w-4" aria-hidden />Edit</Button> : null}
         <LeadPrivacyMenu leadId={id} leadName={l.name} />
         {can('lead:delete') ? <Button variant="ghost" size="icon" aria-label={`Delete ${terms.lead}`} onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4" /></Button> : null}
-      </>} />
+      </div>} />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div data-tour="lead-detail-stage" className="mb-4 flex flex-wrap items-center gap-2">
         <StageBadge name={l.stage.name} kind={l.stage.kind} /><TemperatureBadge value={l.temperature} />
         {l.score !== null ? <Badge tone="primary" className="num">Score {l.score}</Badge> : <Badge>Not scored yet</Badge>}
         {l.source ? <Badge>{l.source.name}</Badge> : null}
@@ -264,7 +265,7 @@ export default function LeadDetailPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        <Card>
+        <Card data-tour="lead-detail-timeline">
           <div role="tablist" aria-label={`${terms.Lead} sections`} className="flex gap-1 border-b border-border px-3">
             {([['activity', 'Activity'], ['notes', `Notes${notes.data?.length ? ` (${notes.data.length})` : ''}`]] as const).map(([k, label]) => (
               <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cn('relative px-3 py-3 text-[13px] font-medium', tab === k ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>{label}{tab === k ? <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" /> : null}</button>
@@ -272,7 +273,7 @@ export default function LeadDetailPage() {
           </div>
           <CardBody>
             {tab === 'activity' ? (timeline.isPending ? <Skeleton className="h-40" /> : <ActivityTimeline items={timeline.data ?? []} />) : (
-              <div className="space-y-4">
+              <div data-tour="lead-detail-sidebar" className="space-y-4">
                 {l.canWrite ? (
                   <form onSubmit={(e) => { e.preventDefault(); if (noteText.trim()) addNote.mutate(noteText.trim()); }} className="space-y-2">
                     <Textarea aria-label="Add a note" placeholder={`Add a note about this ${terms.lead}…`} value={noteText} onChange={(e) => setNoteText(e.target.value)} />
@@ -285,7 +286,7 @@ export default function LeadDetailPage() {
           </CardBody>
         </Card>
 
-        <div className="space-y-4">
+        <div data-tour="lead-detail-sidebar" className="space-y-4">
           <Card>
             <CardHeader><CardTitle>Contact</CardTitle></CardHeader>
             <CardBody className="space-y-2 text-[13px]">
@@ -326,6 +327,7 @@ export default function LeadDetailPage() {
               {l.canWrite ? <form onSubmit={(e) => { e.preventDefault(); const n = tagText.trim(); if (n && !tagNames.includes(n)) setTags.mutate([...tagNames, n]); }} className="flex gap-2"><Input aria-label="New tag" placeholder="Add tag" value={tagText} onChange={(e) => setTagText(e.target.value)} /><Button type="submit" size="sm" disabled={!tagText.trim()}>Add</Button></form> : null}
             </CardBody>
           </Card>
+          <LeadAttachmentsCard leadId={l.id} canWrite={l.canWrite} />
           {l.mergedLeads.length ? <p className="text-helper px-1">Merged from: {l.mergedLeads.map((m) => m.name).join(', ')}</p> : null}
         </div>
       </div>

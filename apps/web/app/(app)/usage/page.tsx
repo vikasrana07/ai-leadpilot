@@ -32,7 +32,7 @@ export default function UsagePage() {
   return (
     <>
       <PageHeader title="Usage" description={`${period}. Your plan's limits apply to the figures below.`} />
-      <Card className="mb-3"><CardHeader><CardTitle>Plan & limits: {u.plan.name}</CardTitle><div className="flex items-center gap-2"><Badge tone={u.plan.restricted ? 'danger' : 'neutral'}>{STATUS_LABEL[u.plan.status as SubStatus] ?? u.plan.status}</Badge><Link href="/billing" className="text-[13px] text-primary underline underline-offset-2 hover:no-underline">Manage plan</Link></div></CardHeader><CardBody>
+      <Card data-tour="usage-meters" className="mb-3"><CardHeader><CardTitle>Plan & limits: {u.plan.name}</CardTitle><div className="flex items-center gap-2"><Badge tone={u.plan.restricted ? 'danger' : 'neutral'}>{STATUS_LABEL[u.plan.status as SubStatus] ?? u.plan.status}</Badge><Link href="/billing" className="text-[13px] text-primary underline underline-offset-2 hover:no-underline">Manage plan</Link></div></CardHeader><CardBody>
         <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">{LIMIT_KEYS.map((k) => {
           const limit = u.plan.limits[k] ?? null; const used = u.plan.meters[k] ?? 0; const pct = limit ? Math.min(100, Math.round((used / limit) * 100)) : 0;
           return <div key={k}><div className="flex items-baseline justify-between text-[13px]"><span>{ENTITLEMENT_LABELS[k]}</span><span className="num text-muted-foreground">{n(used)} / {limitText(limit)}</span></div>

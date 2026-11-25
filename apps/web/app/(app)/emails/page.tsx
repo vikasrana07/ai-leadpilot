@@ -131,8 +131,8 @@ export default function EmailTrackingPage() {
       />
 
       {/* KPI Stats Bar */}
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div data-tour="emails-stats" className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card data-tour="emails-table">
           <CardBody className="p-4">
             <p className="text-helper text-[12px] font-medium uppercase tracking-wider">Delivery Rate</p>
             <div className="mt-1 flex items-baseline justify-between">
@@ -146,7 +146,7 @@ export default function EmailTrackingPage() {
           </CardBody>
         </Card>
 
-        <Card>
+        <Card data-tour="emails-table">
           <CardBody className="p-4">
             <p className="text-helper text-[12px] font-medium uppercase tracking-wider">Open Rate</p>
             <div className="mt-1 flex items-baseline justify-between">
@@ -160,7 +160,7 @@ export default function EmailTrackingPage() {
           </CardBody>
         </Card>
 
-        <Card>
+        <Card data-tour="emails-table">
           <CardBody className="p-4">
             <p className="text-helper text-[12px] font-medium uppercase tracking-wider">Click Rate</p>
             <div className="mt-1 flex items-baseline justify-between">
@@ -174,7 +174,7 @@ export default function EmailTrackingPage() {
           </CardBody>
         </Card>
 
-        <Card>
+        <Card data-tour="emails-table">
           <CardBody className="p-4">
             <p className="text-helper text-[12px] font-medium uppercase tracking-wider">Bounce & Complaints</p>
             <div className="mt-1 flex items-baseline justify-between">
@@ -189,7 +189,7 @@ export default function EmailTrackingPage() {
         </Card>
       </div>
 
-      <Card>
+      <Card data-tour="emails-table">
         {/* Navigation Tabs */}
         <div role="tablist" aria-label="Email engagement sections" className="flex items-center justify-between border-b border-border px-4">
           <div className="flex gap-2">

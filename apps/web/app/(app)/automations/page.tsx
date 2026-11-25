@@ -100,17 +100,17 @@ export default function AutomationsPage() {
   return (
     <>
       <PageHeader title="Automations" description="Follow-ups and alerts that run on their own. Every run is recorded, retried on failure, and can be tested first."
-        actions={<Button asChild variant="primary"><Link href="/automations/new"><Plus className="h-4 w-4" aria-hidden />New automation</Link></Button>} />
+        actions={<Button data-tour="automations-create" asChild variant="primary"><Link href="/automations/new"><Plus className="h-4 w-4" aria-hidden />New automation</Link></Button>} />
       <div role="tablist" aria-label="Automations" className="mb-3 flex gap-1 border-b border-border">{tabs.map(([k, l]) => <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cn('-mb-px border-b-2 px-3 py-2 text-[13px] font-medium', tab === k ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}>{l}</button>)}</div>
       {tab === 'history' ? <RunsPanel /> : tab === 'gallery' ? (
-        templates.isPending ? <Skeleton className="h-48" /> : <div className="grid gap-3 md:grid-cols-2">{templates.data?.items.map((t) => (
+        templates.isPending ? <Skeleton className="h-48" /> : <div data-tour="automations-list" className="grid gap-3 md:grid-cols-2">{templates.data?.items.map((t) => (
           <Card key={t.key} className="flex flex-col p-4"><div className="flex items-start justify-between gap-2"><div><Badge>{applyTerms(t.category, terms)}</Badge><h3 className="text-heading mt-1.5">{applyTerms(t.name, terms)}</h3></div><div className="flex shrink-0 items-center gap-1.5">{t.installed ? <Badge tone="success">Added</Badge> : <Button size="sm" variant="primary" loading={install.isPending && install.variables === t.key} onClick={() => install.mutate(t.key)}>Add</Button>}<Button size="sm" loading={customize.isPending && customize.variables?.key === t.key} onClick={() => customize.mutate(t)} aria-label={`Customize ${t.name} in the editor`}><Pencil className="h-3.5 w-3.5" aria-hidden />Customize</Button></div></div>
             <p className="text-helper mt-1.5">{applyTerms(t.description, terms)}</p><p className="mt-2 text-[12px]"><span className="text-muted-foreground">When:</span> {describeTrigger(t.trigger, terms)}</p>
             <p className="text-[12px]"><span className="text-muted-foreground">Then:</span> {t.actions.map((a) => ACTION_LABELS[a.type] ?? a.type).join(', ')}</p>
             {t.requiresWhatsappTemplates.length ? <p className="text-helper mt-1.5">Needs WhatsApp template{t.requiresWhatsappTemplates.length > 1 ? 's' : ''}: {t.requiresWhatsappTemplates.map((n) => <code key={n} className="mx-0.5 rounded bg-muted px-1">{n}</code>)}</p> : null}</Card>))}</div>
       ) : list.isPending ? <AutomationCardsSkeleton count={4} /> : list.data?.items.length === 0 ? (
         <Card><EmptyState icon={Workflow} title="No automations yet" description={`Start from a template: welcome messages, ${terms.event} reminders, hot-${terms.lead} alerts and more.`} action={<Button variant="primary" onClick={() => setTab('gallery')}>Browse templates</Button>} /></Card>
-      ) : <div className="space-y-2">{list.data?.items.map((a) => (
+      ) : <div data-tour="automations-list" className="space-y-2">{list.data?.items.map((a) => (
         <Card key={a.id} className="p-4"><div className="flex flex-wrap items-start gap-3">
           <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="text-heading">{a.name}</h3><Badge tone={a.enabled ? 'success' : 'neutral'}>{a.enabled ? 'On' : 'Off'}</Badge>{a.graph.nodes.some((n) => n.type === 'branch' || n.type === 'wait') ? <Badge>Branches or waits</Badge> : null}</div>
             <p className="mt-1 text-[12px]"><span className="text-muted-foreground">When:</span> {describeTrigger(a.trigger, terms)}{a.conditions.length ? ` · only if ${a.conditions.length} condition${a.conditions.length > 1 ? 's' : ''} match` : ''}</p>

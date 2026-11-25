@@ -141,7 +141,7 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div data-tour="campaign-detail-actions" className="flex items-center gap-2">
             {campaign.status === 'DRAFT' && (
               <Button
                 variant="primary"
@@ -224,11 +224,11 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
       />
 
       {/* Campaign Lifecycle Report: Sent -> Delivered -> Read -> Replied */}
-      <Card className="border-border/80 bg-gradient-to-br from-card via-card to-card/70 shadow-sm">
+      <Card data-tour="campaign-detail-stats" className="border-border/80 bg-gradient-to-br from-card via-card to-card/70 shadow-sm">
         <CardBody className="p-5 sm:p-6 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
+              <div data-tour="campaign-detail-actions" className="flex items-center gap-2">
                 <Badge tone="success" className="text-[11px] font-semibold">
                   Campaign report
                 </Badge>
@@ -387,7 +387,7 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
           />
 
           {/* Targeting & Compliance Rules Card */}
-          <Card>
+          <Card data-tour="campaign-detail-recipients">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Audience Segmentation & Opt-In Status
@@ -455,7 +455,7 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Recipients List Table */}
-      <Card>
+      <Card data-tour="campaign-detail-recipients">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
           <div>
             <CardTitle className="text-base font-semibold">Campaign Recipients</CardTitle>
@@ -464,7 +464,7 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div data-tour="campaign-detail-actions" className="flex items-center gap-2">
             <div className="relative w-48">
               <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input

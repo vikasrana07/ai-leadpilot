@@ -62,6 +62,7 @@ export default function KnowledgePage() {
     <>
       <PageHeader title="Knowledge base" description="Documents your assistant answers from: brochures, FAQs, policies and price lists." />
       <div
+        data-tour="knowledge-upload"
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
         onDrop={(e) => { e.preventDefault(); setDrag(false); if (e.dataTransfer.files.length) void upload(e.dataTransfer.files); }}
         className={cn('mb-6 flex flex-col items-center gap-2 rounded-lg border border-dashed p-8 text-center transition-colors', drag ? 'border-primary bg-primary-soft/50' : 'border-border-strong bg-surface')}
@@ -73,7 +74,7 @@ export default function KnowledgePage() {
         <p className="text-helper">PDF, DOCX, TXT or CSV, up to 10 MB each. Every file is scanned for viruses before it is stored.</p>
       </div>
 
-      <Card className="mb-6 overflow-hidden">
+      <Card data-tour="knowledge-list" className="mb-6 overflow-hidden">
         <CardHeader><CardTitle>Documents {docs.data ? <span className="num ml-1 font-normal text-muted-foreground">{docs.data.length}</span> : null}</CardTitle></CardHeader>
         {docs.isPending ? <div className="space-y-2 p-4">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}</div> : docs.isError ? <EmptyState icon={BookOpen} title="Could not load documents" description="Please try again." action={<Button onClick={() => void docs.refetch()}>Retry</Button>} /> : docs.data.length === 0 ? (
           <EmptyState icon={BookOpen} title="No documents yet" description="Upload your brochures and FAQs so the assistant can answer from them instead of guessing." />

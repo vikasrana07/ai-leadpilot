@@ -72,7 +72,7 @@ export default function CampaignsPage() {
             Send bulk approved WhatsApp templates to targeted lead cohorts with automatic opt-out suppression.
           </p>
         </div>
-        <Button variant="primary" onClick={() => setCreateOpen(true)} className="gap-2">
+        <Button data-tour="campaigns-create" variant="primary" onClick={() => setCreateOpen(true)} className="gap-2">
           <Plus className="w-4 h-4" />
           New Campaign
         </Button>
@@ -202,7 +202,7 @@ export default function CampaignsPage() {
           </Button>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div data-tour="campaigns-list" className="space-y-4">
           {campaigns.map((c) => (
             <CampaignRow
               key={c.id}

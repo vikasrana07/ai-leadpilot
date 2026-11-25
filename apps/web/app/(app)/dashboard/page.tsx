@@ -77,7 +77,7 @@ export default function DashboardPage() {
       <PageHeader title={`Welcome, ${ctx.user.name.split(' ')[0]}`} description={`${activeWorkspace?.name ?? 'Your workspace'}${d ? ` · ${d.range.label}` : ''}`} actions={can('lead:write:all') || can('lead:write:own') ? <Button variant="primary" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4" aria-hidden />Add {terms.lead}</Button> : undefined} />
       <SetupCard />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Date range">
+      <div data-tour="dashboard-range" className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Date range">
         {RANGES.map(([k, label]) => <button key={k} aria-pressed={range === k} onClick={() => setRange(k)} className={cn('min-h-9 rounded-full px-3 py-1 text-[12px] font-medium transition-colors lg:min-h-0', range === k ? 'bg-primary text-primary-foreground' : 'border border-border bg-surface text-muted-foreground hover:bg-muted')}>{label}</button>)}
         {range === 'custom' ? <><Input aria-label="From date" type="date" className="h-8 w-auto" value={custom.from} onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))} /><Input aria-label="To date" type="date" className="h-8 w-auto" value={custom.to} onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))} /></> : null}
       </div>
@@ -86,7 +86,7 @@ export default function DashboardPage() {
         <DashboardContentSkeleton />
       ) : q.isError || !d ? <Card><EmptyState icon={CalendarClock} title="Could not load your dashboard" description="Check your connection and try again." action={<Button onClick={() => void q.refetch()}>Retry</Button>} /></Card> : (
         <div className={cn('space-y-4 transition-opacity', q.isPlaceholderData && 'opacity-60')}>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+          <div data-tour="dashboard-kpis" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
             <KpiCard label={`Total ${terms.leads}`} value={d.kpis.totalLeads.value} deltaPct={null} hint={`All active ${terms.leads}`} />
             <KpiCard label={`New ${terms.leads}`} value={d.kpis.newLeads.value} deltaPct={d.kpis.newLeads.deltaPct} trend={d.trend.map((t) => t.leads)} hint="No earlier period yet" />
             <KpiCard label="Qualified" value={d.kpis.qualifiedLeads.value} deltaPct={d.kpis.qualifiedLeads.deltaPct} hint={`Of ${terms.leads} added in range`} />
@@ -98,7 +98,7 @@ export default function DashboardPage() {
 
           {noData ? <Card><EmptyState icon={Plus} title={`No ${terms.leads} yet`} description={`Add ${terms.aLead}, import a CSV, or connect a lead source. Your numbers show up here as soon as ${terms.leads} arrive.`} action={<Button variant="primary" onClick={() => setAddOpen(true)}>Add {terms.lead}</Button>} /></Card> : (
             <>
-              <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+              <div data-tour="dashboard-charts" className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
                 <Card>
                   <CardHeader><CardTitle>{terms.Lead} acquisition</CardTitle><span className="text-helper">{d.range.timezone}</span></CardHeader>
                   <CardBody className="h-64">
@@ -123,7 +123,7 @@ export default function DashboardPage() {
                 </Card>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              <div data-tour="dashboard-hot-leads" className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 <Card>
                   <CardHeader><CardTitle><Flame className="mr-1.5 inline h-4 w-4 text-danger" aria-hidden />Hot {terms.leads} needing attention</CardTitle></CardHeader>
                   {d.hotLeads.length === 0 ? <p className="text-helper p-4">No hot open {terms.leads} right now.</p> : <ul className="divide-y divide-border">{d.hotLeads.map((h) => <li key={h.id}><Link href={`/leads/${h.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/40"><Avatar name={h.name} size={28} /><span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-medium">{h.name}</span><span className="text-helper">{h.stage} · contacted {timeAgo(h.lastContactedAt)}</span></span>{h.score !== null ? <Badge tone="danger" className="num">{h.score}</Badge> : null}</Link></li>)}</ul>}

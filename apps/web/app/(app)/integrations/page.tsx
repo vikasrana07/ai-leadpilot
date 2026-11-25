@@ -36,7 +36,7 @@ export default function IntegrationsPage() {
     <>
       <PageHeader title="Integrations" description={`Connect the places your ${terms.leads} come from.`} />
       {can('integration:manage') ? (
-        <div className="mb-6 space-y-6">
+        <div data-tour="integrations-cards" className="mb-6 space-y-6">
           <WhatsappCard />
           <WidgetCard />
           <SesCard />

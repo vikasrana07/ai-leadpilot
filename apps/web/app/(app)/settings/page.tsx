@@ -226,7 +226,7 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" description="Your workspace profile, appearance and security." />
-      <div className="space-y-6"><BusinessProfile /><Assignment /><ResponseTime /><CannedResponsesCard /><SsoConfigCard /><Appearance /><Sessions /><SupportAccessCard /><WorkspacePrivacy /></div>
+      <div data-tour="settings-sections" className="space-y-6"><BusinessProfile /><Assignment /><ResponseTime /><CannedResponsesCard /><SsoConfigCard /><Appearance /><Sessions /><SupportAccessCard /><WorkspacePrivacy /></div>
     </>
   );
 }

@@ -116,6 +116,7 @@ export default function LeadsPage() {
     dir: sort.dir,
   };
   const leads = useQuery({ queryKey: ['leads', 'list', params, page], queryFn: () => api<PagedResult<LeadDto>>(`/leads${qs({ ...params, page, pageSize: 25 })}`), placeholderData: (prev) => prev });
+  const canReadAll = can('lead:read:all');
   const canWriteAll = can('lead:write:all');
   const items = leads.data?.items ?? [];
   const allOnPage = items.length > 0 && items.every((l) => selected.has(l.id));
@@ -232,12 +233,12 @@ export default function LeadsPage() {
 
   const quickViews: QuickViewItem[] = useMemo(
     () => [
-      { id: 'all', label: `All ${terms.Leads}`, icon: Users },
+      ...(canReadAll ? [{ id: 'all', label: `All ${terms.Leads}`, icon: Users }] : []),
       { id: 'my_leads', label: 'My Leads', icon: User, tone: 'primary' },
       { id: 'overdue', label: 'Follow-up Overdue', icon: AlertCircle, tone: 'danger' },
       { id: 'hot', label: 'Hot Leads', icon: Flame, tone: 'warning' },
     ],
-    [terms.Leads]
+    [canReadAll, terms.Leads]
   );
 
   const activeQuickViewId = useMemo(() => {
@@ -251,13 +252,13 @@ export default function LeadsPage() {
       return 'hot';
     }
     if (f.stageId.length === 0 && f.temperature.length === 0 && f.assigned.length === 0 && f.sourceId.length === 0 && !f.overdue && !f.kind && !search) {
-      return 'all';
+      return canReadAll ? 'all' : 'my_leads';
     }
     return '';
-  }, [f, search]);
+  }, [canReadAll, f, search]);
 
   const handleSelectQuickView = (id: string) => {
-    if (id === 'all') {
+    if (id === 'all' || (id === 'my_leads' && !canReadAll)) {
       handleClearAllFilters();
     } else if (id === 'my_leads') {
       setSearch('');
@@ -600,7 +601,7 @@ export default function LeadsPage() {
         title={terms.Leads}
         description="Every enquiry, scored and assigned."
         actions={
-          <>
+          <div data-tour="leads-actions" className="flex flex-wrap items-center gap-2">
             {can('lead:import') ? (
               <Button onClick={() => setImportOpen(true)}>
                 <Upload className="h-4 w-4" aria-hidden />
@@ -618,20 +619,23 @@ export default function LeadsPage() {
                 <Plus className="h-4 w-4" aria-hidden />Add {terms.lead}
               </Button>
             ) : null}
-          </>
+          </div>
         }
       />
 
-      <Card className="overflow-hidden">
+      <Card data-tour="leads-table" className="overflow-hidden">
         {/* Quick View Presets */}
-        <QuickViews
-          activeId={activeQuickViewId}
-          items={quickViews}
-          onSelect={handleSelectQuickView}
-        />
+        <div data-tour="leads-quick-views">
+          <QuickViews
+            activeId={activeQuickViewId}
+            items={quickViews}
+            onSelect={handleSelectQuickView}
+          />
+        </div>
 
         {/* Dynamic Data Table Toolbar */}
-        <DataTableToolbar
+        <div data-tour="leads-toolbar">
+          <DataTableToolbar
           search={search}
           onSearchChange={(v) => {
             setSearch(v);
@@ -667,6 +671,7 @@ export default function LeadsPage() {
           density={density}
           onDensityChange={setDensity}
         />
+        </div>
 
         {/* Bulk Selection Actions Bar */}
         {selected.size > 0 ? (
@@ -732,11 +737,19 @@ export default function LeadsPage() {
         ) : items.length === 0 ? (
           <EmptyState
             icon={Users}
-            title={filtered ? `No ${terms.leads} match these filters` : `No ${terms.leads} yet`}
+            title={
+              filtered
+                ? `No ${terms.leads} match these filters`
+                : canReadAll
+                  ? `No ${terms.leads} yet`
+                  : `No ${terms.leads} assigned to you yet`
+            }
             description={
               filtered
                 ? 'Try clearing a filter or searching for something else.'
-                : `Add your first ${terms.lead}, import a CSV, or connect a lead source.`
+                : canReadAll
+                  ? `Add your first ${terms.lead}, import a CSV, or connect a lead source.`
+                  : `Ask your manager to assign ${terms.leads} to you, enable round-robin distribution, or add a new ${terms.lead}.`
             }
             action={
               !filtered && (can('lead:write:all') || can('lead:write:own')) ? (

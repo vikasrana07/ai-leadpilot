@@ -39,7 +39,7 @@ export default function SecurityPage() {
   return (
     <>
       <PageHeader title="Security" description="Protect your account with a second sign-in step." />
-      <div className="max-w-2xl space-y-3">
+      <div data-tour="security-mfa" className="max-w-2xl space-y-3">
         <MfaPanel call={call} queryKey={['security-mfa']} />
         <WorkspacePolicy />
       </div>

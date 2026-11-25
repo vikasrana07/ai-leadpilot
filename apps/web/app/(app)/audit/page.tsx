@@ -62,7 +62,7 @@ export default function AuditPage() {
   return (
     <>
       <PageHeader title="Audit logs" description="A tamper-resistant record of sensitive actions in this workspace." actions={
-        <div className="flex flex-wrap items-center gap-2">
+        <div data-tour="audit-filters" className="flex flex-wrap items-center gap-2">
           <select aria-label="Filter events" value={action} onChange={(e) => setAction(e.target.value)} className="h-9 rounded-md border border-border bg-surface px-3 text-[13px]">
             {FILTERS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
           </select>
@@ -75,7 +75,7 @@ export default function AuditPage() {
           ) : null}
         </div>
       } />
-      <Card className="overflow-hidden">
+      <Card data-tour="audit-table" className="overflow-hidden">
         {q.isPending ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[13px]">

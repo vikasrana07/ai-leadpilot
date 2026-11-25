@@ -389,9 +389,9 @@ export default function TasksPage() {
       </div>
 
       {/* Main Task List Card */}
-      <Card className="overflow-hidden">
+      <Card data-tour="tasks-list" className="overflow-hidden">
         {/* Filter and Control Bar */}
-        <div className="border-b border-border bg-card p-3 space-y-3">
+        <div data-tour="tasks-filters" className="border-b border-border bg-card p-3 space-y-3">
           {/* Top Row: Tabs + Scope */}
           <div className="flex flex-wrap items-center justify-between gap-2.5">
             <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/30 p-1">
