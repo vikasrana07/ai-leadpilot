@@ -46,6 +46,13 @@ const PUBLIC_ALLOWLIST: Record<string, string> = {
   'POST /auth/invitations/accept': 'invite token', 'GET /auth/invitations/:token': 'invite token preview', 'POST /auth/invitations/preview': 'invite token preview',
   'POST /webhooks/razorpay': 'HMAC signature', 'POST /webhooks/ses': 'SNS message signature verified against an AWS-hosted certificate (sns-validator.ts)', 'GET /track/open/:token': 'HMAC-signed token in the URL (open pixel)', 'GET /track/click/:token': 'HMAC-signed token in the URL (click redirect)', 'GET /webhooks/whatsapp/:key': 'Meta verify challenge', 'POST /webhooks/whatsapp/:key': 'HMAC signature', 'GET /webhooks/whatsapp': 'Meta verify challenge (platform app, 404 while Embedded Signup is off)', 'GET /portal/:key': 'customer-portal sign-in page data (business name and logo only; 404 unless the portal is on and in the plan)', 'POST /portal/:key/code': 'customer-portal sign-in: identical answer for any identity, bot check, per-IP and per-identity limits', 'POST /portal/:key/verify': 'customer-portal one-time code check (generic failure, attempt-limited)', 'GET /portal/me': 'customer-portal session cookie (PortalGuard)', 'GET /portal/appointments': 'customer-portal session cookie (PortalGuard)', 'POST /portal/logout': 'customer-portal session cookie (PortalGuard)', 'POST /webhooks/meta/deauthorize': 'signed_request HMAC with the platform app secret (404 while Embedded Signup is off)', 'POST /webhooks/meta/data-deletion': 'signed_request HMAC with the platform app secret (404 while Embedded Signup is off)', 'GET /webhooks/meta/data-deletion/:code': 'unguessable confirmation code, status only (404 while Embedded Signup is off)', 'POST /webhooks/whatsapp': 'HMAC signature with the platform app secret (404 while Embedded Signup is off)',
   'POST /auth/mfa/verify': 'second sign-in step (challenge token + code, throttled, lockout)', 'POST /platform/auth/mfa': 'platform second sign-in step', 'POST /platform/auth/login': 'platform login', 'POST /platform/auth/logout': 'platform logout',
+  'GET /webhooks/meta-lead-ads': 'Meta verify challenge', 'POST /webhooks/meta-lead-ads': 'Meta webhook signature/payload',
+  'POST /webhooks/telephony/exotel/:tenantId': 'Exotel call webhook payload',
+  'POST /webhooks/google-calendar': 'Google Calendar push notification webhook',
+  'GET /auth/sso/initiate': 'SSO login initiation (HMAC-signed state)',
+  'GET /auth/sso/metadata/:tenantId': 'SAML 2.0 Service Provider metadata XML',
+  'POST /auth/sso/callback/oidc': 'OIDC callback (HMAC-signed state + IdP token)',
+  'POST /auth/sso/callback/saml': 'SAML 2.0 ACS callback (HMAC-signed RelayState + SAMLResponse)',
 };
 describe('route inventory', () => {
   it('public-API (/v1) routes are all guarded by ApiKeyGuard; only the OpenAPI description is open (key-authenticated families are covered by public-api.test.ts)', async () => {
@@ -109,6 +116,8 @@ describe('permission declarations', () => {
     'POST /conversations/:id/assign', 'POST /conversations/:id/close', 'POST /conversations/:id/handback', 'POST /conversations/:id/messages', 'POST /conversations/:id/messages/:mid/retry', 'POST /conversations/:id/notes', 'POST /conversations/:id/read',
     'POST /conversations/:id/reopen', 'POST /conversations/:id/takeover', 'POST /leads', 'POST /leads/:id/merge', 'POST /leads/:id/notes', 'POST /leads/:id/score/override', 'POST /leads/:id/stage', 'POST /leads/bulk', 'POST /leads/check-duplicates',
     'POST /leads/import', 'PUT /appointments/availability', 'PUT /conversations/:id/tags', 'PUT /leads/:id/tags', 'PUT /sla',
+    'GET /leads/import-jobs/:jobId', 'GET /leads/import-jobs/:jobId/errors',
+    'GET /conversations/canned-responses', 'POST /conversations/canned-responses', 'DELETE /conversations/canned-responses/:id',
     'GET /integrations/google-calendar', 'GET /integrations/google-calendar/auth-url', 'POST /integrations/google-calendar/connect', 'DELETE /integrations/google-calendar',
   ]);
   it('every tenant route without a declared permission is on the reviewed service-enforced list', () => {

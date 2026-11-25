@@ -1,5 +1,8 @@
 import {
   ArrowRightLeft,
+  Calendar,
+  CalendarClock,
+  CalendarX,
   CircleDot,
   FilePlus2,
   GitMerge,
@@ -8,8 +11,10 @@ import {
   MailOpen,
   MailWarning,
   MessageSquarePlus,
+  Mic,
   MousePointerClick,
   PenLine,
+  PhoneCall,
   Tag,
   UserCheck,
 } from 'lucide-react';
@@ -33,6 +38,11 @@ const META: Record<string, { icon: typeof CircleDot; label: (d: Record<string, u
   email_clicked: { icon: MousePointerClick, label: (d) => `Clicked link in email${d.url ? `: ${String(d.url)}` : ''}` },
   email_bounced: { icon: MailWarning, label: (d) => `Email bounced${d.bounceType ? ` (${String(d.bounceType)})` : ''}: “${String(d.subject ?? 'Email')}”` },
   email_complained: { icon: MailWarning, label: (d) => `Spam complaint registered for email: “${String(d.subject ?? 'Email')}”` },
+  call_logged: { icon: PhoneCall, label: (d) => `Phone call (${String(d.direction ?? 'inbound')}, ${Number(d.durationSeconds ?? 0)}s)${d.status ? ` · ${String(d.status).toLowerCase()}` : ''}` },
+  appointment_booked: { icon: Calendar, label: (d) => `Appointment booked${d.startsAt ? ` · ${new Date(String(d.startsAt)).toLocaleString()}` : ''}` },
+  appointment_rescheduled: { icon: CalendarClock, label: (d) => `Appointment rescheduled${d.startsAt ? ` · new time: ${new Date(String(d.startsAt)).toLocaleString()}` : ''}` },
+  appointment_cancelled: { icon: CalendarX, label: (d) => `Appointment cancelled${d.reason ? `: “${String(d.reason)}”` : ''}` },
+  audio_transcribed: { icon: Mic, label: (d) => `Voice note transcribed${d.preview ? `: “${String(d.preview)}”` : ''}` },
 };
 
 export function ActivityTimeline({ items }: { items: ActivityItem[] }) {

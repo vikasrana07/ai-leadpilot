@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import type { ReactNode } from 'react';
 import { Providers } from '@/components/providers';
+import { PwaRegister } from '@/components/pwa-register';
 import { THEME_INIT_SCRIPT } from '@/lib/theme';
 import { SIDEBAR_INIT_SCRIPT } from '@/lib/sidebar-state';
 import './globals.css';
@@ -46,7 +47,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT_SCRIPT }} nonce={nonce} />
       </head>
       <body suppressHydrationWarning>
-        <Providers initialSidebarCollapsed={initialSidebarCollapsed}>{children}</Providers>
+        <Providers initialSidebarCollapsed={initialSidebarCollapsed}>
+          <PwaRegister />
+          {children}
+        </Providers>
       </body>
     </html>
   );

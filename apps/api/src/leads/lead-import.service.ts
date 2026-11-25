@@ -1,5 +1,6 @@
 import { series } from '../common/series.js';
-import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable, Optional } from '@nestjs/common';
+import { Redis } from 'ioredis';
 import type { BuyingTimeline, Prisma } from '@leadpilot/database';
 import { leadFieldsSchema, TIMELINES, type ImportInput, type LeadListQuery } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
@@ -8,6 +9,8 @@ import type { Actor } from '../common/actor.js';
 import { formatCsv, parseCsv } from '../common/csv.js';
 import { fromMinor, toMinor } from '../common/money.js';
 import { normalizeEmail, normalizePhone } from '../common/phone.js';
+import { ENV } from '../common/tokens.js';
+import type { Env } from '../config/env.js';
 import { DbService } from '../db/db.module.js';
 import { LeadsService } from './leads.service.js';
 import { RoundRobin } from './round-robin.js';
@@ -51,15 +54,93 @@ export interface ImportReport {
   unknownColumns: string[]; created: number; skipped: number;
 }
 
+export interface ImportJobStatus {
+  jobId: string;
+  tenantId: string;
+  status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  totalRows: number;
+  valid: number;
+  created: number;
+  skipped: number;
+  invalid: ImportRowError[];
+  errorCsv?: string;
+  error?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export type ImportResult = ImportReport | { jobId: string; status: 'QUEUED'; totalRows: number; message: string };
+
 @Injectable()
 export class LeadImportService {
+  private readonly redis: Redis | null = null;
+  private readonly memoryJobs = new Map<string, ImportJobStatus>();
+
   constructor(
     @Inject(DbService) private readonly db: DbService,
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(LeadsService) private readonly leads: LeadsService,
-  ) {}
+    @Optional() @Inject(ENV) private readonly env?: Env,
+  ) {
+    if (this.env?.NODE_ENV !== 'test' && this.env?.REDIS_URL) {
+      this.redis = new Redis(this.env.REDIS_URL, {
+        lazyConnect: true,
+        maxRetriesPerRequest: 1,
+        enableOfflineQueue: false,
+      });
+      this.redis.on('error', () => undefined);
+      void this.redis.connect().catch(() => undefined);
+    }
+  }
 
-  async importCsv(a: Actor, input: ImportInput): Promise<ImportReport> {
+  async onApplicationShutdown(): Promise<void> {
+    if (this.redis) {
+      await this.redis.quit().catch(() => undefined);
+    }
+  }
+
+  private async saveJobStatus(job: ImportJobStatus): Promise<void> {
+    const key = `${job.tenantId}:${job.jobId}`;
+    this.memoryJobs.set(key, job);
+    if (this.redis && this.redis.status === 'ready') {
+      await this.redis.set(`lead-import:${key}`, JSON.stringify(job), 'EX', 86400).catch(() => undefined);
+    }
+  }
+
+  private async fetchJobStatus(tenantId: string, jobId: string): Promise<ImportJobStatus | null> {
+    const key = `${tenantId}:${jobId}`;
+    const mem = this.memoryJobs.get(key);
+    if (mem) return mem;
+    if (this.redis && this.redis.status === 'ready') {
+      const data = await this.redis.get(`lead-import:${key}`).catch(() => null);
+      if (data) {
+        try {
+          const parsed = JSON.parse(data) as ImportJobStatus;
+          this.memoryJobs.set(key, parsed);
+          return parsed;
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
+  }
+
+  async getImportJob(a: Actor, jobId: string): Promise<ImportJobStatus | null> {
+    if (!a.permissions.has('lead:import')) throw new ForbiddenException({ code: 'forbidden', message: 'You cannot view import jobs' });
+    const job = await this.fetchJobStatus(a.tenantId, jobId);
+    if (!job || job.tenantId !== a.tenantId) return null;
+    return job;
+  }
+
+  async getImportErrorsCsv(a: Actor, jobId: string): Promise<string | null> {
+    if (!a.permissions.has('lead:import')) throw new ForbiddenException({ code: 'forbidden', message: 'You cannot view import jobs' });
+    const job = await this.fetchJobStatus(a.tenantId, jobId);
+    if (!job || job.tenantId !== a.tenantId) return null;
+    return job.errorCsv ?? null;
+  }
+
+  async importCsv(a: Actor, input: ImportInput): Promise<ImportResult> {
     if (!a.permissions.has('lead:import')) throw new ForbiddenException({ code: 'forbidden', message: 'You cannot import leads' });
     const rows = parseCsv(input.csv);
     if (rows.length < 2) throw new BadRequestException({ code: 'empty_csv', message: 'The file needs a header row and at least one lead' });
@@ -75,20 +156,122 @@ export class LeadImportService {
     });
     if (!colField.includes('name')) throw new BadRequestException({ code: 'missing_name_column', message: 'The file needs a "name" column' });
 
+    const dataRows = rows.slice(1);
+    if (input.async || dataRows.length > 500) {
+      const jobId = uuidv7();
+      const job: ImportJobStatus = {
+        jobId,
+        tenantId: a.tenantId,
+        status: 'QUEUED',
+        totalRows: dataRows.length,
+        valid: 0,
+        created: 0,
+        skipped: 0,
+        invalid: [],
+        createdAt: new Date().toISOString(),
+      };
+      await this.saveJobStatus(job);
+      void this.executeJob(a, job, input, dataRows, colField, unknownColumns);
+      return {
+        jobId,
+        status: 'QUEUED',
+        totalRows: dataRows.length,
+        message: 'Lead import queued for background processing.',
+      };
+    }
+
+    return this.processBatch(a, input, dataRows, colField, unknownColumns, 0);
+  }
+
+  private async executeJob(
+    a: Actor,
+    job: ImportJobStatus,
+    input: ImportInput,
+    dataRows: string[][],
+    colField: (string | undefined)[],
+    unknownColumns: string[],
+  ): Promise<void> {
+    job.status = 'PROCESSING';
+    await this.saveJobStatus(job);
+
+    try {
+      const CHUNK_SIZE = 500;
+      const totalBatches = Math.ceil(dataRows.length / CHUNK_SIZE);
+      let totalCreated = 0;
+      let totalSkipped = 0;
+      let totalValid = 0;
+      const allInvalid: ImportRowError[] = [];
+
+      for (let b = 0; b < totalBatches; b++) {
+        const slice = dataRows.slice(b * CHUNK_SIZE, (b + 1) * CHUNK_SIZE);
+        const report = await this.processBatch(a, input, slice, colField, unknownColumns, b * CHUNK_SIZE);
+        totalCreated += report.created;
+        totalSkipped += report.skipped;
+        totalValid += report.valid;
+        allInvalid.push(...report.invalid);
+
+        job.created = totalCreated;
+        job.skipped = totalSkipped;
+        job.valid = totalValid;
+        job.invalid = allInvalid;
+        await this.saveJobStatus(job);
+      }
+
+      job.status = 'COMPLETED';
+      job.completedAt = new Date().toISOString();
+      if (allInvalid.length > 0) {
+        job.errorCsv = formatCsv([
+          ['row', 'errors'],
+          ...allInvalid.map((inv) => [String(inv.row), inv.errors.join('; ')]),
+        ]);
+      }
+      await this.saveJobStatus(job);
+    } catch (err) {
+      job.status = 'FAILED';
+      job.error = err instanceof Error ? err.message : String(err);
+      job.completedAt = new Date().toISOString();
+      await this.saveJobStatus(job);
+    }
+  }
+
+  private async processBatch(
+    a: Actor,
+    input: ImportInput,
+    dataRows: string[][],
+    colField: (string | undefined)[],
+    unknownColumns: string[],
+    rowOffset: number,
+  ): Promise<ImportReport> {
     return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, async (tx) => {
-      const [stages, sources, members, defs] = await series([ () => tx.pipelineStage.findMany({ where: { tenantId: a.tenantId } }), () => tx.leadSource.findMany({ where: { tenantId: a.tenantId } }), () => tx.membership.findMany({ where: { tenantId: a.tenantId, status: 'ACTIVE' }, select: { id: true, userId: true } }), () => tx.customFieldDefinition.findMany({ where: { tenantId: a.tenantId, entity: 'lead' } })]);
+      const [stages, sources, members, defs] = await series([
+        () => tx.pipelineStage.findMany({ where: { tenantId: a.tenantId } }),
+        () => tx.leadSource.findMany({ where: { tenantId: a.tenantId } }),
+        () => tx.membership.findMany({ where: { tenantId: a.tenantId, status: 'ACTIVE' }, select: { id: true, userId: true } }),
+        () => tx.customFieldDefinition.findMany({ where: { tenantId: a.tenantId, entity: 'lead' } }),
+      ]);
       const users = await tx.user.findMany({ where: { id: { in: members.map((m) => m.userId) } }, select: { id: true, email: true } });
       const memberByEmail = new Map(members.map((m) => [users.find((u) => u.id === m.userId)?.email.toLowerCase() ?? '', m.id]));
       const defaultStage = stages.filter((s) => s.kind === 'OPEN').sort((x, y) => x.position - y.position)[0];
       if (!defaultStage) throw new BadRequestException({ code: 'no_pipeline', message: 'This workspace has no pipeline stages yet' });
       const canAssign = a.permissions.has('lead:assign') || a.permissions.has('lead:write:all');
 
-      interface Parsed { row: number; data: ReturnType<typeof leadFieldsSchema.parse>; phoneNorm: string | null; emailNorm: string | null; stageId: string; sourceId: string | null; assignee: string | null; tags: string[]; timeline: BuyingTimeline; custom: Record<string, string | number | boolean> }
+      interface Parsed {
+        row: number;
+        data: ReturnType<typeof leadFieldsSchema.parse>;
+        phoneNorm: string | null;
+        emailNorm: string | null;
+        stageId: string;
+        sourceId: string | null;
+        assignee: string | null;
+        tags: string[];
+        timeline: BuyingTimeline;
+        custom: Record<string, string | number | boolean>;
+      }
       const valid: Parsed[] = [];
       const invalid: ImportRowError[] = [];
 
-      rows.slice(1).forEach((cells, idx) => {
-        const rowNo = idx + 2;
+      dataRows.forEach((cells, idx) => {
+        const rowNo = idx + 2 + rowOffset;
         const get = (f: string) => { const i = colField.indexOf(f); return i >= 0 ? (cells[i] ?? '').trim() : ''; };
         const errors: string[] = [];
         const bMin = get('budgetMin'); const bMax = get('budgetMax');
@@ -149,7 +332,7 @@ export class LeadImportService {
         if ((ex || inFile) && input.duplicateStrategy === 'skip') continue;
         toCreate.push(v);
       }
-      const report: ImportReport = { dryRun: input.dryRun, totalRows: rows.length - 1, valid: valid.length, invalid, duplicates, unknownColumns, created: 0, skipped: valid.length - toCreate.length };
+      const report: ImportReport = { dryRun: input.dryRun, totalRows: dataRows.length, valid: valid.length, invalid, duplicates, unknownColumns, created: 0, skipped: valid.length - toCreate.length };
       if (input.dryRun || toCreate.length === 0) return report;
 
       const rr = await RoundRobin.load(tx, a.tenantId);

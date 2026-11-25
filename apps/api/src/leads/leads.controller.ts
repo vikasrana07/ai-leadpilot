@@ -1,5 +1,5 @@
 import { RequireFeature } from '../common/billing-meta.js';
-import { Body, Controller, Delete, Get, Header, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post, Put, Query, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Put, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import {
   bulkSchema, checkDuplicatesSchema, createLeadSchema, importSchema, leadListQuerySchema, mergeSchema, noteSchema, stageChangeSchema, tagsSchema, updateLeadSchema,
@@ -39,6 +39,23 @@ export class LeadsController {
 
   @Post('import') @HttpCode(200)
   import(@CurrentTenant() ctx: TenantRequestContext, @Body(new ZodPipe(importSchema)) body: ImportInput) { return this.imports.importCsv(actorFrom(ctx), body); }
+
+  @Get('import-jobs/:jobId')
+  async getImportJob(@CurrentTenant() ctx: TenantRequestContext, @Param('jobId', new ParseUUIDPipe()) jobId: string) {
+    const job = await this.imports.getImportJob(actorFrom(ctx), jobId);
+    if (!job) throw new NotFoundException({ code: 'not_found', message: 'Import job not found' });
+    return job;
+  }
+
+  @Get('import-jobs/:jobId/errors')
+  @Header('Cache-Control', 'no-store')
+  async getImportErrors(@CurrentTenant() ctx: TenantRequestContext, @Param('jobId', new ParseUUIDPipe()) jobId: string, @Res() res: Response): Promise<void> {
+    const csv = await this.imports.getImportErrorsCsv(actorFrom(ctx), jobId);
+    if (!csv) throw new NotFoundException({ code: 'not_found', message: 'No error report available for this job' });
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="import-errors-${jobId}.csv"`);
+    res.send(`\uFEFF${csv}`);
+  }
 
   @Get('export') @RequireFeature('csv_export') @Header('Cache-Control', 'no-store')
   async export(@CurrentTenant() ctx: TenantRequestContext, @Query(new ZodPipe(leadListQuerySchema)) q: LeadListQuery, @Res() res: Response): Promise<void> {

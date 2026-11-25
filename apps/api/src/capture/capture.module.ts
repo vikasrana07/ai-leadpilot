@@ -100,5 +100,14 @@ class CaptureController {
   }
 }
 
-@Module({ imports: [LeadsModule], controllers: [ApiKeysController, CaptureController], providers: [ApiKeysService, CaptureService] })
+import { OpsModule } from '../ops/ops.module.js';
+import { MetaLeadAdsController } from './meta-lead-ads.controller.js';
+import { MetaLeadAdsService } from './meta-lead-ads.service.js';
+
+@Module({
+  imports: [LeadsModule, OpsModule],
+  controllers: [ApiKeysController, CaptureController, MetaLeadAdsController],
+  providers: [ApiKeysService, CaptureService, MetaLeadAdsService],
+  exports: [MetaLeadAdsService],
+})
 export class CaptureModule {}

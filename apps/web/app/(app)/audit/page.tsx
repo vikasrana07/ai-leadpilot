@@ -1,28 +1,55 @@
 'use client';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { ScrollText } from 'lucide-react';
+import { Download, ScrollText, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/page/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { api } from '@/lib/api';
+import { api, API_URL } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
 interface Entry { id: string; action: string; actorUserId: string | null; resourceType: string | null; resourceId: string | null; metadata: Record<string, unknown>; ip: string | null; createdAt: string }
 interface Page { items: Entry[]; nextCursor: string | null }
 
 const FILTERS = [
-  { value: '', label: 'All events' }, { value: 'auth.login', label: 'Sign-ins' }, { value: 'team.invited', label: 'Invitations' },
-  { value: 'team.role_changed', label: 'Role changes' }, { value: 'tenant.updated', label: 'Workspace changes' },
+  { value: '', label: 'All events' }, { value: 'auth.login', label: 'Sign-ins' }, { value: 'sso.login', label: 'SSO sign-ins' },
+  { value: 'sso.configured', label: 'SSO changes' }, { value: 'audit.worm_exported', label: 'WORM exports' },
+  { value: 'team.invited', label: 'Invitations' }, { value: 'team.role_changed', label: 'Role changes' },
+  { value: 'tenant.updated', label: 'Workspace changes' },
 ];
 
 export default function AuditPage() {
   const { can } = useAuth();
   const [action, setAction] = useState('');
+  const [exporting, setExporting] = useState(false);
+
+  async function downloadWormExport() {
+    setExporting(true);
+    try {
+      const res = await fetch(`${API_URL}/audit-logs/export`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Could not export audit logs');
+      const rootHash = res.headers.get('x-audit-chain-root') ?? '';
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-worm-${new Date().toISOString().slice(0, 10)}.jsonl`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success(rootHash ? `Signed WORM export downloaded (root: ${rootHash.slice(0, 12)}…)` : 'Signed WORM export downloaded');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Export failed');
+    } finally {
+      setExporting(false);
+    }
+  }
   const q = useInfiniteQuery({
     queryKey: ['audit', action],
     initialPageParam: '' as string,
@@ -35,9 +62,18 @@ export default function AuditPage() {
   return (
     <>
       <PageHeader title="Audit logs" description="A tamper-resistant record of sensitive actions in this workspace." actions={
-        <select aria-label="Filter events" value={action} onChange={(e) => setAction(e.target.value)} className="h-9 rounded-md border border-border bg-surface px-3 text-[13px]">
-          {FILTERS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
-        </select>
+        <div className="flex flex-wrap items-center gap-2">
+          <select aria-label="Filter events" value={action} onChange={(e) => setAction(e.target.value)} className="h-9 rounded-md border border-border bg-surface px-3 text-[13px]">
+            {FILTERS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+          </select>
+          {can('audit:read') ? (
+            <Button size="sm" variant="secondary" loading={exporting} onClick={() => void downloadWormExport()} title="Download SHA-256 hash-chained & HMAC-signed WORM JSONL archive">
+              <ShieldCheck className="h-3.5 w-3.5 text-success" aria-hidden />
+              <Download className="h-3.5 w-3.5" aria-hidden />
+              Signed WORM export
+            </Button>
+          ) : null}
+        </div>
       } />
       <Card className="overflow-hidden">
         {q.isPending ? (

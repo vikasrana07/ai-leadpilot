@@ -548,4 +548,139 @@ export class GoogleCalendarService {
       throw new Error(`Google Calendar delete failed (${res.status})`);
     }
   }
+
+  /**
+   * Handles incoming Google Calendar push notifications (webhooks).
+   */
+  async handleWebhookNotification(notification: { channelId?: string; resourceState?: string; channelToken?: string }): Promise<{ ok: boolean; action: 'synced' | 'reconciled' | 'ignored'; cancelledCount?: number; rescheduledCount?: number }> {
+    if (this.mode === 'off') {
+      return { ok: true, action: 'ignored' };
+    }
+
+    const { channelId, resourceState, channelToken } = notification;
+    if (!channelId) {
+      return { ok: true, action: 'ignored' };
+    }
+
+    if (resourceState === 'sync') {
+      this.log.log(`Google Calendar webhook handshake received for channel ${channelId}`);
+      return { ok: true, action: 'synced' };
+    }
+
+    const sync = await this.db.prisma.googleCalendarSync.findFirst({
+      where: {
+        OR: [
+          { channelId },
+          ...(channelToken ? [{ id: channelToken }, { credentialId: channelToken }] : []),
+        ],
+      },
+    });
+
+    if (!sync || sync.status !== 'active') {
+      this.log.warn(`Google Calendar webhook for unknown/inactive channel ${channelId}`);
+      return { ok: true, action: 'ignored' };
+    }
+
+    return this.reconcileCalendar(sync.tenantId, sync.membershipId);
+  }
+
+  /**
+   * Reconciles appointments for a specific tenant and membership against Google Calendar events.
+   */
+  async reconcileCalendar(tenantId: string, membershipId: string): Promise<{ ok: boolean; action: 'synced' | 'reconciled' | 'ignored'; cancelledCount?: number; rescheduledCount?: number }> {
+    return this.db.tenantTx({ tenantId }, async (tx) => {
+      const sync = await tx.googleCalendarSync.findUnique({
+        where: { tenantId_membershipId: { tenantId, membershipId } },
+      });
+      if (!sync || sync.status !== 'active') {
+        return { ok: true, action: 'ignored' };
+      }
+
+      let cancelledCount = 0;
+      let rescheduledCount = 0;
+
+      if (this.mode === 'live') {
+        try {
+          const calendarId = sync.calendarId || 'primary';
+          const params = new URLSearchParams({
+            singleEvents: 'true',
+            maxResults: '250',
+            ...(sync.syncToken ? { syncToken: sync.syncToken } : { timeMin: new Date(Date.now() - 30 * 86400000).toISOString() }),
+          });
+
+          const res = await this.callGoogle(tx, tenantId, sync, (token) =>
+            fetch(`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events?${params}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          );
+
+          if (res.ok) {
+            const data = (await res.json()) as { items?: Array<{ id: string; status: string; start?: { dateTime?: string }; end?: { dateTime?: string } }>; nextSyncToken?: string };
+            const items = data.items ?? [];
+
+            for (const item of items) {
+              const apt = await tx.appointment.findFirst({
+                where: { tenantId, googleEventId: item.id },
+              });
+              if (!apt) continue;
+
+              if (item.status === 'cancelled' && apt.status !== 'CANCELLED') {
+                await tx.appointment.update({
+                  where: { id: apt.id },
+                  data: { status: 'CANCELLED', googleEventId: null },
+                });
+                await tx.leadActivity.create({
+                  data: {
+                    id: uuidv7(),
+                    tenantId,
+                    leadId: apt.leadId,
+                    type: 'appointment_cancelled',
+                    data: { source: 'google_calendar_sync', appointmentId: apt.id, googleEventId: item.id },
+                  },
+                });
+                cancelledCount++;
+              } else if (item.status !== 'cancelled' && item.start?.dateTime && item.end?.dateTime) {
+                const newStart = new Date(item.start.dateTime);
+                const newEnd = new Date(item.end.dateTime);
+                if (apt.startsAt.getTime() !== newStart.getTime() || apt.endsAt.getTime() !== newEnd.getTime()) {
+                  await tx.appointment.update({
+                    where: { id: apt.id },
+                    data: { startsAt: newStart, endsAt: newEnd, status: 'CONFIRMED' },
+                  });
+                  await tx.leadActivity.create({
+                    data: {
+                      id: uuidv7(),
+                      tenantId,
+                      leadId: apt.leadId,
+                      type: 'appointment_rescheduled',
+                      data: { source: 'google_calendar_sync', appointmentId: apt.id, startsAt: newStart.toISOString(), endsAt: newEnd.toISOString() },
+                    },
+                  });
+                  rescheduledCount++;
+                }
+              }
+            }
+
+            await tx.googleCalendarSync.update({
+              where: { id: sync.id },
+              data: {
+                lastSyncedAt: new Date(),
+                ...(data.nextSyncToken ? { syncToken: data.nextSyncToken } : {}),
+              },
+            });
+          }
+        } catch (err) {
+          this.log.error(`Google Calendar reconcile failed: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      } else {
+        // Mock mode: update lastSyncedAt timestamp
+        await tx.googleCalendarSync.update({
+          where: { id: sync.id },
+          data: { lastSyncedAt: new Date() },
+        });
+      }
+
+      return { ok: true, action: 'reconciled', cancelledCount, rescheduledCount };
+    });
+  }
 }

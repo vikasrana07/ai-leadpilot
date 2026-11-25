@@ -10,6 +10,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/page/page-header';
 import { WorkspacePrivacy } from '@/components/privacy/workspace-privacy';
+import { CannedResponsesCard } from '@/components/settings/canned-responses-card';
+import { SsoConfigCard } from '@/components/settings/sso-config-card';
 import { SupportAccessCard } from '@/components/support/support-access-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -224,7 +226,7 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" description="Your workspace profile, appearance and security." />
-      <div className="space-y-6"><BusinessProfile /><Assignment /><ResponseTime /><Appearance /><Sessions /><SupportAccessCard /><WorkspacePrivacy /></div>
+      <div className="space-y-6"><BusinessProfile /><Assignment /><ResponseTime /><CannedResponsesCard /><SsoConfigCard /><Appearance /><Sessions /><SupportAccessCard /><WorkspacePrivacy /></div>
     </>
   );
 }

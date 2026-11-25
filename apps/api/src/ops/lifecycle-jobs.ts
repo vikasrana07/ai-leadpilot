@@ -167,4 +167,56 @@ export class LifecycleJobs {
     await this.db.prisma.platformAuditLog.createMany({ data: [{ action: 'platform.tenant_purged', targetType: 'tenant', targetId: tenantId, tenantId, reason: 'deletion cooling-off period ended', metadata: { files, usersDeleted: r.users_deleted, rows: Object.values(r.tables).reduce((a, b) => a + b, 0), billing } }] });
     return true;
   }
+
+  // ------------------------------------------------------------------ partition maintenance
+  private lastPartitionCheckDay: string | null = null;
+
+  /**
+   * Ensures monthly PostgreSQL partitions exist for `audit_logs` (current month + lookaheadMonths ahead).
+   * Safe and idempotent; runs at most once per UTC day during background maintenance unless forced.
+   */
+  async maintainPartitions(
+    now = new Date(),
+    opts: { lookaheadMonths?: number; retainMonths?: number; force?: boolean } = {},
+  ): Promise<{ created: string[]; dropped: string[] }> {
+    const dayKey = now.toISOString().slice(0, 10);
+    if (!opts.force && this.lastPartitionCheckDay === dayKey) {
+      return { created: [], dropped: [] };
+    }
+
+    const lookahead = opts.lookaheadMonths ?? 3;
+    const created: string[] = [];
+    const dropped: string[] = [];
+
+    for (let offset = 0; offset <= lookahead; offset++) {
+      const target = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1));
+      const year = target.getUTCFullYear();
+      const month = target.getUTCMonth() + 1;
+      const rows = await this.db.prisma.$queryRaw<{ res: string }[]>`
+        SELECT create_audit_log_partition(${year}::int, ${month}::int) AS res
+      `;
+      const res = rows[0]?.res;
+      if (res && !res.endsWith('already exists')) {
+        created.push(res);
+        this.log.log(`Created audit_logs partition: ${res}`);
+      }
+    }
+
+    if (typeof opts.retainMonths === 'number' && opts.retainMonths >= 1) {
+      const expired = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - opts.retainMonths - 1, 1));
+      const year = expired.getUTCFullYear();
+      const month = expired.getUTCMonth() + 1;
+      const rows = await this.db.prisma.$queryRaw<{ ok: boolean }[]>`
+        SELECT drop_audit_log_partition(${year}::int, ${month}::int) AS ok
+      `;
+      if (rows[0]?.ok) {
+        const name = `audit_logs_y${String(year).padStart(4, '0')}m${String(month).padStart(2, '0')}`;
+        dropped.push(name);
+        this.log.log(`Dropped expired audit_logs partition: ${name}`);
+      }
+    }
+
+    this.lastPartitionCheckDay = dayKey;
+    return { created, dropped };
+  }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { conversationAssignSchema, conversationListSchema, conversationTagsSchema, noteSchema, sendMessageSchema } from '@leadpilot/validation';
 import type { z } from 'zod';
@@ -7,12 +7,36 @@ import { CurrentTenant } from '../common/decorators.js';
 import type { TenantRequestContext } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { ConversationsService } from './conversations.service.js';
+import { CannedResponsesService } from './canned-responses.service.js';
 
 const IMAGE_MIME = /^image\/(png|jpe?g|gif|webp)$/;
 
 @Controller('conversations')
 export class ConversationsController {
-  constructor(@Inject(ConversationsService) private readonly svc: ConversationsService) {}
+  constructor(
+    @Inject(ConversationsService) private readonly svc: ConversationsService,
+    @Inject(CannedResponsesService) private readonly canned: CannedResponsesService,
+  ) {}
+
+  @Get('canned-responses')
+  listCannedResponses(@CurrentTenant() c: TenantRequestContext) {
+    return this.canned.list(c);
+  }
+
+  @Post('canned-responses')
+  @HttpCode(201)
+  createCannedResponse(
+    @CurrentTenant() c: TenantRequestContext,
+    @Body() b: { shortcut: string; title: string; body: string; category?: string },
+  ) {
+    return this.canned.create(c, b);
+  }
+
+  @Delete('canned-responses/:id')
+  @HttpCode(204)
+  deleteCannedResponse(@CurrentTenant() c: TenantRequestContext, @Param('id') id: string) {
+    return this.canned.delete(c, id);
+  }
 
   @Get() list(@CurrentTenant() c: TenantRequestContext, @Query(new ZodPipe(conversationListSchema)) q: z.infer<typeof conversationListSchema>) { return this.svc.list(actorFrom(c), q); }
   @Get(':id') get(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.get(actorFrom(c), id); }

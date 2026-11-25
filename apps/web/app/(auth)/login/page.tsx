@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginInput } from '@leadpilot/validation';
 import { useQueryClient } from '@tanstack/react-query';
+import { KeyRound } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
@@ -11,7 +12,7 @@ import { AuthLayout } from '@/components/auth-layout';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { authApi, type MfaChallenge } from '@/lib/api';
+import { api, authApi, type MfaChallenge } from '@/lib/api';
 import { ME_KEY } from '@/lib/auth';
 import { handleApiError } from '@/lib/forms';
 import { useBotCheck } from '@/lib/turnstile';
@@ -24,6 +25,11 @@ function LoginForm() {
 
   const bot = useBotCheck();
   const [challenge, setChallenge] = useState<MfaChallenge | null>(null);
+  const [ssoMode, setSsoMode] = useState(false);
+  const [tenantSlug, setTenantSlug] = useState('');
+  const [ssoBusy, setSsoBusy] = useState(false);
+  const [ssoError, setSsoError] = useState<string | null>(null);
+
   const done = (ctx: Awaited<ReturnType<typeof authApi.me>>) => {
     qc.setQueryData(ME_KEY, ctx);
     router.replace(next && /^\/(?![/\\])/.test(next) ? next : '/dashboard');
@@ -36,7 +42,39 @@ function LoginForm() {
     } catch (e) { bot.reset(); handleApiError(e); }
   }
 
+  async function onSsoSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!tenantSlug.trim()) return;
+    setSsoBusy(true);
+    setSsoError(null);
+    try {
+      const res = await api<{ redirectUrl: string }>(`/auth/sso/initiate?tenantSlug=${encodeURIComponent(tenantSlug.trim().toLowerCase())}`);
+      window.location.assign(res.redirectUrl);
+    } catch (err) {
+      setSsoError(err instanceof Error ? err.message : 'Could not start SSO login');
+      setSsoBusy(false);
+    }
+  }
+
   if (challenge) return <MfaStep challenge={challenge} onDone={done} onBack={() => setChallenge(null)} />;
+
+  if (ssoMode) {
+    return (
+      <form onSubmit={(e) => void onSsoSubmit(e)} className="space-y-4" noValidate>
+        <p className="text-[13px] text-muted-foreground">Enter your workspace slug to sign in via your corporate Identity Provider (OIDC or SAML 2.0).</p>
+        <Field label="Workspace slug" htmlFor="sso-slug" error={ssoError ?? undefined}>
+          <Input id="sso-slug" placeholder="skyline-realty" autoFocus value={tenantSlug} onChange={(e) => setTenantSlug(e.target.value)} />
+        </Field>
+        <Button type="submit" variant="primary" size="lg" className="w-full" loading={ssoBusy} disabled={!tenantSlug.trim()}>
+          <KeyRound className="h-4 w-4" aria-hidden />
+          Continue with SSO
+        </Button>
+        <button type="button" className="w-full text-center text-[13px] text-muted-foreground hover:underline" onClick={() => { setSsoMode(false); setSsoError(null); }}>
+          Back to email &amp; password
+        </button>
+      </form>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
@@ -49,6 +87,14 @@ function LoginForm() {
       {bot.widget}
       <div className="flex justify-end"><Link href="/forgot-password" className="text-[13px] text-primary underline underline-offset-2 hover:no-underline">Forgot password?</Link></div>
       <Button type="submit" variant="primary" size="lg" className="w-full" loading={isSubmitting}>Sign in</Button>
+      <div className="relative py-1">
+        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+        <div className="relative flex justify-center text-[11px] uppercase tracking-wider"><span className="bg-surface px-2 text-muted-foreground">or</span></div>
+      </div>
+      <Button type="button" variant="secondary" size="lg" className="w-full" onClick={() => setSsoMode(true)}>
+        <KeyRound className="h-4 w-4" aria-hidden />
+        Sign in with company SSO
+      </Button>
     </form>
   );
 }

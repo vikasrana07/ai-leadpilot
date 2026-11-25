@@ -218,6 +218,7 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     // once a day: test the token of every Facebook-connected WhatsApp number (revoked token -> NEEDS_RECONNECT, owners told once)
     await this.channelHealth.runDaily().catch((e: unknown) => this.log.error(`channel health: ${e instanceof Error ? e.message : String(e)}`));
     await this.lifecycle.purgeDueTenants().catch((e: unknown) => this.log.error(`tenant purge: ${e instanceof Error ? e.message : String(e)}`));
+    await this.lifecycle.maintainPartitions().catch((e: unknown) => this.log.error(`partition maintenance: ${e instanceof Error ? e.message : String(e)}`));
     // scheduled campaigns check
     if (this.checkScheduledCampaigns) {
       await this.checkScheduledCampaigns().catch((e: unknown) => this.log.error(`scheduled campaigns: ${e instanceof Error ? e.message : String(e)}`));

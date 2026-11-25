@@ -14,6 +14,9 @@ import type { Env } from '../config/env.js';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { SecretBox } from '../crypto/secret-box.js';
 import { DbService } from '../db/db.module.js';
+import { LeadsModule } from '../leads/leads.module.js';
+import { TelephonyController } from './telephony.controller.js';
+import { TelephonyService } from './telephony.service.js';
 import { WHATSAPP_CLIENT, WhatsAppApiError, type WaCredentials, type WhatsAppClient } from '../whatsapp/whatsapp.client.js';
 
 type WhatsappInput = z.infer<typeof channelWhatsappSchema>;
@@ -307,5 +310,10 @@ class ChannelsController {
   @Post('widget-config/rotate-key') @HttpCode(200) @RequireFeature('web_widget') @RequirePermissions('integration:manage') rotate(@CurrentTenant() c: TenantRequestContext) { return this.svc.rotateWidgetKey(c); }
 }
 
-@Module({ controllers: [ChannelsController, MetaCallbacksController], providers: [ChannelsService], exports: [ChannelsService] })
+@Module({
+  imports: [LeadsModule],
+  controllers: [ChannelsController, MetaCallbacksController, TelephonyController],
+  providers: [ChannelsService, TelephonyService],
+  exports: [ChannelsService, TelephonyService],
+})
 export class ChannelsModule {}

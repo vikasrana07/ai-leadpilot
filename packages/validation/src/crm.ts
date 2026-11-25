@@ -78,6 +78,7 @@ export const importSchema = z.object({
   csv: z.string().min(1).max(5_000_000),
   dryRun: z.boolean().default(true),
   duplicateStrategy: z.enum(['skip', 'import']).default('skip'),
+  async: z.boolean().optional(),
 });
 export type ImportInput = z.infer<typeof importSchema>;
 

@@ -54,6 +54,26 @@ export function Thread({ convo }: { convo: ConversationDetail }) {
   const bottom = useRef<HTMLDivElement>(null);
   const [text, setText] = useState('');
   const [tpl, setTpl] = useState({ id: '', params: [] as string[] });
+
+  // Canned responses for slash commands (/)
+  const canned = useQuery({
+    queryKey: ['conversations', 'canned-responses'],
+    queryFn: () => api<Array<{ id: string; shortcut: string; title: string; body: string; category?: string }>>('/conversations/canned-responses'),
+  });
+
+  const slashQuery = text.startsWith('/') ? text.slice(1).toLowerCase() : null;
+  const filteredCanned = useMemo(() => {
+    if (slashQuery === null || !canned.data) return [];
+    return canned.data.filter((s) => s.shortcut.toLowerCase().startsWith(slashQuery) || s.title.toLowerCase().includes(slashQuery));
+  }, [slashQuery, canned.data]);
+
+  function insertSnippet(s: { body: string }) {
+    let resolved = s.body;
+    const leadName = convo.lead?.name?.split(' ')[0] || 'there';
+    resolved = resolved.replace(/\{\{lead\.name\}\}/g, leadName);
+    resolved = resolved.replace(/\{\{lead\.location\}\}/g, convo.lead?.location || 'our project area');
+    setText(resolved);
+  }
   const messages = useInfiniteQuery({
     queryKey: ['conversations', 'messages', convo.id], initialPageParam: '' as string,
     queryFn: ({ pageParam }) => api<MessagePage>(`/conversations/${convo.id}/messages${pageParam ? `?before=${pageParam}` : ''}`),
@@ -105,10 +125,30 @@ export function Thread({ convo }: { convo: ConversationDetail }) {
               )}
             </div>
           ) : (
-            <form onSubmit={(e) => { e.preventDefault(); if (text.trim()) send.mutate({ text: text.trim() }); }} className="flex items-end gap-2 rounded-lg border border-border bg-background p-2">
-              <textarea aria-label="Write a reply" rows={1} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (text.trim() && !send.isPending) send.mutate({ text: text.trim() }); } }} placeholder="Write a reply…  (Enter to send, Shift+Enter for a new line)" className="max-h-32 min-h-9 flex-1 resize-none bg-transparent px-1 py-2 text-[13px] outline-none placeholder:text-muted-foreground" />
-              <Button type="submit" variant="primary" size="icon" aria-label="Send" loading={send.isPending} disabled={!text.trim()}><Send className="h-4 w-4" /></Button>
-            </form>
+            <div className="relative">
+              {filteredCanned.length > 0 ? (
+                <div className="absolute bottom-full mb-2 left-0 right-0 z-20 max-h-48 overflow-y-auto rounded-md border border-border bg-surface p-1 shadow-lg">
+                  <div className="px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                    Quick Responses (Canned)
+                  </div>
+                  {filteredCanned.map((snippet) => (
+                    <button
+                      key={snippet.id}
+                      type="button"
+                      onClick={() => insertSnippet(snippet)}
+                      className="flex w-full items-start gap-2 rounded px-2 py-1.5 text-left text-[13px] hover:bg-muted"
+                    >
+                      <span className="font-mono font-medium text-primary">{snippet.shortcut}</span>
+                      <span className="truncate text-muted-foreground">{snippet.title}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <form onSubmit={(e) => { e.preventDefault(); if (text.trim()) send.mutate({ text: text.trim() }); }} className="flex items-end gap-2 rounded-lg border border-border bg-background p-2">
+                <textarea aria-label="Write a reply" rows={1} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (text.trim() && !send.isPending) send.mutate({ text: text.trim() }); } }} placeholder="Write a reply or type / for quick snippets…  (Enter to send, Shift+Enter for a new line)" className="max-h-32 min-h-9 flex-1 resize-none bg-transparent px-1 py-2 text-[13px] outline-none placeholder:text-muted-foreground" />
+                <Button type="submit" variant="primary" size="icon" aria-label="Send" loading={send.isPending} disabled={!text.trim()}><Send className="h-4 w-4" /></Button>
+              </form>
+            </div>
           )}
         {canReply && convo.status === 'OPEN' && convo.mode === 'HUMAN' ? <div className="mt-2 flex items-center justify-between text-[12px] text-muted-foreground"><span>{isWa ? (convo.windowOpen ? `Reply window open${convo.windowExpiresAt ? ` · closes ${timeAgo(convo.windowExpiresAt)}` : ''}` : 'Reply window closed') : 'Website chat'}</span><button className="hover:text-foreground hover:underline" onClick={() => act.mutate('handback')}>Hand back to AI</button></div> : null}
       </div>
