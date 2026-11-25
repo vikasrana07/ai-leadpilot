@@ -1,5 +1,6 @@
 import { series } from '../common/series.js';
-import { BadRequestException, ForbiddenException, Inject, Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable, type OnApplicationBootstrap, Optional } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Redis } from 'ioredis';
 import type { BuyingTimeline, Prisma } from '@leadpilot/database';
 import { leadFieldsSchema, TIMELINES, type ImportInput, type LeadListQuery } from '@leadpilot/validation';
@@ -12,6 +13,7 @@ import { normalizeEmail, normalizePhone } from '../common/phone.js';
 import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
 import { DbService } from '../db/db.module.js';
+import type { JobsService, LeadImportJobPayload } from '../ops/jobs.service.js';
 import { LeadsService } from './leads.service.js';
 import { RoundRobin } from './round-robin.js';
 
@@ -72,7 +74,7 @@ export interface ImportJobStatus {
 export type ImportResult = ImportReport | { jobId: string; status: 'QUEUED'; totalRows: number; message: string };
 
 @Injectable()
-export class LeadImportService {
+export class LeadImportService implements OnApplicationBootstrap {
   private readonly redis: Redis | null = null;
   private readonly memoryJobs = new Map<string, ImportJobStatus>();
 
@@ -81,6 +83,7 @@ export class LeadImportService {
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(LeadsService) private readonly leads: LeadsService,
     @Optional() @Inject(ENV) private readonly env?: Env,
+    @Optional() @Inject(ModuleRef) private readonly moduleRef?: ModuleRef,
   ) {
     if (this.env?.NODE_ENV !== 'test' && this.env?.REDIS_URL) {
       this.redis = new Redis(this.env.REDIS_URL, {
@@ -90,6 +93,25 @@ export class LeadImportService {
       });
       this.redis.on('error', () => undefined);
       void this.redis.connect().catch(() => undefined);
+    }
+  }
+
+  private jobsService: JobsService | null = null;
+
+  private jobs(): JobsService | null {
+    return this.jobsService;
+  }
+
+  async onApplicationBootstrap(): Promise<void> {
+    try {
+      const { JobsService: JobsCls } = await import('../ops/jobs.service.js');
+      const jobs = this.moduleRef?.get(JobsCls, { strict: false }) ?? null;
+      if (jobs) {
+        this.jobsService = jobs;
+        jobs.processLeadImport = (payload) => this.runQueuedImportJob(payload);
+      }
+    } catch {
+      this.jobsService = null;
     }
   }
 
@@ -156,6 +178,7 @@ export class LeadImportService {
     });
     if (!colField.includes('name')) throw new BadRequestException({ code: 'missing_name_column', message: 'The file needs a "name" column' });
 
+    const headerRow = rows[0] as string[];
     const dataRows = rows.slice(1);
     if (input.async || dataRows.length > 500) {
       const jobId = uuidv7();
@@ -171,7 +194,28 @@ export class LeadImportService {
         createdAt: new Date().toISOString(),
       };
       await this.saveJobStatus(job);
-      void this.executeJob(a, job, input, dataRows, colField, unknownColumns);
+
+      const jobs = this.jobs();
+      const enqueued = jobs
+        ? await jobs.enqueueLeadImport({
+            tenantId: a.tenantId,
+            jobId,
+            actor: {
+              tenantId: a.tenantId,
+              userId: a.userId,
+              membershipId: a.membershipId,
+              permissions: [...a.permissions],
+              ...(a.requestId ? { requestId: a.requestId } : {}),
+              ...(a.ip ? { ip: a.ip } : {}),
+            },
+            input,
+          })
+        : false;
+
+      if (!enqueued) {
+        void this.executeJob(a, job, input, headerRow, dataRows, colField, unknownColumns);
+      }
+
       return {
         jobId,
         status: 'QUEUED',
@@ -183,10 +227,50 @@ export class LeadImportService {
     return this.processBatch(a, input, dataRows, colField, unknownColumns, 0);
   }
 
+  /** Entrypoint invoked by the BullMQ worker (`lead-imports` queue). */
+  async runQueuedImportJob(payload: LeadImportJobPayload): Promise<void> {
+    const actor: Actor = {
+      tenantId: payload.actor.tenantId,
+      userId: payload.actor.userId,
+      membershipId: payload.actor.membershipId,
+      permissions: new Set(payload.actor.permissions),
+      requestId: payload.actor.requestId,
+      ip: payload.actor.ip,
+    };
+
+    const rows = parseCsv(payload.input.csv);
+    const headerRow = (rows[0] as string[]) ?? [];
+    const header = headerRow.map((h) => h.trim().toLowerCase());
+    const unknownColumns: string[] = [];
+    const colField = header.map((h, i) => {
+      if (h.startsWith('cf:')) return `cf:${h.slice(3)}`;
+      const f = ALIASES[h];
+      if (!f && h) unknownColumns.push(headerRow[i]?.trim() ?? h);
+      return f;
+    });
+
+    const dataRows = rows.slice(1);
+    const existing = await this.fetchJobStatus(payload.tenantId, payload.jobId);
+    const job: ImportJobStatus = existing ?? {
+      jobId: payload.jobId,
+      tenantId: payload.tenantId,
+      status: 'QUEUED',
+      totalRows: dataRows.length,
+      valid: 0,
+      created: 0,
+      skipped: 0,
+      invalid: [],
+      createdAt: new Date().toISOString(),
+    };
+
+    await this.executeJob(actor, job, payload.input, headerRow, dataRows, colField, unknownColumns);
+  }
+
   private async executeJob(
     a: Actor,
     job: ImportJobStatus,
     input: ImportInput,
+    headerRow: string[],
     dataRows: string[][],
     colField: (string | undefined)[],
     unknownColumns: string[],
@@ -221,8 +305,12 @@ export class LeadImportService {
       job.completedAt = new Date().toISOString();
       if (allInvalid.length > 0) {
         job.errorCsv = formatCsv([
-          ['row', 'errors'],
-          ...allInvalid.map((inv) => [String(inv.row), inv.errors.join('; ')]),
+          [...headerRow, 'row', 'errors'],
+          ...allInvalid.map((inv) => {
+            const orig = dataRows[inv.row - 2] ?? headerRow.map(() => '');
+            const padded = headerRow.map((_, idx) => orig[idx] ?? '');
+            return [...padded, String(inv.row), inv.errors.join('; ')];
+          }),
         ]);
       }
       await this.saveJobStatus(job);

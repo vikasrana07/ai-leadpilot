@@ -12,6 +12,7 @@ import { AutomationEngine } from './automation-engine.js';
 import { LifecycleJobs } from './lifecycle-jobs.js';
 import { OutboxRelay } from './outbox-relay.js';
 import { WebhookDispatcher } from './webhook-dispatcher.js';
+import type { ImportInput } from '@leadpilot/validation';
 import { ScannersService } from './scanners.service.js';
 
 export const RUNS_QUEUE = 'automation-runs';
@@ -19,6 +20,21 @@ export const MAINTENANCE_QUEUE = 'maintenance';
 export const WEBHOOKS_QUEUE = 'webhook-deliveries';
 export const AI_DOCS_QUEUE = 'ai-knowledge-docs';
 export const CAMPAIGNS_QUEUE = 'broadcast-campaigns';
+export const IMPORTS_QUEUE = 'lead-imports';
+
+export interface LeadImportJobPayload {
+  tenantId: string;
+  jobId: string;
+  actor: {
+    tenantId: string;
+    userId: string | null;
+    membershipId: string | null;
+    permissions: string[];
+    requestId?: string;
+    ip?: string;
+  };
+  input: ImportInput;
+}
 
 export function redisConnection(url: string): ConnectionOptions {
   const u = new URL(url);
@@ -39,6 +55,7 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
   private webhooksQueue: Queue | null = null;
   private aiDocsQueue: Queue | null = null;
   private campaignsQueue: Queue | null = null;
+  private importsQueue: Queue | null = null;
   private readonly workers: Worker[] = [];
   private relayTimer: NodeJS.Timeout | null = null;
   private relayBusy = false;
@@ -51,6 +68,9 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
 
   /** Hook registered by CampaignsService to sweep scheduled campaigns */
   checkScheduledCampaigns?: () => Promise<number>;
+
+  /** Hook registered by LeadImportService to process large CSV imports in BullMQ */
+  processLeadImport?: (payload: LeadImportJobPayload) => Promise<void>;
 
   constructor(
     @Inject(ENV) private readonly env: Env,
@@ -86,13 +106,23 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
       this.maintenanceQueue = new Queue(MAINTENANCE_QUEUE, { connection, prefix, defaultJobOptions: { removeOnComplete: { count: 20 }, removeOnFail: { count: 50 } } });
       this.webhooksQueue = new Queue(WEBHOOKS_QUEUE, { connection, prefix, defaultJobOptions: { attempts: 5, backoff: { type: 'exponential', delay: 2000 }, removeOnComplete: { count: 1000 }, removeOnFail: { count: 10000 } } });
       this.campaignsQueue = new Queue(CAMPAIGNS_QUEUE, { connection, prefix, defaultJobOptions: { attempts: 3, backoff: { type: 'exponential', delay: 1000 }, removeOnComplete: { count: 1000 }, removeOnFail: { count: 1000 } } });
+      this.importsQueue = new Queue(IMPORTS_QUEUE, { connection, prefix, defaultJobOptions: { attempts: 2, backoff: { type: 'exponential', delay: 2000 }, removeOnComplete: { count: 200 }, removeOnFail: { count: 500 } } });
       this.runsQueue.on('error', (e) => this.log.error(`runs queue: ${e.message}`));
       this.maintenanceQueue.on('error', (e) => this.log.error(`maintenance queue: ${e.message}`));
       this.webhooksQueue.on('error', (e) => this.log.error(`webhooks queue: ${e.message}`));
       this.campaignsQueue.on('error', (e) => this.log.error(`campaigns queue: ${e.message}`));
+      this.importsQueue.on('error', (e) => this.log.error(`imports queue: ${e.message}`));
       this.relay.enqueueRun = (tenantId, runId) => this.enqueueRun(tenantId, runId);
       this.relay.enqueueWebhook = (tenantId, deliveryId) => this.enqueueWebhook(tenantId, deliveryId);
       this.webhooks.enqueueJob = (tenantId, deliveryId, generation) => this.enqueueWebhook(tenantId, deliveryId, generation);
+
+      this.workers.push(new Worker(IMPORTS_QUEUE, async (job: Job<LeadImportJobPayload>) => {
+        await runWithLogContext({ jobId: String(job.id ?? job.data.jobId), tenantId: job.data.tenantId }, async () => {
+          if (this.processLeadImport) {
+            await this.processLeadImport(job.data);
+          }
+        });
+      }, { connection, prefix, concurrency: 2 }));
 
       this.workers.push(new Worker(CAMPAIGNS_QUEUE, async (job: Job<{ tenantId: string; campaignId: string }>) => {
         await runWithLogContext({ jobId: String(job.id ?? job.data.campaignId), tenantId: job.data.tenantId }, async () => {
@@ -185,6 +215,19 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     await this.aiDocsQueue.add('process', { tenantId, documentId, kind }, { jobId: `${documentId}-${generation}` });
   }
 
+  /** Enqueues a large CSV lead import job to BullMQ when workers are enabled; returns false to fall back to in-process execution. */
+  async enqueueLeadImport(payload: LeadImportJobPayload): Promise<boolean> {
+    if (this.env.NODE_ENV === 'test' || !this.env.WORKERS_ENABLED) {
+      return false;
+    }
+    if (!this.importsQueue) {
+      const connection = redisConnection(this.env.REDIS_URL);
+      this.importsQueue = new Queue(IMPORTS_QUEUE, { connection, prefix: this.env.QUEUE_PREFIX });
+    }
+    await this.importsQueue.add('import-csv', payload, { jobId: payload.jobId });
+    return true;
+  }
+
   private async drain(): Promise<void> {
     if (this.relayBusy) return;
     this.relayBusy = true;
@@ -239,12 +282,14 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
       this.webhooksQueue?.close(),
       this.aiDocsQueue?.close(),
       this.campaignsQueue?.close(),
+      this.importsQueue?.close(),
     ]);
     this.runsQueue = null;
     this.maintenanceQueue = null;
     this.webhooksQueue = null;
     this.aiDocsQueue = null;
     this.campaignsQueue = null;
+    this.importsQueue = null;
     this.workers.length = 0;
   }
 }
