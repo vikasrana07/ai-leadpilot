@@ -79,6 +79,13 @@ PLATFORM_ADMIN_PASSWORD='a-long-passphrase' pnpm --filter @leadpilot/database pl
 ```
 Sign in at `/platform/login`. The console manages plans, tenants (suspend, complimentary plan, trial extension) and shows MRR.
 
+If the command exits with status 1, check these first:
+- **The password must be set as `PLATFORM_ADMIN_PASSWORD` on the same command** (it is never read from the command line) and be at least 12 characters.
+- **`DATABASE_OWNER_URL` must be in `.env`** (the owner role, not `DATABASE_URL`), and the database must be running.
+- **Run it from the repository root.** Running it again for an existing email only resets that admin's password and clears a lockout.
+
+Who can see what, including what a platform admin can and cannot see of a customer's data: [roles-and-access.md](roles-and-access.md).
+
 **Live Razorpay (not yet verified; use TEST mode first):** create a Razorpay account, generate *test* API keys, set `RAZORPAY_MODE=live`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`; in Dashboard > Webhooks add `<PUBLIC_API_URL>/webhooks/razorpay` with a secret you also put in `RAZORPAY_WEBHOOK_SECRET`, events `subscription.*` and `payment.failed`. Set `SELLER_LEGAL_NAME`, `SELLER_GSTIN`, `SELLER_STATE_CODE`, `SELLER_ADDRESS`; confirm `INVOICE_SAC` with your accountant. Billing needs the worker process (grace expiry, trial notices and quota alerts run on its minute tick).
 
 ## Security hardening (phase 8)
