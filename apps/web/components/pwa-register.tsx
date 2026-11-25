@@ -18,7 +18,7 @@ export function PwaRegister() {
         .catch((error) => {
           // Non-blocking in dev/local environments
           if (process.env.NODE_ENV === 'development') {
-            console.debug('Service worker registration:', error);
+            console.warn('Service worker registration:', error);
           }
         });
     }

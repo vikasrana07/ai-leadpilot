@@ -80,6 +80,7 @@ export function useTablePreferences(tableId: string, columns: ColumnDef[], defau
 
   // Sync column order if columns change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: reconciles column order when column definitions change
     setColumnOrderState((prev) => {
       const valid = prev.filter((id) => allColIds.includes(id));
       const missing = allColIds.filter((id) => !valid.includes(id));

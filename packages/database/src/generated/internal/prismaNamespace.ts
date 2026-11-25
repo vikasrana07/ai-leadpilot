@@ -416,6 +416,7 @@ export const ModelName = {
   Lead: 'Lead',
   Tag: 'Tag',
   LeadTag: 'LeadTag',
+  LeadAttachment: 'LeadAttachment',
   LeadNote: 'LeadNote',
   LeadActivity: 'LeadActivity',
   StageTransition: 'StageTransition',
@@ -493,7 +494,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "googleCalendarSync" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "opsAlert" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest" | "portalConfig" | "portalLoginCode" | "portalSession" | "userAlertSettings" | "trackedEmail" | "emailEngagementEvent" | "emailSuppression" | "broadcastCampaign" | "broadcastRecipient"
+    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadAttachment" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "googleCalendarSync" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "opsAlert" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest" | "portalConfig" | "portalLoginCode" | "portalSession" | "userAlertSettings" | "trackedEmail" | "emailEngagementEvent" | "emailSuppression" | "broadcastCampaign" | "broadcastRecipient"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1900,6 +1901,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.LeadTagCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.LeadTagCountAggregateOutputType> | number
+        }
+      }
+    }
+    LeadAttachment: {
+      payload: Prisma.$LeadAttachmentPayload<ExtArgs>
+      fields: Prisma.LeadAttachmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LeadAttachmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LeadAttachmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload>
+        }
+        findFirst: {
+          args: Prisma.LeadAttachmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LeadAttachmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload>
+        }
+        findMany: {
+          args: Prisma.LeadAttachmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload>[]
+        }
+        create: {
+          args: Prisma.LeadAttachmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload>
+        }
+        createMany: {
+          args: Prisma.LeadAttachmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LeadAttachmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload>[]
+        }
+        delete: {
+          args: Prisma.LeadAttachmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload>
+        }
+        update: {
+          args: Prisma.LeadAttachmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.LeadAttachmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LeadAttachmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LeadAttachmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.LeadAttachmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeadAttachmentPayload>
+        }
+        aggregate: {
+          args: Prisma.LeadAttachmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLeadAttachment>
+        }
+        groupBy: {
+          args: Prisma.LeadAttachmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LeadAttachmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LeadAttachmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LeadAttachmentCountAggregateOutputType> | number
         }
       }
     }
@@ -6808,6 +6883,21 @@ export const LeadTagScalarFieldEnum = {
 export type LeadTagScalarFieldEnum = (typeof LeadTagScalarFieldEnum)[keyof typeof LeadTagScalarFieldEnum]
 
 
+export const LeadAttachmentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  uploadedByUserId: 'uploadedByUserId',
+  filename: 'filename',
+  mime: 'mime',
+  sizeBytes: 'sizeBytes',
+  storageKey: 'storageKey',
+  createdAt: 'createdAt'
+} as const
+
+export type LeadAttachmentScalarFieldEnum = (typeof LeadAttachmentScalarFieldEnum)[keyof typeof LeadAttachmentScalarFieldEnum]
+
+
 export const LeadNoteScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -8555,6 +8645,7 @@ export type GlobalOmitConfig = {
   lead?: Prisma.LeadOmit
   tag?: Prisma.TagOmit
   leadTag?: Prisma.LeadTagOmit
+  leadAttachment?: Prisma.LeadAttachmentOmit
   leadNote?: Prisma.LeadNoteOmit
   leadActivity?: Prisma.LeadActivityOmit
   stageTransition?: Prisma.StageTransitionOmit

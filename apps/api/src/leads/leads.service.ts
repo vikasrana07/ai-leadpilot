@@ -486,6 +486,7 @@ export class LeadsService {
       if (Object.keys(fill).length) await tx.lead.update({ where: { id: targetId }, data: fill });
       const have = new Set(target.tags.map((t) => t.tagId));
       for (const s of sources) for (const t of s.tags) if (!have.has(t.tagId)) { have.add(t.tagId); await tx.leadTag.create({ data: { tenantId: a.tenantId, leadId: targetId, tagId: t.tagId } }); }
+      await tx.leadAttachment.updateMany({ where: { tenantId: a.tenantId, leadId: { in: sourceIds } }, data: { leadId: targetId } });
       await tx.lead.updateMany({ where: { id: { in: sourceIds } }, data: { deletedAt: new Date(), mergedIntoId: targetId } });
       await this.activity(tx, a, targetId, 'merged', { sourceIds, sourceNames: sources.map((s) => s.name) });
       await this.auditLead(tx, a, 'lead.merged', targetId, { sourceIds });

@@ -28,4 +28,5 @@ export default tseslint.config(
   { files: ['**/*.cjs'], languageOptions: { globals: { module: 'writable', require: 'readonly', process: 'readonly' } } },
   { files: ['scripts/**/*.mjs', 'e2e/tools/**/*.mjs'], languageOptions: { globals: { fetch: 'readonly', process: 'readonly', console: 'readonly', performance: 'readonly', Buffer: 'readonly', URL: 'readonly', AbortSignal: 'readonly', innerWidth: 'readonly', innerHeight: 'readonly', document: 'readonly', getComputedStyle: 'readonly', setTimeout: 'readonly' } } },
   { files: ['apps/web/**/*.{ts,tsx}'], plugins: { 'react-hooks': reactHooks }, rules: { ...reactHooks.configs.recommended.rules } },
+  { files: ['apps/web/public/sw.js'], languageOptions: { globals: { self: 'readonly', clients: 'readonly', console: 'readonly' } } },
 );

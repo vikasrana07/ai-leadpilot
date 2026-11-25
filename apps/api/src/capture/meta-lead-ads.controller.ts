@@ -60,7 +60,7 @@ export class MetaLeadAdsController {
   async handleLead(
     @Query('tenantId') queryTenantId: string | undefined,
     @Body() body: unknown,
-    @Req() req: Request,
+    @Req() _req: Request,
   ) {
     const data = parseMetaLeadPayload(body);
     const pageId = (body as { entry?: Array<{ id?: string }> })?.entry?.[0]?.id;

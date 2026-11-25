@@ -35,7 +35,7 @@ export class TelephonyController {
   async handleExotelCall(
     @Param('tenantId') tenantId: string,
     @Body() body: unknown,
-    @Query('token') queryToken?: string,
+    @Query('token') _queryToken?: string,
   ) {
     const tenantExists = await this.db.userTx(null, (tx) =>
       tx.tenant.findUnique({ where: { id: tenantId }, select: { id: true } }),

@@ -5,12 +5,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import {
   Building2,
-  Calendar,
   ChevronRight,
-  Filter,
   Search,
-  Sparkles,
-  Users,
   X,
 } from 'lucide-react';
 import { PageHeader } from '@/components/page/page-header';

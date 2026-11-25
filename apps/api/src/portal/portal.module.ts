@@ -1,8 +1,8 @@
-import { Body, CanActivate, Controller, ExecutionContext, Get, HttpCode, Inject, Injectable, type MiddlewareConsumer, Module, type NestModule, Param, Post, Put, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, CanActivate, Controller, ExecutionContext, Get, HttpCode, Inject, Injectable, type MiddlewareConsumer, Module, type NestModule, Param, ParseUUIDPipe, Post, Put, Query, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { NextFunction, Request, Response } from 'express';
 import { portalCodeRequestSchema, portalConfigSchema, portalVerifySchema, type PortalConfigInput } from '@leadpilot/validation';
-import type { z } from 'zod';
+import { z } from 'zod';
 import { RequireFeature } from '../common/billing-meta.js';
 import { CurrentTenant, Public, RequirePermissions } from '../common/decorators.js';
 import type { AppRequest, TenantRequestContext } from '../common/request-context.js';
@@ -10,9 +10,14 @@ import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { ConversationsModule } from '../conversations/conversations.module.js';
+import { OpsModule } from '../ops/ops.module.js';
 import { BotGuard, TurnstileService } from '../security/turnstile.js';
 import { PORTAL_COOKIE, PORTAL_SESSION_MINUTES } from './portal-auth.js';
 import { PortalService, type PortalCtx } from './portal.service.js';
+
+const cancelBodySchema = z.object({ reason: z.string().trim().max(300).optional() });
+const rescheduleBodySchema = z.object({ startsAt: z.string().datetime({ offset: true }), reason: z.string().trim().max(300).optional() });
+const dataRequestSchema = z.object({ type: z.enum(['export', 'erase']), note: z.string().trim().max(300).optional() });
 
 type PortalRequest = AppRequest & { portal?: PortalCtx };
 // Same limit as the other sign-in style endpoints (raised in tests through THROTTLE_AUTH_LIMIT).
@@ -40,6 +45,26 @@ class PortalController {
   // Fixed paths first: they must not be mistaken for a portal key.
   @Public() @UseGuards(PortalGuard) @Get('me') me(@Req() req: PortalRequest) { return this.svc.me(req.portal as PortalCtx); }
   @Public() @UseGuards(PortalGuard) @Get('appointments') appointments(@Req() req: PortalRequest) { return this.svc.appointments(req.portal as PortalCtx); }
+  @Public() @UseGuards(PortalGuard) @Get('appointments/:id/slots')
+  slots(@Req() req: PortalRequest, @Param('id', new ParseUUIDPipe()) id: string, @Query('from') from?: string) {
+    return this.svc.appointmentSlots(req.portal as PortalCtx, id, from);
+  }
+  @Public() @UseGuards(PortalGuard) @Post('appointments/:id/confirm') @HttpCode(200)
+  confirm(@Req() req: PortalRequest, @Param('id', new ParseUUIDPipe()) id: string) {
+    return this.svc.confirmAppointment(req.portal as PortalCtx, id);
+  }
+  @Public() @UseGuards(PortalGuard) @Post('appointments/:id/cancel') @HttpCode(200)
+  cancel(@Req() req: PortalRequest, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(cancelBodySchema)) b: z.infer<typeof cancelBodySchema>) {
+    return this.svc.cancelAppointment(req.portal as PortalCtx, id, b.reason);
+  }
+  @Public() @UseGuards(PortalGuard) @Post('appointments/:id/reschedule') @HttpCode(200)
+  reschedule(@Req() req: PortalRequest, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(rescheduleBodySchema)) b: z.infer<typeof rescheduleBodySchema>) {
+    return this.svc.rescheduleAppointment(req.portal as PortalCtx, id, b.startsAt, b.reason);
+  }
+  @Public() @UseGuards(PortalGuard) @Post('data-request') @HttpCode(202)
+  dataRequest(@Req() req: PortalRequest, @Body(new ZodPipe(dataRequestSchema)) b: z.infer<typeof dataRequestSchema>) {
+    return this.svc.requestData(req.portal as PortalCtx, b.type, b.note);
+  }
   @Public() @UseGuards(PortalGuard) @Post('logout') @HttpCode(204)
   async logout(@Req() req: PortalRequest, @Res({ passthrough: true }) res: Response): Promise<void> { await this.svc.logout(req.portal as PortalCtx); res.clearCookie(PORTAL_COOKIE, { path: '/' }); }
 
@@ -77,7 +102,7 @@ function portalHeaders(_req: Request, res: Response, next: NextFunction): void {
   next();
 }
 
-@Module({ imports: [ConversationsModule], controllers: [PortalController, PortalAdminController], providers: [PortalService, PortalGuard], exports: [PortalService] })
+@Module({ imports: [ConversationsModule, OpsModule], controllers: [PortalController, PortalAdminController], providers: [PortalService, PortalGuard], exports: [PortalService] })
 export class PortalModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void { consumer.apply(portalHeaders).forRoutes('portal'); }
 }

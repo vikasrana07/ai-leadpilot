@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { AuthLayout } from '@/components/auth-layout';
 import { Button } from '@/components/ui/button';
-import { api, authApi } from '@/lib/api';
+import { api, type authApi } from '@/lib/api';
 import { ME_KEY } from '@/lib/auth';
 
 function SsoCallbackHandler() {
@@ -16,19 +16,13 @@ function SsoCallbackHandler() {
   const params = useSearchParams();
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const code = params.get('code');
-    const state = params.get('state');
-    const idpError = params.get('error_description') ?? params.get('error');
+  const code = params.get('code');
+  const state = params.get('state');
+  const idpError = params.get('error_description') ?? params.get('error');
+  const paramError = idpError ?? (!code || !state ? 'Missing authorization code or state parameter from Identity Provider.' : null);
 
-    if (idpError) {
-      setError(idpError);
-      return;
-    }
-    if (!code || !state) {
-      setError('Missing authorization code or state parameter from Identity Provider.');
-      return;
-    }
+  useEffect(() => {
+    if (paramError || !code || !state) return;
 
     let cancelled = false;
     void (async () => {
@@ -50,15 +44,17 @@ function SsoCallbackHandler() {
     return () => {
       cancelled = true;
     };
-  }, [params, qc, router]);
+  }, [code, state, paramError, qc, router]);
 
-  if (error) {
+  const activeError = paramError ?? error;
+
+  if (activeError) {
     return (
       <div className="space-y-4 text-center">
         <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-danger/10 text-danger">
           <TriangleAlert className="h-5 w-5" aria-hidden />
         </div>
-        <p className="text-[13px] text-danger">{error}</p>
+        <p className="text-[13px] text-danger">{activeError}</p>
         <Button asChild variant="secondary" className="w-full">
           <Link href="/login">Back to sign in</Link>
         </Button>

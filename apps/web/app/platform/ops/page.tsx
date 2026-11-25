@@ -2,16 +2,13 @@
 
 import { useQuery } from '@tanstack/react-query';
 import {
-  Activity,
   AlertOctagon,
   AlertTriangle,
   Bot,
   CheckCircle2,
   CircleHelp,
   Clock,
-  Cpu,
   Database,
-  ExternalLink,
   MessageSquare,
   Radio,
   RefreshCw,
@@ -24,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlatformOpsSkeleton } from '@/components/skeletons';
-import { platformApi, type OpsAlert, type OpsHealth, type OpsView } from '@/lib/platform';
+import { platformApi, type OpsAlert, type OpsView } from '@/lib/platform';
 import { cn } from '@/lib/cn';
 
 const n = (v: number | null | undefined) =>

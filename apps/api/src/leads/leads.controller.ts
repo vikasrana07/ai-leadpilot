@@ -1,5 +1,6 @@
 import { RequireFeature } from '../common/billing-meta.js';
-import { Body, Controller, Delete, Get, Header, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Put, Query, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, Inject, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Put, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import {
   bulkSchema, checkDuplicatesSchema, createLeadSchema, importSchema, leadListQuerySchema, mergeSchema, noteSchema, stageChangeSchema, tagsSchema, updateLeadSchema,
@@ -9,6 +10,7 @@ import { actorFrom } from '../common/actor.js';
 import { CurrentTenant } from '../common/decorators.js';
 import type { TenantRequestContext } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
+import { LeadAttachmentsService, MAX_ATTACHMENT_BYTES } from './lead-attachments.service.js';
 import { LeadImportService } from './lead-import.service.js';
 import { LeadsService } from './leads.service.js';
 
@@ -18,7 +20,11 @@ import { LeadsService } from './leads.service.js';
  */
 @Controller('leads')
 export class LeadsController {
-  constructor(@Inject(LeadsService) private readonly leads: LeadsService, @Inject(LeadImportService) private readonly imports: LeadImportService) {}
+  constructor(
+    @Inject(LeadsService) private readonly leads: LeadsService,
+    @Inject(LeadImportService) private readonly imports: LeadImportService,
+    @Inject(LeadAttachmentsService) private readonly attachments: LeadAttachmentsService,
+  ) {}
 
   @Get() list(@CurrentTenant() ctx: TenantRequestContext, @Query(new ZodPipe(leadListQuerySchema)) q: LeadListQuery) { return this.leads.list(actorFrom(ctx), q); }
 
@@ -88,4 +94,45 @@ export class LeadsController {
 
   @Post(':id/merge') @HttpCode(200)
   merge(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(mergeSchema)) body: { sourceIds: string[] }) { return this.leads.merge(actorFrom(ctx), id, body.sourceIds); }
+
+  @Get(':id/attachments')
+  listAttachments(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) {
+    return this.attachments.list(actorFrom(ctx), id);
+  }
+
+  @Post(':id/attachments') @HttpCode(201)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_ATTACHMENT_BYTES + 1, files: 1 } }))
+  uploadAttachment(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @UploadedFile() file: { originalname: string; mimetype: string; buffer: Buffer; size: number } | undefined,
+  ) {
+    return this.attachments.upload(actorFrom(ctx), id, file);
+  }
+
+  @Get(':id/attachments/:attachmentId/download')
+  async downloadAttachment(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('attachmentId', new ParseUUIDPipe()) attachmentId: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    const f = await this.attachments.download(actorFrom(ctx), id, attachmentId);
+    res.set({
+      'Content-Type': 'application/octet-stream',
+      'X-Content-Type-Options': 'nosniff',
+      'Content-Disposition': `attachment; filename="${f.filename.replace(/[^\w.\- ]/g, '_')}"`,
+      'Cache-Control': 'private, no-store',
+    });
+    res.send(f.data);
+  }
+
+  @Delete(':id/attachments/:attachmentId') @HttpCode(204)
+  removeAttachment(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('attachmentId', new ParseUUIDPipe()) attachmentId: string,
+  ) {
+    return this.attachments.remove(actorFrom(ctx), id, attachmentId);
+  }
 }

@@ -51,15 +51,20 @@ import { Inject } from '@nestjs/common';
 import { SecretBox } from './crypto/secret-box.js';
 import { BotGuard, TurnstileService } from './security/turnstile.js';
 import { Global } from '@nestjs/common';
+import { OBJECT_STORAGE, S3Storage } from './ai/knowledge/storage.js';
+import { ClamAvScanner, MockScanner, VIRUS_SCANNER } from './ai/knowledge/virus-scan.js';
 import { LiveWhatsAppClient, MockWhatsAppClient, WHATSAPP_CLIENT } from './whatsapp/whatsapp.client.js';
 
 @Global()
 @Module({
   providers: [
     SecretBox, TurnstileService, BotGuard, AiTrigger, LiveWhatsAppClient, MockWhatsAppClient,
+    S3Storage, ClamAvScanner, MockScanner,
+    { provide: OBJECT_STORAGE, useExisting: S3Storage },
+    { provide: VIRUS_SCANNER, inject: [ENV, ClamAvScanner, MockScanner], useFactory: (env: Env, clam: ClamAvScanner, mock: MockScanner) => (env.VIRUS_SCAN_MODE === 'clamav' ? clam : mock) },
     { provide: WHATSAPP_CLIENT, inject: [ENV, LiveWhatsAppClient, MockWhatsAppClient], useFactory: (env: Env, live: LiveWhatsAppClient, mock: MockWhatsAppClient) => (env.WHATSAPP_MODE === 'live' ? live : mock) },
   ],
-  exports: [SecretBox, TurnstileService, BotGuard, AiTrigger, WHATSAPP_CLIENT, MockWhatsAppClient],
+  exports: [SecretBox, TurnstileService, BotGuard, AiTrigger, WHATSAPP_CLIENT, MockWhatsAppClient, OBJECT_STORAGE, VIRUS_SCANNER, S3Storage, ClamAvScanner, MockScanner],
 })
 class IntegrationsCoreModule {}
 

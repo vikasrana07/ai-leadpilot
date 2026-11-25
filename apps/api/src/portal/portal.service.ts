@@ -1,9 +1,10 @@
-import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { packForIndustry, packTerms } from '@leadpilot/shared-types';
 import type { PortalConfigInput } from '@leadpilot/validation';
 import { PORTAL_KEY_REGEX } from '@leadpilot/validation';
 import { AuditService } from '../audit/audit.service.js';
 import { EntitlementsService } from '../billing/entitlements.service.js';
+import type { Actor } from '../common/actor.js';
 import { normalizeEmail, normalizePhone } from '../common/phone.js';
 import type { TenantRequestContext } from '../common/request-context.js';
 import { ENV } from '../common/tokens.js';
@@ -11,6 +12,8 @@ import type { Env } from '../config/env.js';
 import { ConversationsService } from '../conversations/conversations.service.js';
 import { DbService } from '../db/db.module.js';
 import { MailService } from '../mail/mail.module.js';
+import { AppointmentsService } from '../ops/appointments.service.js';
+import { NotificationsService } from '../ops/notifications.service.js';
 import { CODE_TTL_MINUTES, CODE_WINDOW_MINUTES, MAX_CODE_ATTEMPTS, MAX_CODES_PER_WINDOW, PORTAL_SESSION_MINUTES, dummyHash, deriveKey, generateCode, hashCode, hashIdentity, newPortalKey, safeEqualHex, signPortalSession, verifyPortalSession } from './portal-auth.js';
 
 export interface PortalRow { tenant_id: string; enabled: boolean; allow_confirm: boolean; allow_cancel: boolean; allow_reschedule: boolean; cancel_cutoff_hours: number; business_name: string; logo_url: string | null; timezone: string }
@@ -34,6 +37,7 @@ export class PortalService {
   constructor(
     @Inject(DbService) private readonly db: DbService, @Inject(EntitlementsService) private readonly ent: EntitlementsService, @Inject(MailService) private readonly mail: MailService,
     @Inject(ConversationsService) private readonly conversations: ConversationsService, @Inject(AuditService) private readonly audit: AuditService, @Inject(ENV) private readonly env: Env,
+    @Inject(AppointmentsService) private readonly appointmentsSvc: AppointmentsService, @Inject(NotificationsService) private readonly notifications: NotificationsService,
   ) {
     this.sessionKey = deriveKey(env.JWT_ACCESS_SECRET, 'lead-portal-session');
     this.codeKey = deriveKey(env.JWT_ACCESS_SECRET, 'lead-portal-code');
@@ -188,6 +192,168 @@ export class PortalService {
       };
     });
     return { upcoming: items.filter((a) => (a.status === 'PENDING' || a.status === 'CONFIRMED') && new Date(a.startsAt) > now).sort((x, y) => x.startsAt.localeCompare(y.startsAt)), past: items.filter((a) => !((a.status === 'PENDING' || a.status === 'CONFIRMED') && new Date(a.startsAt) > now)).slice(0, 30) };
+  }
+
+  // ------------------------------------------------------------------ customer actions (Milestone 2)
+  private portalActor(c: PortalCtx): Actor {
+    return {
+      tenantId: c.tenantId,
+      userId: null,
+      membershipId: null,
+      permissions: new Set(['appointment:read:all', 'appointment:write']),
+      requestId: undefined,
+      ip: undefined,
+    };
+  }
+
+  private async assertOwnAppt(c: PortalCtx, appointmentId: string, action: 'confirm' | 'cancel' | 'reschedule') {
+    const allowed =
+      action === 'confirm' ? c.cfg.allow_confirm : action === 'cancel' ? c.cfg.allow_cancel : c.cfg.allow_reschedule;
+    if (!allowed) throw new ForbiddenException({ code: 'forbidden', message: `Customers cannot ${action} appointments here.` });
+
+    const appt = await this.db.tenantTx({ tenantId: c.tenantId }, (tx) =>
+      tx.appointment.findFirst({
+        where: { id: appointmentId, tenantId: c.tenantId, leadId: { in: c.leadIds } },
+        select: { id: true, title: true, startsAt: true, endsAt: true, status: true, membershipId: true, leadId: true },
+      }),
+    );
+    if (!appt) throw new NotFoundException({ code: 'not_found', message: 'Appointment not found' });
+
+    const now = Date.now();
+    if (appt.startsAt.getTime() <= now) {
+      throw new ConflictException({ code: 'past_appointment', message: 'This appointment has already started or passed.' });
+    }
+    if (action === 'confirm' && appt.status !== 'PENDING') {
+      throw new ConflictException({ code: 'invalid_transition', message: 'Only pending appointments can be confirmed.' });
+    }
+    if (action !== 'confirm') {
+      if (appt.status !== 'PENDING' && appt.status !== 'CONFIRMED') {
+        throw new ConflictException({ code: 'invalid_transition', message: 'This appointment can no longer be changed.' });
+      }
+      const cutoffMs = c.cfg.cancel_cutoff_hours * 3_600_000;
+      if (appt.startsAt.getTime() - now <= cutoffMs) {
+        throw new ConflictException({
+          code: 'cutoff_passed',
+          message: `Changes must be made at least ${c.cfg.cancel_cutoff_hours} hour(s) before the appointment.`,
+        });
+      }
+    }
+    return appt;
+  }
+
+  private async notifyStaff(tenantId: string, membershipId: string, title: string, body: string, leadId: string) {
+    try {
+      const created = await this.db.tenantTx({ tenantId }, (tx) =>
+        this.notifications.create(tx, {
+          tenantId,
+          membershipIds: [membershipId],
+          type: 'appointment_changed',
+          title,
+          body,
+          link: `/leads/${leadId}`,
+          data: { leadId, byCustomer: true },
+        }),
+      );
+      this.notifications.publish(tenantId, created);
+    } catch (e) {
+      this.log.warn(`Could not notify staff of portal action: ${e instanceof Error ? e.message : 'unknown'}`);
+    }
+  }
+
+  async confirmAppointment(c: PortalCtx, appointmentId: string) {
+    const appt = await this.assertOwnAppt(c, appointmentId, 'confirm');
+    const updated = await this.appointmentsSvc.confirm(this.portalActor(c), appt.id);
+    await this.db.tenantTx({ tenantId: c.tenantId }, (tx) =>
+      this.audit.record(tx, {
+        tenantId: c.tenantId,
+        actorUserId: null,
+        action: 'portal.appointment_confirmed',
+        resourceType: 'appointment',
+        resourceId: appt.id,
+        metadata: { leadId: appt.leadId },
+      }),
+    );
+    await this.notifyStaff(c.tenantId, appt.membershipId, 'Appointment confirmed by customer', appt.title, appt.leadId);
+    return updated;
+  }
+
+  async cancelAppointment(c: PortalCtx, appointmentId: string, reason?: string) {
+    const appt = await this.assertOwnAppt(c, appointmentId, 'cancel');
+    const note = reason?.trim() ? `Cancelled by customer: ${reason.trim()}` : 'Cancelled by customer';
+    const updated = await this.appointmentsSvc.cancel(this.portalActor(c), appt.id, note);
+    await this.db.tenantTx({ tenantId: c.tenantId }, (tx) =>
+      this.audit.record(tx, {
+        tenantId: c.tenantId,
+        actorUserId: null,
+        action: 'portal.appointment_cancelled',
+        resourceType: 'appointment',
+        resourceId: appt.id,
+        metadata: { leadId: appt.leadId, ...(reason ? { reason } : {}) },
+      }),
+    );
+    await this.notifyStaff(c.tenantId, appt.membershipId, 'Appointment cancelled by customer', appt.title, appt.leadId);
+    return updated;
+  }
+
+  async rescheduleAppointment(c: PortalCtx, appointmentId: string, startsAt: string, reason?: string) {
+    const appt = await this.assertOwnAppt(c, appointmentId, 'reschedule');
+    const durationMinutes = Math.max(15, Math.round((appt.endsAt.getTime() - appt.startsAt.getTime()) / 60_000));
+    const note = reason?.trim() ? `Rescheduled by customer: ${reason.trim()}` : 'Rescheduled by customer';
+    const created = await this.appointmentsSvc.reschedule(this.portalActor(c), appt.id, {
+      startsAt,
+      durationMinutes,
+      reason: note,
+    });
+    await this.db.tenantTx({ tenantId: c.tenantId }, (tx) =>
+      this.audit.record(tx, {
+        tenantId: c.tenantId,
+        actorUserId: null,
+        action: 'portal.appointment_rescheduled',
+        resourceType: 'appointment',
+        resourceId: created.id,
+        metadata: { fromId: appt.id, leadId: appt.leadId },
+      }),
+    );
+    await this.notifyStaff(c.tenantId, appt.membershipId, 'Appointment rescheduled by customer', appt.title, appt.leadId);
+    return created;
+  }
+
+  async appointmentSlots(c: PortalCtx, appointmentId: string, fromDate?: string) {
+    const appt = await this.assertOwnAppt(c, appointmentId, 'reschedule');
+    const durationMinutes = Math.max(15, Math.round((appt.endsAt.getTime() - appt.startsAt.getTime()) / 60_000));
+    const from = fromDate && /^\d{4}-\d{2}-\d{2}$/.test(fromDate) ? fromDate : new Date().toISOString().slice(0, 10);
+    return this.db.tenantTx({ tenantId: c.tenantId }, (tx) =>
+      this.appointmentsSvc.slotsFor(tx, c.tenantId, c.cfg.timezone, [appt.membershipId], from, 7, durationMinutes),
+    );
+  }
+
+  async requestData(c: PortalCtx, type: 'export' | 'erase', note?: string) {
+    const created = await this.db.tenantTx({ tenantId: c.tenantId }, async (tx) => {
+      await this.audit.record(tx, {
+        tenantId: c.tenantId,
+        actorUserId: null,
+        action: 'portal.data_requested',
+        resourceType: 'lead',
+        resourceId: c.primaryLeadId,
+        metadata: { type, ...(note ? { note: note.slice(0, 300) } : {}) },
+      });
+      const owners = await tx.membership.findMany({
+        where: { tenantId: c.tenantId, status: 'ACTIVE', role: { key: 'owner' } },
+        select: { id: true },
+      });
+      if (!owners.length) return [];
+      return this.notifications.create(tx, {
+        tenantId: c.tenantId,
+        membershipIds: owners.map((o) => o.id),
+        type: 'privacy',
+        title: type === 'erase' ? 'Customer requested data erasure' : 'Customer requested data export',
+        body: note?.trim() ? note.trim().slice(0, 200) : 'Submitted via customer portal',
+        link: `/leads/${c.primaryLeadId}`,
+        data: { leadId: c.primaryLeadId, requestType: type },
+      });
+    });
+    this.notifications.publish(c.tenantId, created);
+    return { ok: true, status: 'Your request has been sent to the team.' };
   }
 
   // ------------------------------------------------------------------ staff settings

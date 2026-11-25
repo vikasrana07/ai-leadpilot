@@ -70,6 +70,7 @@ export const ModelName = {
   Lead: 'Lead',
   Tag: 'Tag',
   LeadTag: 'LeadTag',
+  LeadAttachment: 'LeadAttachment',
   LeadNote: 'LeadNote',
   LeadActivity: 'LeadActivity',
   StageTransition: 'StageTransition',
@@ -426,6 +427,21 @@ export const LeadTagScalarFieldEnum = {
 } as const
 
 export type LeadTagScalarFieldEnum = (typeof LeadTagScalarFieldEnum)[keyof typeof LeadTagScalarFieldEnum]
+
+
+export const LeadAttachmentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  leadId: 'leadId',
+  uploadedByUserId: 'uploadedByUserId',
+  filename: 'filename',
+  mime: 'mime',
+  sizeBytes: 'sizeBytes',
+  storageKey: 'storageKey',
+  createdAt: 'createdAt'
+} as const
+
+export type LeadAttachmentScalarFieldEnum = (typeof LeadAttachmentScalarFieldEnum)[keyof typeof LeadAttachmentScalarFieldEnum]
 
 
 export const LeadNoteScalarFieldEnum = {

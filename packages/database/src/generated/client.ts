@@ -137,6 +137,11 @@ export type Tag = Prisma.TagModel
  */
 export type LeadTag = Prisma.LeadTagModel
 /**
+ * Model LeadAttachment
+ * 
+ */
+export type LeadAttachment = Prisma.LeadAttachmentModel
+/**
  * Model LeadNote
  * 
  */

@@ -20,7 +20,7 @@ export function DeliveryGauge({
   autoRetry = true,
   autoRetryCount = 0,
   nextRetryAt,
-  status,
+  status: _status,
   isSample = false,
 }: DeliveryGaugeProps) {
   // Compute percentages

@@ -38,6 +38,7 @@ export type SuppressionReasonType = (typeof SUPPRESSION_REASONS)[number];
 export const sendTrackedEmailSchema = z.object({
   to: email,
   leadId: z.string().uuid().optional(),
+  templateKey: z.string().trim().min(1).max(64).optional(),
   subject: z.string().trim().min(1, 'Subject is required').max(200),
   text: z.string().trim().min(1, 'Message body is required').max(50_000),
   html: z.string().trim().max(100_000).optional(),

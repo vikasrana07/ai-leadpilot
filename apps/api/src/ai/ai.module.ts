@@ -12,8 +12,6 @@ import { PropertiesModule } from '../properties/properties.module.js';
 import { AssistantsService } from './assistants.service.js';
 import { KnowledgeController } from './knowledge/knowledge.controller.js';
 import { KnowledgeService } from './knowledge/knowledge.service.js';
-import { OBJECT_STORAGE, S3Storage } from './knowledge/storage.js';
-import { ClamAvScanner, MockScanner, VIRUS_SCANNER } from './knowledge/virus-scan.js';
 import { EMBEDDING_PROVIDER, LLM_PROVIDER, MockEmbeddings, MockLlm, OpenAiLlm } from './llm.js';
 import { AiOrchestrator } from './orchestrator.js';
 import { ScoringModule } from './scoring/scoring.module.js';
@@ -56,12 +54,10 @@ class AiController {
   imports: [OpsModule, ConversationsModule, PropertiesModule, ScoringModule],
   controllers: [AiController, KnowledgeController],
   providers: [
-    AssistantsService, KnowledgeService, ToolRunner, AiOrchestrator, S3Storage, ClamAvScanner, MockScanner, OpenAiLlm, MockLlm, MockEmbeddings,
-    { provide: OBJECT_STORAGE, useExisting: S3Storage },
-    { provide: VIRUS_SCANNER, inject: [ENV, ClamAvScanner, MockScanner], useFactory: (env: Env, clam: ClamAvScanner, mock: MockScanner) => (env.VIRUS_SCAN_MODE === 'clamav' ? clam : mock) },
+    AssistantsService, KnowledgeService, ToolRunner, AiOrchestrator, OpenAiLlm, MockLlm, MockEmbeddings,
     { provide: LLM_PROVIDER, inject: [ENV, OpenAiLlm, MockLlm], useFactory: (env: Env, live: OpenAiLlm, mock: MockLlm) => (env.AI_PROVIDER === 'openai' ? live : mock) },
     { provide: EMBEDDING_PROVIDER, inject: [ENV, OpenAiLlm, MockEmbeddings], useFactory: (env: Env, live: OpenAiLlm, mock: MockEmbeddings) => (env.AI_PROVIDER === 'openai' ? live : mock) },
   ],
-  exports: [AiOrchestrator, KnowledgeService, AssistantsService, MockLlm, MockScanner],
+  exports: [AiOrchestrator, KnowledgeService, AssistantsService, MockLlm],
 })
 export class AiModule {}

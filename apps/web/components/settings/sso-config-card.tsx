@@ -58,6 +58,7 @@ export function SsoConfigCard() {
 
   useEffect(() => {
     if (!config.data) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: syncs form fields when server config loads
     setEnabled(config.data.enabled);
     setProvider(config.data.provider ?? 'OIDC');
     setAutoProvision(config.data.autoProvision);

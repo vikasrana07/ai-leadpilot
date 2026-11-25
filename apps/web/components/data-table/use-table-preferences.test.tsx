@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { ColumnDef } from './types';

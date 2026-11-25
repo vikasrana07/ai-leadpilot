@@ -4,16 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Activity,
   ArrowRight,
-  Bot,
   Building2,
-  CheckCircle2,
   Clock,
   CreditCard,
   IndianRupee,
-  Layers,
   Sparkles,
-  TrendingUp,
-  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/page/page-header';

@@ -379,6 +379,7 @@ model Lead {
   transitions StageTransition[]
   trackedEmails TrackedEmail[]
   broadcastRecipients BroadcastRecipient[]
+  attachments LeadAttachment[]
 
   @@index([tenantId, deletedAt, createdAt(sort: Desc)])
   @@index([tenantId, stageId])
@@ -413,6 +414,23 @@ model LeadTag {
   @@id([leadId, tagId])
   @@index([tenantId])
   @@map("lead_tags")
+}
+
+model LeadAttachment {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  leadId           String   @map("lead_id") @db.Uuid
+  uploadedByUserId String?  @map("uploaded_by_user_id") @db.Uuid
+  filename         String
+  mime             String
+  sizeBytes        Int      @map("size_bytes")
+  storageKey       String   @map("storage_key")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, leadId, createdAt(sort: Desc)])
+  @@map("lead_attachments")
 }
 
 model LeadNote {

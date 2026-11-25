@@ -25,6 +25,7 @@ import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
 import { DbService } from '../db/db.module.js';
 import { MailService } from '../mail/mail.module.js';
+import { textToHtmlParagraphs } from '../mail/templates/layout.js';
 import { v7 as uuidv7 } from 'uuid';
 import {
   validateSnsSubscribeUrl,
@@ -178,7 +179,7 @@ export class EmailTrackingService {
     const emailId = uuidv7();
     const rawHtml = input.html
       ? input.html
-      : `<p>${input.text.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br />')}</p>`;
+      : textToHtmlParagraphs(input.text);
 
     const instrumentedHtml = this.instrumentHtml(emailId, actor.tenantId, rawHtml);
 
@@ -232,7 +233,10 @@ export class EmailTrackingService {
           status: 'SENT',
           sesMessageId: messageId,
           smtpMessageId: messageId,
-          metadata: { tags: input.tags ?? {} },
+          metadata: {
+            tags: input.tags ?? {},
+            ...(input.templateKey ? { templateKey: input.templateKey } : {}),
+          },
         },
       });
 

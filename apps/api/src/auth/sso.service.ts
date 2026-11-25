@@ -418,7 +418,7 @@ export class SsoService {
 
     const userId = await this.db.tenantTx({ tenantId }, async (tx) => {
       let user = await tx.user.findFirst({ where: { email }, select: { id: true } });
-      let membership = user
+      const membership = user
         ? await tx.membership.findUnique({
             where: { tenantId_userId: { tenantId, userId: user.id } },
             select: { id: true, status: true },

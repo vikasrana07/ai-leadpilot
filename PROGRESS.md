@@ -1,7 +1,7 @@
 # LeadPilot AI — Progress
 
 Legend: ☐ pending · ◐ in progress · ☑ done (verified) · Tags: **M** = MVP, **V** = V1.1, **L** = Later
-Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally; NOT launch-ready; every real provider (Razorpay, Meta, OpenAI, SMTP, AWS KMS, Turnstile) and AWS deployment are unverified; awaiting user review**
+Last updated: 2026-11-25 · Current phase: **Phase 8: built and verified locally; NOT launch-ready; every real provider (Razorpay, Meta, OpenAI, SMTP, AWS KMS, Turnstile) and AWS deployment are unverified; awaiting user review**
 
 ## Phase status
 | Phase | Status |
@@ -13,7 +13,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 | 4 AI | ◐ built; verified with an offline mock model only (see below) |
 | 5 Automation & appointments | ☑ built; verified with mock WhatsApp/LLM (see below) |
 | 6 SaaS | ◐ plans, billing (mock-verified), GST invoices, gating, platform console built; Razorpay never called for real; 5 V1.1 items deferred (see below) |
-| 8 Launch blockers, V1.1, polish | ◐ built and tested locally (see Phase 8 verification); real KMS/Turnstile/Razorpay/Meta/OpenAI/SMTP unverified; Embedded Signup and Google Calendar NOT built |
+| 8 Launch blockers, V1.1, polish | ◐ built and tested locally (see Phase 8 verification); real KMS/Turnstile/Razorpay/Meta/OpenAI/SMTP unverified; Embedded Signup (mock-verified) and Google Calendar sync built afterwards |
 | 9 Visual automation builder | ◐ milestones 1-4 built and tested locally: graph model + versions + waits + API (c46972f), Outline editor, canvas (@xyflow/react 12.12.1), graph templates, user guide; real WhatsApp after a wait, worker restart while waiting, load with many waiting runs unverified |
 | 9b Industry packs v2 | ◐ coaching, healthcare, home services packs; pack-driven lead form, wording, scoring, AI guidance (7bd66f1); content needs review by people in each trade; clinic WhatsApp use needs legal review |
 | 7 Hardening & launch | ◐ E2E, security review, load test, restore drill, runbooks, Dockerfiles done; KMS key provider, bot protection, MFA, retention job, external security review, lawyer review of legal drafts, AWS deployment still open |
@@ -31,19 +31,19 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 
 ### Tenancy, auth, RBAC (Phase 1)
 - ☑ M Tenant model + settings (API + settings UI)
-- ☑ M Onboarding wizard, resumable. Steps 1-3 functional; steps 4-7 depend on phases 3-4 and are explicitly skippable (not faked)
+- ☑ M Onboarding wizard, resumable. Steps 1-7 functional (business, industry, team, WhatsApp Embedded Signup + manual, AI assistant, knowledge upload, qualification rules; steps 3-7 skippable)
 - ☑ M Register / login / logout / verify email / forgot+reset password
 - ☑ M Refresh rotation with reuse detection; session list/revoke
 - ☑ M Invitation-based signup
-- ☑ M Roles + granular permissions (32 keys), guards; roles UI is read-only
+- ☑ M Roles + granular permissions (39 keys), guards; custom roles (create/edit/delete) built in API & UI
 - ☑ M Audit log (append-only at DB grant level) + viewer
 - ☑ M RLS on all tenant tables + isolation test suite
 - ☑ M Design tokens, light/dark/system theme, no-flash inline script (visually confirmed dark persistence; flash itself not measured)
-- ◐ M App shell: sidebar (collapse), header (workspace switcher, command palette, theme, profile), breadcrumbs component. **Not built yet:** quick-create button (nothing to create until phase 2), global search beyond navigation commands
-- ◐ M i18n infrastructure: **not done** (strings are inline English). Carry to phase 2
-- ☐ V Permission overrides per member · ☐ L Fully custom roles
+- ☑ M App shell: sidebar (collapse), header (workspace switcher, quick-create menu, command palette with navigation + quick actions + live lead search, theme, profile), breadcrumbs component
+- ◐ M i18n infrastructure: message-catalogue scaffold (`lib/i18n.ts`) + currencies/timezones + ₹ lakh/crore formatting; most UI strings remain inline English
+- ☐ V Permission overrides per member · ☑ L Fully custom roles
 - ☑ Responsive: verified in an emulated 390px viewport (phase 2): drawer nav, stacked filters, lead cards instead of a table, single-column dashboard. Kanban scrolls horizontally on phones by design
-- ☑ Design-review screens (sample data, labelled, not connected): /design/dashboard, /design/inbox, /design/lead, /design/pipeline
+- ☑ Design-review screens (sample data, labelled, gated in production): /design/dashboard, /design/inbox, /design/lead, /design/pipeline
 - ☑ Design pass 2 (2026-11-16, from user reference images): navy sidebar + tinted header tokens, KpiCard (count-up, delta, sparkline), inbox queue rail with counts and a "Join conversation" takeover. Pass 3 (user chose): deeper near-black navy #0e1433, denser cards (26px KPI numbers, tighter padding, 13px base type). Awaiting user feedback
 
 ### CRM (Phase 2)
@@ -51,7 +51,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 - ☑ M CSV import (two-step: dry-run report then confirm; Indian amounts like "85 L", "1.2 Cr") / export (formula-injection safe)
 - ☑ M Bulk assign / stage / tag / delete with per-lead failure report
 - ☑ M Duplicate detection (any phone format, email), override, lead merge + audit (history of merged leads stays on the survivor)
-- ◐ M Activity timeline, notes, tags, custom fields ☑ · **attachments deferred to phase 4** (needs the file-storage + virus-scan pipeline built for the knowledge base)
+- ☑ M Activity timeline, notes, tags, custom fields, attachments
 - ☑ M Lead detail page (loading / error / empty / success states)
 - ☑ M Lead capture API (API key, hashed at rest, shown once, revocable) + Integrations page. Repeat enquiries append to the existing lead. Server-to-server only; browser capture arrives with the widget public key (phase 3)
 - ☑ M Pipeline Kanban (drag-drop + keyboard-accessible move menu, optimistic update with rollback), stage config, transition history, lost reasons, server-enforced transition rules
@@ -60,8 +60,8 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 - ☑ M Dashboard from real data: KPIs with deltas, acquisition trend, pipeline, sources, hot leads, follow-ups, agent table, date ranges incl. custom, tenant-timezone aware. Appointment/AI/automation tiles intentionally absent until those modules exist (API returns null, never invented)
 - ☑ M Team workload + round-robin assignment (safe under concurrent creates)
 - ◐ M i18n: message-catalogue scaffold + ₹ lakh/crore formatting only. Most strings are still inline English
-- ☐ V Portal email parsing · ☐ L Meta Lead Ads · ☐ L Google Sheets
-- ☐ Lead scoring itself is phase 4 (score/temperature can be set manually; seeded demo scores are demo data)
+- ☐ V Portal email parsing · ☑ L Meta Lead Ads · ☐ L Google Sheets
+- ☑ Lead scoring built in phase 4 (manual score/temperature override also supported)
 
 ### Communication (Phase 3)
 - ☑ M Conversations/messages, 3-panel inbox (single-pane on mobile), unread counts, queues, filters, search, assign, close/reopen, takeover, internal notes, tags, delivery ticks, media rendering, failed-send retry
@@ -72,7 +72,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 - ☑ M Website widget: public key + allowed origins, Shadow-DOM loader, lead capture, session tokens, polling, key rotation revokes sessions, admin UI with install snippet
 - ◐ M Retries/rate limits: bounded inline retry + manual retry now; scheduled background retries in phase 5 (ADR-0016)
 - ☑ Refresh-token race fixed (ADR-0015)
-- ☐ V Embedded Signup · ☐ V Template manager/sync with Meta · ☐ V Canned replies · ☐ L Broadcasts · ☐ L Messenger/Instagram/Email
+- ◐ V Embedded Signup (mock-verified) · ◐ V Template manager/sync with Meta (read-only sync, mock-verified) · ☑ V Canned replies · ☑ L Broadcasts · ◐ L Email tracking (SES) · ☐ L Messenger/Instagram
 - ☐ Media is proxied, not stored (ADR-0017); attachments to leads and durable storage are phase 4
 
 ### AI (Phase 4)
@@ -86,8 +86,8 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 - ◐ M Eval harness: **39 golden conversations** (EN/Hindi/Hinglish; extraction, search, knowledge, handover, safety, language, conversation). 26 run offline and pass; **13 need a real model and have never run**. Offline results validate the pipeline, not language-model quality
 - ☑ M Injection corpus and cross-tenant context test (see threat model)
 - ◐ M English + Hindi/Hinglish: configured and in the prompt; **replies in Hindi/Hinglish are untested** (needs a real model)
-- ☐ M Attachments on leads (still deferred; needs a UI for file attach; storage and scanning now exist)
-- ☐ V Voice-note transcription · ☐ V Additional Indian languages
+- ☑ M Attachments on leads (DB table + RLS + composite FK, S3/MinIO storage + fail-closed virus scan, merge re-parenting, lead detail card)
+- ☑ V Voice-note transcription · ☐ V Additional Indian languages
 
 ### Automation, appointments, notifications (Phase 5)
 - ☑ M Appointments: CRUD, status machine, reschedule (linked history), availability + days off, week calendar + upcoming list, **no double booking enforced by Postgres exclusion constraints** (ADR-0026), DST-safe (ADR-0027)
@@ -99,7 +99,7 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 - ☑ M Basic usage tracking (`GET /usage`, Usage page): metering only, no enforcement or billing (phase 6)
 - ☑ M AI scheduling tools enabled with a time-grounding output guard (ADR-0031)
 - ☑ M Redis-backed rate-limit store (counters shared across API instances; falls back to per-instance memory if Redis is down)
-- ☐ V Email / WhatsApp-to-staff / web push notifications · ☐ V Google Calendar · ☐ L Visual workflow editor
+- ☐ V Email / WhatsApp-to-staff / web push notifications · ☑ V Google Calendar · ☑ L Visual workflow editor (Phase 9)
 
 ### SaaS (Phase 6)
 - ☑ V Plans/entitlements (DB-driven, editable by platform admins), Razorpay subscriptions (mock-verified; **live client never run**), GST invoices (accountant review pending), dunning/grace, trial, plan gating in the backend
@@ -108,11 +108,11 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 - ☑ V Public API (`/v1`, scoped keys, `api_access` plan feature) + outbound webhooks (signed, SSRF-safe, retried)
 - ☑ V Reports (7) & CSV export (plan-gated)
 - ☑ V Compliance workflows: lead export/erasure, retention purge, workspace export, workspace deletion (legal review of retained invoices needed)
-- ☐ V WhatsApp Embedded Signup · ☐ V Google Calendar sync (both deferred: need real provider apps/credentials, ADR-0040)
+- ◐ V WhatsApp Embedded Signup (mock-verified) · ☑ V Google Calendar sync
 
 ### Quality & launch (Phase 7)
 - ☑ Full E2E suite (12 Playwright tests, desktop Chrome, local; CI job written but never run on GitHub) · ☑ Security review pass (self-review; `docs/security-review.md`) · ☑ Load test vs budgets (`docs/performance.md`; AI reply latency unmeasured) · ☑ Backup/restore drill (logical dump; RDS PITR not drilled)
-- ☑ Runbooks (9) · ☑ Deployment guide + Dockerfiles (images built and booted locally; AWS unverified) · ◐ SLOs/alerts (documented; only log/table-based SLIs measurable) · ◐ Legal templates (drafts written; **need a lawyer's review**) · ☑ DPDP single-lead export/erasure (API) · ☐ tenant-wide export/deletion, retention job, KMS key provider, bot protection, MFA (see security-review)
+- ☑ Runbooks (9) · ☑ Deployment guide + Dockerfiles (images built and booted locally; AWS unverified) · ◐ SLOs/alerts (documented; only log/table-based SLIs measurable) · ◐ Legal templates (drafts written; **need a lawyer's review**) · ☑ DPDP single-lead export/erasure (API) · ☑ tenant-wide export/deletion, retention job, KMS key provider, bot protection, MFA (built in Phase 8; live KMS/Turnstile unverified)
 
 ## Phase 1 verification (2026-11-16)
 - `pnpm lint` ✔ (ESLint incl. no-explicit-any, plus tsc) · `pnpm typecheck` ✔ · `pnpm test` ✔ (13 DB/RLS + 30 API tests) · built API boots under plain Node (`smoke`) ✔
@@ -264,8 +264,8 @@ Last updated: 2026-11-16 · Current phase: **Phase 8: built and verified locally
 - **Flagged for Milestone 4:** Meta's pages say Embedded Signup versions 2 and 3 are being deprecated (October 2026 dates, already past); the code sends the version 3 setting and uses Graph API v21.0, so the current versions must be checked and the code updated before real testing and recording.
 - **Needs you:** company details and documents for Business Verification, public privacy/terms pages (lawyer-reviewed), Meta developer app and Embedded Signup configuration, a staging address, a test WhatsApp account and number.
 
-## Customer portal for leads, milestone 1: backend (2026-11-18)
-- **Built (dark-launched: the portal is off for every business until the owner turns it on; no web screens yet):** migration `20261118130000_lead_portal` (`portal_configs`, `portal_login_codes`, `portal_sessions` under row-level security, `find_portal_by_public_key()`, plan feature `lead_portal` on for Growth, Premium and Internal); staff settings (`GET/PUT /portal-config`, `POST /portal-config/rotate-key`, settings:manage); public API `/portal/*`: sign-in page data, `POST /portal/:key/code` (identical 202 for any identity; code only to the email on file, or WhatsApp with a registered approved `portal_login_code` template and an opt-in; WhatsApp code scrubbed from the stored message), `POST /portal/:key/verify` (6-digit HMAC-hashed code, 10 minutes, single use, 5 attempts, 3 codes per identity per 15 minutes, generic failure), session on its own audience and key with an `lp_portal` httpOnly cookie and server-side sessions (ended by logout, switching off, rotating the address, lead deleted), `GET /portal/me`, `GET /portal/appointments` (explicit customer-safe shape, own appointments only, merged leads included, confirm/cancel/reschedule flags from settings and a cutoff); `no-store` and `noindex` on all portal responses.
+## Customer portal for leads, milestone 1 & 2 (2026-11-25)
+- **Built:** Milestone 1 backend (`portal_configs`, `portal_login_codes`, `portal_sessions` under RLS, OTP sign-in) + Milestone 2 customer actions (`POST /portal/appointments/:id/confirm`, `cancel`, `reschedule`, `GET /portal/appointments/:id/slots`, `POST /portal/data-request`, staff notifications) + Web UI at `/p/[key]` (OTP sign-in, upcoming/past appointments, confirm/reschedule/cancel dialogs, My Data & privacy request form).
 - **Verified locally:** lint, build, `pnpm test` (731 API incl. new portal 17 and portal-auth 5, 59 web, 19 DB, 11 validation), `scripts/e2e.sh` 71/71.
 - **Not verified:** real email delivery; WhatsApp codes against Meta (Meta's authentication templates normally need a code button that the template sender does not support yet, so this path may need a change when tested live); no web screens yet.
 - **Next:** milestone 2 (confirm, cancel, reschedule through the booking engine, staff notified "by the customer", "my data" requests, session revocation when a lead is erased or merged).

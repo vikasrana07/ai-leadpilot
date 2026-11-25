@@ -8,17 +8,10 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import {
   Check,
-  CheckCircle2,
-  CreditCard,
   Edit2,
-  Eye,
   EyeOff,
-  Layers,
   Plus,
-  ShieldCheck,
-  Sparkles,
   Users,
-  Zap,
 } from 'lucide-react';
 import { PageHeader } from '@/components/page/page-header';
 import { Badge } from '@/components/ui/badge';

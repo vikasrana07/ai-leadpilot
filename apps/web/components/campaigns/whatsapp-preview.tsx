@@ -17,7 +17,7 @@ interface WhatsAppPreviewProps {
 
 export function WhatsAppPreview({
   businessName = 'Your Store',
-  templateName = 'festive_offer',
+  templateName: _templateName = 'festive_offer',
   templateCategory = 'MARKETING',
   headerMediaUrl,
   headerText,
@@ -84,7 +84,6 @@ export function WhatsAppPreview({
             {/* Header Media / Banner if present */}
             {headerMediaUrl ? (
               <div className="overflow-hidden rounded-xl">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={headerMediaUrl} alt="Template header" className="h-32 w-full object-cover" />
               </div>
             ) : headerText ? (

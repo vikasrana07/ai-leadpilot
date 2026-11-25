@@ -23,6 +23,7 @@ import {
 import { CurrentTenant, RequirePermissions } from '../common/decorators.js';
 import type { TenantRequestContext } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
+import { FOLLOWUP_TEMPLATES } from '../mail/templates/followup.js';
 import { EmailTrackingService, type EmailReadScope } from './email-tracking.service.js';
 
 /** Members without `email:read:all` only see emails about leads assigned to them. */
@@ -39,6 +40,12 @@ export class EmailTrackingController {
   @Get('stats')
   async stats(@CurrentTenant() ctx: TenantRequestContext) {
     return this.tracking.getStats(ctx.tenantId, readScope(ctx));
+  }
+
+  @RequirePermissions('lead:write:own')
+  @Get('templates')
+  listTemplates() {
+    return FOLLOWUP_TEMPLATES;
   }
 
   @RequirePermissions('email:read:own')

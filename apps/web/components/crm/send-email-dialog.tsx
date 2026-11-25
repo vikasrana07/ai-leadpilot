@@ -1,15 +1,43 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Send } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { handleApiError } from '@/lib/forms';
+
+interface FollowupTemplate {
+  key: string;
+  name: string;
+  category: string;
+  description: string;
+  subjectTemplate: string;
+  bodyTemplate: string;
+}
+
+function interpolateTemplate(
+  template: string,
+  vars: { leadName: string; businessName: string; agentName: string },
+): string {
+  const firstName = vars.leadName.trim().split(/\s+/)[0] || 'there';
+  const map: Record<string, string> = {
+    'lead.name': vars.leadName.trim() || 'there',
+    'lead.firstName': firstName,
+    'business.name': vars.businessName.trim() || 'our team',
+    'agent.name': vars.agentName.trim() || 'Your Advisor',
+    'appointment.date': '[Date]',
+    'appointment.time': '[Time]',
+    'appointment.location': 'Online / Office',
+  };
+  return template.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (match, key: string) => map[key] ?? match);
+}
 
 export function SendEmailDialog({
   open,
@@ -21,11 +49,34 @@ export function SendEmailDialog({
   lead: { id: string; name: string; email?: string | null };
 }) {
   const qc = useQueryClient();
+  const { ctx, activeWorkspace } = useAuth();
+  const [templateKey, setTemplateKey] = useState('');
   const [subject, setSubject] = useState('');
   const [text, setText] = useState('');
 
+  const templatesQuery = useQuery({
+    queryKey: ['emails', 'templates'],
+    queryFn: () => api<FollowupTemplate[]>('/emails/templates'),
+    enabled: open,
+    staleTime: 300_000,
+  });
+
+  const handleTemplateChange = (nextKey: string) => {
+    setTemplateKey(nextKey);
+    if (!nextKey) return;
+    const tpl = templatesQuery.data?.find((t) => t.key === nextKey);
+    if (!tpl) return;
+    const vars = {
+      leadName: lead.name,
+      businessName: activeWorkspace?.name ?? 'LeadPilot',
+      agentName: ctx.user.name,
+    };
+    setSubject(interpolateTemplate(tpl.subjectTemplate, vars));
+    setText(interpolateTemplate(tpl.bodyTemplate, vars));
+  };
+
   const send = useMutation({
-    mutationFn: (body: { to: string; leadId: string; subject: string; text: string }) =>
+    mutationFn: (body: { to: string; leadId: string; templateKey?: string; subject: string; text: string }) =>
       api<{ id: string; status: string; suppressed?: boolean }>('/emails/send', {
         method: 'POST',
         body,
@@ -37,6 +88,7 @@ export function SendEmailDialog({
         toast.success('Tracked email dispatched');
       }
       onOpenChange(false);
+      setTemplateKey('');
       setSubject('');
       setText('');
       await Promise.all([
@@ -58,6 +110,7 @@ export function SendEmailDialog({
     send.mutate({
       to: lead.email,
       leadId: lead.id,
+      ...(templateKey ? { templateKey } : {}),
       subject: subject.trim(),
       text: text.trim(),
     });
@@ -83,6 +136,25 @@ export function SendEmailDialog({
                 Cannot send: Please update the lead with a valid email address first.
               </p>
             )}
+          </div>
+
+          <div>
+            <label htmlFor="email-template-select" className="text-label mb-1 block">
+              Template (Optional)
+            </label>
+            <Select
+              id="email-template-select"
+              value={templateKey}
+              onChange={(e) => handleTemplateChange(e.target.value)}
+              disabled={!lead.email || send.isPending || templatesQuery.isLoading}
+            >
+              <option value="">Custom message (no template)</option>
+              {(templatesQuery.data ?? []).map((tpl) => (
+                <option key={tpl.key} value={tpl.key}>
+                  {tpl.category} — {tpl.name}
+                </option>
+              ))}
+            </Select>
           </div>
 
           <div>

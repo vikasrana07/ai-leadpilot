@@ -25,7 +25,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dropdown,
   DropdownItem,
-  DropdownLabel,
   DropdownSeparator,
 } from '@/components/ui/dropdown';
 import { ThemeSwitcher } from '@/components/shell/theme-switcher';
