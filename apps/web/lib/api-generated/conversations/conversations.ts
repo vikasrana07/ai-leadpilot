@@ -50,7 +50,234 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export const getConversationsControllerListUrl = () => {
+export const getConversationsControllerListCannedResponsesUrl = () => {
+
+
+
+
+  return `/conversations/canned-responses`
+}
+
+export const conversationsControllerListCannedResponses = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getConversationsControllerListCannedResponsesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getConversationsControllerListCannedResponsesQueryKey = () => {
+    return [
+    `/conversations/canned-responses`
+    ] as const;
+    }
+
+
+export const getConversationsControllerListCannedResponsesQueryOptions = <TData = Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getConversationsControllerListCannedResponsesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>> = ({ signal }) => conversationsControllerListCannedResponses({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ConversationsControllerListCannedResponsesQueryResult = NonNullable<Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>>
+export type ConversationsControllerListCannedResponsesQueryError = unknown
+
+
+export function useConversationsControllerListCannedResponses<TData = Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>,
+          TError,
+          Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerListCannedResponses<TData = Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>,
+          TError,
+          Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerListCannedResponses<TData = Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerListCannedResponses<TData = Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerListCannedResponses>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getConversationsControllerListCannedResponsesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getConversationsControllerCreateCannedResponseUrl = () => {
+
+
+
+
+  return `/conversations/canned-responses`
+}
+
+export const conversationsControllerCreateCannedResponse = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getConversationsControllerCreateCannedResponseUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getConversationsControllerCreateCannedResponseMutationKey = () => ['conversationsControllerCreateCannedResponse'] as const;
+
+export const getConversationsControllerCreateCannedResponseMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerCreateCannedResponse>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerCreateCannedResponse>>, TError,void, TContext> => {
+
+const mutationKey = getConversationsControllerCreateCannedResponseMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof conversationsControllerCreateCannedResponse>>, void> = () => {
+
+
+          return  conversationsControllerCreateCannedResponse(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConversationsControllerCreateCannedResponseMutationResult = NonNullable<Awaited<ReturnType<typeof conversationsControllerCreateCannedResponse>>>
+
+    export type ConversationsControllerCreateCannedResponseMutationError = unknown
+
+
+    export const useConversationsControllerCreateCannedResponse = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerCreateCannedResponse>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof conversationsControllerCreateCannedResponse>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getConversationsControllerCreateCannedResponseMutationOptions(options), queryClient);
+    }
+    export const getConversationsControllerDeleteCannedResponseUrl = (id: string,) => {
+
+
+
+
+  return `/conversations/canned-responses/${id}`
+}
+
+export const conversationsControllerDeleteCannedResponse = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getConversationsControllerDeleteCannedResponseUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getConversationsControllerDeleteCannedResponseMutationKey = () => ['conversationsControllerDeleteCannedResponse'] as const;
+
+export const getConversationsControllerDeleteCannedResponseMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerDeleteCannedResponse>>, TError,ConversationsControllerDeleteCannedResponseMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerDeleteCannedResponse>>, TError,ConversationsControllerDeleteCannedResponseMutationVariables, TContext> => {
+
+const mutationKey = getConversationsControllerDeleteCannedResponseMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof conversationsControllerDeleteCannedResponse>>, ConversationsControllerDeleteCannedResponseMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  conversationsControllerDeleteCannedResponse(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConversationsControllerDeleteCannedResponseMutationResult = NonNullable<Awaited<ReturnType<typeof conversationsControllerDeleteCannedResponse>>>
+
+    export type ConversationsControllerDeleteCannedResponseMutationError = unknown
+    export type ConversationsControllerDeleteCannedResponseMutationVariables = {id: string}
+
+    export const useConversationsControllerDeleteCannedResponse = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerDeleteCannedResponse>>, TError,ConversationsControllerDeleteCannedResponseMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof conversationsControllerDeleteCannedResponse>>,
+        TError,
+        ConversationsControllerDeleteCannedResponseMutationVariables,
+        TContext
+      > => {
+      return useMutation(getConversationsControllerDeleteCannedResponseMutationOptions(options), queryClient);
+    }
+    export const getConversationsControllerListUrl = () => {
 
 
 

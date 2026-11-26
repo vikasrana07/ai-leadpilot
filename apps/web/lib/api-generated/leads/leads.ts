@@ -593,7 +593,193 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getLeadsControllerImportMutationOptions(options), queryClient);
     }
-    export const getLeadsControllerExportUrl = () => {
+    export const getLeadsControllerGetImportJobUrl = (jobId: string,) => {
+
+
+
+
+  return `/leads/import-jobs/${jobId}`
+}
+
+export const leadsControllerGetImportJob = async (jobId: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getLeadsControllerGetImportJobUrl(jobId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeadsControllerGetImportJobQueryKey = (jobId: string,) => {
+    return [
+    `/leads/import-jobs/${jobId}`
+    ] as const;
+    }
+
+
+export const getLeadsControllerGetImportJobQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError = unknown>(jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerGetImportJobQueryKey(jobId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerGetImportJob>>> = ({ signal }) => leadsControllerGetImportJob(jobId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: jobId !== null && jobId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type LeadsControllerGetImportJobQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerGetImportJob>>>
+export type LeadsControllerGetImportJobQueryError = unknown
+
+
+export function useLeadsControllerGetImportJob<TData = Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError = unknown>(
+ jobId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerGetImportJob>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerGetImportJob>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerGetImportJob<TData = Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError = unknown>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerGetImportJob>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerGetImportJob>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerGetImportJob<TData = Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError = unknown>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerGetImportJob<TData = Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError = unknown>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportJob>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerGetImportJobQueryOptions(jobId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getLeadsControllerGetImportErrorsUrl = (jobId: string,) => {
+
+
+
+
+  return `/leads/import-jobs/${jobId}/errors`
+}
+
+export const leadsControllerGetImportErrors = async (jobId: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getLeadsControllerGetImportErrorsUrl(jobId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeadsControllerGetImportErrorsQueryKey = (jobId: string,) => {
+    return [
+    `/leads/import-jobs/${jobId}/errors`
+    ] as const;
+    }
+
+
+export const getLeadsControllerGetImportErrorsQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError = unknown>(jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerGetImportErrorsQueryKey(jobId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerGetImportErrors>>> = ({ signal }) => leadsControllerGetImportErrors(jobId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: jobId !== null && jobId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type LeadsControllerGetImportErrorsQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerGetImportErrors>>>
+export type LeadsControllerGetImportErrorsQueryError = unknown
+
+
+export function useLeadsControllerGetImportErrors<TData = Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError = unknown>(
+ jobId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerGetImportErrors>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerGetImportErrors>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerGetImportErrors<TData = Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError = unknown>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerGetImportErrors>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerGetImportErrors>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerGetImportErrors<TData = Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError = unknown>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerGetImportErrors<TData = Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError = unknown>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerGetImportErrors>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerGetImportErrorsQueryOptions(jobId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getLeadsControllerExportUrl = () => {
 
 
 
@@ -1366,4 +1552,334 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getLeadsControllerMergeMutationOptions(options), queryClient);
+    }
+    export const getLeadsControllerListAttachmentsUrl = (id: string,) => {
+
+
+
+
+  return `/leads/${id}/attachments`
+}
+
+export const leadsControllerListAttachments = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getLeadsControllerListAttachmentsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeadsControllerListAttachmentsQueryKey = (id: string,) => {
+    return [
+    `/leads/${id}/attachments`
+    ] as const;
+    }
+
+
+export const getLeadsControllerListAttachmentsQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerListAttachmentsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerListAttachments>>> = ({ signal }) => leadsControllerListAttachments(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type LeadsControllerListAttachmentsQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerListAttachments>>>
+export type LeadsControllerListAttachmentsQueryError = unknown
+
+
+export function useLeadsControllerListAttachments<TData = Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerListAttachments>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerListAttachments>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerListAttachments<TData = Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerListAttachments>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerListAttachments>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerListAttachments<TData = Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerListAttachments<TData = Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerListAttachments>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerListAttachmentsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getLeadsControllerUploadAttachmentUrl = (id: string,) => {
+
+
+
+
+  return `/leads/${id}/attachments`
+}
+
+export const leadsControllerUploadAttachment = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getLeadsControllerUploadAttachmentUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeadsControllerUploadAttachmentMutationKey = () => ['leadsControllerUploadAttachment'] as const;
+
+export const getLeadsControllerUploadAttachmentMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerUploadAttachment>>, TError,LeadsControllerUploadAttachmentMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerUploadAttachment>>, TError,LeadsControllerUploadAttachmentMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerUploadAttachmentMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerUploadAttachment>>, LeadsControllerUploadAttachmentMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  leadsControllerUploadAttachment(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerUploadAttachmentMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerUploadAttachment>>>
+
+    export type LeadsControllerUploadAttachmentMutationError = unknown
+    export type LeadsControllerUploadAttachmentMutationVariables = {id: string}
+
+    export const useLeadsControllerUploadAttachment = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerUploadAttachment>>, TError,LeadsControllerUploadAttachmentMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerUploadAttachment>>,
+        TError,
+        LeadsControllerUploadAttachmentMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerUploadAttachmentMutationOptions(options), queryClient);
+    }
+    export const getLeadsControllerDownloadAttachmentUrl = (id: string,
+    attachmentId: string,) => {
+
+
+
+
+  return `/leads/${id}/attachments/${attachmentId}/download`
+}
+
+export const leadsControllerDownloadAttachment = async (id: string,
+    attachmentId: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getLeadsControllerDownloadAttachmentUrl(id,attachmentId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeadsControllerDownloadAttachmentQueryKey = (id: string,
+    attachmentId: string,) => {
+    return [
+    `/leads/${id}/attachments/${attachmentId}/download`
+    ] as const;
+    }
+
+
+export const getLeadsControllerDownloadAttachmentQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError = unknown>(id: string,
+    attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerDownloadAttachmentQueryKey(id,attachmentId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>> = ({ signal }) => leadsControllerDownloadAttachment(id,attachmentId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined && attachmentId !== null && attachmentId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type LeadsControllerDownloadAttachmentQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>>
+export type LeadsControllerDownloadAttachmentQueryError = unknown
+
+
+export function useLeadsControllerDownloadAttachment<TData = Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError = unknown>(
+ id: string,
+    attachmentId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerDownloadAttachment<TData = Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError = unknown>(
+ id: string,
+    attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerDownloadAttachment<TData = Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError = unknown>(
+ id: string,
+    attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerDownloadAttachment<TData = Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError = unknown>(
+ id: string,
+    attachmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerDownloadAttachment>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerDownloadAttachmentQueryOptions(id,attachmentId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getLeadsControllerRemoveAttachmentUrl = (id: string,
+    attachmentId: string,) => {
+
+
+
+
+  return `/leads/${id}/attachments/${attachmentId}`
+}
+
+export const leadsControllerRemoveAttachment = async (id: string,
+    attachmentId: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getLeadsControllerRemoveAttachmentUrl(id,attachmentId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeadsControllerRemoveAttachmentMutationKey = () => ['leadsControllerRemoveAttachment'] as const;
+
+export const getLeadsControllerRemoveAttachmentMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerRemoveAttachment>>, TError,LeadsControllerRemoveAttachmentMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerRemoveAttachment>>, TError,LeadsControllerRemoveAttachmentMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerRemoveAttachmentMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerRemoveAttachment>>, LeadsControllerRemoveAttachmentMutationVariables> = (props) => {
+          const {id,attachmentId} = props ?? {};
+
+          return  leadsControllerRemoveAttachment(id,attachmentId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerRemoveAttachmentMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerRemoveAttachment>>>
+
+    export type LeadsControllerRemoveAttachmentMutationError = unknown
+    export type LeadsControllerRemoveAttachmentMutationVariables = {id: string;attachmentId: string}
+
+    export const useLeadsControllerRemoveAttachment = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerRemoveAttachment>>, TError,LeadsControllerRemoveAttachmentMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerRemoveAttachment>>,
+        TError,
+        LeadsControllerRemoveAttachmentMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerRemoveAttachmentMutationOptions(options), queryClient);
     }

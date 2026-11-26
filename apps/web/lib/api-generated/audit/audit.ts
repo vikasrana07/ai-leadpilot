@@ -135,3 +135,96 @@ export function useAuditControllerList<TData = Awaited<ReturnType<typeof auditCo
 
 
 
+export const getAuditControllerExportWormUrl = () => {
+
+
+
+
+  return `/audit-logs/export`
+}
+
+export const auditControllerExportWorm = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getAuditControllerExportWormUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAuditControllerExportWormQueryKey = () => {
+    return [
+    `/audit-logs/export`
+    ] as const;
+    }
+
+
+export const getAuditControllerExportWormQueryOptions = <TData = Awaited<ReturnType<typeof auditControllerExportWorm>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditControllerExportWorm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAuditControllerExportWormQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof auditControllerExportWorm>>> = ({ signal }) => auditControllerExportWorm({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof auditControllerExportWorm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AuditControllerExportWormQueryResult = NonNullable<Awaited<ReturnType<typeof auditControllerExportWorm>>>
+export type AuditControllerExportWormQueryError = unknown
+
+
+export function useAuditControllerExportWorm<TData = Awaited<ReturnType<typeof auditControllerExportWorm>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditControllerExportWorm>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof auditControllerExportWorm>>,
+          TError,
+          Awaited<ReturnType<typeof auditControllerExportWorm>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAuditControllerExportWorm<TData = Awaited<ReturnType<typeof auditControllerExportWorm>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditControllerExportWorm>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof auditControllerExportWorm>>,
+          TError,
+          Awaited<ReturnType<typeof auditControllerExportWorm>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAuditControllerExportWorm<TData = Awaited<ReturnType<typeof auditControllerExportWorm>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditControllerExportWorm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAuditControllerExportWorm<TData = Awaited<ReturnType<typeof auditControllerExportWorm>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof auditControllerExportWorm>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAuditControllerExportWormQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

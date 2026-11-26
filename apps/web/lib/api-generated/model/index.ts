@@ -8,6 +8,8 @@
 
 export * from './appointmentsControllerAvailabilityParams';
 export * from './conversationsControllerMessagesParams';
+export * from './portalControllerSlotsParams';
+export * from './ssoControllerInitiateParams';
 export * from './supportPlatformControllerListParams';
 export * from './tasksControllerCreate201';
 export * from './tasksControllerCreate201Status';
@@ -22,4 +24,5 @@ export * from './tasksControllerUpdate200';
 export * from './tasksControllerUpdate200Status';
 export * from './tasksControllerUpdateBody';
 export * from './tasksControllerUpdateBodyStatus';
+export * from './telephonyControllerHandleExotelCallParams';
 export * from './v1ControllerMessagesParams';
