@@ -54,7 +54,7 @@ export function DetailsPanel({ convo }: { convo: ConversationDetail }) {
         {can('conversation:assign') ? <Select id="convo-assignee" value={convo.assignee?.id ?? ''} onChange={(e) => assign.mutate(e.target.value)}><option value="">Unassigned</option>{members.data?.filter((m) => m.status === 'ACTIVE').map((m) => <option key={m.id} value={m.id}>{m.user.name}</option>)}</Select> : <p className="text-[13px]">{convo.assignee?.name ?? 'Unassigned'}</p>}
       </div>
 
-      {convo.channel.type === 'WHATSAPP' ? <p className="text-helper">WhatsApp consent: {convo.whatsappConsent === 'OPTED_IN' ? 'opted in' : convo.whatsappConsent === 'OPTED_OUT' ? 'opted out' : 'not recorded'}</p> : null}
+      {convo.channel.type === 'WHATSAPP' ? <p className="text-helper">WhatsApp consent: {convo.whatsappConsent === 'OPTED_IN' ? 'replies allowed' : convo.whatsappConsent === 'OPTED_OUT' ? 'opted out' : 'not recorded'}{convo.whatsappConsent !== 'OPTED_OUT' ? ` · marketing ${convo.whatsappMarketingConsent === 'ELIGIBLE' ? 'allowed' : 'not opted in'}` : ''}</p> : null}
 
       <div className="rounded-lg border border-border p-3">
         <p className="text-label mb-2 flex items-center gap-1.5"><StickyNote className="h-3.5 w-3.5" aria-hidden />Internal notes</p>

@@ -487,6 +487,7 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
               <option value="READ">Read</option>
               <option value="FAILED">Failed</option>
               <option value="SKIPPED_OPT_OUT">Skipped (Opt-Out)</option>
+              <option value="SKIPPED_NO_CONSENT">Skipped (No marketing opt-in)</option>
             </select>
           </div>
         </CardHeader>
@@ -543,7 +544,7 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
                               ? 'neutral'
                               : r.status === 'FAILED'
                               ? 'danger'
-                              : r.status === 'SKIPPED_OPT_OUT'
+                              : r.status === 'SKIPPED_OPT_OUT' || r.status === 'SKIPPED_NO_CONSENT'
                               ? 'warning'
                               : 'neutral'
                           }

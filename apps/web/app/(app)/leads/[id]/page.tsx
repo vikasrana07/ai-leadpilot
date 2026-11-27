@@ -22,6 +22,7 @@ import { PageHeader } from '@/components/page/page-header';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ConsentCard } from '@/components/crm/consent-card';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { LeadPrivacyMenu } from '@/components/privacy/lead-privacy';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -329,6 +330,7 @@ export default function LeadDetailPage() {
               {l.canWrite ? <form onSubmit={(e) => { e.preventDefault(); const n = tagText.trim(); if (n && !tagNames.includes(n)) setTags.mutate([...tagNames, n]); }} className="flex gap-2"><Input aria-label="New tag" placeholder="Add tag" value={tagText} onChange={(e) => setTagText(e.target.value)} /><Button type="submit" size="sm" disabled={!tagText.trim()}>Add</Button></form> : null}
             </CardBody>
           </Card>
+          <ConsentCard leadId={l.id} canWrite={l.canWrite} />
           <LeadAttachmentsCard leadId={l.id} canWrite={l.canWrite} />
           {l.mergedLeads.length ? <p className="text-helper px-1">Merged from: {l.mergedLeads.map((m) => m.name).join(', ')}</p> : null}
         </div>

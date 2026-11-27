@@ -69,7 +69,7 @@ export interface RecipientItem {
   leadId: string;
   leadName: string;
   phone: string;
-  status: 'PENDING' | 'QUEUED' | 'SENT' | 'DELIVERED' | 'READ' | 'FAILED' | 'SKIPPED_OPT_OUT';
+  status: 'PENDING' | 'QUEUED' | 'SENT' | 'DELIVERED' | 'READ' | 'FAILED' | 'SKIPPED_OPT_OUT' | 'SKIPPED_NO_CONSENT';
   conversationId: string | null;
   messageId: string | null;
   externalId: string | null;

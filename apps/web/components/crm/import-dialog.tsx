@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { api, API_URL, ApiError } from '@/lib/api';
 
-interface Report { dryRun: boolean; totalRows: number; valid: number; invalid: { row: number; errors: string[] }[]; duplicates?: { row: number; reason: string }[]; unknownColumns?: string[]; created: number; skipped?: number; jobId?: string }
+interface Report { dryRun: boolean; totalRows: number; valid: number; invalid: { row: number; errors: string[] }[]; duplicates?: { row: number; reason: string }[]; unknownColumns?: string[]; created: number; skipped?: number; jobId?: string; consentRecorded?: number; consentIgnored?: number }
 interface QueuedResponse { jobId: string; status: 'QUEUED'; totalRows: number; message: string }
 interface ImportJobStatus { jobId: string; status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED'; totalRows: number; valid: number; created: number; skipped: number; invalid: { row: number; errors: string[] }[]; errorCsv?: string; error?: string }
 
@@ -26,6 +26,7 @@ export function ImportDialog({ open, onOpenChange, endpoint, title, hint, invali
   const [jobState, setJobState] = useState<ImportJobStatus | null>(null);
   const [completedJobId, setCompletedJobId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [attested, setAttested] = useState(false);
   const reset = () => { setCsv(null); setFileName(''); setReport(null); setJobState(null); setCompletedJobId(null); if (input.current) input.current.value = ''; };
 
   async function pollJob(jobId: string): Promise<ImportJobStatus> {
@@ -80,7 +81,7 @@ export function ImportDialog({ open, onOpenChange, endpoint, title, hint, invali
     if (!csv) return;
     setBusy(true);
     try {
-      const res = await api<Report | QueuedResponse>(endpoint, { method: 'POST', body: { csv, dryRun: false, duplicateStrategy: 'skip' } });
+      const res = await api<Report | QueuedResponse>(endpoint, { method: 'POST', body: { csv, dryRun: false, duplicateStrategy: 'skip', ...(attested ? { consentAttestation: true } : {}) } });
       if (isQueued(res)) {
         setJobState({ jobId: res.jobId, status: 'QUEUED', totalRows: res.totalRows, valid: 0, created: 0, skipped: 0, invalid: [] });
         const done = await pollJob(res.jobId);
@@ -133,6 +134,13 @@ export function ImportDialog({ open, onOpenChange, endpoint, title, hint, invali
               </span>
             </p>
             {report.duplicates?.length ? <p className="text-muted-foreground"><span className="num">{report.duplicates.length}</span> look like duplicates and will be skipped.</p> : null}
+            {!completedJobId && (report.consentIgnored ?? 0) > 0 ? (
+              <label className="flex items-start gap-2 rounded-md border border-border p-3">
+                <input type="checkbox" className="mt-0.5" checked={attested} onChange={(e) => setAttested(e.target.checked)} />
+                <span><span className="num font-medium">{report.consentIgnored}</span> rows are marked <code>whatsapp_consent</code> = yes. I confirm these people agreed to receive WhatsApp marketing messages and I can show proof if asked. Without this, those marks are ignored and the leads cannot receive broadcasts.</span>
+              </label>
+            ) : null}
+            {completedJobId && (report.consentRecorded ?? 0) > 0 ? <p className="text-muted-foreground"><span className="num">{report.consentRecorded}</span> WhatsApp opt-ins recorded with your name.</p> : null}
             {report.unknownColumns?.length ? <p className="text-muted-foreground">Ignored columns: {report.unknownColumns.join(', ')}</p> : null}
             {report.invalid.length ? (
               <div className="rounded-lg border border-warning/40 bg-warning-soft p-3">

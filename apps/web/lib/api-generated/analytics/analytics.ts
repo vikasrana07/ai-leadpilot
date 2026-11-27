@@ -228,6 +228,99 @@ export function useAnalyticsControllerRevenueLeakage<TData = Awaited<ReturnType<
 
 
 
+export const getAnalyticsControllerMorningBriefUrl = () => {
+
+
+
+
+  return `/analytics/morning-brief`
+}
+
+export const analyticsControllerMorningBrief = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getAnalyticsControllerMorningBriefUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAnalyticsControllerMorningBriefQueryKey = () => {
+    return [
+    `/analytics/morning-brief`
+    ] as const;
+    }
+
+
+export const getAnalyticsControllerMorningBriefQueryOptions = <TData = Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAnalyticsControllerMorningBriefQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof analyticsControllerMorningBrief>>> = ({ signal }) => analyticsControllerMorningBrief({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AnalyticsControllerMorningBriefQueryResult = NonNullable<Awaited<ReturnType<typeof analyticsControllerMorningBrief>>>
+export type AnalyticsControllerMorningBriefQueryError = unknown
+
+
+export function useAnalyticsControllerMorningBrief<TData = Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof analyticsControllerMorningBrief>>,
+          TError,
+          Awaited<ReturnType<typeof analyticsControllerMorningBrief>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerMorningBrief<TData = Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof analyticsControllerMorningBrief>>,
+          TError,
+          Awaited<ReturnType<typeof analyticsControllerMorningBrief>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerMorningBrief<TData = Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerMorningBrief<TData = Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerMorningBrief>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAnalyticsControllerMorningBriefQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 export const getAnalyticsControllerWorkloadUrl = () => {
 
 

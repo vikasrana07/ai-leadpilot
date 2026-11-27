@@ -1486,7 +1486,167 @@ export function useLeadsControllerActivity<TData = Awaited<ReturnType<typeof lea
 
 
 
-export const getLeadsControllerMergeUrl = (id: string,) => {
+export const getLeadsControllerConsentsUrl = (id: string,) => {
+
+
+
+
+  return `/leads/${id}/consents`
+}
+
+export const leadsControllerConsents = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getLeadsControllerConsentsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeadsControllerConsentsQueryKey = (id: string,) => {
+    return [
+    `/leads/${id}/consents`
+    ] as const;
+    }
+
+
+export const getLeadsControllerConsentsQueryOptions = <TData = Awaited<ReturnType<typeof leadsControllerConsents>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerConsents>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLeadsControllerConsentsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof leadsControllerConsents>>> = ({ signal }) => leadsControllerConsents(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof leadsControllerConsents>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type LeadsControllerConsentsQueryResult = NonNullable<Awaited<ReturnType<typeof leadsControllerConsents>>>
+export type LeadsControllerConsentsQueryError = unknown
+
+
+export function useLeadsControllerConsents<TData = Awaited<ReturnType<typeof leadsControllerConsents>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerConsents>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerConsents>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerConsents>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerConsents<TData = Awaited<ReturnType<typeof leadsControllerConsents>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerConsents>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof leadsControllerConsents>>,
+          TError,
+          Awaited<ReturnType<typeof leadsControllerConsents>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerConsents<TData = Awaited<ReturnType<typeof leadsControllerConsents>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerConsents>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLeadsControllerConsents<TData = Awaited<ReturnType<typeof leadsControllerConsents>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof leadsControllerConsents>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLeadsControllerConsentsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getLeadsControllerRecordConsentUrl = (id: string,) => {
+
+
+
+
+  return `/leads/${id}/consents`
+}
+
+export const leadsControllerRecordConsent = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getLeadsControllerRecordConsentUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeadsControllerRecordConsentMutationKey = () => ['leadsControllerRecordConsent'] as const;
+
+export const getLeadsControllerRecordConsentMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerRecordConsent>>, TError,LeadsControllerRecordConsentMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerRecordConsent>>, TError,LeadsControllerRecordConsentMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerRecordConsentMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerRecordConsent>>, LeadsControllerRecordConsentMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  leadsControllerRecordConsent(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerRecordConsentMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerRecordConsent>>>
+
+    export type LeadsControllerRecordConsentMutationError = unknown
+    export type LeadsControllerRecordConsentMutationVariables = {id: string}
+
+    export const useLeadsControllerRecordConsent = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerRecordConsent>>, TError,LeadsControllerRecordConsentMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerRecordConsent>>,
+        TError,
+        LeadsControllerRecordConsentMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerRecordConsentMutationOptions(options), queryClient);
+    }
+    export const getLeadsControllerMergeUrl = (id: string,) => {
 
 
 

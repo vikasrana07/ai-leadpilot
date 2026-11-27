@@ -1658,7 +1658,100 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getConversationsControllerCompletePromiseMutationOptions(options), queryClient);
     }
-    export const getConversationsControllerMediaUrl = (id: string,
+    export const getConversationsControllerDealPulseUrl = (id: string,) => {
+
+
+
+
+  return `/conversations/${id}/deal-pulse`
+}
+
+export const conversationsControllerDealPulse = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getConversationsControllerDealPulseUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getConversationsControllerDealPulseQueryKey = (id: string,) => {
+    return [
+    `/conversations/${id}/deal-pulse`
+    ] as const;
+    }
+
+
+export const getConversationsControllerDealPulseQueryOptions = <TData = Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getConversationsControllerDealPulseQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof conversationsControllerDealPulse>>> = ({ signal }) => conversationsControllerDealPulse(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ConversationsControllerDealPulseQueryResult = NonNullable<Awaited<ReturnType<typeof conversationsControllerDealPulse>>>
+export type ConversationsControllerDealPulseQueryError = unknown
+
+
+export function useConversationsControllerDealPulse<TData = Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof conversationsControllerDealPulse>>,
+          TError,
+          Awaited<ReturnType<typeof conversationsControllerDealPulse>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerDealPulse<TData = Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof conversationsControllerDealPulse>>,
+          TError,
+          Awaited<ReturnType<typeof conversationsControllerDealPulse>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerDealPulse<TData = Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerDealPulse<TData = Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerDealPulse>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getConversationsControllerDealPulseQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getConversationsControllerMediaUrl = (id: string,
     mid: string,) => {
 
 

@@ -11,7 +11,7 @@ export interface ConversationItem {
 export interface ConversationList { items: ConversationItem[]; total: number; page: number; pageSize: number; unreadTotal: number }
 export interface ConversationDetail {
   id: string; status: 'OPEN' | 'CLOSED'; mode: 'AI' | 'HUMAN'; channel: { id: string; type: 'WHATSAPP' | 'WEB_WIDGET'; name: string; status: string };
-  tags: string[]; unreadCount: number; windowOpen: boolean; windowExpiresAt: string | null; whatsappConsent: 'OPTED_IN' | 'OPTED_OUT' | null; assignee: { id: string; name: string } | null;
+  tags: string[]; unreadCount: number; windowOpen: boolean; windowExpiresAt: string | null; whatsappConsent: 'OPTED_IN' | 'OPTED_OUT' | null; whatsappMarketingConsent: 'ELIGIBLE' | 'OPTED_OUT' | 'NO_CONSENT'; assignee: { id: string; name: string } | null;
   lead: { id: string; name: string; phone: string | null; email: string | null; stage: { name: string; kind: string }; source: string | null; temperature: string; score: number | null; budgetMin: number | null; budgetMax: number | null; location: string | null; propertyType: string | null; buyingTimeline: string; assignee: { id: string; name: string } | null } | null;
 }
 export interface ChatMessage {
