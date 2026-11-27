@@ -103,11 +103,13 @@ class CaptureController {
 import { OpsModule } from '../ops/ops.module.js';
 import { MetaLeadAdsController } from './meta-lead-ads.controller.js';
 import { MetaLeadAdsService } from './meta-lead-ads.service.js';
+import { PortalEmailAdminController, PortalEmailWebhookController } from './portal-email/portal-email.controller.js';
+import { PortalEmailService } from './portal-email/portal-email.service.js';
 
 @Module({
   imports: [LeadsModule, OpsModule],
-  controllers: [ApiKeysController, CaptureController, MetaLeadAdsController],
-  providers: [ApiKeysService, CaptureService, MetaLeadAdsService],
-  exports: [MetaLeadAdsService],
+  controllers: [ApiKeysController, CaptureController, MetaLeadAdsController, PortalEmailWebhookController, PortalEmailAdminController],
+  providers: [ApiKeysService, CaptureService, MetaLeadAdsService, PortalEmailService],
+  exports: [MetaLeadAdsService, PortalEmailService],
 })
 export class CaptureModule {}

@@ -109,12 +109,248 @@ export class AnalyticsService {
       };
     });
   }
+
+  /** Owner ROI & Revenue Leakage Radar: pipeline at risk vs. value protected by LeadPilot automation. */
+  async revenueLeakage(ctx: TenantRequestContext, q: AnalyticsQuery) {
+    const all = ctx.permissions.has('analytics:read:all');
+    if (!all && !ctx.permissions.has('analytics:read:own')) {
+      throw new ForbiddenException({ code: 'forbidden', message: 'You cannot view analytics' });
+    }
+    return this.db.tenantTx(ctx, async (tx) => {
+      const tenant = await tx.tenant.findUniqueOrThrow({ where: { id: ctx.tenantId }, select: { timezone: true, currency: true } });
+      const range = resolveRange(q, tenant.timezone);
+      const now = new Date();
+      const staleCutoff = new Date(now.getTime() - 48 * 3_600_000);
+      const replyCutoff = new Date(now.getTime() - 2 * 3_600_000);
+
+      const leadScope: Prisma.LeadWhereInput = all ? {} : { assignedMembershipId: ctx.membershipId };
+      const convoScope: Prisma.ConversationWhereInput = all ? {} : { assignedMembershipId: ctx.membershipId };
+      const taskScope: Prisma.TaskWhereInput = all ? {} : { assigneeMembershipId: ctx.membershipId };
+      const apptScope: Prisma.AppointmentWhereInput = all ? {} : { membershipId: ctx.membershipId ?? undefined };
+
+      const [
+        staleHotRows,
+        unansweredConversations,
+        overduePromises,
+        noShowAppointments,
+        slotRescuesFilled,
+        voiceNotesApplied,
+        promisesCaptured,
+        promisesFulfilled,
+        aiRuns,
+      ] = await series([
+        () => tx.lead.findMany({
+          where: {
+            tenantId: ctx.tenantId,
+            deletedAt: null,
+            ...leadScope,
+            stage: { kind: 'OPEN' },
+            OR: [{ temperature: 'HOT' }, { score: { gte: 70 } }],
+          },
+          select: { budgetMinMinor: true, budgetMaxMinor: true, lastContactedAt: true },
+        }),
+        () => tx.conversation.count({
+          where: {
+            tenantId: ctx.tenantId,
+            ...convoScope,
+            status: 'OPEN',
+            unreadCount: { gt: 0 },
+            lastInboundAt: { lt: replyCutoff },
+          },
+        }),
+        () => tx.task.count({
+          where: {
+            tenantId: ctx.tenantId,
+            ...taskScope,
+            source: 'promise_tracker',
+            status: 'OPEN',
+            dueAt: { lt: now },
+          },
+        }),
+        () => tx.appointment.count({
+          where: {
+            tenantId: ctx.tenantId,
+            ...apptScope,
+            status: 'NO_SHOW',
+            startsAt: { gte: range.from, lt: range.to },
+          },
+        }),
+        () => tx.auditLog.count({
+          where: {
+            tenantId: ctx.tenantId,
+            action: 'slot_rescue.claimed',
+            createdAt: { gte: range.from, lt: range.to },
+          },
+        }),
+        () => tx.leadActivity.count({
+          where: {
+            tenantId: ctx.tenantId,
+            type: 'voice_note_applied',
+            createdAt: { gte: range.from, lt: range.to },
+          },
+        }),
+        () => tx.task.count({
+          where: {
+            tenantId: ctx.tenantId,
+            ...taskScope,
+            source: 'promise_tracker',
+            createdAt: { gte: range.from, lt: range.to },
+          },
+        }),
+        () => tx.task.count({
+          where: {
+            tenantId: ctx.tenantId,
+            ...taskScope,
+            source: 'promise_tracker',
+            status: 'DONE',
+            completedAt: { gte: range.from, lt: range.to },
+          },
+        }),
+        () => tx.aiRun.findMany({
+          where: {
+            tenantId: ctx.tenantId,
+            status: 'COMPLETED',
+            createdAt: { gte: range.from, lt: range.to },
+          },
+          select: { trace: true },
+          take: 1000,
+        }),
+      ]);
+
+      const staleHotFiltered = staleHotRows.filter((r) => !r.lastContactedAt || r.lastContactedAt < staleCutoff);
+      let staleHotBudgetMinor = 0;
+      for (const r of staleHotFiltered) {
+        const val = r.budgetMaxMinor ?? r.budgetMinMinor;
+        if (val) staleHotBudgetMinor += Number(val);
+      }
+
+      const aiAssistedTurns = aiRuns.filter((r) => {
+        const outcome = (r.trace as { outcome?: string } | null)?.outcome;
+        return outcome === 'replied' || outcome === 'shadow_draft';
+      }).length;
+
+      return {
+        range: { label: range.label, from: range.from.toISOString(), to: range.to.toISOString(), timezone: tenant.timezone },
+        currency: tenant.currency,
+        leaking: {
+          staleHotLeads: staleHotFiltered.length,
+          staleHotBudgetMinor,
+          unansweredConversations,
+          overduePromises,
+          noShowAppointments,
+        },
+        recovered: {
+          slotRescuesFilled,
+          voiceNotesApplied,
+          adminMinutesSaved: voiceNotesApplied * 5,
+          promisesCaptured,
+          promisesFulfilled,
+          aiAssistedTurns,
+        },
+      };
+    });
+  }
+
+  /** 2-Tap Morning Brief: top 3 hot leads, open/overdue promises, today's appointments, and cooling chats. */
+  async morningBrief(ctx: TenantRequestContext) {
+    const all = ctx.permissions.has('analytics:read:all');
+    if (!all && !ctx.permissions.has('analytics:read:own')) {
+      throw new ForbiddenException({ code: 'forbidden', message: 'You cannot view analytics' });
+    }
+    return this.db.tenantTx(ctx, async (tx) => {
+      const tenant = await tx.tenant.findUniqueOrThrow({ where: { id: ctx.tenantId }, select: { timezone: true } });
+      const now = new Date();
+      const dayStart = startOfDay(now, tenant.timezone);
+      const dayEnd = addDays(dayStart, 1, tenant.timezone);
+      const silenceCutoff = new Date(now.getTime() - 12 * 3_600_000);
+
+      const leadScope: Prisma.LeadWhereInput = ctx.membershipId && !all ? { assignedMembershipId: ctx.membershipId } : {};
+      const taskScope: Prisma.TaskWhereInput = ctx.membershipId && !all ? { assigneeMembershipId: ctx.membershipId } : {};
+      const apptScope: Prisma.AppointmentWhereInput = ctx.membershipId && !all ? { membershipId: ctx.membershipId } : {};
+      const convoScope: Prisma.ConversationWhereInput = ctx.membershipId && !all ? { assignedMembershipId: ctx.membershipId } : {};
+
+      const [topHotLeads, openPromises, todaysAppointments, coolingChats] = await series([
+        () => tx.lead.findMany({
+          where: {
+            tenantId: ctx.tenantId,
+            deletedAt: null,
+            ...leadScope,
+            stage: { kind: 'OPEN' },
+            OR: [{ temperature: 'HOT' }, { score: { gte: 70 } }],
+          },
+          orderBy: [{ lastContactedAt: { sort: 'asc', nulls: 'first' } }, { score: { sort: 'desc', nulls: 'last' } }],
+          take: 3,
+          select: { id: true, name: true, phone: true, score: true, location: true, lastContactedAt: true },
+        }),
+        () => tx.task.findMany({
+          where: {
+            tenantId: ctx.tenantId,
+            ...taskScope,
+            source: 'promise_tracker',
+            status: 'OPEN',
+          },
+          orderBy: [{ dueAt: 'asc' }, { createdAt: 'desc' }],
+          take: 4,
+          select: { id: true, title: true, leadId: true, dueAt: true },
+        }),
+        () => tx.appointment.findMany({
+          where: {
+            tenantId: ctx.tenantId,
+            ...apptScope,
+            status: { in: ['PENDING', 'CONFIRMED'] },
+            startsAt: { gte: dayStart, lt: dayEnd },
+          },
+          orderBy: { startsAt: 'asc' },
+          take: 4,
+          select: { id: true, title: true, leadId: true, startsAt: true, status: true },
+        }),
+        () => tx.conversation.count({
+          where: {
+            tenantId: ctx.tenantId,
+            ...convoScope,
+            status: 'OPEN',
+            lastMessageAt: { lt: silenceCutoff },
+          },
+        }),
+      ]);
+
+      return {
+        date: dayStart.toISOString(),
+        timezone: tenant.timezone,
+        topHotLeads: topHotLeads.map((l) => ({
+          id: l.id,
+          name: l.name,
+          phone: l.phone,
+          score: l.score,
+          location: l.location,
+          lastContactedAt: l.lastContactedAt?.toISOString() ?? null,
+        })),
+        openPromises: openPromises.map((p) => ({
+          id: p.id,
+          title: p.title,
+          leadId: p.leadId,
+          dueAt: p.dueAt?.toISOString() ?? null,
+          overdue: p.dueAt ? p.dueAt.getTime() < now.getTime() : false,
+        })),
+        todaysAppointments: todaysAppointments.map((a) => ({
+          id: a.id,
+          title: a.title,
+          leadId: a.leadId,
+          startsAt: a.startsAt.toISOString(),
+          status: a.status,
+        })),
+        coolingChats,
+      };
+    });
+  }
 }
 
 @Controller()
 class AnalyticsController {
   constructor(@Inject(AnalyticsService) private readonly svc: AnalyticsService) {}
   @Get('analytics/overview') overview(@CurrentTenant() ctx: TenantRequestContext, @Query(new ZodPipe(analyticsQuerySchema)) q: AnalyticsQuery) { return this.svc.overview(ctx, q); }
+  @Get('analytics/revenue-leakage') revenueLeakage(@CurrentTenant() ctx: TenantRequestContext, @Query(new ZodPipe(analyticsQuerySchema)) q: AnalyticsQuery) { return this.svc.revenueLeakage(ctx, q); }
+  @Get('analytics/morning-brief') morningBrief(@CurrentTenant() ctx: TenantRequestContext) { return this.svc.morningBrief(ctx); }
   @Get('team/workload') workload(@CurrentTenant() ctx: TenantRequestContext) {
     if (!ctx.permissions.has('analytics:read:team')) throw new ForbiddenException({ code: 'forbidden', message: 'You cannot view team workload' });
     return this.svc.workload(ctx);

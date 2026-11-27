@@ -24,7 +24,10 @@ import { OutboxRelay } from './outbox-relay.js';
 import { OutboxService } from './outbox.service.js';
 import { ScannersService } from './scanners.service.js';
 import { SlaService } from './sla.service.js';
+import { SlotRescueAdminController, SlotRescuePublicController } from './slot-rescue.controller.js';
+import { SlotRescueService } from './slot-rescue.service.js';
 import { TasksService } from './tasks.service.js';
+import { WebPushService } from './web-push.service.js';
 
 /** The outbox writer is needed by almost every module, so it lives in its own tiny global module with no dependencies. */
 @Global()
@@ -33,8 +36,8 @@ export class OutboxModule {}
 
 @Module({
   imports: [LeadsModule, ConversationsModule, ChannelsModule, GoogleCalendarModule],
-  controllers: [AppointmentsController, NotificationsController, AlertSettingsController, AutomationsController, TasksController, SlaController],
-  providers: [ChannelHealth, WebhookDispatcher, LifecycleJobs, BillingNotifier, BillingLifecycle, NotificationsService, AppointmentsService, AutomationEngine, AutomationsService, EventNotifier, OutboxRelay, ScannersService, SlaService, TasksService, JobsService, WorkerHeartbeat, HealthSnapshotService, AlertsService],
-  exports: [ChannelHealth, WebhookDispatcher, LifecycleJobs, BillingNotifier, AppointmentsService, NotificationsService, OutboxRelay, ScannersService, JobsService, AutomationEngine, WorkerHeartbeat, HealthSnapshotService, AlertsService],
+  controllers: [SlotRescueAdminController, AppointmentsController, SlotRescuePublicController, NotificationsController, AlertSettingsController, AutomationsController, TasksController, SlaController],
+  providers: [ChannelHealth, WebhookDispatcher, LifecycleJobs, BillingNotifier, BillingLifecycle, NotificationsService, WebPushService, AppointmentsService, SlotRescueService, AutomationEngine, AutomationsService, EventNotifier, OutboxRelay, ScannersService, SlaService, TasksService, JobsService, WorkerHeartbeat, HealthSnapshotService, AlertsService],
+  exports: [ChannelHealth, WebhookDispatcher, LifecycleJobs, BillingNotifier, AppointmentsService, SlotRescueService, NotificationsService, WebPushService, OutboxRelay, ScannersService, JobsService, AutomationEngine, WorkerHeartbeat, HealthSnapshotService, AlertsService],
 })
 export class OpsModule {}

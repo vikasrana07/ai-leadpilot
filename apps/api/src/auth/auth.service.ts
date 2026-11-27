@@ -3,6 +3,7 @@ import { Prisma, type TxClient } from '@leadpilot/database';
 import { industryChosen, type AuthContextResponse } from '@leadpilot/shared-types';
 import type { AcceptInviteInput, LoginInput, RegisterInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
+import { resolveEffectivePermissions } from '../common/permissions.util.js';
 import { AuditService } from '../audit/audit.service.js';
 import { ENV } from '../common/tokens.js';
 import type { Env } from '../config/env.js';
@@ -275,9 +276,22 @@ export class AuthService {
     let permissions: string[] = [];
     if (active) {
       const m = await this.db.tenantTx({ tenantId: active, userId }, (tx) =>
-        tx.membership.findUnique({ where: { tenantId_userId: { tenantId: active, userId } }, select: { role: { select: { permissions: { select: { permissionKey: true } } } } } }),
+        tx.membership.findUnique({
+          where: { tenantId_userId: { tenantId: active, userId } },
+          select: {
+            role: { select: { permissions: { select: { permissionKey: true } } } },
+            permissionOverrides: { select: { permissionKey: true, effect: true } },
+          },
+        }),
       );
-      permissions = m?.role.permissions.map((p) => p.permissionKey) ?? [];
+      permissions = m
+        ? [
+            ...resolveEffectivePermissions(
+              m.role.permissions.map((p) => p.permissionKey),
+              m.permissionOverrides,
+            ),
+          ]
+        : [];
     }
     return { user: { id: user.id, email: user.email, name: user.name, emailVerified: user.emailVerifiedAt !== null }, workspaces, activeTenantId: active, permissions };
   }

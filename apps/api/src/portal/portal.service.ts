@@ -223,7 +223,7 @@ export class PortalService {
     if (appt.startsAt.getTime() <= now) {
       throw new ConflictException({ code: 'past_appointment', message: 'This appointment has already started or passed.' });
     }
-    if (action === 'confirm' && appt.status !== 'PENDING') {
+    if (action === 'confirm' && appt.status !== 'PENDING' && appt.status !== 'CONFIRMED') {
       throw new ConflictException({ code: 'invalid_transition', message: 'Only pending appointments can be confirmed.' });
     }
     if (action !== 'confirm') {
@@ -262,6 +262,8 @@ export class PortalService {
 
   async confirmAppointment(c: PortalCtx, appointmentId: string) {
     const appt = await this.assertOwnAppt(c, appointmentId, 'confirm');
+    // Already confirmed (e.g. booked by staff): confirming again is an idempotent no-op, not an error.
+    if (appt.status === 'CONFIRMED') return this.appointmentsSvc.get(this.portalActor(c), appt.id);
     const updated = await this.appointmentsSvc.confirm(this.portalActor(c), appt.id);
     await this.db.tenantTx({ tenantId: c.tenantId }, (tx) =>
       this.audit.record(tx, {

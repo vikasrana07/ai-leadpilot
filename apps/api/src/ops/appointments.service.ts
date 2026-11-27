@@ -1,5 +1,6 @@
 import { packForIndustry } from '@leadpilot/shared-types';
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, Optional, UnprocessableEntityException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, Optional, UnprocessableEntityException } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import type { Prisma, TxClient } from '@leadpilot/database';
 import { APPOINTMENT_TRANSITIONS, type AppointmentCreateInput, type AppointmentListQuery, type SlotsQuery } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
@@ -11,6 +12,7 @@ import { DistributedLockService } from '../common/lock.service.js';
 import { GoogleCalendarService } from '../integrations/google-calendar/google-calendar.service.js';
 import { loadAvailability, slotsForDate, withinWorkingHours } from './availability.js';
 import { OutboxService } from './outbox.service.js';
+import { SlotRescueService } from './slot-rescue.service.js';
 
 type Row = Prisma.AppointmentGetPayload<{ include: { events: true } }>;
 export interface AppointmentDto {
@@ -67,8 +69,10 @@ export class AppointmentsService {
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(OutboxService) private readonly outbox: OutboxService,
     @Inject(DistributedLockService) private readonly lock: DistributedLockService,
+    @Inject(ModuleRef) private readonly moduleRef: ModuleRef,
     @Optional() @Inject(GoogleCalendarService) private readonly gcal?: GoogleCalendarService,
   ) {}
+  private readonly log = new Logger('Appointments');
 
   private tx<T>(a: Actor, fn: (tx: TxClient) => Promise<T>): Promise<T> { return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, fn); }
 
@@ -302,6 +306,14 @@ export class AppointmentsService {
         await this.outbox.emit(tx, a.tenantId, 'appointment.calendar_sync', { appointmentId: id, action: 'cancelled' });
       }
     });
+    if (to === 'CANCELLED') {
+      try {
+        const sr = this.moduleRef.get(SlotRescueService, { strict: false });
+        await sr.triggerForCancelledAppointment(a.tenantId, id);
+      } catch (e) {
+        this.log.warn(`Slot rescue trigger failed for ${id}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
     return this.get({ ...a, permissions: new Set([...a.permissions, 'appointment:read:all']) }, id);
   }
   confirm(a: Actor, id: string) { return this.transition(a, id, 'CONFIRMED'); }

@@ -45,6 +45,42 @@ class UsageController {
       };
     });
   }
+
+  @Get('history')
+  async history(@CurrentTenant() c: TenantRequestContext) {
+    const a = actorFrom(c);
+    return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, async (tx) => {
+      const days = 14;
+      const since = new Date(Date.now() - days * 86_400_000);
+      const [runs, msgs, leads] = await Promise.all([
+        tx.aiRun.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true, inputTokens: true, outputTokens: true } }),
+        tx.message.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        tx.lead.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+      ]);
+
+      const buckets = new Map<string, { date: string; aiTokens: number; messages: number; leads: number }>();
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10);
+        buckets.set(d, { date: d, aiTokens: 0, messages: 0, leads: 0 });
+      }
+      for (const r of runs) {
+        const k = r.createdAt.toISOString().slice(0, 10);
+        const b = buckets.get(k);
+        if (b) b.aiTokens += r.inputTokens + r.outputTokens;
+      }
+      for (const m of msgs) {
+        const k = m.createdAt.toISOString().slice(0, 10);
+        const b = buckets.get(k);
+        if (b) b.messages += 1;
+      }
+      for (const l of leads) {
+        const k = l.createdAt.toISOString().slice(0, 10);
+        const b = buckets.get(k);
+        if (b) b.leads += 1;
+      }
+      return [...buckets.values()];
+    });
+  }
 }
 
 @Module({ imports: [AiModule], controllers: [UsageController] })

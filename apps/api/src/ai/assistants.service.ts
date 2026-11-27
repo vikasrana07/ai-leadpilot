@@ -78,4 +78,68 @@ export class AssistantsService {
       });
     });
   }
+
+  /** Computes Shadow-to-Live readiness & trust metrics from shadow_draft AI runs. */
+  shadowStats(tenantId: string, userId?: string | null) {
+    return this.db.tenantTx({ tenantId, ...(userId ? { userId } : {}) }, async (tx) => {
+      const [assistant, rows] = await Promise.all([
+        tx.aiAssistant.findUnique({ where: { tenantId }, select: { handoverRules: true } }),
+        tx.aiRun.findMany({ where: { tenantId, status: 'COMPLETED' }, orderBy: { createdAt: 'desc' }, take: 250, select: { trace: true } }),
+      ]);
+      const shadowMode = Boolean((assistant?.handoverRules as { shadowMode?: boolean } | null)?.shadowMode);
+      let pending = 0;
+      let approvedUnchanged = 0;
+      let edited = 0;
+      let dismissed = 0;
+      for (const r of rows) {
+        const tr = r.trace as { outcome?: string; shadowStatus?: string } | null;
+        if (tr?.outcome !== 'shadow_draft') continue;
+        if (tr.shadowStatus === 'APPROVED') approvedUnchanged += 1;
+        else if (tr.shadowStatus === 'EDITED') edited += 1;
+        else if (tr.shadowStatus === 'DISMISSED') dismissed += 1;
+        else pending += 1;
+      }
+      const reviewedCount = approvedUnchanged + edited + dismissed;
+      const accuracyPct = reviewedCount > 0 ? Math.round((approvedUnchanged / reviewedCount) * 100) : 100;
+      const targetReviews = 10;
+      const minAccuracyPct = 85;
+      return {
+        shadowMode,
+        totalDrafts: pending + reviewedCount,
+        pending,
+        approvedUnchanged,
+        edited,
+        dismissed,
+        reviewedCount,
+        accuracyPct,
+        targetReviews,
+        minAccuracyPct,
+        readyForAutopilot: reviewedCount >= targetReviews && accuracyPct >= minAccuracyPct,
+      };
+    });
+  }
+
+  /** Graduates the assistant from Shadow Mode to Live Auto-Pilot. */
+  goLive(ctx: TenantRequestContext) {
+    if (!ctx.permissions.has('ai:configure')) throw new ForbiddenException({ code: 'forbidden', message: 'You cannot configure the assistant' });
+    return this.db.tenantTx(ctx, async (tx) => {
+      const a = await tx.aiAssistant.findUnique({ where: { tenantId: ctx.tenantId } });
+      if (!a) return this.get(ctx);
+      const rules = (Object.keys(a.handoverRules as object).length ? a.handoverRules : DEFAULT_HANDOVER) as Record<string, unknown>;
+      const updated = await tx.aiAssistant.update({
+        where: { tenantId: ctx.tenantId },
+        data: { handoverRules: { ...rules, shadowMode: false } as Prisma.InputJsonValue },
+      });
+      await this.audit.record(tx, {
+        tenantId: ctx.tenantId,
+        actorUserId: ctx.userId,
+        action: 'ai.shadow_mode_graduated',
+        resourceType: 'ai_assistant',
+        resourceId: updated.id,
+        requestId: ctx.requestId,
+        ip: ctx.ip,
+      });
+      return this.view(updated);
+    });
+  }
 }

@@ -37,6 +37,8 @@ class AiController {
   @Put('ai/assistant') @RequireFeature('ai_assistant') @RequirePermissions('ai:configure') save(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(assistantSchema)) b: AssistantInput) { return this.assistants.save(c, b); }
   @Get('ai/usage') @RequirePermissions('ai:configure') usage(@CurrentTenant() c: TenantRequestContext) { return this.assistants.usage(c.tenantId, c.userId); }
   @Get('ai/runs') @RequirePermissions('ai:configure') runs(@CurrentTenant() c: TenantRequestContext) { return this.assistants.runs(c); }
+  @Get('ai/shadow-stats') @RequirePermissions('conversation:read:own', 'conversation:read:all', 'ai:configure') shadowStats(@CurrentTenant() c: TenantRequestContext) { return this.assistants.shadowStats(c.tenantId, c.userId); }
+  @Post('ai/shadow-mode/go-live') @HttpCode(200) @RequireFeature('ai_assistant') @RequirePermissions('ai:configure') goLive(@CurrentTenant() c: TenantRequestContext) { return this.assistants.goLive(c); }
 
   @Get('scoring/rules') async rules(@CurrentTenant() c: TenantRequestContext) {
     const r = await this.db.tenantTx(c, (tx) => this.scoring.rulesFor(tx, c.tenantId));

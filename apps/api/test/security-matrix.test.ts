@@ -53,6 +53,16 @@ const PUBLIC_ALLOWLIST: Record<string, string> = {
   'GET /auth/sso/metadata/:tenantId': 'SAML 2.0 Service Provider metadata XML',
   'POST /auth/sso/callback/oidc': 'OIDC callback (HMAC-signed state + IdP token)',
   'POST /auth/sso/callback/saml': 'SAML 2.0 ACS callback (HMAC-signed RelayState + SAMLResponse)',
+  'GET /portal/claim/:token': 'unguessable Slot Rescue claim token (public 1-tap waitlist preview)',
+  'POST /portal/claim/:token': 'unguessable Slot Rescue claim token (public 1-tap waitlist claim)',
+  'POST /webhooks/portal-email/:webhookKey': 'unguessable portal email webhook key',
+  'GET /webhooks/meta-social/:webhookKey': 'Meta Messenger/Instagram verify challenge',
+  'POST /webhooks/meta-social/:webhookKey': 'Meta Messenger/Instagram HMAC-signed webhook',
+  'GET /portal/appointments/:id/slots': 'customer-portal session cookie (PortalGuard)',
+  'POST /portal/appointments/:id/confirm': 'customer-portal session cookie (PortalGuard)',
+  'POST /portal/appointments/:id/cancel': 'customer-portal session cookie (PortalGuard)',
+  'POST /portal/appointments/:id/reschedule': 'customer-portal session cookie (PortalGuard)',
+  'POST /portal/data-request': 'customer-portal session cookie (PortalGuard)',
 };
 describe('route inventory', () => {
   it('public-API (/v1) routes are all guarded by ApiKeyGuard; only the OpenAPI description is open (key-authenticated families are covered by public-api.test.ts)', async () => {
@@ -119,6 +129,11 @@ describe('permission declarations', () => {
     'GET /leads/import-jobs/:jobId', 'GET /leads/import-jobs/:jobId/errors',
     'GET /conversations/canned-responses', 'POST /conversations/canned-responses', 'DELETE /conversations/canned-responses/:id',
     'GET /integrations/google-calendar', 'GET /integrations/google-calendar/auth-url', 'POST /integrations/google-calendar/connect', 'DELETE /integrations/google-calendar',
+    'GET /leads/:id/attachments', 'POST /leads/:id/attachments', 'GET /leads/:id/attachments/:attachmentId/download', 'DELETE /leads/:id/attachments/:attachmentId',
+    'POST /leads/:id/voice-note', 'POST /leads/:id/voice-note/apply',
+    'GET /notifications/push/vapid-key', 'POST /notifications/push/subscribe', 'DELETE /notifications/push/subscribe',
+    'GET /analytics/revenue-leakage', 'GET /analytics/morning-brief',
+    'GET /conversations/:id/shadow-draft', 'GET /conversations/:id/promises', 'GET /conversations/:id/deal-pulse',
   ]);
   it('every tenant route without a declared permission is on the reviewed service-enforced list', () => {
     const open = routes.filter((r) => !r.isPublic && !r.noTenant && r.perms.length === 0).map(label);

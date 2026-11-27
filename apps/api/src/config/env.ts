@@ -137,6 +137,9 @@ const schema = z.object({
   WEBHOOK_DISABLE_AFTER: z.coerce.number().int().min(1).default(10),
   THROTTLE_AUTH_LIMIT: z.coerce.number().int().positive().default(10),
   THROTTLE_GLOBAL_LIMIT: z.coerce.number().int().positive().default(300),
+  VAPID_PUBLIC_KEY: z.string().min(1).optional(),
+  VAPID_PRIVATE_KEY: z.string().min(1).optional(),
+  VAPID_SUBJECT: z.string().min(1).default('mailto:support@leadpilot.local'),
 });
 
 export type Env = z.infer<typeof schema>;

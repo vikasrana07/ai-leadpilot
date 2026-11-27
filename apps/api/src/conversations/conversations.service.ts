@@ -9,8 +9,11 @@ import { AuditService } from '../audit/audit.service.js';
 import type { Actor } from '../common/actor.js';
 import { DbService } from '../db/db.module.js';
 import { ChannelsService } from '../channels/channels.module.js';
+import { MetaSocialClient } from '../channels/meta-social.client.js';
 import { RealtimeService } from '../realtime/realtime.module.js';
 import { WHATSAPP_CLIENT, WhatsAppApiError, type WhatsAppClient } from '../whatsapp/whatsapp.client.js';
+import { detectPromise } from './promise-tracker.js';
+import { computeDealPulse } from './deal-pulse.js';
 
 type ListQuery = z.infer<typeof conversationListSchema>;
 type SendInput = z.infer<typeof sendMessageSchema>;
@@ -25,6 +28,7 @@ export class ConversationsService {
     @Inject(ChannelsService) private readonly channels: ChannelsService,
     @Inject(RealtimeService) private readonly rt: RealtimeService,
     @Inject(WHATSAPP_CLIENT) private readonly wa: WhatsAppClient,
+    @Inject(MetaSocialClient) private readonly metaSocial: MetaSocialClient,
     @Inject(EntitlementsService) private readonly ent: EntitlementsService,
   ) {}
 
@@ -255,11 +259,34 @@ export class ConversationsService {
       const msgId = uuidv7();
       await tx.message.create({ data: { id: msgId, tenantId: a.tenantId, conversationId: id, channelId: c.channelId, direction: 'OUTBOUND', senderType: who, senderUserId: who === 'AGENT' ? a.userId : null, type: template ? 'TEMPLATE' : 'TEXT', body, template: template ?? undefined, status: c.channel.type === 'WHATSAPP' ? 'QUEUED' : 'DELIVERED', idempotencyKey: input.idempotencyKey ?? null } });
       await tx.conversation.update({ where: { id }, data: { lastMessageAt: new Date(), lastMessagePreview: body.slice(0, 140), unreadCount: 0, status: 'OPEN', closedAt: null } });
-      return { kind: 'new' as const, messageId: msgId, channel: c.channel, channelId: c.channelId, to: lead.phoneNorm, template, text: input.text ?? null, assigned: c.assignedMembershipId };
+      if (who !== 'SYSTEM' && input.text) {
+        const promise = detectPromise(input.text);
+        if (promise) {
+          await tx.task.create({
+            data: {
+              id: uuidv7(),
+              tenantId: a.tenantId,
+              leadId: c.leadId,
+              assigneeMembershipId: a.membershipId ?? c.assignedMembershipId,
+              title: promise.title,
+              notes: JSON.stringify({ kind: 'promise', snippet: promise.snippet, suggestedFollowUp: promise.suggestedFollowUp }),
+              dueAt: promise.dueAt,
+              source: 'promise_tracker',
+            },
+          });
+        }
+      }
+      return { kind: 'new' as const, messageId: msgId, channel: c.channel, channelId: c.channelId, to: c.channel.type === 'WHATSAPP' ? lead.phoneNorm : c.externalThreadId, template, text: input.text ?? null, assigned: c.assignedMembershipId };
     });
     if (prep.kind === 'existing') return this.messageView(a, prep.messageId);
     this.notify(a, id, prep.assigned, 'message.created', { messageId: prep.messageId, direction: 'OUTBOUND' });
     if (prep.channel.type === 'WEB_WIDGET') return this.messageView(a, prep.messageId);
+    if (prep.channel.type === 'MESSENGER' || prep.channel.type === 'INSTAGRAM') {
+      const { channel, creds } = await this.channels.credentialsFor(a.tenantId, prep.channelId, a.userId);
+      const r = await this.metaSocial.sendText(prep.channel.type, channel.externalId ?? '', creds.accessToken, prep.to ?? '', prep.text ?? '');
+      await this.recordSent(a, prep.messageId, r.messageId);
+      return this.messageView(a, prep.messageId);
+    }
     await this.deliver(a, prep.messageId, prep.channelId, prep.to, prep.text, prep.template);
     this.notify(a, id, prep.assigned, 'message.created', { messageId: prep.messageId, direction: 'OUTBOUND' });
     return this.messageView(a, prep.messageId);
@@ -347,6 +374,154 @@ export class ConversationsService {
       if (e instanceof UnprocessableEntityException) throw e;
       throw new UnprocessableEntityException({ code: 'media_unavailable', message: 'WhatsApp no longer has this file (media expires after about 30 days).' });
     }
+  }
+
+  // ------------------------------------------------------------------ shadow-to-live drafts
+  /** Returns the newest pending Shadow Mode AI draft for this conversation, if any. */
+  async getShadowDraft(a: Actor, conversationId: string) {
+    return this.tx(a, async (tx) => {
+      await this.mustFind(tx, a, conversationId);
+      const runs = await tx.aiRun.findMany({
+        where: { tenantId: a.tenantId, conversationId, status: 'COMPLETED' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: 10,
+      });
+      for (const r of runs) {
+        const tr = r.trace as { outcome?: string; shadowStatus?: string; shadowDraft?: string; tools?: { name: string; ok: boolean }[] } | null;
+        if (tr?.outcome === 'shadow_draft' && tr.shadowStatus === 'PENDING' && tr.shadowDraft) {
+          return { runId: r.id, draft: tr.shadowDraft, tools: tr.tools ?? [], createdAt: r.createdAt.toISOString() };
+        }
+      }
+      return null;
+    });
+  }
+
+  /** Approves, edits & sends, or dismisses a pending Shadow Mode AI draft. */
+  async reviewShadowDraft(
+    a: Actor,
+    conversationId: string,
+    input: { runId: string; action: 'approve' | 'edit' | 'dismiss'; text?: string },
+  ) {
+    if (!a.permissions.has('conversation:reply')) {
+      throw new ForbiddenException({ code: 'forbidden', message: 'You cannot reply to conversations' });
+    }
+    const pending = await this.tx(a, async (tx) => {
+      await this.mustFind(tx, a, conversationId);
+      const run = await tx.aiRun.findFirst({ where: { id: input.runId, tenantId: a.tenantId, conversationId } });
+      if (!run) throw new NotFoundException({ code: 'not_found', message: 'Shadow draft not found' });
+      const tr = (run.trace as Record<string, unknown> | null) ?? {};
+      if (tr.outcome !== 'shadow_draft' || tr.shadowStatus !== 'PENDING' || typeof tr.shadowDraft !== 'string') {
+        throw new ConflictException({ code: 'already_reviewed', message: 'This shadow draft has already been reviewed' });
+      }
+      return { tr, draft: tr.shadowDraft };
+    });
+
+    const finalText = input.action === 'edit' ? (input.text?.trim() || pending.draft) : pending.draft;
+    let sentMessageId: string | null = null;
+    if (input.action !== 'dismiss') {
+      const sent = await this.sendAi(a.tenantId, conversationId, finalText);
+      sentMessageId = (sent as { id?: string }).id ?? null;
+    }
+
+    const nextStatus = input.action === 'approve' ? 'APPROVED' : input.action === 'edit' ? 'EDITED' : 'DISMISSED';
+    await this.tx(a, async (tx) => {
+      await tx.aiRun.update({
+        where: { id: input.runId },
+        data: {
+          trace: {
+            ...pending.tr,
+            shadowStatus: nextStatus,
+            reviewedByUserId: a.userId,
+            reviewedAt: new Date().toISOString(),
+            ...(sentMessageId ? { reply: `${finalText.length} chars` } : {}),
+          } as Prisma.InputJsonValue,
+        },
+      });
+      await this.audit.record(tx, {
+        tenantId: a.tenantId,
+        actorUserId: a.userId,
+        action: 'ai.shadow_draft_reviewed',
+        resourceType: 'conversation',
+        resourceId: conversationId,
+        requestId: a.requestId,
+        ip: a.ip,
+        metadata: { runId: input.runId, action: input.action, status: nextStatus, ...(sentMessageId ? { messageId: sentMessageId } : {}) },
+      });
+    });
+
+    this.rt.publish(a.tenantId, { type: 'conversation.updated', conversationId, assignedMembershipId: null, data: { shadowDraft: false } });
+    return { ok: true, status: nextStatus, messageId: sentMessageId };
+  }
+
+  // ------------------------------------------------------------------ promise tracker
+  /** Lists open promise-tracker tasks for the lead in this conversation. */
+  listPromises(a: Actor, conversationId: string) {
+    return this.tx(a, async (tx) => {
+      const c = await this.mustFind(tx, a, conversationId);
+      const rows = await tx.task.findMany({
+        where: { tenantId: a.tenantId, leadId: c.leadId, source: 'promise_tracker', status: 'OPEN' },
+        orderBy: [{ dueAt: 'asc' }, { createdAt: 'desc' }],
+        take: 10,
+      });
+      const now = Date.now();
+      return rows.map((r) => {
+        let meta: { snippet?: string; suggestedFollowUp?: string } = {};
+        if (r.notes) {
+          try { meta = JSON.parse(r.notes) as { snippet?: string; suggestedFollowUp?: string }; } catch { /* plain text */ }
+        }
+        return {
+          id: r.id,
+          title: r.title,
+          dueAt: r.dueAt ? r.dueAt.toISOString() : null,
+          overdue: r.dueAt ? r.dueAt.getTime() < now : false,
+          snippet: meta.snippet ?? r.notes ?? '',
+          suggestedFollowUp: meta.suggestedFollowUp ?? 'Hi! Following up on what I promised earlier.',
+        };
+      });
+    });
+  }
+
+  /** Marks a promise-tracker task complete. */
+  async completePromise(a: Actor, conversationId: string, taskId: string) {
+    this.requireReply(a);
+    await this.tx(a, async (tx) => {
+      const c = await this.mustFind(tx, a, conversationId);
+      const task = await tx.task.findFirst({ where: { id: taskId, tenantId: a.tenantId, leadId: c.leadId, source: 'promise_tracker' } });
+      if (!task) throw new NotFoundException({ code: 'not_found', message: 'Promise not found' });
+      await tx.task.update({ where: { id: taskId }, data: { status: 'DONE', completedAt: new Date() } });
+      await this.audit.record(tx, {
+        tenantId: a.tenantId,
+        actorUserId: a.userId,
+        action: 'conversation.promise_completed',
+        resourceType: 'task',
+        resourceId: taskId,
+        requestId: a.requestId,
+        ip: a.ip,
+        metadata: { conversationId },
+      });
+    });
+    return { ok: true };
+  }
+
+  // ------------------------------------------------------------------ live deal pulse
+  /** Evaluates conversation velocity & reply decay, returning a pattern-interrupt draft when cooling. */
+  dealPulse(a: Actor, conversationId: string) {
+    return this.tx(a, async (tx) => {
+      const c = await this.mustFind(tx, a, conversationId);
+      const [lead, messages] = await series([
+        () => tx.lead.findUniqueOrThrow({
+          where: { id: c.leadId },
+          select: { name: true, temperature: true, score: true, propertyType: true, location: true },
+        }),
+        () => tx.message.findMany({
+          where: { conversationId, senderType: { not: 'SYSTEM' } },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          take: 20,
+          select: { direction: true, body: true, createdAt: true },
+        }),
+      ]);
+      return computeDealPulse(messages, lead);
+    });
   }
 }
 

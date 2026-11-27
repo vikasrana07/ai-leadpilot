@@ -310,10 +310,13 @@ class ChannelsController {
   @Post('widget-config/rotate-key') @HttpCode(200) @RequireFeature('web_widget') @RequirePermissions('integration:manage') rotate(@CurrentTenant() c: TenantRequestContext) { return this.svc.rotateWidgetKey(c); }
 }
 
+import { MetaSocialClient } from './meta-social.client.js';
+import { MetaSocialAdminController } from './meta-social.controller.js';
+
 @Module({
   imports: [LeadsModule],
-  controllers: [ChannelsController, MetaCallbacksController, TelephonyController],
-  providers: [ChannelsService, TelephonyService],
-  exports: [ChannelsService, TelephonyService],
+  controllers: [ChannelsController, MetaCallbacksController, TelephonyController, MetaSocialAdminController],
+  providers: [ChannelsService, TelephonyService, MetaSocialClient],
+  exports: [ChannelsService, TelephonyService, MetaSocialClient],
 })
 export class ChannelsModule {}

@@ -15,6 +15,7 @@ const at = (daysAhead: number, hourUtc: number, min = 0) => {
 };
 
 beforeAll(async () => {
+  process.env.GOOGLE_CALENDAR_MODE = 'mock';
   ctx = await createTestApp();
   owner = await registerAccount(ctx, 'gcalOwner');
   await ctx.http().post('/auth/verify-email').send({ token: ctx.mail.last('verify', owner.email)?.token });

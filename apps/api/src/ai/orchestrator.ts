@@ -23,7 +23,20 @@ import type { WorkingHours } from './working-hours.js';
 const MAX_ITERATIONS = 5;
 const HISTORY = 20;
 
-interface Trace { tools: { name: string; ok: boolean }[]; chunkIds: string[]; guard: { violations: string[] }; iterations: number; outcome: string; reply?: string; /** id of the newest customer message this run took into account (uuidv7 ids sort by arrival) */ answeredThrough?: string }
+interface Trace {
+  tools: { name: string; ok: boolean }[];
+  chunkIds: string[];
+  guard: { violations: string[] };
+  iterations: number;
+  outcome: string;
+  reply?: string;
+  /** id of the newest customer message this run took into account (uuidv7 ids sort by arrival) */
+  answeredThrough?: string;
+  shadowDraft?: string;
+  shadowStatus?: 'PENDING' | 'APPROVED' | 'EDITED' | 'DISMISSED';
+  reviewedByUserId?: string | null;
+  reviewedAt?: string;
+}
 
 /**
  * One AI turn per conversation at a time. Flow: gate (kill switch, assistant on, AI mode, token cap) → keyword handover →
@@ -207,8 +220,17 @@ export class AiOrchestrator implements OnModuleInit {
         verdict = checkReply({ reply: retry.content ?? '', facts: facts.join('\n'), canary: CANARY, maxChars: assistant.maxReplyChars });
         if (!verdict.ok) { trace.guard.violations.push(...verdict.violations.map((v) => `retry:${v}`)); trace.outcome = 'guard_blocked'; await handover('The assistant could not answer safely', assistant.fallbackMessage); await finish('COMPLETED'); return; }
       }
-      if (trace.outcome === 'pending') trace.outcome = 'replied';
       const disclosure = ctx.aiCount === 0 && assistant.disclosureText ? `${verdict.reply}\n\n${assistant.disclosureText}` : verdict.reply;
+      const shadowMode = Boolean((assistant.handoverRules as { shadowMode?: boolean } | null)?.shadowMode);
+      if (shadowMode) {
+        trace.outcome = 'shadow_draft';
+        trace.shadowDraft = disclosure;
+        trace.shadowStatus = 'PENDING';
+        await finish('COMPLETED');
+        this.rt.publish(t, { type: 'conversation.updated', conversationId: convo.id, assignedMembershipId: convo.assignedMembershipId, data: { shadowDraft: true } });
+        return;
+      }
+      if (trace.outcome === 'pending') trace.outcome = 'replied';
       await this.reply(t, convo.id, disclosure, trace);
       await finish('COMPLETED');
     } catch (err) {

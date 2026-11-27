@@ -44,9 +44,35 @@ export class AppointmentsController {
   @Post(':id/reschedule') @HttpCode(200) reschedule(@CurrentTenant() c: TenantRequestContext, @Param('id', uuid()) id: string, @Body(new ZodPipe(appointmentRescheduleSchema)) b: z.infer<typeof appointmentRescheduleSchema>) { return this.svc.reschedule(actorFrom(c), id, b); }
 }
 
+import { WebPushService } from './web-push.service.js';
+
+const pushSubscribeSchema = z.object({
+  endpoint: z.string().url().max(2048),
+  keys: z.object({ p256dh: z.string().min(10).max(512), auth: z.string().min(6).max(256) }),
+  userAgent: z.string().max(300).optional(),
+});
+const pushUnsubscribeSchema = z.object({ endpoint: z.string().url().max(2048) });
+
 @Controller('notifications') @BillingExempt()
 export class NotificationsController {
-  constructor(@Inject(NotificationsService) private readonly svc: NotificationsService) {}
+  constructor(
+    @Inject(NotificationsService) private readonly svc: NotificationsService,
+    @Inject(WebPushService) private readonly webPush: WebPushService,
+  ) {}
+
+  @Get('push/vapid-key') vapidKey() {
+    const key = this.webPush.publicKey();
+    return { enabled: key !== null, publicKey: key };
+  }
+  @Post('push/subscribe') @HttpCode(200)
+  async subscribePush(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(pushSubscribeSchema)) b: z.infer<typeof pushSubscribeSchema>) {
+    await this.webPush.subscribe(c.tenantId, c.userId, { endpoint: b.endpoint, keys: b.keys, ...(b.userAgent ? { userAgent: b.userAgent } : {}) });
+    return { ok: true };
+  }
+  @Delete('push/subscribe') @HttpCode(204)
+  async unsubscribePush(@CurrentTenant() c: TenantRequestContext, @Body(new ZodPipe(pushUnsubscribeSchema)) b: z.infer<typeof pushUnsubscribeSchema>) {
+    await this.webPush.unsubscribe(c.tenantId, c.userId, b.endpoint);
+  }
 
   @Get() list(@CurrentTenant() c: TenantRequestContext, @Query(new ZodPipe(notificationListQuerySchema)) q: z.infer<typeof notificationListQuerySchema>) { return this.svc.list(actorFrom(c), q); }
   @Get('unread-count') unread(@CurrentTenant() c: TenantRequestContext) { return this.svc.unreadCount(actorFrom(c)); }

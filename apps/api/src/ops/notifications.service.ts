@@ -1,17 +1,22 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import type { Prisma, TxClient } from '@leadpilot/database';
 import { NOTIFICATION_TYPES, type NotificationType } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import type { Actor } from '../common/actor.js';
 import { DbService } from '../db/db.module.js';
 import { RealtimeService } from '../realtime/realtime.module.js';
+import { WebPushService } from './web-push.service.js';
 
 export interface NotifyInput { tenantId: string; membershipIds: string[]; type: NotificationType; title: string; body?: string | undefined; link?: string | undefined; data?: Prisma.InputJsonObject }
 export interface CreatedNotification { id: string; membershipId: string; type: string; title: string; body?: string | null; link?: string | null }
 
 @Injectable()
 export class NotificationsService {
-  constructor(@Inject(DbService) private readonly db: DbService, @Inject(RealtimeService) private readonly rt: RealtimeService) {}
+  constructor(
+    @Inject(DbService) private readonly db: DbService,
+    @Inject(RealtimeService) private readonly rt: RealtimeService,
+    @Optional() @Inject(WebPushService) private readonly webPush?: WebPushService,
+  ) {}
 
   private requireMember(a: Actor): string { if (!a.membershipId) throw new ForbiddenException({ code: 'forbidden', message: 'Notifications are personal to a team member' }); return a.membershipId; }
 
@@ -29,6 +34,7 @@ export class NotificationsService {
 
   publish(tenantId: string, created: CreatedNotification[]): void {
     for (const c of created) this.rt.publish(tenantId, { type: 'notification.created', conversationId: '', assignedMembershipId: null, membershipId: c.membershipId, data: { id: c.id, type: c.type, title: c.title, body: c.body ?? null, link: c.link ?? null } });
+    if (this.webPush && created.length > 0) void this.webPush.sendToMemberships(tenantId, created);
   }
 
   private tx<T>(a: Actor, fn: (tx: TxClient) => Promise<T>): Promise<T> { return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, fn); }

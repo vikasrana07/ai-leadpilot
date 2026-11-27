@@ -20,11 +20,11 @@ export interface InboundMessage {
 
 export interface IngestInput {
   tenantId: string;
-  channel: { id: string; type: 'WHATSAPP' | 'WEB_WIDGET' };
+  channel: { id: string; type: 'WHATSAPP' | 'WEB_WIDGET' | 'MESSENGER' | 'INSTAGRAM' };
   externalThreadId: string;
   contact: { name: string; phone?: string | null; email?: string | null };
   message: InboundMessage;
-  source: 'whatsapp' | 'website_widget';
+  source: 'whatsapp' | 'website_widget' | 'messenger' | 'instagram';
 }
 
 const OPT_OUT = /^\s*(stop|unsubscribe|cancel|opt[\s-]?out)\s*[.!]?\s*$/i;
@@ -45,7 +45,7 @@ export class InboundService {
   }
 
   /** Finds or creates the lead (matched by phone/email) and the conversation for a contact on a channel. */
-  async resolveThread(tx: TxClient, tenantId: string, channel: { id: string; type: 'WHATSAPP' | 'WEB_WIDGET' }, externalThreadId: string, contact: { name: string; phone?: string | null; email?: string | null }, source: 'whatsapp' | 'website_widget', at: Date) {
+  async resolveThread(tx: TxClient, tenantId: string, channel: { id: string; type: 'WHATSAPP' | 'WEB_WIDGET' | 'MESSENGER' | 'INSTAGRAM' }, externalThreadId: string, contact: { name: string; phone?: string | null; email?: string | null }, source: 'whatsapp' | 'website_widget' | 'messenger' | 'instagram', at: Date) {
     const phone = normalizePhone(contact.phone);
     const emailNorm = normalizeEmail(contact.email);
     const existingConvo = await tx.conversation.findUnique({ where: { channelId_externalThreadId: { channelId: channel.id, externalThreadId } } });

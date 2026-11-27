@@ -75,7 +75,7 @@ describe('lead attachments', () => {
       .set(auth(owner.accessToken))
       .attach('file', Buffer.from('MZ...'), 'evil.exe');
     expect(badExt.status).toBe(400);
-    expect(badExt.body.code).toBe('unsupported_file_type');
+    expect(badExt.body.error.code).toBe('unsupported_file_type');
 
     const badMagic = await ctx
       .http()
@@ -83,7 +83,7 @@ describe('lead attachments', () => {
       .set(auth(owner.accessToken))
       .attach('file', Buffer.from('not really a pdf'), 'fake.pdf');
     expect(badMagic.status).toBe(400);
-    expect(badMagic.body.code).toBe('invalid_file_content');
+    expect(badMagic.body.error.code).toBe('invalid_file_content');
 
     const infected = await ctx
       .http()
@@ -91,7 +91,7 @@ describe('lead attachments', () => {
       .set(auth(owner.accessToken))
       .attach('file', Buffer.from(EICAR), 'eicar.txt');
     expect(infected.status).toBe(400);
-    expect(infected.body.code).toBe('infected_file');
+    expect(infected.body.error.code).toBe('infected_file');
 
     const scanner = ctx.app.get<MockScanner>(VIRUS_SCANNER);
     scanner.unavailable = true;

@@ -12,7 +12,29 @@ import type { TenantRequestContext } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { LeadAttachmentsService, MAX_ATTACHMENT_BYTES } from './lead-attachments.service.js';
 import { LeadImportService } from './lead-import.service.js';
+import { LeadVoiceService } from './lead-voice.service.js';
 import { LeadsService } from './leads.service.js';
+import { z } from 'zod';
+
+const applyVoiceSchema = z.object({
+  note: z.string().trim().min(1).max(4000),
+  updates: z
+    .object({
+      budgetMin: z.number().positive().optional(),
+      budgetMax: z.number().positive().optional(),
+      location: z.string().trim().max(120).optional(),
+      propertyType: z.string().trim().max(80).optional(),
+      buyingTimeline: z.enum(['IMMEDIATE', 'ONE_TO_THREE_MONTHS', 'THREE_TO_SIX_MONTHS', 'SIX_PLUS_MONTHS', 'UNKNOWN']).optional(),
+      requirements: z.string().trim().max(2000).optional(),
+    })
+    .optional(),
+  task: z
+    .object({
+      title: z.string().trim().min(1).max(200),
+      dueAt: z.string().datetime({ offset: true }).optional(),
+    })
+    .optional(),
+});
 
 /**
  * Permission checks live in the service (they depend on row ownership: `own` vs `all`), so there is no blanket
@@ -24,6 +46,7 @@ export class LeadsController {
     @Inject(LeadsService) private readonly leads: LeadsService,
     @Inject(LeadImportService) private readonly imports: LeadImportService,
     @Inject(LeadAttachmentsService) private readonly attachments: LeadAttachmentsService,
+    @Inject(LeadVoiceService) private readonly voice: LeadVoiceService,
   ) {}
 
   @Get() list(@CurrentTenant() ctx: TenantRequestContext, @Query(new ZodPipe(leadListQuerySchema)) q: LeadListQuery) { return this.leads.list(actorFrom(ctx), q); }
@@ -134,5 +157,29 @@ export class LeadsController {
     @Param('attachmentId', new ParseUUIDPipe()) attachmentId: string,
   ) {
     return this.attachments.remove(actorFrom(ctx), id, attachmentId);
+  }
+
+  @Post(':id/voice-note') @HttpCode(200)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024, files: 1 } }))
+  voiceNote(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @UploadedFile() file: { originalname: string; mimetype: string; buffer: Buffer; size: number } | undefined,
+    @Body() body: { transcript?: string },
+  ) {
+    return this.voice.transcribeAndExtract(actorFrom(ctx), id, file, body?.transcript);
+  }
+
+  @Post(':id/voice-note/apply') @HttpCode(200)
+  applyVoiceNote(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodPipe(applyVoiceSchema)) body: z.infer<typeof applyVoiceSchema>,
+  ) {
+    return this.voice.applyExtraction(actorFrom(ctx), id, {
+      note: body.note,
+      ...(body.updates ? { updates: body.updates } : {}),
+      ...(body.task ? { task: body.task } : {}),
+    });
   }
 }

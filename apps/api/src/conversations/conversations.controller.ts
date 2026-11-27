@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import { conversationAssignSchema, conversationListSchema, conversationTagsSchema, noteSchema, sendMessageSchema } from '@leadpilot/validation';
+import { conversationAssignSchema, conversationListSchema, conversationTagsSchema, noteSchema, sendMessageSchema, shadowDraftReviewSchema } from '@leadpilot/validation';
 import type { z } from 'zod';
 import { actorFrom } from '../common/actor.js';
-import { CurrentTenant } from '../common/decorators.js';
+import { CurrentTenant, RequirePermissions } from '../common/decorators.js';
 import type { TenantRequestContext } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { ConversationsService } from './conversations.service.js';
@@ -52,6 +52,11 @@ export class ConversationsController {
   @Get(':id/notes') notes(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.notes(actorFrom(c), id); }
   @Post(':id/notes') @HttpCode(201) addNote(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(noteSchema)) b: { body: string }) { return this.svc.addNote(actorFrom(c), id, b.body); }
   @Put(':id/tags') @HttpCode(204) tags(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(conversationTagsSchema)) b: { tags: string[] }) { return this.svc.setTags(actorFrom(c), id, b.tags); }
+  @Get(':id/shadow-draft') shadowDraft(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.getShadowDraft(actorFrom(c), id); }
+  @Post(':id/shadow-draft/review') @HttpCode(200) @RequirePermissions('conversation:reply') reviewShadowDraft(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(shadowDraftReviewSchema)) b: z.infer<typeof shadowDraftReviewSchema>) { return this.svc.reviewShadowDraft(actorFrom(c), id, b); }
+  @Get(':id/promises') promises(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.listPromises(actorFrom(c), id); }
+  @Post(':id/promises/:tid/complete') @HttpCode(200) @RequirePermissions('conversation:reply') completePromise(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Param('tid', new ParseUUIDPipe()) tid: string) { return this.svc.completePromise(actorFrom(c), id, tid); }
+  @Get(':id/deal-pulse') dealPulse(@CurrentTenant() c: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.svc.dealPulse(actorFrom(c), id); }
 
   /** Media is fetched from the provider on demand. Only common image types render inline; everything else downloads. */
   @Get(':id/messages/:mid/media')

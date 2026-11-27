@@ -18,6 +18,7 @@ const book = (day: number) => ctx.http().post('/appointments').set(auth(owner.ac
 const makeDue = () => db.query(`UPDATE outbox_events SET available_at = now() WHERE tenant_id = $1 AND status = 'pending'`, [owner.tenantId]);
 
 beforeAll(async () => {
+  process.env.GOOGLE_CALENDAR_MODE = 'mock';
   ctx = await createTestApp();
   db = new pg.Pool({ connectionString: process.env.DATABASE_OWNER_URL });
   owner = await registerAccount(ctx, 'gcalOutbox');

@@ -4,6 +4,7 @@ import { Reflector } from '@nestjs/core';
 import type { PermissionKey } from '@leadpilot/shared-types';
 import { ACCESS_COOKIE } from './middleware.js';
 import { IS_PUBLIC, NO_TENANT, PERMISSIONS_META } from './decorators.js';
+import { resolveEffectivePermissions } from './permissions.util.js';
 import type { AppRequest } from './request-context.js';
 import { TokenService } from '../auth/token.service.js';
 import { DbService } from '../db/db.module.js';
@@ -85,6 +86,7 @@ export class TenantGuard implements CanActivate {
           id: true, status: true,
           tenant: { select: { status: true, settings: true } },
           role: { select: { key: true, permissions: { select: { permissionKey: true } } } },
+          permissionOverrides: { select: { permissionKey: true, effect: true } },
         },
       }),
     );
@@ -102,7 +104,10 @@ export class TenantGuard implements CanActivate {
       userId: auth.userId,
       membershipId: membership.id,
       roleKey: membership.role.key,
-      permissions: new Set(membership.role.permissions.map((p) => p.permissionKey)),
+      permissions: resolveEffectivePermissions(
+        membership.role.permissions.map((p) => p.permissionKey),
+        membership.permissionOverrides,
+      ),
       requestId: req.requestId,
       ip: req.ip,
     };

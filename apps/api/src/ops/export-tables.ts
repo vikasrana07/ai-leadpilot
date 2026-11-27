@@ -18,6 +18,11 @@ export const EXPORT_INCLUDED: Record<string, readonly string[]> = {
   tracked_emails: ['ses_message_id', 'smtp_message_id'],
   google_calendar_syncs: ['credential_id', 'sync_token', 'channel_id'],
   portal_configs: ['public_key'], // the customer-portal settings are exported; the address key is not (it is re-created when the portal is set up again)
+  google_sheet_syncs: ['credential_id'],
+  lead_attachments: ['storage_key'],
+  member_permission_overrides: [],
+  portal_email_configs: ['webhook_key'],
+  slot_rescue_offers: ['claim_token'],
 };
 
 export const EXPORT_EXCLUDED: Record<string, string> = {
@@ -28,4 +33,6 @@ export const EXPORT_EXCLUDED: Record<string, string> = {
   idempotency_keys: 'internal request de-duplication', webhook_endpoints: 'contains signing secrets; re-create after migrating', webhook_deliveries: 'delivery logs for outbound webhooks',
   support_access_sessions: 'platform support access records (platform-owned)',
   portal_login_codes: 'short-lived sign-in security records of the customer portal', portal_sessions: 'short-lived sign-in sessions of the customer portal',
+  portal_email_logs: 'raw inbound email ingest logs (short retention; created leads are exported)',
+  push_subscriptions: 'device-bound Web Push endpoint keys (re-subscribed per browser)',
 };

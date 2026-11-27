@@ -81,20 +81,23 @@ describe('customer portal milestone 2', () => {
 
     const cookie = await signInPortal(portalKey, email);
 
+    const origin = process.env.WEB_ORIGIN ?? 'http://localhost:3100';
+
     // Confirm
-    const conf = await ctx.http().post(`/portal/appointments/${apptId}/confirm`).set('Cookie', cookie);
+    const conf = await ctx.http().post(`/portal/appointments/${apptId}/confirm`).set('Origin', origin).set('Cookie', cookie);
     expect(conf.status).toBe(200);
     expect(conf.body.status).toBe('CONFIRMED');
 
     // Slots
     const slots = await ctx.http().get(`/portal/appointments/${apptId}/slots`).set('Cookie', cookie);
     expect(slots.status).toBe(200);
-    expect(Array.isArray(slots.body)).toBe(true);
+    expect(Array.isArray(slots.body.days)).toBe(true);
 
     // Cancel
     const cancel = await ctx
       .http()
       .post(`/portal/appointments/${apptId}/cancel`)
+      .set('Origin', origin)
       .set('Cookie', cookie)
       .send({ reason: 'Plans changed' });
     expect(cancel.status).toBe(200);
@@ -104,6 +107,7 @@ describe('customer portal milestone 2', () => {
     const dr = await ctx
       .http()
       .post('/portal/data-request')
+      .set('Origin', origin)
       .set('Cookie', cookie)
       .send({ type: 'export', note: 'Send to my email' });
     expect(dr.status).toBe(202);
@@ -139,14 +143,15 @@ describe('customer portal milestone 2', () => {
     ).body;
 
     const cookie1 = await signInPortal(portalKey, email1);
+    const origin = process.env.WEB_ORIGIN ?? 'http://localhost:3100';
 
     // Cutoff enforced
-    const cancelSoon = await ctx.http().post(`/portal/appointments/${soonAppt.id}/cancel`).set('Cookie', cookie1).send({});
+    const cancelSoon = await ctx.http().post(`/portal/appointments/${soonAppt.id}/cancel`).set('Origin', origin).set('Cookie', cookie1).send({});
     expect(cancelSoon.status).toBe(409);
-    expect(cancelSoon.body.code).toBe('cutoff_passed');
+    expect(cancelSoon.body.error?.code ?? cancelSoon.body.code).toBe('cutoff_passed');
 
     // Other lead's appointment -> 404
-    const confirmOther = await ctx.http().post(`/portal/appointments/${otherAppt.id}/confirm`).set('Cookie', cookie1);
+    const confirmOther = await ctx.http().post(`/portal/appointments/${otherAppt.id}/confirm`).set('Origin', origin).set('Cookie', cookie1);
     expect(confirmOther.status).toBe(404);
   });
 });

@@ -18,7 +18,17 @@ export interface PromptContext {
   toolNames: string[];
 }
 
-const LANG: Record<string, string> = { en: 'English', hi: 'Hindi (Devanagari)', hinglish: 'Hinglish (Hindi written in the Latin alphabet)' };
+const LANG: Record<string, string> = {
+  en: 'English',
+  hi: 'Hindi (Devanagari)',
+  hinglish: 'Hinglish (Hindi written in the Latin alphabet)',
+  mr: 'Marathi',
+  ta: 'Tamil',
+  te: 'Telugu',
+  kn: 'Kannada',
+  gu: 'Gujarati',
+  bn: 'Bengali',
+};
 
 const pluralise = (noun: string) => (noun.endsWith('s') ? `${noun}es` : `${noun}s`);
 

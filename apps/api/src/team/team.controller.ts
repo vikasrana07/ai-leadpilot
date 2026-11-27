@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Patch, Post, Put } from '@nestjs/common';
 import { changeMemberStatusSchema, changeRoleSchema, inviteSchema, type InviteInput } from '@leadpilot/validation';
 import { CurrentTenant, RequirePermissions } from '../common/decorators.js';
 import type { TenantRequestContext } from '../common/request-context.js';
@@ -7,6 +7,14 @@ import { ZodPipe } from '../common/zod.pipe.js';
 import { TeamService } from './team.service.js';
 
 export const mfaResetSchema = z.object({ reason: z.string().trim().min(5, 'Give a short reason').max(200) });
+export const memberPermissionsSchema = z.object({
+  overrides: z.array(
+    z.object({
+      permissionKey: z.string().min(1),
+      effect: z.enum(['GRANT', 'REVOKE']),
+    }),
+  ).max(100),
+});
 
 @Controller('team')
 export class TeamController {
@@ -37,5 +45,19 @@ export class TeamController {
   @Post('members/:id/mfa-reset') @HttpCode(200) @RequirePermissions('team:manage')
   mfaReset(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(mfaResetSchema)) body: { reason: string }) {
     return this.team.resetMemberMfa(ctx, id, body.reason);
+  }
+
+  @Get('members/:id/permissions') @RequirePermissions('team:read')
+  getMemberPermissions(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) {
+    return this.team.getMemberPermissions(ctx, id);
+  }
+
+  @Put('members/:id/permissions') @RequirePermissions('team:manage')
+  setMemberPermissions(
+    @CurrentTenant() ctx: TenantRequestContext,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodPipe(memberPermissionsSchema)) body: z.infer<typeof memberPermissionsSchema>,
+  ) {
+    return this.team.setMemberPermissions(ctx, id, body.overrides);
   }
 }

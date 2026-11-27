@@ -1,7 +1,8 @@
 import { EntitlementsService } from '../billing/entitlements.service.js';
 import { SessionCacheService } from '../common/session-cache.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { SYSTEM_ROLES, type PermissionKey, type SystemRoleKey } from '@leadpilot/shared-types';
+import { isPermissionKey, SYSTEM_ROLES, type PermissionKey, type SystemRoleKey } from '@leadpilot/shared-types';
+import { resolveEffectivePermissions } from '../common/permissions.util.js';
 import type { InviteInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import { AuditService } from '../audit/audit.service.js';
@@ -170,5 +171,102 @@ export class TeamService {
     await this.db.tenantTx(ctx, (tx) => this.audit.record(tx, { tenantId: ctx.tenantId, actorUserId: ctx.userId, action: 'team.mfa_reset', resourceType: 'membership', resourceId: membershipId, metadata: { reason }, requestId: ctx.requestId, ip: ctx.ip }));
     await this.mail.sendMfaReset(user.email);
     return { id: membershipId, mfaEnabled: false };
+  }
+
+  async getMemberPermissions(ctx: TenantRequestContext, membershipId: string) {
+    return this.db.tenantTx(ctx, async (tx) => {
+      const m = await tx.membership.findFirst({
+        where: { id: membershipId, tenantId: ctx.tenantId },
+        include: {
+          role: { select: { key: true, name: true, permissions: { select: { permissionKey: true } } } },
+          permissionOverrides: { select: { permissionKey: true, effect: true } },
+        },
+      });
+      if (!m) throw new NotFoundException({ code: 'not_found', message: 'Member not found' });
+      const rolePermissions = m.role.permissions.map((p) => p.permissionKey);
+      const effectivePermissions = [...resolveEffectivePermissions(rolePermissions, m.permissionOverrides)];
+      return {
+        membershipId: m.id,
+        roleKey: m.role.key,
+        roleName: m.role.name,
+        rolePermissions,
+        overrides: m.permissionOverrides,
+        effectivePermissions,
+      };
+    });
+  }
+
+  async setMemberPermissions(
+    ctx: TenantRequestContext,
+    membershipId: string,
+    overrides: { permissionKey: string; effect: 'GRANT' | 'REVOKE' }[],
+  ) {
+    if (membershipId === ctx.membershipId) {
+      throw new ForbiddenException({ code: 'cannot_edit_self', message: 'You cannot override your own permissions' });
+    }
+    const invalid = overrides.filter((o) => !isPermissionKey(o.permissionKey));
+    if (invalid.length) {
+      throw new BadRequestException({ code: 'invalid_permissions', message: `Unknown permission key: ${invalid[0]?.permissionKey}` });
+    }
+    const missing = overrides.filter((o) => !ctx.permissions.has(o.permissionKey as PermissionKey));
+    if (missing.length) {
+      throw new ForbiddenException({
+        code: 'cannot_grant_permissions',
+        message: 'You cannot override permissions that you do not hold',
+      });
+    }
+
+    return this.db.tenantTx(ctx, async (tx) => {
+      const m = await tx.membership.findFirst({
+        where: { id: membershipId, tenantId: ctx.tenantId },
+        include: { role: { select: { key: true, name: true, permissions: { select: { permissionKey: true } } } } },
+      });
+      if (!m) throw new NotFoundException({ code: 'not_found', message: 'Member not found' });
+      if (m.role.key === 'owner') {
+        throw new ForbiddenException({ code: 'owner_immutable', message: 'Owner permissions cannot be overridden' });
+      }
+
+      const roleSet = new Set(m.role.permissions.map((p) => p.permissionKey));
+      // Deduplicate & drop no-op overrides (e.g. GRANT when role already has it, REVOKE when role doesn't)
+      const dedup = new Map<string, 'GRANT' | 'REVOKE'>();
+      for (const o of overrides) {
+        if (o.effect === 'GRANT' && roleSet.has(o.permissionKey)) continue;
+        if (o.effect === 'REVOKE' && !roleSet.has(o.permissionKey)) continue;
+        dedup.set(o.permissionKey, o.effect);
+      }
+
+      await tx.memberPermissionOverride.deleteMany({ where: { tenantId: ctx.tenantId, membershipId: m.id } });
+      if (dedup.size > 0) {
+        await tx.memberPermissionOverride.createMany({
+          data: [...dedup.entries()].map(([permissionKey, effect]) => ({
+            tenantId: ctx.tenantId,
+            membershipId: m.id,
+            permissionKey,
+            effect,
+          })),
+        });
+      }
+
+      const cleanOverrides = [...dedup.entries()].map(([permissionKey, effect]) => ({ permissionKey, effect }));
+      await this.audit.record(tx, {
+        tenantId: ctx.tenantId,
+        actorUserId: ctx.userId,
+        action: 'team.member_permissions_updated',
+        resourceType: 'membership',
+        resourceId: m.id,
+        metadata: { overrides: cleanOverrides },
+        requestId: ctx.requestId,
+        ip: ctx.ip,
+      });
+
+      return {
+        membershipId: m.id,
+        roleKey: m.role.key,
+        roleName: m.role.name,
+        rolePermissions: [...roleSet],
+        overrides: cleanOverrides,
+        effectivePermissions: [...resolveEffectivePermissions([...roleSet], cleanOverrides)],
+      };
+    });
   }
 }
