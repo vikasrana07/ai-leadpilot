@@ -1,3 +1,4 @@
+import { grantMarketingConsentIfAllowed } from '../campaigns/consent.js';
 import { Body, Controller, Delete, Get, Headers, HttpCode, Inject, Injectable, Module, NotFoundException, Param, ParseUUIDPipe, Post, Req, UnauthorizedException } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { apiKeyCreateSchema, captureLeadSchema, type ApiKeyCreateInput, type CaptureLeadInput } from '@leadpilot/validation';
@@ -66,11 +67,12 @@ export class CaptureService {
       if (dupes[0]) {
         // A returning enquirer must not create a second lead: record the new enquiry on the existing one.
         await tx.leadActivity.create({ data: { id: uuidv7(), tenantId: key.tenant_id, leadId: dupes[0].id, type: 'enquiry_received', data: { via: 'api', ...(input.message ? { message: input.message.slice(0, 500) } : {}) } } });
+        if (input.consent) await grantMarketingConsentIfAllowed(tx, { tenantId: key.tenant_id, leadId: dupes[0].id, method: input.consent.method, actorType: 'SYSTEM', textVersion: input.consent.textVersion ?? null, evidence: { ip: meta.ip ?? null, apiKeyId: key.id, via: 'api' } });
         return { id: dupes[0].id, duplicate: true };
       }
       const { lead } = await this.leads.createInTx(tx, actor, {
         name: input.name, phone: input.phone ?? null, email: input.email ?? null, requirements: input.message ?? null, location: input.location ?? null,
-        propertyType: input.propertyType ?? null, budgetMin: input.budgetMin ?? null, budgetMax: input.budgetMax ?? null, ...(input.source ? { sourceKey: input.source } : {}),
+        propertyType: input.propertyType ?? null, budgetMin: input.budgetMin ?? null, budgetMax: input.budgetMax ?? null, ...(input.source ? { sourceKey: input.source } : {}), ...(input.consent ? { consent: input.consent } : {}),
       }, { defaultSource: 'api' });
       return { id: lead.id, duplicate: false };
     });

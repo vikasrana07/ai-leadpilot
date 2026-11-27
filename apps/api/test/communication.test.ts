@@ -254,12 +254,17 @@ describe('outbound messaging rules', () => {
       expect(a.body.status).toBe('SENT'); expect(b.body.status).toBe('SENT'); expect(b.body.error).toBeNull();
     } finally { mock.sendText = orig; }
   });
-  it('honours opt-out: STOP blocks sending until the customer writes again', async () => {
+  it('honours opt-out: STOP blocks sending until the customer explicitly opts back in with START', async () => {
     await post(waText(phone, 'STOP'));
     const blocked = await send(owner, { text: 'are you there?' });
     expect(blocked.status).toBe(422); expect(blocked.body.error.code).toBe('opted_out');
     expect((await ctx.http().get(`/conversations/${convoId}`).set(auth(owner.accessToken))).body.whatsappConsent).toBe('OPTED_OUT');
+    // An ordinary message must NOT undo an opt-out (the customer is writing to us, but has not re-subscribed).
     await post(waText(phone, 'Actually I do want details'));
+    const stillBlocked = await send(owner, { text: 'Happy to help' });
+    expect(stillBlocked.status).toBe(422); expect(stillBlocked.body.error.code).toBe('opted_out');
+    // Only an explicit START re-subscribes.
+    await post(waText(phone, 'START'));
     expect((await send(owner, { text: 'Happy to help' })).status).toBe(201);
   });
   it('refuses to send, and ignores inbound events, while the channel is disabled', async () => {

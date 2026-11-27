@@ -26,6 +26,7 @@ export const EXPORT_INCLUDED: Record<string, readonly string[]> = {
 };
 
 export const EXPORT_EXCLUDED: Record<string, string> = {
+  consent_suppressions: 'tenant-salted phone hashes kept only so an erased person\'s opt-out is still honoured; no readable personal data (consents is exported)',
   api_keys: 'hashed secrets', integration_credentials: 'encrypted provider secrets', knowledge_chunks: 'derived embeddings of the exported documents',
   ai_tool_executions: 'internal execution log (ai_runs is exported)', event_marks: 'internal de-duplication markers', outbox_events: 'internal event queue',
   webhook_events: 'raw provider payloads (short retention; duplicates of messages)', platform_audit_logs: 'platform-owned record, not tenant data',

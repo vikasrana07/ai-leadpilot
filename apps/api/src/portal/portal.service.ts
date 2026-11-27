@@ -1,3 +1,4 @@
+import { consentDispositionById } from '../campaigns/consent.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { packForIndustry, packTerms } from '@leadpilot/shared-types';
 import type { PortalConfigInput } from '@leadpilot/validation';
@@ -90,8 +91,7 @@ export class PortalService {
   private async whatsappRoute(tx: Parameters<Parameters<DbService['tenantTx']>[1]>[0], tenantId: string, leadId: string): Promise<{ conversationId: string; language: string } | null> {
     const convo = await tx.conversation.findFirst({ where: { tenantId, leadId, channel: { type: 'WHATSAPP', status: 'ACTIVE' } }, orderBy: { lastMessageAt: 'desc' }, select: { id: true } });
     if (!convo) return null;
-    const consent = await tx.consent.findFirst({ where: { leadId, channel: 'whatsapp' }, orderBy: { createdAt: 'desc' }, select: { status: true } });
-    if (!consent || consent.status === 'OPTED_OUT') return null;
+    if ((await consentDispositionById(tx, tenantId, leadId, 'SERVICE')) !== 'ELIGIBLE') return null;
     const tpl = await tx.whatsappTemplate.findFirst({ where: { tenantId, name: WA_TEMPLATE, variableCount: 1, OR: [{ approvalStatus: null }, { approvalStatus: 'APPROVED' }] }, select: { language: true } });
     return tpl ? { conversationId: convo.id, language: tpl.language } : null;
   }

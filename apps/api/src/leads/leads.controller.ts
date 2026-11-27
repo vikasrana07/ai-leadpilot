@@ -3,8 +3,8 @@ import { Body, Controller, Delete, Get, Header, HttpCode, Inject, NotFoundExcept
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import {
-  bulkSchema, checkDuplicatesSchema, createLeadSchema, importSchema, leadListQuerySchema, mergeSchema, noteSchema, stageChangeSchema, tagsSchema, updateLeadSchema,
-  type BulkInput, type CreateLeadInput, type ImportInput, type LeadListQuery, type StageChangeInput, type UpdateLeadInput,
+  bulkSchema, checkDuplicatesSchema, createLeadSchema, importSchema, leadListQuerySchema, mergeSchema, noteSchema, recordLeadConsentSchema, stageChangeSchema, tagsSchema, updateLeadSchema,
+  type BulkInput, type CreateLeadInput, type ImportInput, type LeadListQuery, type RecordLeadConsentInput, type StageChangeInput, type UpdateLeadInput,
 } from '@leadpilot/validation';
 import { actorFrom } from '../common/actor.js';
 import { CurrentTenant } from '../common/decorators.js';
@@ -114,6 +114,12 @@ export class LeadsController {
   addNote(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(noteSchema)) body: { body: string }) { return this.leads.addNote(actorFrom(ctx), id, body.body); }
 
   @Get(':id/activity') activity(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.leads.timeline(actorFrom(ctx), id); }
+
+  /** Consent ledger for this lead: current WhatsApp state (service / marketing) and the full history with who, how and when. */
+  @Get(':id/consents') consents(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string) { return this.leads.consentHistory(actorFrom(ctx), id); }
+
+  @Post(':id/consents') @HttpCode(200)
+  recordConsent(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(recordLeadConsentSchema)) body: RecordLeadConsentInput) { return this.leads.recordLeadConsent(actorFrom(ctx), id, body); }
 
   @Post(':id/merge') @HttpCode(200)
   merge(@CurrentTenant() ctx: TenantRequestContext, @Param('id', new ParseUUIDPipe()) id: string, @Body(new ZodPipe(mergeSchema)) body: { sourceIds: string[] }) { return this.leads.merge(actorFrom(ctx), id, body.sourceIds); }

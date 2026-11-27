@@ -1,4 +1,4 @@
-import { consentDisposition, latestConsentByLead as latestByLead } from './consent.js';
+import { consentDispositions, recordConsent } from './consent.js';
 import { msUntilNextDaylight } from './daylight.js';
 import {
   BadRequestException,
@@ -262,22 +262,15 @@ export class CampaignsService implements OnModuleInit {
         take: 1000,
       });
 
-      const leadIds = matchingLeads.map((l) => l.id);
-
-      // Marketing needs an explicit opt-in: split the audience into eligible / opted out / no consent record
-      const consents = await tx.consent.findMany({
-        where: { tenantId: ctx.tenantId, channel: 'whatsapp', leadId: { in: leadIds } },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      const latestConsentByLead = latestByLead(consents);
+      // Marketing needs an explicit MARKETING opt-in: split the audience into eligible / opted out / no marketing consent
+      const dispositions = await consentDispositions(tx, ctx.tenantId, matchingLeads, 'MARKETING');
 
       let optOutCount = 0;
       let noConsentCount = 0;
       let eligibleCount = 0;
 
       for (const lead of matchingLeads) {
-        const d = consentDisposition(latestConsentByLead.get(lead.id));
+        const d = dispositions.get(lead.id) ?? 'NO_CONSENT';
         if (d === 'OPTED_OUT') optOutCount++;
         else if (d === 'NO_CONSENT') noConsentCount++;
         else eligibleCount++;
@@ -294,8 +287,8 @@ export class CampaignsService implements OnModuleInit {
           phone: l.phone,
           score: l.score,
           stageName: l.stage.name,
-          isOptedOut: latestConsentByLead.get(l.id) === 'OPTED_OUT',
-          consent: consentDisposition(latestConsentByLead.get(l.id)),
+          isOptedOut: dispositions.get(l.id) === 'OPTED_OUT',
+          consent: dispositions.get(l.id) ?? 'NO_CONSENT',
         })),
       };
     });
@@ -307,15 +300,17 @@ export class CampaignsService implements OnModuleInit {
    */
   async recordWhatsappOptIn(ctx: TenantRequestContext, input: WhatsappOptInInput) {
     return this.db.tenantTx(ctx, async (tx) => {
-      const leads = await tx.lead.findMany({ where: { tenantId: ctx.tenantId, id: { in: input.leadIds } }, select: { id: true } });
+      const leads = await tx.lead.findMany({ where: { tenantId: ctx.tenantId, id: { in: input.leadIds } }, select: { id: true, phoneNorm: true } });
       const ids = leads.map((l) => l.id);
-      const latest = latestByLead(await tx.consent.findMany({ where: { tenantId: ctx.tenantId, channel: 'whatsapp', leadId: { in: ids } }, orderBy: { createdAt: 'desc' } }));
-      const toRecord = ids.filter((id) => latest.get(id) === undefined);
-      const alreadyOptedIn = ids.filter((id) => latest.get(id) === 'OPTED_IN').length;
-      const skippedOptedOut = ids.filter((id) => latest.get(id) === 'OPTED_OUT').length;
-      if (toRecord.length > 0) {
-        await tx.consent.createMany({
-          data: toRecord.map((leadId) => ({ id: uuidv7(), tenantId: ctx.tenantId, leadId, channel: 'whatsapp', status: 'OPTED_IN' as const, source: `manager_attested:${input.basis}` })),
+      const state = await consentDispositions(tx, ctx.tenantId, leads, 'MARKETING');
+      const toRecord = ids.filter((id) => state.get(id) === 'NO_CONSENT');
+      const alreadyOptedIn = ids.filter((id) => state.get(id) === 'ELIGIBLE').length;
+      const skippedOptedOut = ids.filter((id) => state.get(id) === 'OPTED_OUT').length;
+      for (const leadId of toRecord) {
+        await recordConsent(tx, {
+          tenantId: ctx.tenantId, leadId, status: 'OPTED_IN', purpose: 'MARKETING', method: 'MANAGER_ATTESTED', actorType: 'MEMBER',
+          actorUserId: ctx.userId, actorMembershipId: ctx.membershipId ?? null, source: `manager_attested:${input.basis}`,
+          evidence: { basis: input.basis, ip: ctx.ip ?? null },
         });
       }
       await this.audit.record(tx, {
@@ -482,15 +477,8 @@ export class CampaignsService implements OnModuleInit {
         select: { id: true, phoneNorm: true, phone: true },
       });
 
-      const leadIds = matchingLeads.map((l) => l.id);
-
-      // Fetch consent statuses for opt-out suppression
-      const consents = await tx.consent.findMany({
-        where: { tenantId: ctx.tenantId, channel: 'whatsapp', leadId: { in: leadIds } },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      const latestConsentByLead = latestByLead(consents);
+      // Marketing broadcast: needs an explicit MARKETING opt-in; an opt-out (or an erased-and-suppressed number) always wins
+      const dispositions = await consentDispositions(tx, ctx.tenantId, matchingLeads, 'MARKETING');
 
       let eligibleCount = 0;
       let optOutCount = 0;
@@ -509,7 +497,7 @@ export class CampaignsService implements OnModuleInit {
         const phone = lead.phoneNorm || lead.phone || '';
         if (!phone) continue;
 
-        const disposition = consentDisposition(latestConsentByLead.get(lead.id));
+        const disposition = dispositions.get(lead.id) ?? 'NO_CONSENT';
         if (disposition === 'ELIGIBLE') eligibleCount++;
         else if (disposition === 'OPTED_OUT') optOutCount++;
         else noConsentCount++;
@@ -737,11 +725,8 @@ export class CampaignsService implements OnModuleInit {
     let failedBatchCount = 0;
 
     // Re-check consent at send time: a STOP received after launch (or a revoked opt-in) must stop the message.
-    const latestNow = await this.db.tenantTx({ tenantId }, async (tx) =>
-      latestByLead(await tx.consent.findMany({
-        where: { tenantId, channel: 'whatsapp', leadId: { in: pendingRecipients.map((r) => r.leadId) } },
-        orderBy: { createdAt: 'desc' },
-      })),
+    const dispositionsNow = await this.db.tenantTx({ tenantId }, (tx) =>
+      consentDispositions(tx, tenantId, pendingRecipients.map((r) => ({ id: r.leadId, phoneNorm: r.phone })), 'MARKETING'),
     );
 
     let rateLimitedForMs: number | null = null;
@@ -758,7 +743,7 @@ export class CampaignsService implements OnModuleInit {
         return { processed: sentBatchCount + failedBatchCount, remaining: 0 };
       }
 
-      const disposition = consentDisposition(latestNow.get(recipient.leadId));
+      const disposition = dispositionsNow.get(recipient.leadId) ?? 'NO_CONSENT';
       if (disposition !== 'ELIGIBLE') {
         await this.db.tenantTx({ tenantId }, async (tx) => {
           await tx.broadcastRecipient.update({ where: { id: recipient.id }, data: { status: disposition === 'OPTED_OUT' ? 'SKIPPED_OPT_OUT' : 'SKIPPED_NO_CONSENT' } });
@@ -959,12 +944,8 @@ export class CampaignsService implements OnModuleInit {
       }
 
       // Check current consent to exclude any lead who opted out since the parent campaign
-      const consents = await tx.consent.findMany({
-        where: { tenantId: ctx.tenantId, channel: 'whatsapp', leadId: { in: recipients.map((r) => r.leadId) } },
-        orderBy: { createdAt: 'desc' },
-      });
-      const latestConsent = latestByLead(consents);
-      const eligibleRecipients = recipients.filter((r) => consentDisposition(latestConsent.get(r.leadId)) === 'ELIGIBLE');
+      const consentNow = await consentDispositions(tx, ctx.tenantId, recipients.map((r) => ({ id: r.leadId, phoneNorm: r.phone })), 'MARKETING');
+      const eligibleRecipients = recipients.filter((r) => consentNow.get(r.leadId) === 'ELIGIBLE');
 
       const templateId = input.templateId ?? parent.templateId;
       const template = templateId === parent.templateId ? parent.template : await tx.whatsappTemplate.findFirst({ where: { id: templateId, tenantId: ctx.tenantId } });
