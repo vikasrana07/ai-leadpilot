@@ -6,16 +6,26 @@ test('interactive help tour opens from header, steps through, persists seen stat
   const acct = await registerViaApi(request, `tour${Date.now().toString(36)}`);
   await signInViaApi(page, acct);
 
+  // Hold back the dashboard's data so the tour opens over the loading skeleton: its data-dependent targets do not exist yet.
+  let releaseData: () => void = () => {};
+  const dataGate = new Promise<void>((resolve) => { releaseData = resolve; });
+  await page.route('**/analytics/overview*', async (route) => { await dataGate; await route.continue(); });
+
   await page.goto('/dashboard');
   const helpBtn = page.getByRole('button', { name: 'Start page help tour' });
   await expect(helpBtn).toBeVisible();
-  // The dashboard's tour targets only exist once its data has loaded; a tour opened over the loading skeleton collapses to one step.
-  await expect(page.locator('[data-tour="dashboard-kpis"]')).toBeVisible();
 
   await helpBtn.click();
   const dialog = page.getByRole('dialog', { name: 'Dashboard help tour' });
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByText(/^Step 1 of /)).toBeVisible();
+  // Over the skeleton only the overview card and the always-present date range exist (the KPI, chart and hot-lead targets are not mounted yet)...
+  await expect(dialog.getByText('Step 1 of 2')).toBeVisible();
+
+  // ...and the tour gains its steps as the data arrives, keeping the user on the same step.
+  releaseData();
+  await expect(page.locator('[data-tour="dashboard-kpis"]')).toBeVisible();
+  await expect(dialog.getByText(/^Step 1 of [3-9]/)).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Your workspace command center' })).toBeVisible();
 
   // Verify no axe violations while the tour spotlight & dialog are open.
   const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
