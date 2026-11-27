@@ -27,7 +27,7 @@ Outline only. The Prisma schema is written in Phase 1 (identity/tenancy) and ext
 
 ## Communication (Phase 3)
 - `channels` **T** — type (whatsapp | web_widget), config, status. WhatsApp: phone_number_id, waba_id (unique across platform so inbound routing is unambiguous).
-- `contacts` **T** (optional split from leads; decision in Phase 3 ADR) with `consents` **T** (channel, status, source, timestamp, evidence).
+- `contacts` **T** (optional split from leads; decision in Phase 3 ADR) with `consents` **T** — the append-only consent ledger (channel, status OPTED_IN/OPTED_OUT, **purpose** TRANSACTIONAL/SERVICE/MARKETING, **method**, actor_type, actor_membership_id, text_version, evidence jsonb, expires_at, created_at; app role has SELECT/INSERT only). Rules: newest row decides, an opt-out wins until an explicit opt-in follows; a customer message is only SERVICE consent; marketing needs an explicit MARKETING opt-in. `consent_suppressions` **T** — tenant-salted sha256 of the normalised phone for opted-out leads that were erased (no PII), so the opt-out survives erasure (written by `erase_lead()`).
 - `conversations` **T** — channel_id, lead_id, status, mode (ai | human), assigned_membership_id, last_inbound_at (drives 24h window), last_message_at, unread counters.
 - `messages` **T** — conversation_id, direction, sender_type (customer | ai | agent | system), content, media refs, external_id (unique per channel), status + status timestamps, idempotency_key.
 - `conversation_notes` **T**, `conversation_tags`.
