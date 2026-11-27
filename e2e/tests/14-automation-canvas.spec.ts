@@ -47,6 +47,14 @@ async function drag(page: Page, from: Locator, to: Locator) {
   await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2); await page.mouse.down(); await page.waitForTimeout(60);
   await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 24 }); await page.waitForTimeout(120); await page.mouse.up();
 }
+/**
+ * A drag can miss on a slow machine: the canvas is still settling when the endpoints are measured, or the drop lands before the target handle has
+ * registered the hover. Repeat the drag until its visible effect appears. Only for drags that are safe to repeat: a refused connection changes
+ * nothing, and re-dropping an existing connection onto the same target is a no-op.
+ */
+async function dragUntil(page: Page, from: Locator, to: Locator, effect: () => Promise<void>) {
+  await expect(async () => { await drag(page, from, to); await effect(); }).toPass({ timeout: 25_000, intervals: [250, 500, 1_000] });
+}
 const canvasTab = (page: Page) => page.getByTestId('view-canvas');
 const toolbar = (page: Page, name: RegExp) => page.getByRole('toolbar', { name: 'Canvas tools' }).getByRole('button', { name });
 async function openCanvas(page: Page, path: string) {
@@ -82,15 +90,13 @@ test('build on the canvas with the palette and by dragging, tidy, undo, save, te
   // connect by dragging: the wait's "No reply" handle joins the starter action ("New lead")
   const wait = nodes(page).filter({ has: page.getByTestId('flow-wait') });
   const starter = node(page, /New lead/);
-  await drag(page, handle(wait, 'next'), handle(starter, 'in'));
-  await expect(page.locator('.react-flow__edge')).toHaveCount(5);
+  await dragUntil(page, handle(wait, 'next'), handle(starter, 'in'), () => expect(page.locator('.react-flow__edge')).toHaveCount(5, { timeout: 2_500 }));
   await expect(page.getByRole('heading', { name: /Problems to fix/ })).toHaveCount(0);
   await expect(page.getByTestId('announcer')).toContainText('now continues to');
 
   // a connection that would loop is refused, with the reason on screen, and nothing changes
   const branch = nodes(page).filter({ has: page.getByTestId('flow-branch') });
-  await drag(page, handle(starter, 'next'), handle(branch, 'in'));
-  await expect(page.getByRole('alert').filter({ hasText: /loop/i })).toBeVisible();
+  await dragUntil(page, handle(starter, 'next'), handle(branch, 'in'), () => expect(page.getByRole('alert').filter({ hasText: /loop/i })).toBeVisible({ timeout: 2_500 }));
   await expect(page.locator('.react-flow__edge')).toHaveCount(5);
 
   // tidy: every step ends up below the step that leads to it

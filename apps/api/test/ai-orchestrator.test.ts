@@ -1,6 +1,6 @@
 import { createHmac, randomUUID } from 'node:crypto';
 import pg from 'pg';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { CANARY } from '../src/ai/prompt.js';
 import { KnowledgeService } from '../src/ai/knowledge/knowledge.service.js';
 import { LLM_PROVIDER, LlmError, MockLlm, type LlmProvider, type LlmRequest, type LlmResponse } from '../src/ai/llm.js';
@@ -245,7 +245,11 @@ describe('resilience', () => {
     llm.delayMs = 250;
     await inbound('919700000032', 'Hello'); const c = await convoOf('919700000032');
     const first = (await aiReplies(c.id)).length;
-    const p1 = inbound('919700000032', 'Do you have 3BHK in Wakad?'); await new Promise((r) => setTimeout(r, 90)); // turn 1 is now mid-flight
+    const before = llm.requests.length;
+    const p1 = inbound('919700000032', 'Do you have 3BHK in Wakad?');
+    // Turn 1 is mid-flight once the model has received its request (the fake holds it for 250 ms). Waiting for that, rather than sleeping a
+    // fixed time, matters on a slow machine: if the second message lands before turn 1 has read its messages, both are answered together.
+    await vi.waitFor(() => expect(llm.requests.length).toBeGreaterThan(before), { timeout: 10_000, interval: 5 });
     const p2 = inbound('919700000032', 'budget is 90 lakh'); await Promise.all([p1, p2]); await orch.idle();
     const rs = await runs(c.id); expect(rs.every((r) => r.status !== 'RUNNING')).toBe(true); expect(rs.filter((r) => r.status === 'FAILED')).toHaveLength(0);
     expect((await aiReplies(c.id)).length).toBe(first + 2); // one reply per customer message, none skipped, none duplicated
