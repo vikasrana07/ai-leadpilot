@@ -19,10 +19,12 @@ export type { GraphIssue };
 export interface DryRunPathItem { nodeId: string; type: string; outcome: 'yes' | 'no' | 'would_run' | 'would_wait' | 'skipped'; detail?: string; conditions?: { text: string; pass: boolean }[]; wouldWaitMinutes?: number }
 export interface DryRunResult { runId: string; conditionsMet: boolean; steps: { i: number; type: string; status: string; detail?: string }[]; path: DryRunPathItem[]; context: { lead: string; stage: string; temperature: string } }
 export interface AutomationRun { id: string; automationId: string; automationName: string; eventType: string; leadId: string | null; leadName: string | null; status: 'QUEUED' | 'RUNNING' | 'WAITING' | 'SUCCEEDED' | 'FAILED' | 'SKIPPED' | 'DRY_RUN'; attempts: number; error: string | null; steps: { i: number; type: string; status: string; detail?: string }[]; createdAt: string; finishedAt: string | null }
+export type AiCapLevel = 'OK' | 'WARN_80' | 'WARN_95' | 'EXCEEDED';
+
 export interface UsageView {
   plan: { key: string; name: string; status: string; restricted: boolean; limits: Record<string, number | null>; features: Record<string, boolean>; meters: Record<string, number> };
   period: { from: string; to: string; timezone: string };
-  ai: { runs: number; inputTokens: number; outputTokens: number; tokensUsed: number; cap: number; pct: number; warning: boolean; exceeded: boolean };
+  ai: { runs: number; inputTokens: number; outputTokens: number; tokensUsed: number; cap: number; pct: number; warning: boolean; exceeded: boolean; level: AiCapLevel; capSource: 'own' | 'plan'; inGrace: boolean; projectedExhaustionAt: string | null; resetsAt: string };
   messages: { inbound: number; aiReplies: number; agentReplies: number; automatedTemplates: number };
   leads: { created: number }; appointments: { created: number }; automations: { succeeded: number; failed: number; skipped: number };
   storage: { documents: number; bytes: number }; seats: { active: number };

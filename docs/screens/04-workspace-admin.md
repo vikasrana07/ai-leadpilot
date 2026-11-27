@@ -108,7 +108,7 @@ This document covers team management, role-based access control, channel & calen
 - **Route & Access**: `/usage` (Requires `usage:read`)
 - **What It Does**: Displays current-month consumption against plan limits across AI tokens, messages (inbound, AI, team, automated templates), leads, appointments, automation runs, active seats, and document storage.
 - **User Flow**:
-  1. Inspect progress bars for plan limits and AI token usage (warns at 80%, flags limit-reached).
+  1. Inspect progress bars for plan limits and AI token usage (warns at 80% and 95% with a run-out forecast, flags limit-reached, and links to raise the AI limit or upgrade the plan).
   2. Review breakdowns for **AI assistant**, **Messages**, **Work**, and **Workspace**.
 - **Navigation & Direction**:
   - **Incoming**: Admin sidebar **Usage**.

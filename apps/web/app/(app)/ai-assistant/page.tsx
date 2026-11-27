@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { api, ApiError } from '@/lib/api';
 import { TOOL_INFO, type AiRun, type AiUsage, type Assistant, type ScoringRules, type ShadowStats } from '@/lib/ai';
+import { aiCapMessage } from '@/lib/ai-cap';
 import { cn } from '@/lib/cn';
 import { timeAgo } from '@/lib/format';
 import { useTerms } from '@/lib/pack';
@@ -42,7 +43,7 @@ function UsageMeter({ u }: { u: AiUsage }) {
       <CardBody className="space-y-2">
         <div className="flex items-center justify-between text-[13px]"><span className="flex items-center gap-1.5 font-medium"><Gauge className="h-4 w-4 text-muted-foreground" aria-hidden />AI usage this month</span><span className="num text-muted-foreground">{u.used.toLocaleString('en-IN')} of {u.cap.toLocaleString('en-IN')} tokens · {u.runs} replies</span></div>
         <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Monthly AI token usage" aria-valuenow={u.pct} aria-valuemin={0} aria-valuemax={100}><div className={cn('h-full rounded-full transition-[width] duration-500', u.exceeded ? 'bg-danger' : u.warning ? 'bg-warning' : 'bg-primary')} style={{ width: `${Math.max(2, u.pct)}%` }} /></div>
-        {u.exceeded ? <p className="text-[12px] text-danger">The monthly limit is reached. New chats are handed to your team until {new Date(u.resetsAt).toLocaleDateString()}.</p> : u.warning ? <p className="text-[12px] text-warning">You have used over 80% of this month&apos;s limit.</p> : null}
+        {(() => { const m = aiCapMessage(u); return m ? <p className={cn('text-[12px]', m.tone === 'danger' ? 'text-danger' : 'text-warning')}>{m.text} <Link href={m.actionHref} className="font-medium underline">{m.actionLabel}</Link></p> : null; })()}
         {u.killSwitch ? <p className="text-[12px] text-danger">The AI is switched off platform-wide right now.</p> : null}
       </CardBody>
     </Card>

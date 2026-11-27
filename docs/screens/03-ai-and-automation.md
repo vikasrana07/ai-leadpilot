@@ -9,7 +9,7 @@ This document covers AI assistant configuration, the RAG knowledge base, appoint
 - **Route & Access**: `/ai-assistant` (Requires `ai:configure`)
 - **What It Does**: Configures how the AI assistant greets, answers, qualifies, and hands over conversations, defines lead scoring rules, and displays monthly token usage and recent AI runs.
 - **User Flow**:
-  1. Monitor the **AI usage this month** progress bar at the top (shows token cap, 80% warning, or exceeded/kill-switch notices).
+  1. Monitor the **AI usage this month** progress bar at the top (shows token cap, 80% and 95% warnings with a forecast of when the allowance runs out, the limit-reached notice, and kill-switch notices). The notice links to the right fix: **Raise the AI limit** when your own cap is the binding one, **Upgrade plan** when the plan allowance is.
   2. **Assistant tab**: Toggle AI **On/Off** and **Shadow-to-Live Auto-Pilot** (hold AI replies in Inbox for 1-tap approval, monitor Trust Score readiness, and click **Graduate to Live Auto-Pilot** when ready), set name/business identity/description, pick **Languages** (`English`, `Hindi`, `Hinglish`, and regional Indian languages) and **Tone**, edit welcome message, extra instructions, and disclosure text, enable/disable **Allowed tools**, and configure **Handover rules** (keywords, price negotiation, complaints, fallback message, and team working hours).
   3. **Lead scoring tab**: Configure qualification rules that determine Hot/Warm/Cold scores.
   4. **Activity & usage tab**: Inspect recent AI conversation runs and outcomes.
