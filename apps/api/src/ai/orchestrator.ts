@@ -157,7 +157,14 @@ export class AiOrchestrator implements OnModuleInit {
       const plan = await this.entitlements.get(t);
       if (plan.restricted || !plan.features.ai_assistant) { trace.outcome = 'plan_blocked'; await handover('The AI assistant is not available on the current plan'); await finish('SKIPPED', 'plan does not allow the AI assistant'); return; }
       const usage = await this.assistants.usage(t);
-      if (usage.exceeded) { trace.outcome = 'token_cap_exceeded'; await handover('Monthly AI usage limit reached', assistant.fallbackMessage); await finish('SKIPPED', 'monthly token cap reached'); return; }
+      if (usage.exceeded) {
+        // Past the cap, a conversation the AI is already handling (it replied within the last 24h) may finish inside the grace band; new
+        // conversations are handed to a person straight away. Beyond the grace limit everything is handed over.
+        const dayAgo = Date.now() - 24 * 3_600_000;
+        const ongoing = messages.some((m) => m.direction === 'OUTBOUND' && m.senderType === 'AI' && m.createdAt.getTime() > dayAgo);
+        if (!(usage.inGrace && ongoing)) { trace.outcome = 'token_cap_exceeded'; await handover('Monthly AI usage limit reached', assistant.fallbackMessage); await finish('SKIPPED', 'monthly token cap reached'); return; }
+        trace.outcome = 'token_cap_grace';
+      }
       const rules = (assistant.handoverRules as { keywords?: string[]; onNegotiation?: boolean; onComplaint?: boolean }) ?? {};
       const lower = customerText.toLowerCase();
       const hit = (rules.keywords ?? []).find((k) => lower.includes(k.toLowerCase()));

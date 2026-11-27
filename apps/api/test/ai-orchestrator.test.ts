@@ -186,7 +186,7 @@ describe('handover and control', () => {
     await setAssistant({ monthlyTokenCap: cap });
     const c0 = (await inbound('919700000025', 'Hello'), await convoOf('919700000025'));
     expect((await aiReplies(c0.id)).length).toBe(1); // under the cap: answered normally
-    await owner$.query(`INSERT INTO ai_runs (id, tenant_id, conversation_id, status, prompt_version, input_tokens, output_tokens) VALUES (gen_random_uuid(), $1, $2, 'COMPLETED', 'v1.0', $3, 0)`, [owner.tenantId, c0.id, cap]);
+    await owner$.query(`INSERT INTO ai_runs (id, tenant_id, conversation_id, status, prompt_version, input_tokens, output_tokens) VALUES (gen_random_uuid(), $1, $2, 'COMPLETED', 'v1.0', $3, 0)`, [owner.tenantId, c0.id, cap * 2]); // well past the grace band, so even a chat in progress is stopped
     const before = llm.requests.length;
     await inbound('919700000025', 'Do you have 3BHK?');
     expect(llm.requests.length).toBe(before);
@@ -194,6 +194,34 @@ describe('handover and control', () => {
     expect((await convoOf('919700000025')).mode).toBe('HUMAN');
     const last = (await runs(c0.id)).find((r) => r.status === 'SKIPPED'); expect(last).toMatchObject({ status: 'SKIPPED', trace: { outcome: 'token_cap_exceeded' } });
     const u = (await ctx.http().get('/ai/usage').set(auth(owner.accessToken))).body; expect(u.exceeded).toBe(true); expect(u.warning).toBe(true);
+    await setAssistant({ monthlyTokenCap: null });
+  });
+  it('lets a chat the AI is already handling finish inside the grace band above the cap, but hands new chats over', async () => {
+    const used = (await ctx.http().get('/ai/usage').set(auth(owner.accessToken))).body.used as number;
+    const cap = used + 20_000; // room for the first turn, then we push usage 2% over the cap (inside the default 10% grace band)
+    await setAssistant({ monthlyTokenCap: cap });
+    await inbound('919700000026', 'Hello');
+    const ongoing = await convoOf('919700000026');
+    expect((await aiReplies(ongoing.id)).length).toBe(1);
+    const now = (await ctx.http().get('/ai/usage').set(auth(owner.accessToken))).body.used as number;
+    await owner$.query(`INSERT INTO ai_runs (id, tenant_id, conversation_id, status, prompt_version, input_tokens, output_tokens) VALUES (gen_random_uuid(), $1, $2, 'COMPLETED', 'v1.0', $3, 0)`, [owner.tenantId, ongoing.id, Math.ceil(cap * 1.02) - now]);
+    const u = (await ctx.http().get('/ai/usage').set(auth(owner.accessToken))).body;
+    expect(u).toMatchObject({ exceeded: true, inGrace: true, level: 'EXCEEDED', capSource: 'own' });
+
+    // the conversation the AI is already handling carries on...
+    const before = llm.requests.length;
+    await inbound('919700000026', 'Do you have 3BHK?');
+    expect(llm.requests.length).toBeGreaterThan(before);
+    expect((await aiReplies(ongoing.id)).length).toBe(2);
+    expect((await convoOf('919700000026')).mode).toBe('AI');
+
+    // ...while a brand-new conversation is handed to a person without any model call
+    const beforeNew = llm.requests.length;
+    await inbound('919700000027', 'Hello');
+    const fresh = await convoOf('919700000027');
+    expect(llm.requests.length).toBe(beforeNew);
+    expect(fresh.mode).toBe('HUMAN');
+    expect((await runs(fresh.id)).find((r) => r.status === 'SKIPPED')).toMatchObject({ trace: { outcome: 'token_cap_exceeded' } });
     await setAssistant({ monthlyTokenCap: null });
   });
 });

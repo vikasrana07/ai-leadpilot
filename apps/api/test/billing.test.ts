@@ -234,6 +234,37 @@ describe('trial lifecycle', () => {
   });
 });
 
+describe('AI allowance notices', () => {
+  it('warns the owner at 95% with the right fix (raise your own limit), once, then says AI is paused for new chats at 100%', async () => {
+    const t = await registerAccount(ctx, 'billAiCap');
+    await setSub(t.tenantId, { plan: 'growth', status: 'ACTIVE', providerSub: `sub_mock_${RUN}_aicap` });
+    const lead = (await ctx.http().post('/leads').set(auth(t.accessToken)).send({ name: 'Cap Lead', phone: '+919811100099' })).body.id as string;
+    const channel = (await owner.query(`INSERT INTO channels (id, tenant_id, type, name, status, external_id, config, updated_at) VALUES (gen_random_uuid(), $1, 'WHATSAPP', 'Cap line', 'ACTIVE', $2, '{}'::jsonb, now()) RETURNING id`, [t.tenantId, `cap-${RUN}`])).rows[0].id as string;
+    const conv = (await owner.query(`INSERT INTO conversations (id, tenant_id, channel_id, lead_id, external_thread_id) VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING id`, [t.tenantId, channel, lead, `t-${RUN}-cap`])).rows[0].id as string;
+    const addTokens = (n: number) => owner.query(`INSERT INTO ai_runs (id, tenant_id, conversation_id, status, prompt_version, input_tokens, output_tokens) VALUES (gen_random_uuid(), $1, $2, 'COMPLETED', 'v1.0', $3, 0)`, [t.tenantId, conv, n]);
+    const quota = () => owner.query(`SELECT title, body, link FROM notifications WHERE tenant_id=$1 AND type='quota' ORDER BY created_at`, [t.tenantId]).then((r) => r.rows as { title: string; body: string; link: string }[]);
+    const usage = async () => (await ctx.http().get('/ai/usage').set(auth(t.accessToken))).body as { cap: number; used: number; capSource: string; level: string };
+    const lc = ctx.app.get(BillingLifecycle);
+
+    const { cap, capSource } = await usage();
+    expect(capSource).toBe('own'); // the default own cap is tighter than the growth plan allowance, so "raise your limit" is the right advice
+    await addTokens(Math.ceil(cap * 0.96));
+    await lc.tick(t.tenantId); await lc.tick(t.tenantId);
+    let rows = await quota();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ title: 'AI tokens: 95% used', link: '/ai-assistant' });
+    expect(rows[0]!.body).toMatch(/AI Assistant settings/);
+
+    await addTokens(Math.ceil(cap * 0.1));
+    await lc.tick(t.tenantId); await lc.tick(t.tenantId);
+    rows = await quota();
+    expect(rows).toHaveLength(2);
+    expect(rows[1]).toMatchObject({ title: 'AI replies are paused for new chats', link: '/ai-assistant' });
+    expect(rows[1]!.body).toMatch(/chats the AI is already handling can finish/);
+    expect((await usage()).level).toBe('EXCEEDED');
+  });
+});
+
 describe('plan gating is enforced by the backend', () => {
   it('a feature missing from the plan is refused with 402 (starter has no CSV export; growth does)', async () => {
     const t = await registerAccount(ctx, 'billGate');

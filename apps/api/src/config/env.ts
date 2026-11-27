@@ -33,6 +33,8 @@ const schema = z.object({
   AI_EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
   AI_KILL_SWITCH: bool,
   AI_DEFAULT_MONTHLY_TOKEN_CAP: z.coerce.number().int().positive().default(2_000_000),
+  /** Headroom above the monthly cap (percent) that only conversations the AI is already handling may use, so a chat is not cut off mid-way. 0 = strict hard stop. */
+  AI_CAP_GRACE_PCT: z.coerce.number().int().min(0).max(50).default(10),
   WHATSAPP_MODE: z.enum(['mock', 'live']).default('mock'),
   WHATSAPP_GRAPH_VERSION: z.string().regex(/^v\d+\.\d+$/).default('v21.0'),
   /** WhatsApp Embedded Signup (ADR-0012): one LeadPilot-owned Meta app connects every tenant's WhatsApp account. off = disabled (default), mock = offline stand-in (never in production), live = real Meta (needs the four META_* values). */
