@@ -607,6 +607,35 @@ enum ConsentStatus {
   OPTED_OUT
 }
 
+/// What the customer agreed to receive. A customer-initiated message is only SERVICE consent; business-initiated
+/// marketing/broadcast templates need an explicit MARKETING opt-in.
+enum ConsentPurpose {
+  TRANSACTIONAL
+  SERVICE
+  MARKETING
+}
+
+enum ConsentMethod {
+  INBOUND_MESSAGE
+  STOP_KEYWORD
+  START_KEYWORD
+  FORM_CHECKBOX
+  META_LEAD_AD
+  MANAGER_ATTESTED
+  CSV_IMPORT
+  API
+  PORTAL
+  WIDGET
+  UNSUBSCRIBE_LINK
+}
+
+enum ConsentActorType {
+  CUSTOMER
+  MEMBER
+  SYSTEM
+  IMPORT
+}
+
 /// Encrypted provider secrets (envelope encryption). The plaintext never leaves the process and is never returned by the API.
 model IntegrationCredential {
   id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -744,16 +773,40 @@ model ConversationNote {
 
 /// Append-only consent history. The latest row per (lead, channel) is the effective state.
 model Consent {
-  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId  String        @map("tenant_id") @db.Uuid
-  leadId    String        @map("lead_id") @db.Uuid
-  channel   String
-  status    ConsentStatus
-  source    String
-  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String            @map("tenant_id") @db.Uuid
+  leadId            String            @map("lead_id") @db.Uuid
+  channel           String
+  status            ConsentStatus
+  /// Free-text origin, kept for back-compat; prefer `method`.
+  source            String
+  purpose           ConsentPurpose    @default(MARKETING)
+  method            ConsentMethod?
+  actorType         ConsentActorType? @map("actor_type")
+  actorMembershipId String?           @map("actor_membership_id") @db.Uuid
+  /// Version/id of the wording the customer saw (e.g. widget checkbox text).
+  textVersion       String?           @map("text_version")
+  /// Proof: IP, user agent, page URL, import batch id, attestation basis and reason. Never secrets.
+  evidence          Json?
+  expiresAt         DateTime?         @map("expires_at") @db.Timestamptz(3)
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
 
   @@index([tenantId, leadId, channel, createdAt(sort: Desc)])
   @@map("consents")
+}
+
+/// Opt-outs that must outlive lead erasure (DPDP). Holds only a tenant-salted hash of the normalised phone, no PII.
+model ConsentSuppression {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  channel   String
+  /// sha256(`${tenantId}:${phoneNorm}`) as hex
+  phoneHash String   @map("phone_hash")
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([tenantId, channel, phoneHash])
+  @@map("consent_suppressions")
 }
 
 model WhatsappTemplate {

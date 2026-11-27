@@ -1,3 +1,4 @@
+import { consentDispositionFor } from '../campaigns/consent.js';
 import { series } from '../common/series.js';
 import { EntitlementsService, paymentRequired } from '../billing/entitlements.service.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
@@ -102,12 +103,14 @@ export class ConversationsService {
       const c = await this.mustFind(tx, a, id);
       const lead = await tx.lead.findUnique({ where: { id: c.leadId }, include: { stage: { select: { name: true, kind: true } }, source: { select: { name: true } } } });
       const names = await this.assigneeNames(tx, [c.assignedMembershipId, lead?.assignedMembershipId ?? null]);
-      const consent = await tx.consent.findFirst({ where: { leadId: c.leadId, channel: 'whatsapp' }, orderBy: { createdAt: 'desc' } });
+      const leadRef = { id: c.leadId, phoneNorm: lead?.phoneNorm ?? null };
+      const serviceConsent = await consentDispositionFor(tx, a.tenantId, leadRef, 'SERVICE');
+      const marketingConsent = await consentDispositionFor(tx, a.tenantId, leadRef, 'MARKETING');
       const appts = 0;
       return {
         id: c.id, status: c.status, mode: c.mode, channel: c.channel, tags: c.tags, unreadCount: c.unreadCount, ...this.windowInfo(c), appointments: appts,
         assignee: c.assignedMembershipId ? { id: c.assignedMembershipId, name: names.get(c.assignedMembershipId) ?? 'Unknown' } : null,
-        whatsappConsent: consent?.status ?? null,
+        whatsappConsent: serviceConsent === 'ELIGIBLE' ? 'OPTED_IN' : serviceConsent === 'OPTED_OUT' ? 'OPTED_OUT' : null, whatsappMarketingConsent: marketingConsent,
         lead: lead ? { id: lead.id, name: lead.name, phone: lead.phone, email: lead.email, stage: lead.stage, source: lead.source?.name ?? null, temperature: lead.temperature, score: lead.score, budgetMin: lead.budgetMinMinor === null ? null : Number(lead.budgetMinMinor) / 100, budgetMax: lead.budgetMaxMinor === null ? null : Number(lead.budgetMaxMinor) / 100, location: lead.location, propertyType: lead.propertyType, buyingTimeline: lead.buyingTimeline, assignee: lead.assignedMembershipId ? { id: lead.assignedMembershipId, name: names.get(lead.assignedMembershipId) ?? 'Unknown' } : null } : null,
       };
     });
@@ -240,15 +243,17 @@ export class ConversationsService {
       let template: { name: string; language: string; params: string[] } | null = null;
       if (c.channel.type === 'WHATSAPP') {
         if (c.channel.status !== 'ACTIVE') throw new UnprocessableEntityException({ code: 'channel_unavailable', message: 'This WhatsApp number is not connected right now. Check Integrations.' });
-        const consent = await tx.consent.findFirst({ where: { leadId: c.leadId, channel: 'whatsapp' }, orderBy: { createdAt: 'desc' } });
+        const consent = await consentDispositionFor(tx, a.tenantId, { id: c.leadId, phoneNorm: lead.phoneNorm }, 'SERVICE');
         await this.ent.assertCanSendWhatsapp(tx, a.tenantId);
-        if (consent?.status === 'OPTED_OUT') throw new UnprocessableEntityException({ code: 'opted_out', message: 'This customer opted out of WhatsApp messages. You cannot message them here.' });
+        if (consent === 'OPTED_OUT') throw new UnprocessableEntityException({ code: 'opted_out', message: 'This customer opted out of WhatsApp messages. You cannot message them here.' });
         const open = this.windowInfo(c).windowOpen;
         if (input.text && !open) throw new UnprocessableEntityException({ code: 'outside_window', message: 'More than 24 hours have passed since the customer last wrote. Send an approved template instead.' });
         if (input.template) {
-          if (!consent) throw new UnprocessableEntityException({ code: 'consent_required', message: 'There is no record of this customer opting in to WhatsApp messages.' });
+          if (consent === 'NO_CONSENT') throw new UnprocessableEntityException({ code: 'consent_required', message: 'There is no record of this customer opting in to WhatsApp messages.' });
           const t = await tx.whatsappTemplate.findFirst({ where: { tenantId: a.tenantId, name: input.template.name, language: input.template.language } });
           if (!t) throw new UnprocessableEntityException({ code: 'unknown_template', message: 'That template is not registered for this workspace.' });
+          // A marketing-category template is business-initiated promotion: a customer who only wrote to us has not agreed to it.
+          if (t.category === 'MARKETING' && (await consentDispositionFor(tx, a.tenantId, { id: c.leadId, phoneNorm: lead.phoneNorm }, 'MARKETING')) !== 'ELIGIBLE') throw new UnprocessableEntityException({ code: 'marketing_consent_required', message: 'This customer has not opted in to marketing messages on WhatsApp.' });
           if (t.approvalStatus && t.approvalStatus !== 'APPROVED') throw new UnprocessableEntityException({ code: 'template_not_approved', message: `WhatsApp has not approved this template (status: ${t.approvalStatus.toLowerCase()}), so it cannot be sent yet.` });
           if (input.template.params.length !== t.variableCount) throw new UnprocessableEntityException({ code: 'template_params', message: `This template needs ${t.variableCount} value${t.variableCount === 1 ? '' : 's'}.` });
           template = input.template;

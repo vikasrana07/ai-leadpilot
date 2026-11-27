@@ -207,6 +207,11 @@ export type ConversationNote = Prisma.ConversationNoteModel
  */
 export type Consent = Prisma.ConsentModel
 /**
+ * Model ConsentSuppression
+ * Opt-outs that must outlive lead erasure (DPDP). Holds only a tenant-salted hash of the normalised phone, no PII.
+ */
+export type ConsentSuppression = Prisma.ConsentSuppressionModel
+/**
  * Model WhatsappTemplate
  * 
  */

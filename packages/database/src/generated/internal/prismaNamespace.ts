@@ -430,6 +430,7 @@ export const ModelName = {
   Message: 'Message',
   ConversationNote: 'ConversationNote',
   Consent: 'Consent',
+  ConsentSuppression: 'ConsentSuppression',
   WhatsappTemplate: 'WhatsappTemplate',
   WebhookEvent: 'WebhookEvent',
   AiAssistant: 'AiAssistant',
@@ -500,7 +501,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "memberPermissionOverride" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadAttachment" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "googleCalendarSync" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "opsAlert" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest" | "portalConfig" | "portalLoginCode" | "portalSession" | "userAlertSettings" | "pushSubscription" | "portalEmailConfig" | "portalEmailLog" | "googleSheetSync" | "slotRescueOffer" | "trackedEmail" | "emailEngagementEvent" | "emailSuppression" | "broadcastCampaign" | "broadcastRecipient"
+    modelProps: "tenant" | "user" | "permission" | "role" | "rolePermission" | "membership" | "memberPermissionOverride" | "invitation" | "session" | "emailVerificationToken" | "passwordResetToken" | "auditLog" | "outboxEvent" | "pipelineStage" | "lostReason" | "leadSource" | "customFieldDefinition" | "lead" | "tag" | "leadTag" | "leadAttachment" | "leadNote" | "leadActivity" | "stageTransition" | "property" | "apiKey" | "integrationCredential" | "channel" | "widgetConfig" | "conversation" | "message" | "conversationNote" | "consent" | "consentSuppression" | "whatsappTemplate" | "webhookEvent" | "aiAssistant" | "aiRun" | "aiToolExecution" | "knowledgeDocument" | "knowledgeChunk" | "scoringRuleSet" | "leadScore" | "availabilityRule" | "availabilityException" | "appointment" | "appointmentEvent" | "googleCalendarSync" | "automation" | "automationRun" | "automationVersion" | "task" | "notification" | "notificationPreference" | "slaBreach" | "eventMark" | "plan" | "planEntitlement" | "subscription" | "billingProfile" | "invoice" | "payment" | "billingEvent" | "invoiceCounter" | "platformAdmin" | "platformAuditLog" | "opsAlert" | "idempotencyKey" | "webhookEndpoint" | "webhookDelivery" | "supportAccessSession" | "mfaCredential" | "mfaRecoveryCode" | "dataExport" | "tenantDeletionRequest" | "portalConfig" | "portalLoginCode" | "portalSession" | "userAlertSettings" | "pushSubscription" | "portalEmailConfig" | "portalEmailLog" | "googleSheetSync" | "slotRescueOffer" | "trackedEmail" | "emailEngagementEvent" | "emailSuppression" | "broadcastCampaign" | "broadcastRecipient"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2943,6 +2944,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ConsentCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ConsentCountAggregateOutputType> | number
+        }
+      }
+    }
+    ConsentSuppression: {
+      payload: Prisma.$ConsentSuppressionPayload<ExtArgs>
+      fields: Prisma.ConsentSuppressionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ConsentSuppressionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ConsentSuppressionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload>
+        }
+        findFirst: {
+          args: Prisma.ConsentSuppressionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ConsentSuppressionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload>
+        }
+        findMany: {
+          args: Prisma.ConsentSuppressionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload>[]
+        }
+        create: {
+          args: Prisma.ConsentSuppressionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload>
+        }
+        createMany: {
+          args: Prisma.ConsentSuppressionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ConsentSuppressionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload>[]
+        }
+        delete: {
+          args: Prisma.ConsentSuppressionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload>
+        }
+        update: {
+          args: Prisma.ConsentSuppressionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ConsentSuppressionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ConsentSuppressionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ConsentSuppressionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload>[]
+        }
+        upsert: {
+          args: Prisma.ConsentSuppressionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ConsentSuppressionPayload>
+        }
+        aggregate: {
+          args: Prisma.ConsentSuppressionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateConsentSuppression>
+        }
+        groupBy: {
+          args: Prisma.ConsentSuppressionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ConsentSuppressionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ConsentSuppressionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ConsentSuppressionCountAggregateOutputType> | number
         }
       }
     }
@@ -7551,10 +7626,29 @@ export const ConsentScalarFieldEnum = {
   channel: 'channel',
   status: 'status',
   source: 'source',
+  purpose: 'purpose',
+  method: 'method',
+  actorType: 'actorType',
+  actorMembershipId: 'actorMembershipId',
+  textVersion: 'textVersion',
+  evidence: 'evidence',
+  expiresAt: 'expiresAt',
   createdAt: 'createdAt'
 } as const
 
 export type ConsentScalarFieldEnum = (typeof ConsentScalarFieldEnum)[keyof typeof ConsentScalarFieldEnum]
+
+
+export const ConsentSuppressionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  channel: 'channel',
+  phoneHash: 'phoneHash',
+  reason: 'reason',
+  createdAt: 'createdAt'
+} as const
+
+export type ConsentSuppressionScalarFieldEnum = (typeof ConsentSuppressionScalarFieldEnum)[keyof typeof ConsentSuppressionScalarFieldEnum]
 
 
 export const WhatsappTemplateScalarFieldEnum = {
@@ -8853,6 +8947,48 @@ export type ListEnumConsentStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'ConsentPurpose'
+ */
+export type EnumConsentPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConsentPurpose'>
+    
+
+
+/**
+ * Reference to a field of type 'ConsentPurpose[]'
+ */
+export type ListEnumConsentPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConsentPurpose[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ConsentMethod'
+ */
+export type EnumConsentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConsentMethod'>
+    
+
+
+/**
+ * Reference to a field of type 'ConsentMethod[]'
+ */
+export type ListEnumConsentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConsentMethod[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ConsentActorType'
+ */
+export type EnumConsentActorTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConsentActorType'>
+    
+
+
+/**
+ * Reference to a field of type 'ConsentActorType[]'
+ */
+export type ListEnumConsentActorTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConsentActorType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -9231,6 +9367,7 @@ export type GlobalOmitConfig = {
   message?: Prisma.MessageOmit
   conversationNote?: Prisma.ConversationNoteOmit
   consent?: Prisma.ConsentOmit
+  consentSuppression?: Prisma.ConsentSuppressionOmit
   whatsappTemplate?: Prisma.WhatsappTemplateOmit
   webhookEvent?: Prisma.WebhookEventOmit
   aiAssistant?: Prisma.AiAssistantOmit

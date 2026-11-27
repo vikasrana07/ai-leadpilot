@@ -1,3 +1,4 @@
+import { consentDispositionById } from '../campaigns/consent.js';
 import { EntitlementsService } from '../billing/entitlements.service.js';
 import { HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import type { Prisma, TxClient } from '@leadpilot/database';
@@ -78,8 +79,7 @@ export class AutomationEngine {
     const leadId = ev.payload.leadId;
     const waiting = await tx.automationRun.findMany({ where: { tenantId: ev.tenantId, leadId, status: 'WAITING' }, select: { id: true, waitingNode: true, version: { select: { graph: true } } } });
     if (waiting.length === 0) return [];
-    const consent = await tx.consent.findFirst({ where: { leadId, channel: 'whatsapp' }, orderBy: { createdAt: 'desc' } });
-    if (consent?.status === 'OPTED_OUT') { await endWaitingRuns(tx, { tenantId: ev.tenantId, leadId }, 'The customer opted out'); return []; }
+    if ((await consentDispositionById(tx, ev.tenantId, leadId, 'SERVICE')) === 'OPTED_OUT') { await endWaitingRuns(tx, { tenantId: ev.tenantId, leadId }, 'The customer opted out'); return []; }
     const resumed: string[] = [];
     for (const r of waiting) {
       if (!r.version || !r.waitingNode || !outEdge(parseGraph(r.version.graph), r.waitingNode, 'replied')) continue;
@@ -164,10 +164,10 @@ export class AutomationEngine {
       if (resumed && ctx) {
         // Time has passed: the world may have changed while the run waited. Re-check before doing anything.
         const plan = await this.ent.compute(tx, tenantId);
-        const consent = await tx.consent.findFirst({ where: { leadId: ctx.lead.id, channel: 'whatsapp' }, orderBy: { createdAt: 'desc' } });
+        const consent = await consentDispositionById(tx, tenantId, ctx.lead.id, 'SERVICE');
         if (!run.automation.enabled) stop = 'The automation was turned off while this run waited';
         else if (plan.restricted || !plan.features.automations) stop = 'The plan no longer includes automations';
-        else if (consent?.status === 'OPTED_OUT') stop = 'The customer opted out';
+        else if (consent === 'OPTED_OUT') stop = 'The customer opted out';
       }
       return { run, ctx, stop };
     });
@@ -402,9 +402,9 @@ export class AutomationEngine {
         if (!t) return mk(`Would be skipped: template "${action.template}" (${action.language}) is not registered`, 'skipped');
         if (t.approvalStatus && t.approvalStatus !== 'APPROVED') return mk(`Would be skipped: WhatsApp has not approved template "${action.template}" (status: ${t.approvalStatus.toLowerCase()})`, 'skipped');
         if (params.length !== t.variableCount) return mk(`Would be skipped: template needs ${t.variableCount} value(s), this automation gives ${params.length}`, 'skipped');
-        const consent = await tx.consent.findFirst({ where: { leadId: ctx.lead.id, channel: 'whatsapp' }, orderBy: { createdAt: 'desc' } });
-        if (!consent) return mk('Would be skipped: no record of the customer opting in to WhatsApp', 'skipped');
-        if (consent.status === 'OPTED_OUT') return mk('Would be skipped: the customer opted out of WhatsApp', 'skipped');
+        const consent = await consentDispositionById(tx, tenantId, ctx.lead.id, t.category === 'MARKETING' ? 'MARKETING' : 'SERVICE');
+        if (consent === 'NO_CONSENT') return mk(t.category === 'MARKETING' ? 'Would be skipped: the customer has not opted in to marketing messages on WhatsApp' : 'Would be skipped: no record of the customer opting in to WhatsApp', 'skipped');
+        if (consent === 'OPTED_OUT') return mk('Would be skipped: the customer opted out of WhatsApp', 'skipped');
         return mk(`Would send template "${action.template}" with: ${params.join(' | ')}`);
       }
       case 'send_message': return mk(`Would send: "${render(action.text, ctx)}" (only if the customer wrote within the last 24 hours)`);

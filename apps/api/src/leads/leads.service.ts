@@ -1,7 +1,7 @@
 import { series } from '../common/series.js';
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma, type Temperature, type TxClient } from '@leadpilot/database';
-import type { BulkInput, CreateLeadInput, LeadListQuery, StageChangeInput, UpdateLeadInput } from '@leadpilot/validation';
+import type { BulkInput, CreateLeadInput, LeadListQuery, RecordLeadConsentInput, StageChangeInput, UpdateLeadInput } from '@leadpilot/validation';
 import { v7 as uuidv7 } from 'uuid';
 import { ScoringService } from '../ai/scoring/scoring.service.js';
 import { AuditService } from '../audit/audit.service.js';
@@ -9,6 +9,7 @@ import type { Actor } from '../common/actor.js';
 import { toMinor } from '../common/money.js';
 import { normalizeEmail, normalizePhone } from '../common/phone.js';
 import { DbService } from '../db/db.module.js';
+import { consentDispositionById, consentDispositions, grantMarketingConsentIfAllowed, recordConsent } from '../campaigns/consent.js';
 import { LEAD_INCLUDE, toLeadDto, type LeadDto, type LeadRow } from './lead-mapper.js';
 import { OutboxService, originOf } from '../ops/outbox.service.js';
 import { RoundRobin } from './round-robin.js';
@@ -222,6 +223,14 @@ export class LeadsService {
       },
     });
     await this.activity(tx, a, id, 'created', { source: opts.defaultSource });
+    if (input.consent) {
+      // The caller says the person agreed to WhatsApp marketing (form checkbox / sales rep). Recorded with who said so and from where.
+      await grantMarketingConsentIfAllowed(tx, {
+        tenantId: a.tenantId, leadId: id, method: input.consent.method, actorType: a.userId ? 'MEMBER' : 'SYSTEM', actorUserId: a.userId,
+        actorMembershipId: a.membershipId, textVersion: input.consent.textVersion ?? null,
+        evidence: { ip: a.ip ?? null, apiKeyId: a.apiKeyId ?? null, via: opts.defaultSource },
+      });
+    }
     if (assignee) await this.activity(tx, a, id, 'assigned', { to: assignee });
     await this.auditLead(tx, a, 'lead.created', id, { assigned: assignee !== null });
     await this.outbox.emit(tx, a.tenantId, 'lead.created', { leadId: id, ...originOf(a) });
@@ -454,6 +463,53 @@ export class LeadsService {
       const users = await tx.user.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.actorUserId).filter((x): x is string => x !== null))] } }, select: { id: true, name: true } });
       const names = new Map(users.map((u) => [u.id, u.name]));
       return rows.map((r) => ({ id: r.id, type: r.type, data: r.data, actor: r.actorUserId ? names.get(r.actorUserId) ?? 'Unknown' : null, createdAt: r.createdAt.toISOString() }));
+    });
+  }
+
+  // ------------------------------------------------------------------ consent ledger
+  /** Full consent history for a lead (and any duplicates merged into it), newest first, plus the current WhatsApp state. */
+  async consentHistory(a: Actor, id: string) {
+    return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, (tx) => this.consentHistoryInTx(tx, a, id));
+  }
+
+  private async consentHistoryInTx(tx: TxClient, a: Actor, id: string) {
+    {
+      const lead = await tx.lead.findFirst({ where: { id, tenantId: a.tenantId, deletedAt: null, ...this.readScope(a) }, select: { id: true, phoneNorm: true } });
+      if (!lead) throw new NotFoundException({ code: 'not_found', message: 'Lead not found' });
+      const ids = await this.relatedIds(tx, id);
+      const rows = await tx.consent.findMany({ where: { tenantId: a.tenantId, leadId: { in: ids } }, orderBy: { createdAt: 'desc' }, take: 100 });
+      const members = await tx.membership.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.actorMembershipId).filter((x): x is string => x !== null))] } }, select: { id: true, user: { select: { name: true } } } });
+      const names = new Map(members.map((m) => [m.id, m.user.name]));
+      const [service, marketing] = await Promise.all([
+        consentDispositions(tx, a.tenantId, [lead], 'SERVICE').then((m) => m.get(id) ?? 'NO_CONSENT'),
+        consentDispositions(tx, a.tenantId, [lead], 'MARKETING').then((m) => m.get(id) ?? 'NO_CONSENT'),
+      ]);
+      return {
+        whatsapp: { service, marketing },
+        history: rows.map((r) => ({
+          id: r.id, channel: r.channel, status: r.status, purpose: r.purpose, method: r.method, source: r.source, actorType: r.actorType,
+          actor: r.actorMembershipId ? names.get(r.actorMembershipId) ?? 'Unknown' : null, textVersion: r.textVersion, evidence: r.evidence,
+          expiresAt: r.expiresAt?.toISOString() ?? null, createdAt: r.createdAt.toISOString(),
+        })),
+      };
+    }
+  }
+
+  async recordLeadConsent(a: Actor, id: string, input: RecordLeadConsentInput) {
+    return this.db.tenantTx({ tenantId: a.tenantId, ...(a.userId ? { userId: a.userId } : {}) }, async (tx) => {
+      const lead = await tx.lead.findFirst({ where: { id, tenantId: a.tenantId, deletedAt: null, ...this.readScope(a) }, select: { id: true, assignedMembershipId: true } });
+      if (!lead) throw new NotFoundException({ code: 'not_found', message: 'Lead not found' });
+      this.assertCanWrite(a, lead);
+      if (input.status === 'OPTED_OUT') {
+        if ((await consentDispositionById(tx, a.tenantId, id, 'SERVICE')) === 'OPTED_OUT') return this.consentHistoryInTx(tx, a, id); // already opted out: nothing to add
+        await recordConsent(tx, { tenantId: a.tenantId, leadId: id, status: 'OPTED_OUT', purpose: 'MARKETING', method: 'MANAGER_ATTESTED', actorType: 'MEMBER', actorUserId: a.userId, actorMembershipId: a.membershipId, source: 'member_recorded_opt_out', evidence: { reason: input.reason, ip: a.ip ?? null } });
+      } else {
+        if (!a.permissions.has('lead:write:all')) throw new ForbiddenException({ code: 'forbidden', message: 'Only managers can record a marketing opt-in' });
+        const state = await consentDispositionById(tx, a.tenantId, id, 'MARKETING');
+        if (state === 'OPTED_OUT') throw new ConflictException({ code: 'opted_out', message: 'This person opted out. Only they can opt back in, by sending START on WhatsApp.' });
+        if (state === 'NO_CONSENT') await recordConsent(tx, { tenantId: a.tenantId, leadId: id, status: 'OPTED_IN', purpose: 'MARKETING', method: 'MANAGER_ATTESTED', actorType: 'MEMBER', actorUserId: a.userId, actorMembershipId: a.membershipId, source: `manager_attested:${input.basis}`, evidence: { basis: input.basis, reason: input.reason ?? null, ip: a.ip ?? null } });
+      }
+      return this.consentHistoryInTx(tx, a, id);
     });
   }
 

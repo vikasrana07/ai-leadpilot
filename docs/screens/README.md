@@ -2,6 +2,8 @@
 
 This guide explains **every screen** in the AI LeadPilot web application (`apps/web/app`): what it does, how a user flows through it, and where each action or link takes you next.
 
+- **Per-Screen Inventory (55 Routes)**: [Screen Inventory](inventory.md) (individual documents in `docs/screens/pages/`)
+
 ## Documentation Modules
 
 | Guide | Scope | Screens Covered |

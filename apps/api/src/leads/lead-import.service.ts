@@ -31,6 +31,7 @@ const ALIASES: Record<string, string> = {
   'property type': 'propertyType', property_type: 'propertyType', type: 'propertyType', configuration: 'propertyType',
   requirements: 'requirements', requirement: 'requirements', notes: 'requirements', remarks: 'requirements',
   timeline: 'timeline', 'buying timeline': 'timeline',
+  'whatsapp consent': 'whatsappConsent', whatsapp_consent: 'whatsappConsent', 'whatsapp opt in': 'whatsappConsent', whatsapp_opt_in: 'whatsappConsent', 'whatsapp opt-in': 'whatsappConsent',
   tags: 'tags', 'assigned to': 'assignedTo', assignee: 'assignedTo', 'agent email': 'assignedTo', 'assigned_to': 'assignedTo',
 };
 
@@ -54,6 +55,8 @@ export interface ImportReport {
   dryRun: boolean; totalRows: number; valid: number; invalid: ImportRowError[];
   duplicates: { row: number; reason: 'existing' | 'in_file'; existingLeadId?: string }[];
   unknownColumns: string[]; created: number; skipped: number;
+  /** Rows marked as having agreed to WhatsApp marketing: `consentRecorded` were saved (importer attested), `consentIgnored` were not (no attestation). */
+  consentRecorded: number; consentIgnored: number;
 }
 
 export interface ImportJobStatus {
@@ -353,6 +356,7 @@ export class LeadImportService implements OnApplicationBootstrap {
         assignee: string | null;
         tags: string[];
         timeline: BuyingTimeline;
+        consent: boolean;
         custom: Record<string, string | number | boolean>;
       }
       const valid: Parsed[] = [];
@@ -398,7 +402,7 @@ export class LeadImportService implements OnApplicationBootstrap {
           else custom[key] = v;
         });
         if (errors.length || !parsed.success || !stage) { invalid.push({ row: rowNo, errors }); return; }
-        valid.push({ row: rowNo, data: parsed.data, phoneNorm: phone?.norm ?? null, emailNorm: normalizeEmail(parsed.data.email), stageId: stage.id, sourceId: source?.id ?? null, assignee, tags: get('tags').split(/[;|]/).map((t) => t.trim()).filter(Boolean).slice(0, 10), timeline: timeline ?? 'UNKNOWN', custom });
+        valid.push({ row: rowNo, data: parsed.data, phoneNorm: phone?.norm ?? null, emailNorm: normalizeEmail(parsed.data.email), stageId: stage.id, sourceId: source?.id ?? null, assignee, tags: get('tags').split(/[;|]/).map((t) => t.trim()).filter(Boolean).slice(0, 10), timeline: timeline ?? 'UNKNOWN', custom, consent: ['yes', 'true', '1', 'y'].includes(get('whatsappConsent').toLowerCase()) });
       });
 
       // duplicates: against the database and within the file
@@ -420,7 +424,9 @@ export class LeadImportService implements OnApplicationBootstrap {
         if ((ex || inFile) && input.duplicateStrategy === 'skip') continue;
         toCreate.push(v);
       }
-      const report: ImportReport = { dryRun: input.dryRun, totalRows: dataRows.length, valid: valid.length, invalid, duplicates, unknownColumns, created: 0, skipped: valid.length - toCreate.length };
+      const report: ImportReport = { dryRun: input.dryRun, totalRows: dataRows.length, valid: valid.length, invalid, duplicates, unknownColumns, created: 0, skipped: valid.length - toCreate.length, consentRecorded: 0, consentIgnored: 0 };
+      const consenting = toCreate.filter((v) => v.consent);
+      if (input.consentAttestation) report.consentRecorded = consenting.length; else report.consentIgnored = consenting.length;
       if (input.dryRun || toCreate.length === 0) return report;
 
       const rr = await RoundRobin.load(tx, a.tenantId);
@@ -434,6 +440,14 @@ export class LeadImportService implements OnApplicationBootstrap {
         })),
       });
       await rr.save(tx);
+      if (input.consentAttestation && consenting.length > 0) {
+        // Proof of consent for imported leads: who attested, from which import. Marks are ignored unless the importer confirmed they hold proof.
+        const batch = uuidv7();
+        const consentIds = ids.filter((_, i) => toCreate[i]?.consent);
+        await tx.consent.createMany({ data: consentIds.map((leadId) => ({ id: uuidv7(), tenantId: a.tenantId, leadId, channel: 'whatsapp', status: 'OPTED_IN' as const, source: 'csv_import', purpose: 'MARKETING' as const, method: 'CSV_IMPORT' as const, actorType: 'MEMBER' as const, actorMembershipId: a.membershipId, evidence: { importBatchId: batch, attestedByUserId: a.userId, ip: a.ip ?? null } })) });
+        await tx.leadActivity.createMany({ data: consentIds.map((leadId) => ({ id: uuidv7(), tenantId: a.tenantId, leadId, type: 'consent_changed', actorUserId: a.userId, data: { channel: 'whatsapp', status: 'OPTED_IN', purpose: 'MARKETING', method: 'CSV_IMPORT' } })) });
+        await this.audit.record(tx, { tenantId: a.tenantId, actorUserId: a.userId, action: 'consent.csv_import_recorded', resourceType: 'lead', metadata: { importBatchId: batch, recorded: consentIds.length }, ...(a.requestId ? { requestId: a.requestId } : {}), ...(a.ip ? { ip: a.ip } : {}) });
+      }
       await tx.leadActivity.createMany({ data: ids.map((id) => ({ id: uuidv7(), tenantId: a.tenantId, leadId: id, type: 'created', actorUserId: a.userId, data: { source: 'csv_import' } })) });
       const tagNames = [...new Set(toCreate.flatMap((v) => v.tags))];
       if (tagNames.length) {

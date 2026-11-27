@@ -1,3 +1,4 @@
+import { consentDispositionById, recordConsent } from '../campaigns/consent.js';
 import { OutboxService } from '../ops/outbox.service.js';
 import { Inject, Injectable } from '@nestjs/common';
 import type { MessageStatus, Prisma, TxClient } from '@leadpilot/database';
@@ -27,6 +28,8 @@ export interface IngestInput {
   source: 'whatsapp' | 'website_widget' | 'messenger' | 'instagram';
 }
 
+/** Explicit re-subscribe keywords. Deliberately NOT "yes"/"ok": those answer other questions and must not lift an opt-out. */
+const OPT_IN = /^\s*(start|unstop|subscribe|opt[\s-]?in)\s*[.!]?\s*$/i;
 const OPT_OUT = /^\s*(stop|unsubscribe|cancel|opt[\s-]?out)\s*[.!]?\s*$/i;
 const RANK: Record<MessageStatus, number> = { QUEUED: 0, SENT: 1, DELIVERED: 2, READ: 3, FAILED: 4 };
 
@@ -90,10 +93,20 @@ export class InboundService {
       await tx.conversation.update({ where: { id: conversationId }, data: { lastInboundAt: new Date(Math.min(input.message.at.getTime(), Date.now())), lastMessageAt: new Date(), lastMessagePreview: preview, unreadCount: { increment: 1 }, status: 'OPEN', closedAt: null } });
 
       if (input.channel.type === 'WHATSAPP') {
-        const optOut = input.message.type === 'TEXT' && OPT_OUT.test(input.message.body ?? '');
-        const last = await tx.consent.findFirst({ where: { leadId, channel: 'whatsapp' }, orderBy: { createdAt: 'desc' } });
-        if (optOut) await tx.consent.create({ data: { id: uuidv7(), tenantId: input.tenantId, leadId, channel: 'whatsapp', status: 'OPTED_OUT', source: 'inbound_stop_keyword' } });
-        else if (!last || last.status === 'OPTED_OUT') await tx.consent.create({ data: { id: uuidv7(), tenantId: input.tenantId, leadId, channel: 'whatsapp', status: 'OPTED_IN', source: 'inbound_message' } });
+        const body = input.message.type === 'TEXT' ? (input.message.body ?? '') : '';
+        const evidence = { channelId: input.channel.id, messageId: msg.id, externalMessageId: input.message.externalId };
+        const base = { tenantId: input.tenantId, leadId, actorType: 'CUSTOMER' as const, evidence };
+        const service = await consentDispositionById(tx, input.tenantId, leadId, 'SERVICE');
+        if (OPT_OUT.test(body)) {
+          // STOP always wins and is recorded once (repeats add no row). It blocks every business-initiated message until an explicit START.
+          if (service !== 'OPTED_OUT') await recordConsent(tx, { ...base, status: 'OPTED_OUT', purpose: 'MARKETING', method: 'STOP_KEYWORD', source: 'inbound_stop_keyword' });
+        } else if (OPT_IN.test(body)) {
+          // Explicit re-subscribe (or first explicit opt-in): the only message that lifts an opt-out.
+          if ((await consentDispositionById(tx, input.tenantId, leadId, 'MARKETING')) !== 'ELIGIBLE') await recordConsent(tx, { ...base, status: 'OPTED_IN', purpose: 'MARKETING', method: 'START_KEYWORD', source: 'inbound_start_keyword' });
+        } else if (service === 'NO_CONSENT') {
+          // The customer wrote to us, so we may reply (SERVICE). That is NOT consent to marketing, and it never undoes an opt-out.
+          await recordConsent(tx, { ...base, status: 'OPTED_IN', purpose: 'SERVICE', method: 'INBOUND_MESSAGE', source: 'inbound_message' });
+        }
 
         // Attribute response to recent broadcast campaign if the recipient hasn't already replied (72h window)
         const attributionCutoff = new Date(Date.now() - 72 * 60 * 60 * 1000);

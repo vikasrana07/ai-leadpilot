@@ -58,6 +58,7 @@ describe('CampaignsService Unit Tests', () => {
             findMany: vi.fn(),
             update: vi.fn(),
           },
+          consentSuppression: { findMany: vi.fn().mockResolvedValue([]) },
           consent: {
             findMany: vi.fn(),
           },
@@ -90,9 +91,9 @@ describe('CampaignsService Unit Tests', () => {
 
       // lead-1 opted in, lead-2 later sent STOP, lead-3 has no consent record at all (e.g. imported from CSV)
       const consents = [
-        { leadId: 'lead-2', channel: 'whatsapp', status: 'OPTED_OUT', createdAt: new Date() },
-        { leadId: 'lead-2', channel: 'whatsapp', status: 'OPTED_IN', createdAt: new Date(Date.now() - 1000) },
-        { leadId: 'lead-1', channel: 'whatsapp', status: 'OPTED_IN', createdAt: new Date() },
+        { leadId: 'lead-2', channel: 'whatsapp', status: 'OPTED_OUT', purpose: 'MARKETING', createdAt: new Date() },
+        { leadId: 'lead-2', channel: 'whatsapp', status: 'OPTED_IN', purpose: 'MARKETING', createdAt: new Date(Date.now() - 1000) },
+        { leadId: 'lead-1', channel: 'whatsapp', status: 'OPTED_IN', purpose: 'MARKETING', createdAt: new Date() },
       ];
       const created: Array<{ leadId: string; status: string }> = [];
       const campaignUpdates: Array<Record<string, unknown>> = [];
@@ -112,6 +113,7 @@ describe('CampaignsService Unit Tests', () => {
           lead: {
             findMany: vi.fn().mockResolvedValue([lead1, lead2, lead3]),
           },
+          consentSuppression: { findMany: vi.fn().mockResolvedValue([]) },
           consent: {
             findMany: vi.fn().mockResolvedValue(consents),
           },
@@ -139,6 +141,7 @@ describe('CampaignsService Unit Tests', () => {
       mockDbService.tenantTx = vi.fn(async (_ctx, fn) => fn({
         broadcastCampaign: { findFirst: vi.fn().mockResolvedValue({ id: campaignId, tenantId, status: 'DRAFT', segment: {} }), updateMany: vi.fn().mockResolvedValue({ count: 1 }), update: vi.fn().mockImplementation((a: any) => { status = a.data.status; return Promise.resolve({}); }) },
         lead: { findMany: vi.fn().mockResolvedValue([{ id: 'lead-9', phone: '+919876543299', phoneNorm: '919876543299' }]) },
+        consentSuppression: { findMany: vi.fn().mockResolvedValue([]) },
         consent: { findMany: vi.fn().mockResolvedValue([]) },
         broadcastRecipient: { createMany: vi.fn().mockResolvedValue({ count: 1 }) },
       } as any));
@@ -159,10 +162,11 @@ describe('CampaignsService Unit Tests', () => {
           lead: {
             findMany: vi.fn().mockResolvedValue([lead1, lead2, lead3]),
           },
+          consentSuppression: { findMany: vi.fn().mockResolvedValue([]) },
           consent: {
             findMany: vi.fn().mockResolvedValue([
-              { leadId: 'lead-2', channel: 'whatsapp', status: 'OPTED_OUT', createdAt: new Date() },
-              { leadId: 'lead-1', channel: 'whatsapp', status: 'OPTED_IN', createdAt: new Date() },
+              { leadId: 'lead-2', channel: 'whatsapp', status: 'OPTED_OUT', purpose: 'MARKETING', createdAt: new Date() },
+              { leadId: 'lead-1', channel: 'whatsapp', status: 'OPTED_IN', purpose: 'MARKETING', createdAt: new Date() },
             ]),
           },
         };
@@ -261,7 +265,8 @@ describe('CampaignsService Unit Tests', () => {
           lead: {
             update: vi.fn().mockResolvedValue({ id: 'lead-1' }),
           },
-          consent: { findMany: vi.fn().mockResolvedValue([{ leadId: 'lead-1', status: 'OPTED_IN' }]) },
+          consentSuppression: { findMany: vi.fn().mockResolvedValue([]) },
+          consent: { findMany: vi.fn().mockResolvedValue([{ leadId: 'lead-1', status: 'OPTED_IN', purpose: 'MARKETING' }]) },
         };
         return fn(mockTx as any);
       });
@@ -333,7 +338,8 @@ describe('CampaignsService Unit Tests', () => {
           lead: {
             update: vi.fn(),
           },
-          consent: { findMany: vi.fn().mockResolvedValue([{ leadId: 'lead-1', status: 'OPTED_IN' }]) },
+          consentSuppression: { findMany: vi.fn().mockResolvedValue([]) },
+          consent: { findMany: vi.fn().mockResolvedValue([{ leadId: 'lead-1', status: 'OPTED_IN', purpose: 'MARKETING' }]) },
         };
         return fn(mockTx as any);
       });
@@ -356,7 +362,8 @@ describe('CampaignsService Unit Tests', () => {
         $queryRaw: queryRaw,
         broadcastCampaign: { findFirst: vi.fn().mockResolvedValue(campaign), updateMany: vi.fn().mockResolvedValue({ count: 1 }), update: vi.fn().mockImplementation((a: any) => { campaignUpdates.push(a.data); return Promise.resolve(campaign); }) },
         broadcastRecipient: { findMany: vi.fn().mockResolvedValue([recipient]), count: vi.fn().mockResolvedValue(0), update: vi.fn().mockImplementation((a: any) => { updates.push(a.data); return Promise.resolve({}); }) },
-        consent: { findMany: vi.fn().mockResolvedValue([{ leadId: 'lead-1', status: 'OPTED_OUT' }, { leadId: 'lead-1', status: 'OPTED_IN' }]) },
+        consentSuppression: { findMany: vi.fn().mockResolvedValue([]) },
+        consent: { findMany: vi.fn().mockResolvedValue([{ leadId: 'lead-1', status: 'OPTED_OUT', purpose: 'MARKETING' }, { leadId: 'lead-1', status: 'OPTED_IN', purpose: 'MARKETING' }]) },
       } as any));
       await service.dispatchBatch(tenantId, campaignId, 10);
       expect(mockWaClient.sendTemplate).not.toHaveBeenCalled();
@@ -364,19 +371,22 @@ describe('CampaignsService Unit Tests', () => {
       expect(campaignUpdates).toContainEqual({ optOutCount: { increment: 1 } });
     });
 
-    it('records an attested opt-in only for leads with no consent record, never overriding a STOP', async () => {
+    it('records an attested opt-in only for leads with no marketing consent, never overriding a STOP', async () => {
       const created: Array<Record<string, unknown>> = [];
       mockDbService.tenantTx = vi.fn(async (_ctx, fn) => fn({
-        lead: { findMany: vi.fn().mockResolvedValue([{ id: 'a' }, { id: 'b' }, { id: 'c' }]) },
+        lead: { findMany: vi.fn().mockResolvedValue([{ id: 'a', phoneNorm: '911' }, { id: 'b', phoneNorm: '912' }, { id: 'c', phoneNorm: '913' }]) },
+        consentSuppression: { findMany: vi.fn().mockResolvedValue([]) },
         consent: {
-          findMany: vi.fn().mockResolvedValue([{ leadId: 'b', status: 'OPTED_IN' }, { leadId: 'c', status: 'OPTED_OUT' }]),
-          createMany: vi.fn().mockImplementation((args: any) => { created.push(...args.data); return Promise.resolve({ count: args.data.length }); }),
+          findMany: vi.fn().mockResolvedValue([{ leadId: 'b', status: 'OPTED_IN', purpose: 'MARKETING' }, { leadId: 'c', status: 'OPTED_OUT', purpose: 'MARKETING' }]),
+          create: vi.fn().mockImplementation((args: any) => { created.push(args.data); return Promise.resolve(args.data); }),
         },
+        leadActivity: { create: vi.fn().mockResolvedValue({}) },
+        auditLog: { createMany: vi.fn().mockResolvedValue({ count: 1 }) },
       } as any));
-      const res = await service.recordWhatsappOptIn({ tenantId, userId } as any, { leadIds: ['a', 'b', 'c', 'missing'], basis: 'existing_customer', attestation: true });
+      const res = await service.recordWhatsappOptIn({ tenantId, userId, membershipId: 'm1' } as any, { leadIds: ['a', 'b', 'c', 'missing'], basis: 'existing_customer', attestation: true });
       expect(res).toEqual({ recorded: 1, alreadyOptedIn: 1, skippedOptedOut: 1, notFound: 1 });
       expect(created).toHaveLength(1);
-      expect(created[0]).toMatchObject({ leadId: 'a', status: 'OPTED_IN', channel: 'whatsapp', source: 'manager_attested:existing_customer' });
+      expect(created[0]).toMatchObject({ leadId: 'a', status: 'OPTED_IN', channel: 'whatsapp', source: 'manager_attested:existing_customer', purpose: 'MARKETING', method: 'MANAGER_ATTESTED', actorType: 'MEMBER', actorMembershipId: 'm1' });
     });
   });
 
@@ -445,10 +455,11 @@ describe('CampaignsService Unit Tests', () => {
               return Promise.resolve({ count: args.data.length });
             }),
           },
+          consentSuppression: { findMany: vi.fn().mockResolvedValue([]) },
           consent: {
             findMany: vi.fn().mockResolvedValue([
-              { leadId: 'lead-1', status: 'OPTED_IN' },
-              { leadId: 'lead-2', status: 'OPTED_IN' },
+              { leadId: 'lead-1', status: 'OPTED_IN', purpose: 'MARKETING' },
+              { leadId: 'lead-2', status: 'OPTED_IN', purpose: 'MARKETING' },
             ]),
           },
         };

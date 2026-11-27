@@ -1078,6 +1078,50 @@
         ]
       }
     },
+    "/leads/{id}/consents": {
+      "get": {
+        "operationId": "LeadsController_consents",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Leads"
+        ]
+      },
+      "post": {
+        "operationId": "LeadsController_recordConsent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Leads"
+        ]
+      }
+    },
     "/leads/{id}/merge": {
       "post": {
         "operationId": "LeadsController_merge",
@@ -1638,6 +1682,46 @@
         ]
       }
     },
+    "/appointments/slot-rescue": {
+      "get": {
+        "operationId": "SlotRescueAdminController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SlotRescueAdmin"
+        ]
+      }
+    },
+    "/appointments/slot-rescue/settings": {
+      "get": {
+        "operationId": "SlotRescueAdminController_getSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SlotRescueAdmin"
+        ]
+      },
+      "put": {
+        "operationId": "SlotRescueAdminController_saveSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SlotRescueAdmin"
+        ]
+      }
+    },
     "/appointments": {
       "get": {
         "operationId": "AppointmentsController_list",
@@ -1906,46 +1990,6 @@
         },
         "tags": [
           "Appointments"
-        ]
-      }
-    },
-    "/appointments/slot-rescue": {
-      "get": {
-        "operationId": "SlotRescueAdminController_list",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SlotRescueAdmin"
-        ]
-      }
-    },
-    "/appointments/slot-rescue/settings": {
-      "get": {
-        "operationId": "SlotRescueAdminController_getSettings",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SlotRescueAdmin"
-        ]
-      },
-      "put": {
-        "operationId": "SlotRescueAdminController_saveSettings",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SlotRescueAdmin"
         ]
       }
     },
@@ -3349,6 +3393,29 @@
         ]
       }
     },
+    "/conversations/{id}/deal-pulse": {
+      "get": {
+        "operationId": "ConversationsController_dealPulse",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
     "/conversations/{id}/messages/{mid}/media": {
       "get": {
         "operationId": "ConversationsController_media",
@@ -3987,6 +4054,20 @@
     "/analytics/revenue-leakage": {
       "get": {
         "operationId": "AnalyticsController_revenueLeakage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/analytics/morning-brief": {
+      "get": {
+        "operationId": "AnalyticsController_morningBrief",
         "parameters": [],
         "responses": {
           "200": {

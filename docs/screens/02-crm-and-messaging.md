@@ -31,12 +31,13 @@ This document covers the daily sales workspace: executive KPIs, lead management,
   2. **Customize Table**: Toggle visible columns, pin columns, reorder columns, and adjust row density (`useTablePreferences`).
   3. **Add or Import**: Click **Add lead** to create one manually, or **Import CSV** to bulk-upload leads.
   4. **Bulk Actions**: Select checkboxes to bulk-assign owners, move stages, add/remove tags, or delete leads.
+  5. **Import consent**: A CSV column `whatsapp_consent` (yes/true/1) is honoured only after the importer ticks the attestation checkbox in the import dialog ("I can show proof"). Rows are then recorded as marketing opt-ins with method `CSV_IMPORT`, the importer's name and an import batch id; without the tick the marks are ignored and the report says how many.
 - **Navigation & Direction**:
   - **Incoming**: Sidebar **Leads**, or **See all** link on a truncated `/pipeline` column (`/leads?stageId=...`).
   - **Outgoing**:
     - Click any lead name -> `/leads/[id]`.
     - Row quick-actions can jump to chat/schedule or trigger dialogs.
-- **Technical Reference**: `apps/web/app/(app)/leads/page.tsx` · `GET /leads`, `POST /leads/bulk`, `POST /leads/import`, `GET /leads/export`
+- **Technical Reference**: `apps/web/app/(app)/leads/page.tsx` · `GET /leads`, `POST /leads/bulk`, `POST /leads/import` (optional `consentAttestation`), `GET /leads/export`
 
 ---
 
@@ -49,13 +50,14 @@ This document covers the daily sales workspace: executive KPIs, lead management,
   2. **Edit Profile**: Click **Edit** to update name, phone, email, budget, location, interest, timeline, next follow-up, requirements, and custom fields.
   3. **Communicate & Log**: Switch between **Activity** timeline and **Notes** tabs; add internal notes, tags, or virus-scanned file attachments (`LeadAttachmentsCard`, up to 10 MB); click **Voice update** (`VoiceNoteDialog`) to record a 15-second voice memo or paste a transcript and atomically apply extracted budget/location/interest/timeline fields, note, and follow-up task; or click **Send email** to open the tracked email composer (with optional follow-up templates pre-filled from lead, agent, and workspace context).
   4. **AI Score & Dedupe**: Inspect or override the AI qualification score (`ScoreCard`), or click **Merge duplicates** (`lead:write:all`) to combine duplicate records (re-parenting attachments to the survivor).
-  5. **Privacy / Delete**: Use the privacy menu (consent/export/erasure) or delete icon (`lead:delete`).
+  5. **Privacy / Delete**: Use the privacy menu (export/erasure) or delete icon (`lead:delete`). Erasing a lead that had opted out keeps only a salted hash of the phone so the opt-out is still honoured if the number is added again.
+  6. **WhatsApp consent** (`ConsentCard`): see whether the person may receive replies/service messages and marketing broadcasts, with the append-only history (who, how, when, wording version, evidence). Anyone who can edit the lead can **Record opt-out** (reason required); users with `lead:write:all` can **Record opt-in** (basis + attestation). An opt-out is never overridden here: only the customer can opt back in by sending START on WhatsApp. A plain WhatsApp message gives "replies allowed" only; marketing needs an explicit opt-in (form checkbox, Lead Ad, attestation, START).
 - **Navigation & Direction**:
   - **Incoming**: `/leads` table row, `/dashboard` hot leads/follow-ups, `/pipeline` card title, `/inbox` details panel, `/tasks` linked lead, or App Shell `+` Quick Create.
   - **Outgoing**:
     - Breadcrumb **Leads** or **Back to leads** -> `/leads`.
     - Sent emails are tracked in `/emails`.
-- **Technical Reference**: `apps/web/app/(app)/leads/[id]/page.tsx` · `GET/PATCH/DELETE /leads/:id`, `POST /leads/:id/stage`, `GET/POST /leads/:id/notes`, `GET /leads/:id/activity`, `PUT /leads/:id/tags`, `GET/POST /leads/:id/attachments`, `GET /leads/:id/attachments/:attachmentId/download`, `DELETE /leads/:id/attachments/:attachmentId`, `POST /leads/:id/voice-note`, `POST /leads/:id/voice-note/apply`, `GET /emails/templates`, `POST /emails/send`
+- **Technical Reference**: `apps/web/app/(app)/leads/[id]/page.tsx` · `GET/PATCH/DELETE /leads/:id`, `POST /leads/:id/stage`, `GET/POST /leads/:id/notes`, `GET /leads/:id/activity`, `PUT /leads/:id/tags`, `GET/POST /leads/:id/attachments`, `GET /leads/:id/attachments/:attachmentId/download`, `DELETE /leads/:id/attachments/:attachmentId`, `POST /leads/:id/voice-note`, `POST /leads/:id/voice-note/apply`, `GET/POST /leads/:id/consents`, `GET /emails/templates`, `POST /emails/send`
 
 ---
 

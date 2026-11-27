@@ -1,3 +1,4 @@
+import { consentDispositionById } from '../campaigns/consent.js';
 import {
   BadRequestException,
   ConflictException,
@@ -227,12 +228,7 @@ export class SlotRescueService {
           select: { id: true },
         });
         if (!convo) continue;
-        const consent = await tx.consent.findFirst({
-          where: { leadId, channel: 'whatsapp' },
-          orderBy: { createdAt: 'desc' },
-          select: { status: true },
-        });
-        if (!consent || consent.status === 'OPTED_OUT') continue;
+        if ((await consentDispositionById(tx, tenantId, leadId, 'SERVICE')) !== 'ELIGIBLE') continue;
         out.push({ leadId, conversationId: convo.id, language: tpl.language });
       }
       return out;

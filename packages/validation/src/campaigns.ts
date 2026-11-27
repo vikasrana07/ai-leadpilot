@@ -90,6 +90,21 @@ export const whatsappOptInSchema = z.object({
 });
 export type WhatsappOptInInput = z.infer<typeof whatsappOptInSchema>;
 
+/**
+ * Record a consent decision on one lead. An opt-out (the customer said "don't message me") can be recorded by anyone who can edit the lead.
+ * An opt-in is a manager attestation with a basis; it never overrides an existing opt-out (only the customer can re-subscribe, with START).
+ */
+export const recordLeadConsentSchema = z.discriminatedUnion('status', [
+  z.object({ status: z.literal('OPTED_OUT'), reason: z.string().trim().min(3, 'Say why (at least 3 characters)').max(300) }),
+  z.object({
+    status: z.literal('OPTED_IN'),
+    basis: z.enum(OPT_IN_BASES),
+    reason: z.string().trim().max(300).optional(),
+    attestation: z.literal(true, { error: 'You must confirm this person agreed to receive WhatsApp marketing messages' }),
+  }),
+]);
+export type RecordLeadConsentInput = z.infer<typeof recordLeadConsentSchema>;
+
 /** Retry the recipients whose delivery definitely failed. `includeInterrupted` also retries those whose outcome is unknown (the sender was interrupted): they may already have been sent, so retrying can message someone twice. */
 export const retryFailedSchema = z.object({ includeInterrupted: z.boolean().default(false) });
 export type RetryFailedInput = z.infer<typeof retryFailedSchema>;

@@ -1,3 +1,4 @@
+import { recordConsent } from '../campaigns/consent.js';
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
 import { DbService } from '../db/db.module.js';
@@ -182,16 +183,11 @@ export class MetaLeadAdsService {
         { defaultSource: 'meta_ads' },
       );
 
-      // 3. Record explicit WhatsApp OPTED_IN consent
-      await tx.consent.create({
-        data: {
-          id: uuidv7(),
-          tenantId,
-          leadId: lead.id,
-          channel: 'whatsapp',
-          status: 'OPTED_IN',
-          source: 'meta_lead_ad',
-        },
+      // 3. A Lead Ad form submission means the person asked to be contacted about this enquiry: SERVICE consent, with the form as evidence.
+      //    It is not an opt-in to promotional broadcasts; a MARKETING opt-in needs its own checkbox or an attestation.
+      await recordConsent(tx, {
+        tenantId, leadId: lead.id, status: 'OPTED_IN', purpose: 'SERVICE', method: 'META_LEAD_AD', actorType: 'CUSTOMER', source: 'meta_lead_ad',
+        evidence: { provider: 'meta_lead_ads' },
       });
 
       // 4. Emit lead.created event for automation triggers (e.g. instant welcome WhatsApp)
