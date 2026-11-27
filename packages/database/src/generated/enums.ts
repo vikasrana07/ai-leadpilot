@@ -35,6 +35,14 @@ export const UserStatus = {
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
 
 
+export const PermissionOverrideEffect = {
+  GRANT: 'GRANT',
+  REVOKE: 'REVOKE'
+} as const
+
+export type PermissionOverrideEffect = (typeof PermissionOverrideEffect)[keyof typeof PermissionOverrideEffect]
+
+
 export const StageKind = {
   OPEN: 'OPEN',
   WON: 'WON',
@@ -77,7 +85,9 @@ export type PropertyStatus = (typeof PropertyStatus)[keyof typeof PropertyStatus
 
 export const ChannelType = {
   WHATSAPP: 'WHATSAPP',
-  WEB_WIDGET: 'WEB_WIDGET'
+  WEB_WIDGET: 'WEB_WIDGET',
+  MESSENGER: 'MESSENGER',
+  INSTAGRAM: 'INSTAGRAM'
 } as const
 
 export type ChannelType = (typeof ChannelType)[keyof typeof ChannelType]
@@ -228,6 +238,16 @@ export const SubscriptionStatus = {
 } as const
 
 export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+
+
+export const SlotRescueStatus = {
+  OPEN: 'OPEN',
+  CLAIMED: 'CLAIMED',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type SlotRescueStatus = (typeof SlotRescueStatus)[keyof typeof SlotRescueStatus]
 
 
 export const EmailDeliveryStatus = {

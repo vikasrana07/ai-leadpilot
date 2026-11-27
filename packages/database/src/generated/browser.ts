@@ -48,6 +48,11 @@ export type RolePermission = Prisma.RolePermissionModel
  */
 export type Membership = Prisma.MembershipModel
 /**
+ * Model MemberPermissionOverride
+ * 
+ */
+export type MemberPermissionOverride = Prisma.MemberPermissionOverrideModel
+/**
  * Model Invitation
  * 
  */
@@ -402,6 +407,31 @@ export type PortalSession = Prisma.PortalSessionModel
  * Per-person alert settings (sound and desktop alerts). No tenant: personal to the user. Missing row = defaults.
  */
 export type UserAlertSettings = Prisma.UserAlertSettingsModel
+/**
+ * Model PushSubscription
+ * 
+ */
+export type PushSubscription = Prisma.PushSubscriptionModel
+/**
+ * Model PortalEmailConfig
+ * 
+ */
+export type PortalEmailConfig = Prisma.PortalEmailConfigModel
+/**
+ * Model PortalEmailLog
+ * 
+ */
+export type PortalEmailLog = Prisma.PortalEmailLogModel
+/**
+ * Model GoogleSheetSync
+ * 
+ */
+export type GoogleSheetSync = Prisma.GoogleSheetSyncModel
+/**
+ * Model SlotRescueOffer
+ * 
+ */
+export type SlotRescueOffer = Prisma.SlotRescueOfferModel
 /**
  * Model TrackedEmail
  * 

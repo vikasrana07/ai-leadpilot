@@ -209,6 +209,7 @@ export type MembershipWhereInput = {
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>
+  permissionOverrides?: Prisma.MemberPermissionOverrideListRelationFilter
 }
 
 export type MembershipOrderByWithRelationInput = {
@@ -223,6 +224,7 @@ export type MembershipOrderByWithRelationInput = {
   tenant?: Prisma.TenantOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
   role?: Prisma.RoleOrderByWithRelationInput
+  permissionOverrides?: Prisma.MemberPermissionOverrideOrderByRelationAggregateInput
 }
 
 export type MembershipWhereUniqueInput = Prisma.AtLeast<{
@@ -241,6 +243,7 @@ export type MembershipWhereUniqueInput = Prisma.AtLeast<{
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>
+  permissionOverrides?: Prisma.MemberPermissionOverrideListRelationFilter
 }, "id" | "tenantId_userId">
 
 export type MembershipOrderByWithAggregationInput = {
@@ -280,6 +283,7 @@ export type MembershipCreateInput = {
   tenant: Prisma.TenantCreateNestedOneWithoutMembershipsInput
   user: Prisma.UserCreateNestedOneWithoutMembershipsInput
   role: Prisma.RoleCreateNestedOneWithoutMembershipsInput
+  permissionOverrides?: Prisma.MemberPermissionOverrideCreateNestedManyWithoutMembershipInput
 }
 
 export type MembershipUncheckedCreateInput = {
@@ -291,6 +295,7 @@ export type MembershipUncheckedCreateInput = {
   invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  permissionOverrides?: Prisma.MemberPermissionOverrideUncheckedCreateNestedManyWithoutMembershipInput
 }
 
 export type MembershipUpdateInput = {
@@ -302,6 +307,7 @@ export type MembershipUpdateInput = {
   tenant?: Prisma.TenantUpdateOneRequiredWithoutMembershipsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutMembershipsNestedInput
   role?: Prisma.RoleUpdateOneRequiredWithoutMembershipsNestedInput
+  permissionOverrides?: Prisma.MemberPermissionOverrideUpdateManyWithoutMembershipNestedInput
 }
 
 export type MembershipUncheckedUpdateInput = {
@@ -313,6 +319,7 @@ export type MembershipUncheckedUpdateInput = {
   invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  permissionOverrides?: Prisma.MemberPermissionOverrideUncheckedUpdateManyWithoutMembershipNestedInput
 }
 
 export type MembershipCreateManyInput = {
@@ -391,6 +398,11 @@ export type MembershipMinOrderByAggregateInput = {
   invitedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type MembershipScalarRelationFilter = {
+  is?: Prisma.MembershipWhereInput
+  isNot?: Prisma.MembershipWhereInput
 }
 
 export type MembershipCreateNestedManyWithoutTenantInput = {
@@ -523,6 +535,20 @@ export type EnumMembershipStatusFieldUpdateOperationsInput = {
   set?: $Enums.MembershipStatus
 }
 
+export type MembershipCreateNestedOneWithoutPermissionOverridesInput = {
+  create?: Prisma.XOR<Prisma.MembershipCreateWithoutPermissionOverridesInput, Prisma.MembershipUncheckedCreateWithoutPermissionOverridesInput>
+  connectOrCreate?: Prisma.MembershipCreateOrConnectWithoutPermissionOverridesInput
+  connect?: Prisma.MembershipWhereUniqueInput
+}
+
+export type MembershipUpdateOneRequiredWithoutPermissionOverridesNestedInput = {
+  create?: Prisma.XOR<Prisma.MembershipCreateWithoutPermissionOverridesInput, Prisma.MembershipUncheckedCreateWithoutPermissionOverridesInput>
+  connectOrCreate?: Prisma.MembershipCreateOrConnectWithoutPermissionOverridesInput
+  upsert?: Prisma.MembershipUpsertWithoutPermissionOverridesInput
+  connect?: Prisma.MembershipWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MembershipUpdateToOneWithWhereWithoutPermissionOverridesInput, Prisma.MembershipUpdateWithoutPermissionOverridesInput>, Prisma.MembershipUncheckedUpdateWithoutPermissionOverridesInput>
+}
+
 export type MembershipCreateWithoutTenantInput = {
   id?: string
   status?: $Enums.MembershipStatus
@@ -531,6 +557,7 @@ export type MembershipCreateWithoutTenantInput = {
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMembershipsInput
   role: Prisma.RoleCreateNestedOneWithoutMembershipsInput
+  permissionOverrides?: Prisma.MemberPermissionOverrideCreateNestedManyWithoutMembershipInput
 }
 
 export type MembershipUncheckedCreateWithoutTenantInput = {
@@ -541,6 +568,7 @@ export type MembershipUncheckedCreateWithoutTenantInput = {
   invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  permissionOverrides?: Prisma.MemberPermissionOverrideUncheckedCreateNestedManyWithoutMembershipInput
 }
 
 export type MembershipCreateOrConnectWithoutTenantInput = {
@@ -591,6 +619,7 @@ export type MembershipCreateWithoutUserInput = {
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutMembershipsInput
   role: Prisma.RoleCreateNestedOneWithoutMembershipsInput
+  permissionOverrides?: Prisma.MemberPermissionOverrideCreateNestedManyWithoutMembershipInput
 }
 
 export type MembershipUncheckedCreateWithoutUserInput = {
@@ -601,6 +630,7 @@ export type MembershipUncheckedCreateWithoutUserInput = {
   invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  permissionOverrides?: Prisma.MemberPermissionOverrideUncheckedCreateNestedManyWithoutMembershipInput
 }
 
 export type MembershipCreateOrConnectWithoutUserInput = {
@@ -637,6 +667,7 @@ export type MembershipCreateWithoutRoleInput = {
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutMembershipsInput
   user: Prisma.UserCreateNestedOneWithoutMembershipsInput
+  permissionOverrides?: Prisma.MemberPermissionOverrideCreateNestedManyWithoutMembershipInput
 }
 
 export type MembershipUncheckedCreateWithoutRoleInput = {
@@ -647,6 +678,7 @@ export type MembershipUncheckedCreateWithoutRoleInput = {
   invitedBy?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  permissionOverrides?: Prisma.MemberPermissionOverrideUncheckedCreateNestedManyWithoutMembershipInput
 }
 
 export type MembershipCreateOrConnectWithoutRoleInput = {
@@ -675,6 +707,66 @@ export type MembershipUpdateManyWithWhereWithoutRoleInput = {
   data: Prisma.XOR<Prisma.MembershipUpdateManyMutationInput, Prisma.MembershipUncheckedUpdateManyWithoutRoleInput>
 }
 
+export type MembershipCreateWithoutPermissionOverridesInput = {
+  id?: string
+  status?: $Enums.MembershipStatus
+  invitedBy?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutMembershipsInput
+  user: Prisma.UserCreateNestedOneWithoutMembershipsInput
+  role: Prisma.RoleCreateNestedOneWithoutMembershipsInput
+}
+
+export type MembershipUncheckedCreateWithoutPermissionOverridesInput = {
+  id?: string
+  tenantId: string
+  userId: string
+  roleId: string
+  status?: $Enums.MembershipStatus
+  invitedBy?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type MembershipCreateOrConnectWithoutPermissionOverridesInput = {
+  where: Prisma.MembershipWhereUniqueInput
+  create: Prisma.XOR<Prisma.MembershipCreateWithoutPermissionOverridesInput, Prisma.MembershipUncheckedCreateWithoutPermissionOverridesInput>
+}
+
+export type MembershipUpsertWithoutPermissionOverridesInput = {
+  update: Prisma.XOR<Prisma.MembershipUpdateWithoutPermissionOverridesInput, Prisma.MembershipUncheckedUpdateWithoutPermissionOverridesInput>
+  create: Prisma.XOR<Prisma.MembershipCreateWithoutPermissionOverridesInput, Prisma.MembershipUncheckedCreateWithoutPermissionOverridesInput>
+  where?: Prisma.MembershipWhereInput
+}
+
+export type MembershipUpdateToOneWithWhereWithoutPermissionOverridesInput = {
+  where?: Prisma.MembershipWhereInput
+  data: Prisma.XOR<Prisma.MembershipUpdateWithoutPermissionOverridesInput, Prisma.MembershipUncheckedUpdateWithoutPermissionOverridesInput>
+}
+
+export type MembershipUpdateWithoutPermissionOverridesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutMembershipsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutMembershipsNestedInput
+  role?: Prisma.RoleUpdateOneRequiredWithoutMembershipsNestedInput
+}
+
+export type MembershipUncheckedUpdateWithoutPermissionOverridesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumMembershipStatusFieldUpdateOperationsInput | $Enums.MembershipStatus
+  invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type MembershipCreateManyTenantInput = {
   id?: string
   userId: string
@@ -693,6 +785,7 @@ export type MembershipUpdateWithoutTenantInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMembershipsNestedInput
   role?: Prisma.RoleUpdateOneRequiredWithoutMembershipsNestedInput
+  permissionOverrides?: Prisma.MemberPermissionOverrideUpdateManyWithoutMembershipNestedInput
 }
 
 export type MembershipUncheckedUpdateWithoutTenantInput = {
@@ -703,6 +796,7 @@ export type MembershipUncheckedUpdateWithoutTenantInput = {
   invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  permissionOverrides?: Prisma.MemberPermissionOverrideUncheckedUpdateManyWithoutMembershipNestedInput
 }
 
 export type MembershipUncheckedUpdateManyWithoutTenantInput = {
@@ -733,6 +827,7 @@ export type MembershipUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutMembershipsNestedInput
   role?: Prisma.RoleUpdateOneRequiredWithoutMembershipsNestedInput
+  permissionOverrides?: Prisma.MemberPermissionOverrideUpdateManyWithoutMembershipNestedInput
 }
 
 export type MembershipUncheckedUpdateWithoutUserInput = {
@@ -743,6 +838,7 @@ export type MembershipUncheckedUpdateWithoutUserInput = {
   invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  permissionOverrides?: Prisma.MemberPermissionOverrideUncheckedUpdateManyWithoutMembershipNestedInput
 }
 
 export type MembershipUncheckedUpdateManyWithoutUserInput = {
@@ -773,6 +869,7 @@ export type MembershipUpdateWithoutRoleInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutMembershipsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutMembershipsNestedInput
+  permissionOverrides?: Prisma.MemberPermissionOverrideUpdateManyWithoutMembershipNestedInput
 }
 
 export type MembershipUncheckedUpdateWithoutRoleInput = {
@@ -783,6 +880,7 @@ export type MembershipUncheckedUpdateWithoutRoleInput = {
   invitedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  permissionOverrides?: Prisma.MemberPermissionOverrideUncheckedUpdateManyWithoutMembershipNestedInput
 }
 
 export type MembershipUncheckedUpdateManyWithoutRoleInput = {
@@ -795,6 +893,35 @@ export type MembershipUncheckedUpdateManyWithoutRoleInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type MembershipCountOutputType
+ */
+
+export type MembershipCountOutputType = {
+  permissionOverrides: number
+}
+
+export type MembershipCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  permissionOverrides?: boolean | MembershipCountOutputTypeCountPermissionOverridesArgs
+}
+
+/**
+ * MembershipCountOutputType without action
+ */
+export type MembershipCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MembershipCountOutputType
+   */
+  select?: Prisma.MembershipCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * MembershipCountOutputType without action
+ */
+export type MembershipCountOutputTypeCountPermissionOverridesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MemberPermissionOverrideWhereInput
+}
 
 
 export type MembershipSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -809,6 +936,8 @@ export type MembershipSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
+  permissionOverrides?: boolean | Prisma.Membership$permissionOverridesArgs<ExtArgs>
+  _count?: boolean | Prisma.MembershipCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["membership"]>
 
 export type MembershipSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -855,6 +984,8 @@ export type MembershipInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
+  permissionOverrides?: boolean | Prisma.Membership$permissionOverridesArgs<ExtArgs>
+  _count?: boolean | Prisma.MembershipCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MembershipIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
@@ -873,6 +1004,7 @@ export type $MembershipPayload<ExtArgs extends runtime.Types.Extensions.Internal
     tenant: Prisma.$TenantPayload<ExtArgs>
     user: Prisma.$UserPayload<ExtArgs>
     role: Prisma.$RolePayload<ExtArgs>
+    permissionOverrides: Prisma.$MemberPermissionOverridePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1280,6 +1412,7 @@ export interface Prisma__MembershipClient<T, Null = never, ExtArgs extends runti
   tenant<T extends Prisma.TenantDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TenantDefaultArgs<ExtArgs>>): Prisma.Prisma__TenantClient<runtime.Types.Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   role<T extends Prisma.RoleDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RoleDefaultArgs<ExtArgs>>): Prisma.Prisma__RoleClient<runtime.Types.Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  permissionOverrides<T extends Prisma.Membership$permissionOverridesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Membership$permissionOverridesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MemberPermissionOverridePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1715,6 +1848,30 @@ export type MembershipDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many Memberships to delete.
    */
   limit?: number
+}
+
+/**
+ * Membership.permissionOverrides
+ */
+export type Membership$permissionOverridesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MemberPermissionOverride
+   */
+  select?: Prisma.MemberPermissionOverrideSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MemberPermissionOverride
+   */
+  omit?: Prisma.MemberPermissionOverrideOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MemberPermissionOverrideInclude<ExtArgs> | null
+  where?: Prisma.MemberPermissionOverrideWhereInput
+  orderBy?: Prisma.MemberPermissionOverrideOrderByWithRelationInput | Prisma.MemberPermissionOverrideOrderByWithRelationInput[]
+  cursor?: Prisma.MemberPermissionOverrideWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MemberPermissionOverrideScalarFieldEnum | Prisma.MemberPermissionOverrideScalarFieldEnum[]
 }
 
 /**

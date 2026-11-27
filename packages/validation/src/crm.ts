@@ -215,7 +215,7 @@ export const widgetMessageSchema = z.object({ text: z.string().trim().min(1).max
 export const AI_TOOLS = ['get_business_info', 'search_properties', 'get_lead_details', 'update_lead', 'calculate_lead_score', 'check_availability', 'create_appointment', 'assign_agent', 'create_followup', 'handover_to_human'] as const;
 /** Tools that exist but cannot be switched on yet. Empty since phase 5 shipped appointments. */
 export const UNAVAILABLE_AI_TOOLS: readonly (typeof AI_TOOLS)[number][] = [];
-export const AI_LANGUAGES = ['en', 'hi', 'hinglish'] as const;
+export const AI_LANGUAGES = ['en', 'hi', 'hinglish', 'mr', 'ta', 'te', 'kn', 'gu', 'bn'] as const;
 export const AI_TONES = ['friendly', 'professional', 'concise', 'warm'] as const;
 
 const dayHours = z.object({ start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/) }).nullable();
@@ -224,12 +224,12 @@ export const assistantSchema = z.object({
   name: z.string().trim().min(1).max(40),
   businessIdentity: z.string().trim().max(300),
   businessDescription: z.string().trim().max(2000),
-  languages: z.array(z.enum(AI_LANGUAGES)).min(1).max(3),
+  languages: z.array(z.enum(AI_LANGUAGES)).min(1).max(9),
   tone: z.enum(AI_TONES),
   welcomeMessage: z.string().trim().max(500),
   systemInstructions: z.string().trim().max(4000),
   workingHours: z.object({ enabled: z.boolean(), days: z.object({ mon: dayHours, tue: dayHours, wed: dayHours, thu: dayHours, fri: dayHours, sat: dayHours, sun: dayHours }) }),
-  handoverRules: z.object({ keywords: z.array(z.string().trim().min(2).max(40)).max(30), onNegotiation: z.boolean(), onComplaint: z.boolean() }),
+  handoverRules: z.object({ keywords: z.array(z.string().trim().min(2).max(40)).max(30), onNegotiation: z.boolean(), onComplaint: z.boolean(), shadowMode: z.boolean().optional() }),
   allowedTools: z.array(z.enum(AI_TOOLS)).max(10).refine((t) => !t.some((x) => UNAVAILABLE_AI_TOOLS.includes(x)), { message: 'That tool is not available yet' }),
   model: z.string().trim().max(60).nullable(),
   temperature: z.number().min(0).max(1),
@@ -242,3 +242,9 @@ export type AssistantInput = z.infer<typeof assistantSchema>;
 
 export const knowledgeSearchSchema = z.object({ q: z.string().trim().min(2).max(500), limit: z.number().int().min(1).max(10).default(5) });
 export const documentUpdateSchema = z.object({ title: z.string().trim().min(1).max(160).optional(), category: z.string().trim().max(60).nullable().optional() });
+export const shadowDraftReviewSchema = z.object({
+  runId: z.string().uuid(),
+  action: z.enum(['approve', 'edit', 'dismiss']),
+  text: z.string().trim().min(1).max(4096).optional(),
+});
+export type ShadowDraftReviewInput = z.infer<typeof shadowDraftReviewSchema>;

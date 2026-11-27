@@ -128,11 +128,32 @@ model Membership {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   role   Role   @relation(fields: [roleId], references: [id])
+  permissionOverrides MemberPermissionOverride[]
 
   @@unique([tenantId, userId])
   @@index([tenantId])
   @@index([userId])
   @@map("memberships")
+}
+
+enum PermissionOverrideEffect {
+  GRANT
+  REVOKE
+}
+
+model MemberPermissionOverride {
+  id            String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String                   @map("tenant_id") @db.Uuid
+  membershipId  String                   @map("membership_id") @db.Uuid
+  permissionKey String                   @map("permission_key")
+  effect        PermissionOverrideEffect
+  createdAt     DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, permissionKey])
+  @@index([tenantId, membershipId])
+  @@map("member_permission_overrides")
 }
 
 model Invitation {
@@ -530,6 +551,8 @@ model ApiKey {
 enum ChannelType {
   WHATSAPP
   WEB_WIDGET
+  MESSENGER
+  INSTAGRAM
 }
 
 enum ChannelStatus {
@@ -1594,6 +1617,95 @@ model UserAlertSettings {
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@map("user_alert_settings")
+}
+
+model PushSubscription {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  endpoint  String
+  p256dh    String
+  auth      String
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([userId, endpoint])
+  @@index([tenantId, userId])
+  @@map("push_subscriptions")
+}
+
+model PortalEmailConfig {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String   @unique @map("tenant_id") @db.Uuid
+  webhookKey String   @unique @map("webhook_key")
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("portal_email_configs")
+}
+
+model PortalEmailLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  portal    String
+  sender    String
+  subject   String
+  status    String
+  leadId    String?  @map("lead_id") @db.Uuid
+  error     String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("portal_email_logs")
+}
+
+model GoogleSheetSync {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String    @unique @map("tenant_id") @db.Uuid
+  credentialId    String    @map("credential_id") @db.Uuid
+  spreadsheetId   String?   @map("spreadsheet_id")
+  spreadsheetName String?   @map("spreadsheet_name")
+  sheetName       String    @default("Sheet1") @map("sheet_name")
+  columnMapping   Json      @default("{}") @map("column_mapping")
+  lastSyncedRow   Int       @default(1) @map("last_synced_row")
+  enabled         Boolean   @default(false)
+  lastSyncedAt    DateTime? @map("last_synced_at") @db.Timestamptz(3)
+  lastError       String?   @map("last_error")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("google_sheet_syncs")
+}
+
+enum SlotRescueStatus {
+  OPEN
+  CLAIMED
+  EXPIRED
+  CANCELLED
+}
+
+model SlotRescueOffer {
+  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId             String           @map("tenant_id") @db.Uuid
+  sourceAppointmentId  String           @map("source_appointment_id") @db.Uuid
+  membershipId         String           @map("membership_id") @db.Uuid
+  title                String
+  location             String?
+  startsAt             DateTime         @map("starts_at") @db.Timestamptz(3)
+  endsAt               DateTime         @map("ends_at") @db.Timestamptz(3)
+  status               SlotRescueStatus @default(OPEN)
+  claimToken           String           @unique @map("claim_token")
+  offeredLeadIds       String[]         @map("offered_lead_ids") @db.Uuid
+  claimedLeadId        String?          @map("claimed_lead_id") @db.Uuid
+  claimedAppointmentId String?          @map("claimed_appointment_id") @db.Uuid
+  expiresAt            DateTime         @map("expires_at") @db.Timestamptz(3)
+  createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, status, expiresAt])
+  @@map("slot_rescue_offers")
 }
 
 // -----------------------------------------------------------------------------

@@ -331,6 +331,23 @@ export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
 }
 
+export type EnumPermissionOverrideEffectFilter<$PrismaModel = never> = {
+  equals?: $Enums.PermissionOverrideEffect | Prisma.EnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  in?: $Enums.PermissionOverrideEffect[] | Prisma.ListEnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PermissionOverrideEffect[] | Prisma.ListEnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPermissionOverrideEffectFilter<$PrismaModel> | $Enums.PermissionOverrideEffect
+}
+
+export type EnumPermissionOverrideEffectWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PermissionOverrideEffect | Prisma.EnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  in?: $Enums.PermissionOverrideEffect[] | Prisma.ListEnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PermissionOverrideEffect[] | Prisma.ListEnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPermissionOverrideEffectWithAggregatesFilter<$PrismaModel> | $Enums.PermissionOverrideEffect
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPermissionOverrideEffectFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPermissionOverrideEffectFilter<$PrismaModel>
+}
+
 export type EnumStageKindFilter<$PrismaModel = never> = {
   equals?: $Enums.StageKind | Prisma.EnumStageKindFieldRefInput<$PrismaModel>
   in?: $Enums.StageKind[] | Prisma.ListEnumStageKindFieldRefInput<$PrismaModel>
@@ -830,6 +847,23 @@ export type EnumSubscriptionStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel>
 }
 
+export type EnumSlotRescueStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlotRescueStatus | Prisma.EnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SlotRescueStatus[] | Prisma.ListEnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlotRescueStatus[] | Prisma.ListEnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlotRescueStatusFilter<$PrismaModel> | $Enums.SlotRescueStatus
+}
+
+export type EnumSlotRescueStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlotRescueStatus | Prisma.EnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SlotRescueStatus[] | Prisma.ListEnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlotRescueStatus[] | Prisma.ListEnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlotRescueStatusWithAggregatesFilter<$PrismaModel> | $Enums.SlotRescueStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSlotRescueStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSlotRescueStatusFilter<$PrismaModel>
+}
+
 export type EnumEmailDeliveryStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.EmailDeliveryStatus | Prisma.EnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
   in?: $Enums.EmailDeliveryStatus[] | Prisma.ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
@@ -1212,6 +1246,23 @@ export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedStringNullableFilter<$PrismaModel>
   _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumPermissionOverrideEffectFilter<$PrismaModel = never> = {
+  equals?: $Enums.PermissionOverrideEffect | Prisma.EnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  in?: $Enums.PermissionOverrideEffect[] | Prisma.ListEnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PermissionOverrideEffect[] | Prisma.ListEnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPermissionOverrideEffectFilter<$PrismaModel> | $Enums.PermissionOverrideEffect
+}
+
+export type NestedEnumPermissionOverrideEffectWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PermissionOverrideEffect | Prisma.EnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  in?: $Enums.PermissionOverrideEffect[] | Prisma.ListEnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PermissionOverrideEffect[] | Prisma.ListEnumPermissionOverrideEffectFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPermissionOverrideEffectWithAggregatesFilter<$PrismaModel> | $Enums.PermissionOverrideEffect
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPermissionOverrideEffectFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPermissionOverrideEffectFilter<$PrismaModel>
 }
 
 export type NestedEnumStageKindFilter<$PrismaModel = never> = {
@@ -1673,6 +1724,23 @@ export type NestedEnumSubscriptionStatusWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumSlotRescueStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlotRescueStatus | Prisma.EnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SlotRescueStatus[] | Prisma.ListEnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlotRescueStatus[] | Prisma.ListEnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlotRescueStatusFilter<$PrismaModel> | $Enums.SlotRescueStatus
+}
+
+export type NestedEnumSlotRescueStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlotRescueStatus | Prisma.EnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SlotRescueStatus[] | Prisma.ListEnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlotRescueStatus[] | Prisma.ListEnumSlotRescueStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlotRescueStatusWithAggregatesFilter<$PrismaModel> | $Enums.SlotRescueStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSlotRescueStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSlotRescueStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumEmailDeliveryStatusFilter<$PrismaModel = never> = {

@@ -1207,6 +1207,52 @@
         ]
       }
     },
+    "/leads/{id}/voice-note": {
+      "post": {
+        "operationId": "LeadsController_voiceNote",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Leads"
+        ]
+      }
+    },
+    "/leads/{id}/voice-note/apply": {
+      "post": {
+        "operationId": "LeadsController_applyVoiceNote",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Leads"
+        ]
+      }
+    },
     "/pipeline/stages": {
       "get": {
         "operationId": "PipelineController_stages",
@@ -1515,6 +1561,83 @@
         ]
       }
     },
+    "/webhooks/portal-email/{webhookKey}": {
+      "post": {
+        "operationId": "PortalEmailWebhookController_ingest",
+        "parameters": [
+          {
+            "name": "webhookKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "PortalEmailWebhook"
+        ]
+      }
+    },
+    "/integrations/portal-email": {
+      "get": {
+        "operationId": "PortalEmailAdminController_getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "PortalEmailAdmin"
+        ]
+      },
+      "put": {
+        "operationId": "PortalEmailAdminController_saveConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "PortalEmailAdmin"
+        ]
+      }
+    },
+    "/integrations/portal-email/rotate-key": {
+      "post": {
+        "operationId": "PortalEmailAdminController_rotateKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "PortalEmailAdmin"
+        ]
+      }
+    },
+    "/integrations/portal-email/logs": {
+      "get": {
+        "operationId": "PortalEmailAdminController_logs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "PortalEmailAdmin"
+        ]
+      }
+    },
     "/appointments": {
       "get": {
         "operationId": "AppointmentsController_list",
@@ -1783,6 +1906,130 @@
         },
         "tags": [
           "Appointments"
+        ]
+      }
+    },
+    "/appointments/slot-rescue": {
+      "get": {
+        "operationId": "SlotRescueAdminController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SlotRescueAdmin"
+        ]
+      }
+    },
+    "/appointments/slot-rescue/settings": {
+      "get": {
+        "operationId": "SlotRescueAdminController_getSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SlotRescueAdmin"
+        ]
+      },
+      "put": {
+        "operationId": "SlotRescueAdminController_saveSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SlotRescueAdmin"
+        ]
+      }
+    },
+    "/portal/claim/{token}": {
+      "get": {
+        "operationId": "SlotRescuePublicController_get",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SlotRescuePublic"
+        ]
+      },
+      "post": {
+        "operationId": "SlotRescuePublicController_claim",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SlotRescuePublic"
+        ]
+      }
+    },
+    "/notifications/push/vapid-key": {
+      "get": {
+        "operationId": "NotificationsController_vapidKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/push/subscribe": {
+      "post": {
+        "operationId": "NotificationsController_subscribePush",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "delete": {
+        "operationId": "NotificationsController_unsubscribePush",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notifications"
         ]
       }
     },
@@ -3002,6 +3249,106 @@
         ]
       }
     },
+    "/conversations/{id}/shadow-draft": {
+      "get": {
+        "operationId": "ConversationsController_shadowDraft",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/conversations/{id}/shadow-draft/review": {
+      "post": {
+        "operationId": "ConversationsController_reviewShadowDraft",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/conversations/{id}/promises": {
+      "get": {
+        "operationId": "ConversationsController_promises",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
+    "/conversations/{id}/promises/{tid}/complete": {
+      "post": {
+        "operationId": "ConversationsController_completePromise",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tid",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Conversations"
+        ]
+      }
+    },
     "/conversations/{id}/messages/{mid}/media": {
       "get": {
         "operationId": "ConversationsController_media",
@@ -3100,6 +3447,74 @@
         },
         "tags": [
           "PlatformWhatsappWebhook"
+        ]
+      }
+    },
+    "/webhooks/meta-social/{webhookKey}": {
+      "get": {
+        "operationId": "MetaSocialWebhookController_verify",
+        "parameters": [
+          {
+            "name": "webhookKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hub.mode",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hub.verify_token",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hub.challenge",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "MetaSocialWebhook"
+        ]
+      },
+      "post": {
+        "operationId": "MetaSocialWebhookController_receive",
+        "parameters": [
+          {
+            "name": "webhookKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "MetaSocialWebhook"
         ]
       }
     },
@@ -3413,6 +3828,55 @@
         ]
       }
     },
+    "/channels/meta-social": {
+      "get": {
+        "operationId": "MetaSocialAdminController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "MetaSocialAdmin"
+        ]
+      },
+      "post": {
+        "operationId": "MetaSocialAdminController_connect",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "MetaSocialAdmin"
+        ]
+      }
+    },
+    "/channels/meta-social/{id}": {
+      "delete": {
+        "operationId": "MetaSocialAdminController_disconnect",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "MetaSocialAdmin"
+        ]
+      }
+    },
     "/integrations/google-calendar": {
       "get": {
         "operationId": "GoogleCalendarController_status",
@@ -3509,6 +3973,20 @@
     "/analytics/overview": {
       "get": {
         "operationId": "AnalyticsController_overview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/analytics/revenue-leakage": {
+      "get": {
+        "operationId": "AnalyticsController_revenueLeakage",
         "parameters": [],
         "responses": {
           "200": {
@@ -3910,6 +4388,34 @@
     "/ai/runs": {
       "get": {
         "operationId": "AiController_runs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Ai"
+        ]
+      }
+    },
+    "/ai/shadow-stats": {
+      "get": {
+        "operationId": "AiController_shadowStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Ai"
+        ]
+      }
+    },
+    "/ai/shadow-mode/go-live": {
+      "post": {
+        "operationId": "AiController_goLive",
         "parameters": [],
         "responses": {
           "200": {
@@ -5537,6 +6043,20 @@
         ]
       }
     },
+    "/usage/history": {
+      "get": {
+        "operationId": "UsageController_history",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Usage"
+        ]
+      }
+    },
     "/team/members": {
       "get": {
         "operationId": "TeamController_members",
@@ -5669,6 +6189,50 @@
         ]
       }
     },
+    "/team/members/{id}/permissions": {
+      "get": {
+        "operationId": "TeamController_getMemberPermissions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Team"
+        ]
+      },
+      "put": {
+        "operationId": "TeamController_setMemberPermissions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Team"
+        ]
+      }
+    },
     "/roles": {
       "get": {
         "operationId": "RolesController_list",
@@ -5778,6 +6342,88 @@
         },
         "tags": [
           "Health"
+        ]
+      }
+    },
+    "/integrations/google-sheets": {
+      "get": {
+        "operationId": "GoogleSheetsController_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "GoogleSheets"
+        ]
+      },
+      "delete": {
+        "operationId": "GoogleSheetsController_disconnect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "GoogleSheets"
+        ]
+      }
+    },
+    "/integrations/google-sheets/auth-url": {
+      "get": {
+        "operationId": "GoogleSheetsController_authUrl",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "GoogleSheets"
+        ]
+      }
+    },
+    "/integrations/google-sheets/connect": {
+      "post": {
+        "operationId": "GoogleSheetsController_connect",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "GoogleSheets"
+        ]
+      }
+    },
+    "/integrations/google-sheets/config": {
+      "put": {
+        "operationId": "GoogleSheetsController_configure",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "GoogleSheets"
+        ]
+      }
+    },
+    "/integrations/google-sheets/sync-now": {
+      "post": {
+        "operationId": "GoogleSheetsController_syncNow",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "GoogleSheets"
         ]
       }
     },

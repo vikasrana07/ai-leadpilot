@@ -57,6 +57,7 @@ export const ModelName = {
   Role: 'Role',
   RolePermission: 'RolePermission',
   Membership: 'Membership',
+  MemberPermissionOverride: 'MemberPermissionOverride',
   Invitation: 'Invitation',
   Session: 'Session',
   EmailVerificationToken: 'EmailVerificationToken',
@@ -128,6 +129,11 @@ export const ModelName = {
   PortalLoginCode: 'PortalLoginCode',
   PortalSession: 'PortalSession',
   UserAlertSettings: 'UserAlertSettings',
+  PushSubscription: 'PushSubscription',
+  PortalEmailConfig: 'PortalEmailConfig',
+  PortalEmailLog: 'PortalEmailLog',
+  GoogleSheetSync: 'GoogleSheetSync',
+  SlotRescueOffer: 'SlotRescueOffer',
   TrackedEmail: 'TrackedEmail',
   EmailEngagementEvent: 'EmailEngagementEvent',
   EmailSuppression: 'EmailSuppression',
@@ -231,6 +237,18 @@ export const MembershipScalarFieldEnum = {
 } as const
 
 export type MembershipScalarFieldEnum = (typeof MembershipScalarFieldEnum)[keyof typeof MembershipScalarFieldEnum]
+
+
+export const MemberPermissionOverrideScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  membershipId: 'membershipId',
+  permissionKey: 'permissionKey',
+  effect: 'effect',
+  createdAt: 'createdAt'
+} as const
+
+export type MemberPermissionOverrideScalarFieldEnum = (typeof MemberPermissionOverrideScalarFieldEnum)[keyof typeof MemberPermissionOverrideScalarFieldEnum]
 
 
 export const InvitationScalarFieldEnum = {
@@ -1368,6 +1386,88 @@ export const UserAlertSettingsScalarFieldEnum = {
 } as const
 
 export type UserAlertSettingsScalarFieldEnum = (typeof UserAlertSettingsScalarFieldEnum)[keyof typeof UserAlertSettingsScalarFieldEnum]
+
+
+export const PushSubscriptionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  endpoint: 'endpoint',
+  p256dh: 'p256dh',
+  auth: 'auth',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt'
+} as const
+
+export type PushSubscriptionScalarFieldEnum = (typeof PushSubscriptionScalarFieldEnum)[keyof typeof PushSubscriptionScalarFieldEnum]
+
+
+export const PortalEmailConfigScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  webhookKey: 'webhookKey',
+  enabled: 'enabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PortalEmailConfigScalarFieldEnum = (typeof PortalEmailConfigScalarFieldEnum)[keyof typeof PortalEmailConfigScalarFieldEnum]
+
+
+export const PortalEmailLogScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  portal: 'portal',
+  sender: 'sender',
+  subject: 'subject',
+  status: 'status',
+  leadId: 'leadId',
+  error: 'error',
+  createdAt: 'createdAt'
+} as const
+
+export type PortalEmailLogScalarFieldEnum = (typeof PortalEmailLogScalarFieldEnum)[keyof typeof PortalEmailLogScalarFieldEnum]
+
+
+export const GoogleSheetSyncScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  credentialId: 'credentialId',
+  spreadsheetId: 'spreadsheetId',
+  spreadsheetName: 'spreadsheetName',
+  sheetName: 'sheetName',
+  columnMapping: 'columnMapping',
+  lastSyncedRow: 'lastSyncedRow',
+  enabled: 'enabled',
+  lastSyncedAt: 'lastSyncedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GoogleSheetSyncScalarFieldEnum = (typeof GoogleSheetSyncScalarFieldEnum)[keyof typeof GoogleSheetSyncScalarFieldEnum]
+
+
+export const SlotRescueOfferScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  sourceAppointmentId: 'sourceAppointmentId',
+  membershipId: 'membershipId',
+  title: 'title',
+  location: 'location',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  status: 'status',
+  claimToken: 'claimToken',
+  offeredLeadIds: 'offeredLeadIds',
+  claimedLeadId: 'claimedLeadId',
+  claimedAppointmentId: 'claimedAppointmentId',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SlotRescueOfferScalarFieldEnum = (typeof SlotRescueOfferScalarFieldEnum)[keyof typeof SlotRescueOfferScalarFieldEnum]
 
 
 export const TrackedEmailScalarFieldEnum = {
