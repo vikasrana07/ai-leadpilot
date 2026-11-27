@@ -58,11 +58,13 @@ export function HelpTourProvider({ children }: { children: ReactNode }) {
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs seen tour IDs when user changes
     setSeenIds(readSeenIds(storageKey));
   }, [storageKey]);
 
   // Close an active tour when navigating to another screen.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- resets active tour on route change
     setActiveTour(null);
     setSteps([]);
     setStepIndex(0);

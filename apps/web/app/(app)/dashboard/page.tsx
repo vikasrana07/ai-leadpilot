@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from 'recharts';
 import { LeadFormDialog } from '@/components/crm/lead-form-dialog';
+import { MorningBriefCard } from '@/components/dashboard/morning-brief-card';
 import { PageHeader } from '@/components/page/page-header';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,7 @@ import { KpiCard } from '@/components/ui/kpi-card';
 import { DashboardContentSkeleton } from '@/components/skeletons';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useI18n } from '@/lib/i18n-context';
 import { useTerms } from '@/lib/pack';
 import { cn } from '@/lib/cn';
 import { qs } from '@/lib/crm';
@@ -61,6 +63,7 @@ function SetupCard() {
 
 export default function DashboardPage() {
   const { ctx, activeWorkspace, can } = useAuth();
+  const { t } = useI18n();
   const terms = useTerms();
   const reduce = useReducedMotion();
   const [range, setRange] = useState<(typeof RANGES)[number][0]>('30d');
@@ -74,8 +77,9 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title={`Welcome, ${ctx.user.name.split(' ')[0]}`} description={`${activeWorkspace?.name ?? 'Your workspace'}${d ? ` · ${d.range.label}` : ''}`} actions={can('lead:write:all') || can('lead:write:own') ? <Button variant="primary" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4" aria-hidden />Add {terms.lead}</Button> : undefined} />
+      <PageHeader title={`${t('dashboard.welcome')}, ${ctx.user.name.split(' ')[0]}`} description={`${activeWorkspace?.name ?? 'Your workspace'}${d ? ` · ${d.range.label}` : ''}`} actions={can('lead:write:all') || can('lead:write:own') ? <Button variant="primary" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4" aria-hidden />Add {terms.lead}</Button> : undefined} />
       <SetupCard />
+      <MorningBriefCard />
 
       <div data-tour="dashboard-range" className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Date range">
         {RANGES.map(([k, label]) => <button key={k} aria-pressed={range === k} onClick={() => setRange(k)} className={cn('min-h-9 rounded-full px-3 py-1 text-[12px] font-medium transition-colors lg:min-h-0', range === k ? 'bg-primary text-primary-foreground' : 'border border-border bg-surface text-muted-foreground hover:bg-muted')}>{label}</button>)}
@@ -112,7 +116,7 @@ export default function DashboardPage() {
                   </CardBody>
                 </Card>
                 <Card>
-                  <CardHeader><CardTitle>Pipeline</CardTitle><span className="text-helper">{terms.Leads} by stage</span></CardHeader>
+                  <CardHeader><CardTitle>{t('dashboard.pipeline')}</CardTitle><span className="text-helper">{terms.Leads} by stage</span></CardHeader>
                   <CardBody className="h-64">
                     <ResponsiveContainer width="100%" height="100%"><BarChart data={d.pipeline} layout="vertical" margin={{ top: 0, right: 12, left: 0, bottom: 0 }}>
                       <XAxis type="number" hide /><YAxis type="category" dataKey="stage" width={118} {...axis} />
@@ -129,7 +133,7 @@ export default function DashboardPage() {
                   {d.hotLeads.length === 0 ? <p className="text-helper p-4">No hot open {terms.leads} right now.</p> : <ul className="divide-y divide-border">{d.hotLeads.map((h) => <li key={h.id}><Link href={`/leads/${h.id}`} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/40"><Avatar name={h.name} size={28} /><span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-medium">{h.name}</span><span className="text-helper">{h.stage} · contacted {timeAgo(h.lastContactedAt)}</span></span>{h.score !== null ? <Badge tone="danger" className="num">{h.score}</Badge> : null}</Link></li>)}</ul>}
                 </Card>
                 <Card>
-                  <CardHeader><CardTitle>Upcoming follow-ups</CardTitle></CardHeader>
+                  <CardHeader><CardTitle>{t('dashboard.upcomingFollowUps')}</CardTitle></CardHeader>
                   {d.upcomingFollowUps.length === 0 ? <p className="text-helper p-4">Nothing scheduled in the next 7 days.</p> : <ul className="divide-y divide-border">{d.upcomingFollowUps.map((f) => <li key={f.id}><Link href={`/leads/${f.id}`} className="flex items-center justify-between px-4 py-2.5 text-[13px] hover:bg-muted/40"><span className="font-medium">{f.name}</span><span className="num text-muted-foreground">{f.at ? new Date(f.at).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</span></Link></li>)}</ul>}
                 </Card>
                 <Card>

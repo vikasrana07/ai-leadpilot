@@ -1,7 +1,7 @@
 'use client';
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, Bot, Check, CheckCheck, Clock, FileText, Globe, MessageCircle, Paperclip, RotateCcw, Send, UserRound } from 'lucide-react';
+import { AlertCircle, Bot, Check, CheckCheck, Clock, FileText, Globe, MessageCircle, Paperclip, RotateCcw, Send, Sparkles, UserRound, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -100,6 +100,63 @@ export function Thread({ convo }: { convo: ConversationDetail }) {
   const canReply = can('conversation:reply');
   const optedOut = convo.whatsappConsent === 'OPTED_OUT';
 
+  const shadowDraft = useQuery({
+    queryKey: ['conversations', 'shadow-draft', convo.id],
+    enabled: canReply && convo.status !== 'CLOSED' && convo.mode === 'AI',
+    queryFn: () => api<{ runId: string; draft: string; tools: { name: string; ok: boolean }[]; createdAt: string } | null>(`/conversations/${convo.id}/shadow-draft`),
+  });
+  const [editedDraft, setEditedDraft] = useState<string | null>(null);
+  const draftValue = editedDraft ?? shadowDraft.data?.draft ?? '';
+  const isEdited = shadowDraft.data ? draftValue.trim() !== shadowDraft.data.draft.trim() : false;
+
+  const reviewDraft = useMutation({
+    mutationFn: (action: 'approve' | 'edit' | 'dismiss') =>
+      api(`/conversations/${convo.id}/shadow-draft/review`, {
+        method: 'POST',
+        body: {
+          runId: shadowDraft.data!.runId,
+          action,
+          ...(action === 'edit' ? { text: draftValue } : {}),
+        },
+      }),
+    onSuccess: async (_res, action) => {
+      setEditedDraft(null);
+      if (action === 'dismiss') toast.info('Shadow draft dismissed');
+      else toast.success(action === 'approve' ? 'AI draft approved & sent' : 'Edited reply sent');
+      await Promise.all([refresh(), qc.invalidateQueries({ queryKey: ['ai', 'shadow-stats'] })]);
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Could not review shadow draft'),
+  });
+
+  const promises = useQuery({
+    queryKey: ['conversations', 'promises', convo.id],
+    enabled: canReply && convo.status !== 'CLOSED',
+    queryFn: () =>
+      api<Array<{ id: string; title: string; dueAt: string | null; overdue: boolean; snippet: string; suggestedFollowUp: string }>>(
+        `/conversations/${convo.id}/promises`,
+      ),
+  });
+  const completePromise = useMutation({
+    mutationFn: (taskId: string) => api(`/conversations/${convo.id}/promises/${taskId}/complete`, { method: 'POST' }),
+    onSuccess: async () => {
+      toast.success('Promise marked fulfilled');
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['conversations', 'promises', convo.id] }),
+        qc.invalidateQueries({ queryKey: ['tasks'] }),
+      ]);
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Could not complete promise'),
+  });
+
+  const dealPulse = useQuery({
+    queryKey: ['conversations', 'deal-pulse', convo.id],
+    enabled: convo.status === 'OPEN',
+    queryFn: () =>
+      api<{ status: 'HEALTHY' | 'COOLING' | 'AT_RISK'; reasons: string[]; hoursSinceLastInbound: number | null; patternInterrupt: string }>(
+        `/conversations/${convo.id}/deal-pulse`,
+      ),
+  });
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-background p-4" role="log" aria-live="polite" aria-label="Messages">
@@ -109,6 +166,91 @@ export function Thread({ convo }: { convo: ConversationDetail }) {
       </div>
 
       <div className="border-t border-border bg-surface p-3">
+        {dealPulse.data && dealPulse.data.status !== 'HEALTHY' && convo.status === 'OPEN' ? (
+          <div className={cn('mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2 text-[12px]', dealPulse.data.status === 'AT_RISK' ? 'border-danger/40 bg-danger/5' : 'border-warning/40 bg-warning-soft/50')}>
+            <div className="min-w-0 flex-1">
+              <span className={cn('font-medium', dealPulse.data.status === 'AT_RISK' ? 'text-danger' : 'text-warning')}>
+                Deal Pulse: {dealPulse.data.status === 'AT_RISK' ? 'At Risk' : 'Cooling Off'}
+              </span>
+              {dealPulse.data.reasons.length > 0 ? (
+                <span className="ml-2 text-muted-foreground">{dealPulse.data.reasons.join(' · ')}</span>
+              ) : null}
+            </div>
+            {canReply && convo.mode === 'HUMAN' && !needsTemplate ? (
+              <Button size="sm" variant="secondary" className="h-7 px-2 text-[11px]" onClick={() => setText(dealPulse.data!.patternInterrupt)}>
+                Insert check-in
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+        {promises.data && promises.data.length > 0 && canReply && convo.status !== 'CLOSED' ? (
+          <div className="mb-3 space-y-1.5 rounded-lg border border-warning/40 bg-warning-soft/60 p-2.5">
+            <div className="flex items-center justify-between text-[12px] font-medium text-warning">
+              <span className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5" aria-hidden />
+                Open Promises ({promises.data.length})
+              </span>
+              <span className="text-[11px] font-normal text-muted-foreground">Zero-Drop Commitment Tracker</span>
+            </div>
+            {promises.data.map((p) => (
+              <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-background/80 px-2.5 py-1.5 text-[12px]">
+                <div className="min-w-0 flex-1">
+                  <span className="font-medium text-foreground">{p.title.replace(/^Promise:\s*/i, '')}</span>
+                  {p.dueAt ? (
+                    <span className={cn('ml-2 text-[11px]', p.overdue ? 'font-medium text-danger' : 'text-muted-foreground')}>
+                      {p.overdue ? 'Overdue · ' : 'Due '}{timeAgo(p.dueAt)}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {convo.mode === 'HUMAN' && !needsTemplate ? (
+                    <Button size="sm" variant="secondary" className="h-7 px-2 text-[11px]" onClick={() => setText(p.suggestedFollowUp)}>
+                      Insert follow-up
+                    </Button>
+                  ) : null}
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px]" disabled={completePromise.isPending} onClick={() => completePromise.mutate(p.id)}>
+                    <Check className="h-3 w-3" aria-hidden />
+                    Done
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        {shadowDraft.data && canReply && convo.mode === 'AI' ? (
+          <div className="mb-3 rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2 text-[12px]">
+              <span className="flex items-center gap-1.5 font-medium text-primary">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden />
+                AI Shadow Draft (not sent yet)
+              </span>
+              <span className="text-muted-foreground">Edit or approve in 1 tap</span>
+            </div>
+            <textarea
+              aria-label="Shadow AI draft reply"
+              rows={3}
+              value={draftValue}
+              onChange={(e) => setEditedDraft(e.target.value)}
+              className="w-full rounded-md border border-border bg-background px-2.5 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button size="sm" variant="ghost" disabled={reviewDraft.isPending} onClick={() => reviewDraft.mutate('dismiss')}>
+                <X className="h-3.5 w-3.5" aria-hidden />
+                Dismiss
+              </Button>
+              <Button
+                size="sm"
+                variant="primary"
+                loading={reviewDraft.isPending}
+                disabled={!draftValue.trim()}
+                onClick={() => reviewDraft.mutate(isEdited ? 'edit' : 'approve')}
+              >
+                <Send className="h-3.5 w-3.5" aria-hidden />
+                {isEdited ? 'Edit & Send' : 'Approve & Send'}
+              </Button>
+            </div>
+          </div>
+        ) : null}
         {!canReply ? <p className="text-helper text-center">You can read this conversation but not reply.</p>
           : convo.status === 'CLOSED' ? <div className="flex items-center justify-between gap-3 text-[13px]"><span className="text-muted-foreground">This conversation is closed. Replying reopens it.</span><Button size="sm" onClick={() => act.mutate('reopen')}>Reopen</Button></div>
           : convo.mode === 'AI' ? <div className="flex flex-col items-center gap-2 py-1"><Button variant="primary" size="lg" loading={act.isPending} onClick={() => act.mutate('takeover')}><UserRound className="h-4 w-4" aria-hidden />Join conversation</Button><p className="text-helper">The AI assistant keeps replying until you join.</p></div>

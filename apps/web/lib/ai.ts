@@ -10,9 +10,22 @@ export interface ScoringRules { criteria: { key: string; label: string; points: 
 export interface Assistant {
   enabled: boolean; name: string; businessIdentity: string; businessDescription: string; languages: string[]; tone: string; welcomeMessage: string; systemInstructions: string;
   workingHours: { enabled: boolean; days: Record<'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun', { start: string; end: string } | null> };
-  handoverRules: { keywords: string[]; onNegotiation: boolean; onComplaint: boolean };
+  handoverRules: { keywords: string[]; onNegotiation: boolean; onComplaint: boolean; shadowMode?: boolean };
   allowedTools: string[]; model: string | null; temperature: number; maxReplyChars: number; fallbackMessage: string; disclosureText: string; monthlyTokenCap: number | null;
   provider?: 'mock' | 'openai'; killSwitch?: boolean;
+}
+export interface ShadowStats {
+  shadowMode: boolean;
+  totalDrafts: number;
+  pending: number;
+  approvedUnchanged: number;
+  edited: number;
+  dismissed: number;
+  reviewedCount: number;
+  accuracyPct: number;
+  targetReviews: number;
+  minAccuracyPct: number;
+  readyForAutopilot: boolean;
 }
 export interface AiUsage { used: number; inputTokens: number; outputTokens: number; runs: number; cap: number; pct: number; warning: boolean; exceeded: boolean; resetsAt: string; killSwitch: boolean }
 export interface AiRun { id: string; conversationId: string; status: 'RUNNING' | 'COMPLETED' | 'FAILED' | 'SKIPPED'; model: string | null; promptVersion: string; inputTokens: number; outputTokens: number; latencyMs: number | null; error: string | null; tools: { name: string; ok: boolean }[]; guardViolations: string[]; outcome: string | null; createdAt: string }

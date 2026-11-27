@@ -8,6 +8,7 @@
 
 export * from './appointmentsControllerAvailabilityParams';
 export * from './conversationsControllerMessagesParams';
+export * from './metaSocialWebhookControllerVerifyParams';
 export * from './portalControllerSlotsParams';
 export * from './ssoControllerInitiateParams';
 export * from './supportPlatformControllerListParams';

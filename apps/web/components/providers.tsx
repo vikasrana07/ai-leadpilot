@@ -6,6 +6,7 @@ import { useState, type ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ApiError } from '@/lib/api';
+import { I18nProvider } from '@/lib/i18n-context';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { SidebarProvider } from '@/lib/sidebar-state';
 
@@ -28,17 +29,19 @@ export function Providers({
   }));
   return (
     <ThemeProvider>
-      <SidebarProvider initialCollapsed={initialSidebarCollapsed}>
-        {/* reducedMotion="user" makes every motion component honour prefers-reduced-motion */}
-        <MotionConfig reducedMotion="user">
-          <QueryClientProvider client={client}>
-            <TooltipProvider>
-              {children}
-              <ThemedToaster />
-            </TooltipProvider>
-          </QueryClientProvider>
-        </MotionConfig>
-      </SidebarProvider>
+      <I18nProvider>
+        <SidebarProvider initialCollapsed={initialSidebarCollapsed}>
+          {/* reducedMotion="user" makes every motion component honour prefers-reduced-motion */}
+          <MotionConfig reducedMotion="user">
+            <QueryClientProvider client={client}>
+              <TooltipProvider>
+                {children}
+                <ThemedToaster />
+              </TooltipProvider>
+            </QueryClientProvider>
+          </MotionConfig>
+        </SidebarProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }

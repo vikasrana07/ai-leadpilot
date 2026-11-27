@@ -135,3 +135,96 @@ export function useUsageControllerGet<TData = Awaited<ReturnType<typeof usageCon
 
 
 
+export const getUsageControllerHistoryUrl = () => {
+
+
+
+
+  return `/usage/history`
+}
+
+export const usageControllerHistory = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getUsageControllerHistoryUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getUsageControllerHistoryQueryKey = () => {
+    return [
+    `/usage/history`
+    ] as const;
+    }
+
+
+export const getUsageControllerHistoryQueryOptions = <TData = Awaited<ReturnType<typeof usageControllerHistory>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof usageControllerHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getUsageControllerHistoryQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof usageControllerHistory>>> = ({ signal }) => usageControllerHistory({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof usageControllerHistory>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type UsageControllerHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof usageControllerHistory>>>
+export type UsageControllerHistoryQueryError = unknown
+
+
+export function useUsageControllerHistory<TData = Awaited<ReturnType<typeof usageControllerHistory>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof usageControllerHistory>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof usageControllerHistory>>,
+          TError,
+          Awaited<ReturnType<typeof usageControllerHistory>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUsageControllerHistory<TData = Awaited<ReturnType<typeof usageControllerHistory>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof usageControllerHistory>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof usageControllerHistory>>,
+          TError,
+          Awaited<ReturnType<typeof usageControllerHistory>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUsageControllerHistory<TData = Awaited<ReturnType<typeof usageControllerHistory>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof usageControllerHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useUsageControllerHistory<TData = Awaited<ReturnType<typeof usageControllerHistory>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof usageControllerHistory>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getUsageControllerHistoryQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

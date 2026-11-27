@@ -7,6 +7,9 @@ import { toast } from 'sonner';
 import { WhatsappCard } from '@/components/integrations/whatsapp-card';
 import { WidgetCard } from '@/components/integrations/widget-card';
 import { GoogleCalendarCard } from '@/components/integrations/google-calendar-card';
+import { GoogleSheetsCard } from '@/components/integrations/google-sheets-card';
+import { MetaSocialCard } from '@/components/integrations/meta-social-card';
+import { PortalEmailCard } from '@/components/integrations/portal-email-card';
 import { SesCard } from '@/components/integrations/ses-card';
 import { PageHeader } from '@/components/page/page-header';
 import { Button } from '@/components/ui/button';
@@ -38,8 +41,11 @@ export default function IntegrationsPage() {
       {can('integration:manage') ? (
         <div data-tour="integrations-cards" className="mb-6 space-y-6">
           <WhatsappCard />
+          <MetaSocialCard />
           <WidgetCard />
           <SesCard />
+          <PortalEmailCard />
+          <GoogleSheetsCard />
         </div>
       ) : null}
       <GoogleCalendarCard />

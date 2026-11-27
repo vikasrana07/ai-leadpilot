@@ -46,7 +46,82 @@ function SoundAndAlerts() {
         </div>
       )}
       {state === 'unsupported' && <p className="text-helper">Desktop alerts are not supported in this browser.</p>}
+      <WebPushToggle />
     </fieldset>
+  );
+}
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const buf = new ArrayBuffer(rawData.length);
+  const out = new Uint8Array(buf);
+  for (let i = 0; i < rawData.length; ++i) out[i] = rawData.charCodeAt(i);
+  return out;
+}
+
+function WebPushToggle() {
+  const [busy, setBusy] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+  const vapid = useQuery({
+    queryKey: ['notifications', 'vapid'],
+    queryFn: () => api<{ enabled: boolean; publicKey: string | null }>('/notifications/push/vapid-key'),
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    void navigator.serviceWorker.ready
+      .then((reg) => reg.pushManager.getSubscription())
+      .then((sub) => setSubscribed(Boolean(sub)))
+      .catch(() => undefined);
+  }, []);
+
+  if (!vapid.data?.enabled || !vapid.data.publicKey) return null;
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+
+  async function toggle() {
+    setBusy(true);
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const existing = await reg.pushManager.getSubscription();
+      if (existing) {
+        await api('/notifications/push/subscribe', { method: 'DELETE', body: { endpoint: existing.endpoint } });
+        await existing.unsubscribe();
+        setSubscribed(false);
+      } else {
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapid.data!.publicKey!),
+        });
+        const json = sub.toJSON();
+        if (json.endpoint && json.keys?.p256dh && json.keys?.auth) {
+          await api('/notifications/push/subscribe', {
+            method: 'POST',
+            body: { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth }, userAgent: navigator.userAgent },
+          });
+          setSubscribed(true);
+        }
+      }
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="border-t border-border pt-2">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <p className="font-medium">Background push notifications</p>
+          <p className="text-helper">Receive alerts even when this browser tab is closed.</p>
+        </div>
+        <Button size="sm" variant={subscribed ? 'secondary' : 'primary'} loading={busy} onClick={() => void toggle()}>
+          {subscribed ? 'Disable push' : 'Enable push'}
+        </Button>
+      </div>
+    </div>
   );
 }
 

@@ -20,6 +20,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
+import { MemberPermissionsDialog } from '@/components/team/member-permissions-dialog';
 import { useAuth } from '@/lib/auth';
 import { handleApiError } from '@/lib/forms';
 
@@ -137,6 +138,7 @@ export default function TeamPage() {
   const qc = useQueryClient();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [resetMfa, setResetMfa] = useState<Member | null>(null);
+  const [permMember, setPermMember] = useState<Member | null>(null);
   const canInvite = can('team:invite');
   const canManage = can('team:manage');
   const members = useQuery({ queryKey: ['team', 'members'], queryFn: () => api<Member[]>('/team/members') });
@@ -194,6 +196,7 @@ export default function TeamPage() {
                         <DropdownItem key={r.key} onSelect={() => act.mutate({ path: `/team/members/${m.id}/role`, method: 'PATCH', body: { roleKey: r.key }, ok: `${m.user.name} is now ${r.name}` })}>Make {r.name}</DropdownItem>
                       ))}
                       <DropdownSeparator />
+                      {m.roleKey !== 'owner' ? <DropdownItem onSelect={() => setPermMember(m)}>Permission overrides</DropdownItem> : null}
                       {m.mfaEnabled ? <DropdownItem onSelect={() => setResetMfa(m)}>Reset two-step verification</DropdownItem> : null}
                       {m.status === 'ACTIVE'
                         ? <DropdownItem danger onSelect={() => act.mutate({ path: `/team/members/${m.id}/status`, method: 'PATCH', body: { status: 'DEACTIVATED' }, ok: `${m.user.name} was deactivated` })}>Deactivate</DropdownItem>
@@ -229,6 +232,7 @@ export default function TeamPage() {
           </ul>
         </Card>
       ) : null}
+      <MemberPermissionsDialog member={permMember} onClose={() => setPermMember(null)} />
       <ResetMfaDialog member={resetMfa} onClose={() => setResetMfa(null)} />
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} />
     </>

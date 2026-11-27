@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from 'recharts';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/page/page-header';
+import { RevenueLeakageRadar } from '@/components/reports/revenue-leakage-radar';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -109,6 +110,8 @@ export default function ReportsPage() {
       <div role="tablist" aria-label="Reports" className="mb-4 flex flex-wrap gap-1 border-b border-border">
         {visible.map((r) => <button key={r.key} role="tab" aria-selected={key === r.key} onClick={() => setKey(r.key)} className={cn('relative px-3 py-2.5 text-[13px] font-medium', key === r.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>{T(r.label)}{key === r.key ? <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" /> : null}</button>)}
       </div>
+
+      <RevenueLeakageRadar query={query} enabled={customReady} />
 
       {!customReady ? <Card><EmptyState icon={BarChart3} title="Choose a start and end date" description="Pick both dates for a custom range." /></Card>
         : q.isPending ? (

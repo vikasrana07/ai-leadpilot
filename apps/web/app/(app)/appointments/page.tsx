@@ -9,6 +9,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { NoShowRecoveryDialog, type NoShowTarget } from '@/components/appointments/no-show-recovery-dialog';
+import { SlotRescueCard } from '@/components/appointments/slot-rescue-card';
 import { PageHeader } from '@/components/page/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -575,6 +576,7 @@ export default function AppointmentsPage() {
         }}
         onSuccess={() => setNoShowTarget(null)}
       />
+      <SlotRescueCard />
     </>
   );
 }

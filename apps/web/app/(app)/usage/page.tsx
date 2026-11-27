@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Gauge } from 'lucide-react';
 import Link from 'next/link';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as ReTooltip, XAxis, YAxis } from 'recharts';
 import { ENTITLEMENT_LABELS, LIMIT_KEYS, STATUS_LABEL, limitText, type SubStatus } from '@/lib/billing';
 import { PageHeader } from '@/components/page/page-header';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,10 @@ function Row({ label, value, hint }: { label: string; value: string; hint?: stri
 export default function UsagePage() {
   const terms = useTerms();
   const q = useQuery({ queryKey: ['usage'], queryFn: () => api<UsageView>('/usage') });
+  const hist = useQuery({
+    queryKey: ['usage', 'history'],
+    queryFn: () => api<{ date: string; aiTokens: number; messages: number; leads: number }[]>('/usage/history'),
+  });
   if (q.isPending) return <UsageSkeleton />;
   if (q.isError) return <><PageHeader title="Usage" /><Card><EmptyState icon={Gauge} title="Could not load usage" description="Please try again." action={<Button onClick={() => void q.refetch()}>Retry</Button>} /></Card></>;
   const u = q.data;
@@ -47,6 +52,28 @@ export default function UsagePage() {
         <Card><CardHeader><CardTitle>Work</CardTitle></CardHeader><CardBody><div className="divide-y divide-border"><Row label={`${terms.Leads} created`} value={n(u.leads.created)} /><Row label="Appointments created" value={n(u.appointments.created)} /><Row label="Automation runs completed" value={n(u.automations.succeeded)} /><Row label="Automation runs skipped" value={n(u.automations.skipped)} /><Row label="Automation runs failed" value={n(u.automations.failed)} /></div></CardBody></Card>
         <Card><CardHeader><CardTitle>Workspace</CardTitle></CardHeader><CardBody><div className="divide-y divide-border"><Row label="Active team members" value={n(u.seats.active)} /><Row label="Knowledge documents" value={n(u.storage.documents)} /><Row label="Document storage" value={bytes(u.storage.bytes)} /></div></CardBody></Card>
       </div>
+      {hist.data && hist.data.length > 0 ? (
+        <Card className="mt-3">
+          <CardHeader>
+            <CardTitle>14-day activity trend</CardTitle>
+            <span className="text-helper">Daily messages &amp; {terms.leads.toLowerCase()}</span>
+          </CardHeader>
+          <CardBody>
+            <div className="h-56 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={hist.data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+                  <XAxis dataKey="date" tickFormatter={(v: string) => v.slice(5)} tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />
+                  <ReTooltip contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', fontSize: 12 }} />
+                  <Bar dataKey="messages" name="Messages" fill="var(--chart-1)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="leads" name={terms.Leads} fill="var(--chart-2)" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
     </>
   );
 }

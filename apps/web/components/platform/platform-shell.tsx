@@ -9,6 +9,7 @@ import {
   ChevronsLeft,
   CreditCard,
   FileText,
+  HeartPulse,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -45,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/platform/plans', label: 'Plans', icon: CreditCard },
   { href: '/platform/deletions', label: 'Deletion Requests', icon: Trash2 },
   { href: '/platform/ops', label: 'Ops Status', icon: Activity },
+  { href: '/platform/health', label: 'Platform Health', icon: HeartPulse },
   { href: '/platform/audit', label: 'Audit Log', icon: FileText },
   { href: '/platform/security', label: 'Security & MFA', icon: ShieldCheck },
 ];

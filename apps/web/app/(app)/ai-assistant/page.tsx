@@ -2,7 +2,7 @@
 
 import { AI_LANGUAGES, AI_TONES } from '@leadpilot/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bot, Gauge, Info, TriangleAlert } from 'lucide-react';
+import { Bot, Gauge, Info, ShieldCheck, Sparkles, TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -16,14 +16,24 @@ import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { api, ApiError } from '@/lib/api';
-import { TOOL_INFO, type AiRun, type AiUsage, type Assistant, type ScoringRules } from '@/lib/ai';
+import { TOOL_INFO, type AiRun, type AiUsage, type Assistant, type ScoringRules, type ShadowStats } from '@/lib/ai';
 import { cn } from '@/lib/cn';
 import { timeAgo } from '@/lib/format';
 import { useTerms } from '@/lib/pack';
 import { applyTerms } from '@/lib/terms-text';
 
 const DAYS = [['mon', 'Monday'], ['tue', 'Tuesday'], ['wed', 'Wednesday'], ['thu', 'Thursday'], ['fri', 'Friday'], ['sat', 'Saturday'], ['sun', 'Sunday']] as const;
-const LANG_LABEL: Record<string, string> = { en: 'English', hi: 'Hindi', hinglish: 'Hinglish' };
+const LANG_LABEL: Record<string, string> = {
+  en: 'English',
+  hi: 'Hindi',
+  hinglish: 'Hinglish',
+  mr: 'Marathi',
+  ta: 'Tamil',
+  te: 'Telugu',
+  kn: 'Kannada',
+  gu: 'Gujarati',
+  bn: 'Bengali',
+};
 const TABS = [['assistant', 'Assistant'], ['scoring', 'Lead scoring'], ['activity', 'Activity & usage']] as const;
 
 function UsageMeter({ u }: { u: AiUsage }) {
@@ -45,6 +55,16 @@ function AssistantForm({ data }: { data: Assistant }) {
   const [keywords, setKeywords] = useState(data.handoverRules.keywords.join(', '));
   const [err, setErr] = useState<string | null>(null);
   const set = <K extends keyof Assistant>(k: K, v: Assistant[K]) => setF((s) => ({ ...s, [k]: v }));
+  const shadow = useQuery({ queryKey: ['ai', 'shadow-stats'], queryFn: () => api<ShadowStats>('/ai/shadow-stats') });
+  const goLive = useMutation({
+    mutationFn: () => api<Assistant>('/ai/shadow-mode/go-live', { method: 'POST' }),
+    onSuccess: async (next) => {
+      setF((s) => ({ ...s, handoverRules: next.handoverRules }));
+      toast.success('AI Auto-Pilot is now live!');
+      await qc.invalidateQueries({ queryKey: ['ai'] });
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Could not switch to live mode'),
+  });
   const save = useMutation({
     mutationFn: () => { const { provider: _p, killSwitch: _k, ...body } = f; void _p; void _k; return api<Assistant>('/ai/assistant', { method: 'PUT', body: { ...body, handoverRules: { ...f.handoverRules, keywords: keywords.split(/[,\n]/).map((x) => x.trim()).filter(Boolean) } } }); },
     onSuccess: async () => { setErr(null); toast.success('Assistant saved'); await qc.invalidateQueries({ queryKey: ['ai'] }); },
@@ -62,6 +82,42 @@ function AssistantForm({ data }: { data: Assistant }) {
         <CardHeader><div><CardTitle>Status</CardTitle><p className="text-helper mt-0.5">When on, the assistant starts every new conversation and hands over to your team when needed.</p></div>
           <label className="flex items-center gap-2 text-[13px] font-medium"><input type="checkbox" role="switch" checked={f.enabled} onChange={(e) => set('enabled', e.target.checked)} />{f.enabled ? 'On' : 'Off'}</label></CardHeader>
         <CardBody className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2 rounded-lg border border-border bg-muted/40 p-3.5 space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" aria-hidden />
+                <span className="text-[13px] font-medium">Shadow-to-Live Auto-Pilot</span>
+                <Badge tone={f.handoverRules.shadowMode ? 'warning' : 'success'}>{f.handoverRules.shadowMode ? 'Shadow Mode (Drafts Only)' : 'Live Auto-Pilot'}</Badge>
+              </div>
+              <label className="flex items-center gap-2 text-[13px]">
+                <input
+                  type="checkbox"
+                  role="switch"
+                  checked={Boolean(f.handoverRules.shadowMode)}
+                  onChange={(e) => set('handoverRules', { ...f.handoverRules, shadowMode: e.target.checked })}
+                />
+                Hold replies for 1-tap approval
+              </label>
+            </div>
+            <p className="text-helper">
+              In Shadow Mode, the AI drafts replies in your Inbox without sending them to customers. Approve drafts to build a trust score before turning on full auto-pilot.
+            </p>
+            {shadow.data ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-[12px]">
+                <div className="flex flex-wrap items-center gap-3 text-muted-foreground">
+                  <span>Reviewed: <strong className="text-foreground num">{shadow.data.reviewedCount}/{shadow.data.targetReviews}</strong></span>
+                  <span>Approved unchanged: <strong className="text-foreground num">{shadow.data.accuracyPct}%</strong> (target {shadow.data.minAccuracyPct}%+)</span>
+                  {shadow.data.pending > 0 ? <Badge tone="primary">{shadow.data.pending} pending in Inbox</Badge> : null}
+                </div>
+                {f.handoverRules.shadowMode && shadow.data.readyForAutopilot ? (
+                  <Button size="sm" variant="primary" loading={goLive.isPending} onClick={() => goLive.mutate()}>
+                    <Sparkles className="h-3.5 w-3.5" aria-hidden />
+                    Graduate to Live Auto-Pilot
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
           <Field label="Assistant name" htmlFor="a-name"><Input id="a-name" value={f.name} onChange={(e) => set('name', e.target.value)} /></Field>
           <Field label="Business name customers see" htmlFor="a-ident"><Input id="a-ident" value={f.businessIdentity} onChange={(e) => set('businessIdentity', e.target.value)} /></Field>
           <Field label="About the business" htmlFor="a-desc" className="sm:col-span-2" hint="A few sentences the assistant can rely on: what you sell, where, what makes you different."><Textarea id="a-desc" value={f.businessDescription} onChange={(e) => set('businessDescription', e.target.value)} /></Field>

@@ -392,7 +392,167 @@ export function useAiControllerRuns<TData = Awaited<ReturnType<typeof aiControll
 
 
 
-export const getAiControllerRulesUrl = () => {
+export const getAiControllerShadowStatsUrl = () => {
+
+
+
+
+  return `/ai/shadow-stats`
+}
+
+export const aiControllerShadowStats = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getAiControllerShadowStatsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAiControllerShadowStatsQueryKey = () => {
+    return [
+    `/ai/shadow-stats`
+    ] as const;
+    }
+
+
+export const getAiControllerShadowStatsQueryOptions = <TData = Awaited<ReturnType<typeof aiControllerShadowStats>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerShadowStats>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAiControllerShadowStatsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof aiControllerShadowStats>>> = ({ signal }) => aiControllerShadowStats({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof aiControllerShadowStats>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AiControllerShadowStatsQueryResult = NonNullable<Awaited<ReturnType<typeof aiControllerShadowStats>>>
+export type AiControllerShadowStatsQueryError = unknown
+
+
+export function useAiControllerShadowStats<TData = Awaited<ReturnType<typeof aiControllerShadowStats>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerShadowStats>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerShadowStats>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerShadowStats>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerShadowStats<TData = Awaited<ReturnType<typeof aiControllerShadowStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerShadowStats>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof aiControllerShadowStats>>,
+          TError,
+          Awaited<ReturnType<typeof aiControllerShadowStats>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerShadowStats<TData = Awaited<ReturnType<typeof aiControllerShadowStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerShadowStats>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAiControllerShadowStats<TData = Awaited<ReturnType<typeof aiControllerShadowStats>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof aiControllerShadowStats>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAiControllerShadowStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getAiControllerGoLiveUrl = () => {
+
+
+
+
+  return `/ai/shadow-mode/go-live`
+}
+
+export const aiControllerGoLive = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getAiControllerGoLiveUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getAiControllerGoLiveMutationKey = () => ['aiControllerGoLive'] as const;
+
+export const getAiControllerGoLiveMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerGoLive>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof aiControllerGoLive>>, TError,void, TContext> => {
+
+const mutationKey = getAiControllerGoLiveMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof aiControllerGoLive>>, void> = () => {
+
+
+          return  aiControllerGoLive(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AiControllerGoLiveMutationResult = NonNullable<Awaited<ReturnType<typeof aiControllerGoLive>>>
+
+    export type AiControllerGoLiveMutationError = unknown
+
+
+    export const useAiControllerGoLive = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof aiControllerGoLive>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof aiControllerGoLive>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAiControllerGoLiveMutationOptions(options), queryClient);
+    }
+    export const getAiControllerRulesUrl = () => {
 
 
 

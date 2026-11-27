@@ -227,6 +227,7 @@ export function TourOverlay() {
 
   useEffect(() => {
     if (!isOpen || !currentStep) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clears target highlight when tour closes
       setTargetRect(null);
       return;
     }

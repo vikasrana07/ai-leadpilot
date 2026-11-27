@@ -7,14 +7,43 @@ import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/logo';
 import { Tooltip } from '@/components/ui/tooltip';
 import { useAuth } from '@/lib/auth';
+import { useI18n, type TranslationKey } from '@/lib/i18n-context';
 import { useUnreadCount } from '@/lib/inbox';
 import { cn } from '@/lib/cn';
 import { BLOCKED_DURING_SUPPORT, useSupportSession } from '@/lib/support';
 import { ADMIN_NAV, isLive, navLabel, WORKSPACE_NAV, type NavItem } from '@/lib/nav';
 import { usePack, useTerms } from '@/lib/pack';
 
+const NAV_I18N: Record<string, TranslationKey> = {
+  '/dashboard': 'nav.dashboard',
+  '/inbox': 'nav.inbox',
+  '/emails': 'nav.emails',
+  '/campaigns': 'nav.campaigns',
+  '/pipeline': 'nav.pipeline',
+  '/properties': 'nav.properties',
+  '/appointments': 'nav.appointments',
+  '/ai-assistant': 'nav.aiAssistant',
+  '/knowledge': 'nav.knowledge',
+  '/tasks': 'nav.tasks',
+  '/automations': 'nav.automations',
+  '/reports': 'nav.reports',
+  '/team': 'nav.team',
+  '/roles': 'nav.roles',
+  '/integrations': 'nav.integrations',
+  '/api-keys': 'nav.apiKeys',
+  '/webhooks': 'nav.webhooks',
+  '/billing': 'nav.billing',
+  '/usage': 'nav.usage',
+  '/audit': 'nav.audit',
+  '/security': 'nav.security',
+  '/settings': 'nav.settings',
+};
+
 function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: boolean; onNavigate?: () => void }) {
-  const label = navLabel(item, useTerms());
+  const { locale, t } = useI18n();
+  const baseLabel = navLabel(item, useTerms());
+  const navKey = NAV_I18N[item.href];
+  const label = locale !== 'en' && navKey ? t(navKey) : baseLabel;
   const pathname = usePathname();
   const unread = useUnreadCount(item.href === '/inbox');
   const badge = item.href === '/inbox' && (unread.data ?? 0) > 0 ? unread.data : null;
@@ -44,6 +73,7 @@ function NavLink({ item, collapsed, onNavigate }: { item: NavItem; collapsed: bo
 
 export function SidebarContent({ collapsed, onToggle, onNavigate }: { collapsed: boolean; onToggle?: () => void; onNavigate?: () => void }) {
   const { can, activeWorkspace } = useAuth();
+  const { t } = useI18n();
   const pack = usePack();
   const modules = activeWorkspace?.industryChosen ? pack.modules : { properties: false };
   const support = useSupportSession().data?.active === true;
@@ -54,15 +84,15 @@ export function SidebarContent({ collapsed, onToggle, onNavigate }: { collapsed:
       <nav aria-label="Main" className="no-scrollbar flex-1 space-y-6 overflow-y-auto px-3 py-4">
         <ul className="space-y-0.5">{WORKSPACE_NAV.filter((i) => (!i.permission || can(i.permission)) && (!i.module || modules[i.module])).map((i) => <li key={i.href}><NavLink item={i} collapsed={collapsed} onNavigate={onNavigate} /></li>)}</ul>
         <div>
-          {collapsed ? <div className="mx-2 mb-2 h-px bg-sidebar-border" /> : <p className="text-label mb-2 px-2.5 !text-sidebar-muted">Administration</p>}
+          {collapsed ? <div className="mx-2 mb-2 h-px bg-sidebar-border" /> : <p className="text-label mb-2 px-2.5 !text-sidebar-muted">{t('common.administration')}</p>}
           <ul className="space-y-0.5">{admin.map((i) => <li key={i.href}><NavLink item={i} collapsed={collapsed} onNavigate={onNavigate} /></li>)}</ul>
         </div>
       </nav>
       {onToggle ? (
         <div className="border-t border-sidebar-border p-3">
-          <button onClick={onToggle} aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} className={cn('flex h-9 w-full items-center gap-3 rounded-md px-2.5 text-[13px] text-sidebar-muted hover:bg-sidebar-accent hover:text-white', collapsed && 'justify-center px-0')}>
+          <button onClick={onToggle} aria-label={collapsed ? t('common.expand') : t('common.collapse')} className={cn('flex h-9 w-full items-center gap-3 rounded-md px-2.5 text-[13px] text-sidebar-muted hover:bg-sidebar-accent hover:text-white', collapsed && 'justify-center px-0')}>
             <ChevronsLeft className={cn('h-4 w-4 transition-transform duration-200', collapsed && 'rotate-180')} aria-hidden />
-            {collapsed ? null : 'Collapse'}
+            {collapsed ? null : t('common.collapse')}
           </button>
         </div>
       ) : null}

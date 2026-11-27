@@ -17,6 +17,7 @@ import { InboxSkeleton, InboxThreadSkeleton } from '@/components/skeletons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useI18n, type TranslationKey } from '@/lib/i18n-context';
 import { cn } from '@/lib/cn';
 import { qs } from '@/lib/crm';
 import { timeAgo } from '@/lib/format';
@@ -24,17 +25,18 @@ import type { ConversationDetail, ConversationList } from '@/lib/inbox';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 type Queue = 'open' | 'mine' | 'unassigned' | 'unread' | 'ai' | 'closed';
-const QUEUES: { key: Queue; label: string; params: Record<string, string> }[] = [
-  { key: 'open', label: 'All open', params: { status: 'OPEN' } },
-  { key: 'mine', label: 'Mine', params: { status: 'OPEN', assigned: 'me' } },
-  { key: 'unassigned', label: 'Unassigned', params: { status: 'OPEN', assigned: 'unassigned' } },
-  { key: 'unread', label: 'Unread', params: { status: 'OPEN', unread: 'true' } },
+const QUEUES: { key: Queue; label: string; labelKey?: TranslationKey; params: Record<string, string> }[] = [
+  { key: 'open', label: 'All open', labelKey: 'inbox.allOpen', params: { status: 'OPEN' } },
+  { key: 'mine', label: 'Mine', labelKey: 'inbox.mine', params: { status: 'OPEN', assigned: 'me' } },
+  { key: 'unassigned', label: 'Unassigned', labelKey: 'inbox.unassigned', params: { status: 'OPEN', assigned: 'unassigned' } },
+  { key: 'unread', label: 'Unread', labelKey: 'inbox.unread', params: { status: 'OPEN', unread: 'true' } },
   { key: 'ai', label: 'AI handling', params: { status: 'OPEN', mode: 'AI' } },
   { key: 'closed', label: 'Closed', params: { status: 'CLOSED' } },
 ];
 
 function InboxView() {
   const { can } = useAuth();
+  const { t } = useI18n();
   const qc = useQueryClient();
   const router = useRouter();
   const params = useSearchParams();
@@ -69,7 +71,7 @@ function InboxView() {
         <h1 className="text-title px-2 pb-2 pt-1">Inbox</h1>
         {QUEUES.filter((x) => canAll || x.key !== 'unassigned').map((x) => (
           <button key={x.key} onClick={() => { setQueue(x.key); select(null); }} aria-current={queue === x.key} className={cn('flex items-center justify-between rounded-md px-2.5 py-2 text-[13px]', queue === x.key ? 'bg-surface font-medium shadow-sm' : 'text-muted-foreground hover:bg-muted')}>
-            {x.label}{x.key === 'unread' && list.data && list.data.unreadTotal > 0 ? <span className="num rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">{list.data.unreadTotal}</span> : null}
+            {x.labelKey ? t(x.labelKey) : x.label}{x.key === 'unread' && list.data && list.data.unreadTotal > 0 ? <span className="num rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">{list.data.unreadTotal}</span> : null}
           </button>
         ))}
         <p className="text-label mt-4 px-2 text-muted-foreground">Channel</p>

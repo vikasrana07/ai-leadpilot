@@ -1883,3 +1883,137 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getLeadsControllerRemoveAttachmentMutationOptions(options), queryClient);
     }
+    export const getLeadsControllerVoiceNoteUrl = (id: string,) => {
+
+
+
+
+  return `/leads/${id}/voice-note`
+}
+
+export const leadsControllerVoiceNote = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getLeadsControllerVoiceNoteUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeadsControllerVoiceNoteMutationKey = () => ['leadsControllerVoiceNote'] as const;
+
+export const getLeadsControllerVoiceNoteMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerVoiceNote>>, TError,LeadsControllerVoiceNoteMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerVoiceNote>>, TError,LeadsControllerVoiceNoteMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerVoiceNoteMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerVoiceNote>>, LeadsControllerVoiceNoteMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  leadsControllerVoiceNote(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerVoiceNoteMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerVoiceNote>>>
+
+    export type LeadsControllerVoiceNoteMutationError = unknown
+    export type LeadsControllerVoiceNoteMutationVariables = {id: string}
+
+    export const useLeadsControllerVoiceNote = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerVoiceNote>>, TError,LeadsControllerVoiceNoteMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerVoiceNote>>,
+        TError,
+        LeadsControllerVoiceNoteMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerVoiceNoteMutationOptions(options), queryClient);
+    }
+    export const getLeadsControllerApplyVoiceNoteUrl = (id: string,) => {
+
+
+
+
+  return `/leads/${id}/voice-note/apply`
+}
+
+export const leadsControllerApplyVoiceNote = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getLeadsControllerApplyVoiceNoteUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeadsControllerApplyVoiceNoteMutationKey = () => ['leadsControllerApplyVoiceNote'] as const;
+
+export const getLeadsControllerApplyVoiceNoteMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerApplyVoiceNote>>, TError,LeadsControllerApplyVoiceNoteMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof leadsControllerApplyVoiceNote>>, TError,LeadsControllerApplyVoiceNoteMutationVariables, TContext> => {
+
+const mutationKey = getLeadsControllerApplyVoiceNoteMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leadsControllerApplyVoiceNote>>, LeadsControllerApplyVoiceNoteMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  leadsControllerApplyVoiceNote(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeadsControllerApplyVoiceNoteMutationResult = NonNullable<Awaited<ReturnType<typeof leadsControllerApplyVoiceNote>>>
+
+    export type LeadsControllerApplyVoiceNoteMutationError = unknown
+    export type LeadsControllerApplyVoiceNoteMutationVariables = {id: string}
+
+    export const useLeadsControllerApplyVoiceNote = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leadsControllerApplyVoiceNote>>, TError,LeadsControllerApplyVoiceNoteMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof leadsControllerApplyVoiceNote>>,
+        TError,
+        LeadsControllerApplyVoiceNoteMutationVariables,
+        TContext
+      > => {
+      return useMutation(getLeadsControllerApplyVoiceNoteMutationOptions(options), queryClient);
+    }

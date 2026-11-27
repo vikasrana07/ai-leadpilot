@@ -1336,6 +1336,328 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getConversationsControllerTagsMutationOptions(options), queryClient);
     }
+    export const getConversationsControllerShadowDraftUrl = (id: string,) => {
+
+
+
+
+  return `/conversations/${id}/shadow-draft`
+}
+
+export const conversationsControllerShadowDraft = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getConversationsControllerShadowDraftUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getConversationsControllerShadowDraftQueryKey = (id: string,) => {
+    return [
+    `/conversations/${id}/shadow-draft`
+    ] as const;
+    }
+
+
+export const getConversationsControllerShadowDraftQueryOptions = <TData = Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getConversationsControllerShadowDraftQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof conversationsControllerShadowDraft>>> = ({ signal }) => conversationsControllerShadowDraft(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ConversationsControllerShadowDraftQueryResult = NonNullable<Awaited<ReturnType<typeof conversationsControllerShadowDraft>>>
+export type ConversationsControllerShadowDraftQueryError = unknown
+
+
+export function useConversationsControllerShadowDraft<TData = Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof conversationsControllerShadowDraft>>,
+          TError,
+          Awaited<ReturnType<typeof conversationsControllerShadowDraft>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerShadowDraft<TData = Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof conversationsControllerShadowDraft>>,
+          TError,
+          Awaited<ReturnType<typeof conversationsControllerShadowDraft>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerShadowDraft<TData = Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerShadowDraft<TData = Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerShadowDraft>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getConversationsControllerShadowDraftQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getConversationsControllerReviewShadowDraftUrl = (id: string,) => {
+
+
+
+
+  return `/conversations/${id}/shadow-draft/review`
+}
+
+export const conversationsControllerReviewShadowDraft = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getConversationsControllerReviewShadowDraftUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getConversationsControllerReviewShadowDraftMutationKey = () => ['conversationsControllerReviewShadowDraft'] as const;
+
+export const getConversationsControllerReviewShadowDraftMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerReviewShadowDraft>>, TError,ConversationsControllerReviewShadowDraftMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerReviewShadowDraft>>, TError,ConversationsControllerReviewShadowDraftMutationVariables, TContext> => {
+
+const mutationKey = getConversationsControllerReviewShadowDraftMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof conversationsControllerReviewShadowDraft>>, ConversationsControllerReviewShadowDraftMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  conversationsControllerReviewShadowDraft(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConversationsControllerReviewShadowDraftMutationResult = NonNullable<Awaited<ReturnType<typeof conversationsControllerReviewShadowDraft>>>
+
+    export type ConversationsControllerReviewShadowDraftMutationError = unknown
+    export type ConversationsControllerReviewShadowDraftMutationVariables = {id: string}
+
+    export const useConversationsControllerReviewShadowDraft = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerReviewShadowDraft>>, TError,ConversationsControllerReviewShadowDraftMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof conversationsControllerReviewShadowDraft>>,
+        TError,
+        ConversationsControllerReviewShadowDraftMutationVariables,
+        TContext
+      > => {
+      return useMutation(getConversationsControllerReviewShadowDraftMutationOptions(options), queryClient);
+    }
+    export const getConversationsControllerPromisesUrl = (id: string,) => {
+
+
+
+
+  return `/conversations/${id}/promises`
+}
+
+export const conversationsControllerPromises = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getConversationsControllerPromisesUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getConversationsControllerPromisesQueryKey = (id: string,) => {
+    return [
+    `/conversations/${id}/promises`
+    ] as const;
+    }
+
+
+export const getConversationsControllerPromisesQueryOptions = <TData = Awaited<ReturnType<typeof conversationsControllerPromises>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerPromises>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getConversationsControllerPromisesQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof conversationsControllerPromises>>> = ({ signal }) => conversationsControllerPromises(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerPromises>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ConversationsControllerPromisesQueryResult = NonNullable<Awaited<ReturnType<typeof conversationsControllerPromises>>>
+export type ConversationsControllerPromisesQueryError = unknown
+
+
+export function useConversationsControllerPromises<TData = Awaited<ReturnType<typeof conversationsControllerPromises>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerPromises>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof conversationsControllerPromises>>,
+          TError,
+          Awaited<ReturnType<typeof conversationsControllerPromises>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerPromises<TData = Awaited<ReturnType<typeof conversationsControllerPromises>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerPromises>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof conversationsControllerPromises>>,
+          TError,
+          Awaited<ReturnType<typeof conversationsControllerPromises>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerPromises<TData = Awaited<ReturnType<typeof conversationsControllerPromises>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerPromises>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConversationsControllerPromises<TData = Awaited<ReturnType<typeof conversationsControllerPromises>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof conversationsControllerPromises>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getConversationsControllerPromisesQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getConversationsControllerCompletePromiseUrl = (id: string,
+    tid: string,) => {
+
+
+
+
+  return `/conversations/${id}/promises/${tid}/complete`
+}
+
+export const conversationsControllerCompletePromise = async (id: string,
+    tid: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getConversationsControllerCompletePromiseUrl(id,tid),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getConversationsControllerCompletePromiseMutationKey = () => ['conversationsControllerCompletePromise'] as const;
+
+export const getConversationsControllerCompletePromiseMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerCompletePromise>>, TError,ConversationsControllerCompletePromiseMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerCompletePromise>>, TError,ConversationsControllerCompletePromiseMutationVariables, TContext> => {
+
+const mutationKey = getConversationsControllerCompletePromiseMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof conversationsControllerCompletePromise>>, ConversationsControllerCompletePromiseMutationVariables> = (props) => {
+          const {id,tid} = props ?? {};
+
+          return  conversationsControllerCompletePromise(id,tid,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConversationsControllerCompletePromiseMutationResult = NonNullable<Awaited<ReturnType<typeof conversationsControllerCompletePromise>>>
+
+    export type ConversationsControllerCompletePromiseMutationError = unknown
+    export type ConversationsControllerCompletePromiseMutationVariables = {id: string;tid: string}
+
+    export const useConversationsControllerCompletePromise = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof conversationsControllerCompletePromise>>, TError,ConversationsControllerCompletePromiseMutationVariables, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof conversationsControllerCompletePromise>>,
+        TError,
+        ConversationsControllerCompletePromiseMutationVariables,
+        TContext
+      > => {
+      return useMutation(getConversationsControllerCompletePromiseMutationOptions(options), queryClient);
+    }
     export const getConversationsControllerMediaUrl = (id: string,
     mid: string,) => {
 

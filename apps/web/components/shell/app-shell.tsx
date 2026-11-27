@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { CalendarPlus, CheckSquare, LogOut, Megaphone, Menu, Plus, Search, UserPlus, UserRound, X } from 'lucide-react';
+import { CalendarPlus, CheckSquare, Globe, LogOut, Megaphone, Menu, Plus, Search, UserPlus, UserRound, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Dropdown, DropdownItem, DropdownLabel, DropdownSeparator } from '@/components/ui/dropdown';
 import { useRealtime } from '@/hooks/use-realtime';
 import { useAuth } from '@/lib/auth';
+import { useI18n } from '@/lib/i18n-context';
 import { useTerms } from '@/lib/pack';
 import { useSupportSession } from '@/lib/support';
 import { useSidebar } from '@/lib/sidebar-state';
@@ -40,6 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 function AppShellInner({ children }: { children: ReactNode }) {
   const { ctx, can, logout } = useAuth();
+  const { locale, setLocale, t } = useI18n();
   const terms = useTerms();
   useRealtime(true);
   const pathname = usePathname();
@@ -139,9 +141,13 @@ function AppShellInner({ children }: { children: ReactNode }) {
             <Dropdown trigger={<button aria-label="Account menu" className="ml-1 flex h-10 w-10 items-center justify-center rounded-full lg:h-auto lg:w-auto"><Avatar name={ctx.user.name} size={30} /></button>}>
               <div className="px-2.5 py-2"><p className="text-[13px] font-medium">{ctx.user.name}</p><p className="text-helper">{ctx.user.email}</p></div>
               <DropdownSeparator />
-              <DropdownLabel>Account</DropdownLabel>
-              {support ? null : <DropdownItem asChild><Link href="/settings"><UserRound className="h-4 w-4 text-muted-foreground" aria-hidden />Settings</Link></DropdownItem>}
-              <DropdownItem onSelect={() => void logout()}><LogOut className="h-4 w-4 text-muted-foreground" aria-hidden />Sign out</DropdownItem>
+              <DropdownLabel>{t('shell.account')}</DropdownLabel>
+              {support ? null : <DropdownItem asChild><Link href="/settings"><UserRound className="h-4 w-4 text-muted-foreground" aria-hidden />{t('common.settings')}</Link></DropdownItem>}
+              <DropdownItem onSelect={() => setLocale(locale === 'en' ? 'hi' : 'en')}>
+                <Globe className="h-4 w-4 text-muted-foreground" aria-hidden />
+                {t('common.language')}: {locale === 'en' ? 'English → हिन्दी' : 'हिन्दी → English'}
+              </DropdownItem>
+              <DropdownItem onSelect={() => void logout()}><LogOut className="h-4 w-4 text-muted-foreground" aria-hidden />{t('common.signOut')}</DropdownItem>
             </Dropdown>
           </div>
         </header>

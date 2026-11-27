@@ -46,7 +46,234 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export const getNotificationsControllerListUrl = () => {
+export const getNotificationsControllerVapidKeyUrl = () => {
+
+
+
+
+  return `/notifications/push/vapid-key`
+}
+
+export const notificationsControllerVapidKey = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getNotificationsControllerVapidKeyUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getNotificationsControllerVapidKeyQueryKey = () => {
+    return [
+    `/notifications/push/vapid-key`
+    ] as const;
+    }
+
+
+export const getNotificationsControllerVapidKeyQueryOptions = <TData = Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getNotificationsControllerVapidKeyQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof notificationsControllerVapidKey>>> = ({ signal }) => notificationsControllerVapidKey({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type NotificationsControllerVapidKeyQueryResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerVapidKey>>>
+export type NotificationsControllerVapidKeyQueryError = unknown
+
+
+export function useNotificationsControllerVapidKey<TData = Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof notificationsControllerVapidKey>>,
+          TError,
+          Awaited<ReturnType<typeof notificationsControllerVapidKey>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerVapidKey<TData = Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof notificationsControllerVapidKey>>,
+          TError,
+          Awaited<ReturnType<typeof notificationsControllerVapidKey>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerVapidKey<TData = Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNotificationsControllerVapidKey<TData = Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof notificationsControllerVapidKey>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getNotificationsControllerVapidKeyQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getNotificationsControllerSubscribePushUrl = () => {
+
+
+
+
+  return `/notifications/push/subscribe`
+}
+
+export const notificationsControllerSubscribePush = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getNotificationsControllerSubscribePushUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getNotificationsControllerSubscribePushMutationKey = () => ['notificationsControllerSubscribePush'] as const;
+
+export const getNotificationsControllerSubscribePushMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerSubscribePush>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerSubscribePush>>, TError,void, TContext> => {
+
+const mutationKey = getNotificationsControllerSubscribePushMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof notificationsControllerSubscribePush>>, void> = () => {
+
+
+          return  notificationsControllerSubscribePush(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type NotificationsControllerSubscribePushMutationResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerSubscribePush>>>
+
+    export type NotificationsControllerSubscribePushMutationError = unknown
+
+
+    export const useNotificationsControllerSubscribePush = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerSubscribePush>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof notificationsControllerSubscribePush>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getNotificationsControllerSubscribePushMutationOptions(options), queryClient);
+    }
+    export const getNotificationsControllerUnsubscribePushUrl = () => {
+
+
+
+
+  return `/notifications/push/subscribe`
+}
+
+export const notificationsControllerUnsubscribePush = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getNotificationsControllerUnsubscribePushUrl(),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getNotificationsControllerUnsubscribePushMutationKey = () => ['notificationsControllerUnsubscribePush'] as const;
+
+export const getNotificationsControllerUnsubscribePushMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerUnsubscribePush>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerUnsubscribePush>>, TError,void, TContext> => {
+
+const mutationKey = getNotificationsControllerUnsubscribePushMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof notificationsControllerUnsubscribePush>>, void> = () => {
+
+
+          return  notificationsControllerUnsubscribePush(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type NotificationsControllerUnsubscribePushMutationResult = NonNullable<Awaited<ReturnType<typeof notificationsControllerUnsubscribePush>>>
+
+    export type NotificationsControllerUnsubscribePushMutationError = unknown
+
+
+    export const useNotificationsControllerUnsubscribePush = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof notificationsControllerUnsubscribePush>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof notificationsControllerUnsubscribePush>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getNotificationsControllerUnsubscribePushMutationOptions(options), queryClient);
+    }
+    export const getNotificationsControllerListUrl = () => {
 
 
 

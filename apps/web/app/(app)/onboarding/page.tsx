@@ -25,6 +25,7 @@ import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/cn';
 import { handleApiError } from '@/lib/forms';
 import { getAllTimezones } from '@/lib/i18n';
+import { useI18n } from '@/lib/i18n-context';
 import { useTerms } from '@/lib/pack';
 import { applyTerms } from '@/lib/terms-text';
 
@@ -196,7 +197,17 @@ function WhatsappStep({ onDone, onSkip }: { onDone: () => Promise<void>; onSkip:
   );
 }
 
-const LANG_LABEL: Record<string, string> = { en: 'English', hi: 'Hindi', hinglish: 'Hinglish' };
+const LANG_LABEL: Record<string, string> = {
+  en: 'English',
+  hi: 'Hindi',
+  hinglish: 'Hinglish',
+  mr: 'Marathi',
+  ta: 'Tamil',
+  te: 'Telugu',
+  kn: 'Kannada',
+  gu: 'Gujarati',
+  bn: 'Bengali',
+};
 
 function AssistantStep({ onDone, onSkip }: { onDone: () => Promise<void>; onSkip: () => Promise<void> }) {
   const qc = useQueryClient();
@@ -467,6 +478,7 @@ function QualificationStepForm({ initial, onSaved, onSkip }: { initial: ScoringR
 }
 
 export default function OnboardingPage() {
+  const { t } = useI18n();
   const terms = useTerms();
   const qc = useQueryClient();
   const progress = useQuery({ queryKey: ['tenant', 'onboarding'], queryFn: () => api<OnboardingProgress>('/tenant/onboarding') });
@@ -495,7 +507,7 @@ export default function OnboardingPage() {
 
   return (
     <>
-      <PageHeader title="Set up your workspace" description="Pick up where you left off at any time. Your progress is saved." />
+      <PageHeader title={t('onboarding.title')} description={t('onboarding.subtitle')} />
       <div data-tour="onboarding-steps" className="grid gap-6 lg:grid-cols-[260px_1fr]">
         <ol className="space-y-1" aria-label="Setup steps">
           {STEPS.map((s, i) => {

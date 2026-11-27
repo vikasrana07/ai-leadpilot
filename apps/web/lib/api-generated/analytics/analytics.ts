@@ -135,6 +135,99 @@ export function useAnalyticsControllerOverview<TData = Awaited<ReturnType<typeof
 
 
 
+export const getAnalyticsControllerRevenueLeakageUrl = () => {
+
+
+
+
+  return `/analytics/revenue-leakage`
+}
+
+export const analyticsControllerRevenueLeakage = async ( options?: Parameters<typeof customInstance>[1]): Promise<void> => {
+
+  return customInstance<void>(getAnalyticsControllerRevenueLeakageUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAnalyticsControllerRevenueLeakageQueryKey = () => {
+    return [
+    `/analytics/revenue-leakage`
+    ] as const;
+    }
+
+
+export const getAnalyticsControllerRevenueLeakageQueryOptions = <TData = Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAnalyticsControllerRevenueLeakageQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>> = ({ signal }) => analyticsControllerRevenueLeakage({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AnalyticsControllerRevenueLeakageQueryResult = NonNullable<Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>>
+export type AnalyticsControllerRevenueLeakageQueryError = unknown
+
+
+export function useAnalyticsControllerRevenueLeakage<TData = Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>,
+          TError,
+          Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerRevenueLeakage<TData = Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>,
+          TError,
+          Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerRevenueLeakage<TData = Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAnalyticsControllerRevenueLeakage<TData = Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyticsControllerRevenueLeakage>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAnalyticsControllerRevenueLeakageQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 export const getAnalyticsControllerWorkloadUrl = () => {
 
 
