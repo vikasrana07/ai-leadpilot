@@ -168,6 +168,42 @@ export const ConsentStatus = {
 export type ConsentStatus = (typeof ConsentStatus)[keyof typeof ConsentStatus]
 
 
+export const ConsentPurpose = {
+  TRANSACTIONAL: 'TRANSACTIONAL',
+  SERVICE: 'SERVICE',
+  MARKETING: 'MARKETING'
+} as const
+
+export type ConsentPurpose = (typeof ConsentPurpose)[keyof typeof ConsentPurpose]
+
+
+export const ConsentMethod = {
+  INBOUND_MESSAGE: 'INBOUND_MESSAGE',
+  STOP_KEYWORD: 'STOP_KEYWORD',
+  START_KEYWORD: 'START_KEYWORD',
+  FORM_CHECKBOX: 'FORM_CHECKBOX',
+  META_LEAD_AD: 'META_LEAD_AD',
+  MANAGER_ATTESTED: 'MANAGER_ATTESTED',
+  CSV_IMPORT: 'CSV_IMPORT',
+  API: 'API',
+  PORTAL: 'PORTAL',
+  WIDGET: 'WIDGET',
+  UNSUBSCRIBE_LINK: 'UNSUBSCRIBE_LINK'
+} as const
+
+export type ConsentMethod = (typeof ConsentMethod)[keyof typeof ConsentMethod]
+
+
+export const ConsentActorType = {
+  CUSTOMER: 'CUSTOMER',
+  MEMBER: 'MEMBER',
+  SYSTEM: 'SYSTEM',
+  IMPORT: 'IMPORT'
+} as const
+
+export type ConsentActorType = (typeof ConsentActorType)[keyof typeof ConsentActorType]
+
+
 export const AiRunStatus = {
   RUNNING: 'RUNNING',
   COMPLETED: 'COMPLETED',

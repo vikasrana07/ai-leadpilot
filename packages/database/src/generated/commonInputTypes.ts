@@ -691,6 +691,27 @@ export type EnumConsentStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumConsentStatusFilter<$PrismaModel> | $Enums.ConsentStatus
 }
 
+export type EnumConsentPurposeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentPurpose | Prisma.EnumConsentPurposeFieldRefInput<$PrismaModel>
+  in?: $Enums.ConsentPurpose[] | Prisma.ListEnumConsentPurposeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ConsentPurpose[] | Prisma.ListEnumConsentPurposeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumConsentPurposeFilter<$PrismaModel> | $Enums.ConsentPurpose
+}
+
+export type EnumConsentMethodNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentMethod | Prisma.EnumConsentMethodFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ConsentMethod[] | Prisma.ListEnumConsentMethodFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ConsentMethod[] | Prisma.ListEnumConsentMethodFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumConsentMethodNullableFilter<$PrismaModel> | $Enums.ConsentMethod | null
+}
+
+export type EnumConsentActorTypeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentActorType | Prisma.EnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ConsentActorType[] | Prisma.ListEnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ConsentActorType[] | Prisma.ListEnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumConsentActorTypeNullableFilter<$PrismaModel> | $Enums.ConsentActorType | null
+}
+
 export type EnumConsentStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ConsentStatus | Prisma.EnumConsentStatusFieldRefInput<$PrismaModel>
   in?: $Enums.ConsentStatus[] | Prisma.ListEnumConsentStatusFieldRefInput<$PrismaModel>
@@ -699,6 +720,36 @@ export type EnumConsentStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumConsentStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumConsentStatusFilter<$PrismaModel>
+}
+
+export type EnumConsentPurposeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentPurpose | Prisma.EnumConsentPurposeFieldRefInput<$PrismaModel>
+  in?: $Enums.ConsentPurpose[] | Prisma.ListEnumConsentPurposeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ConsentPurpose[] | Prisma.ListEnumConsentPurposeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumConsentPurposeWithAggregatesFilter<$PrismaModel> | $Enums.ConsentPurpose
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumConsentPurposeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumConsentPurposeFilter<$PrismaModel>
+}
+
+export type EnumConsentMethodNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentMethod | Prisma.EnumConsentMethodFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ConsentMethod[] | Prisma.ListEnumConsentMethodFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ConsentMethod[] | Prisma.ListEnumConsentMethodFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumConsentMethodNullableWithAggregatesFilter<$PrismaModel> | $Enums.ConsentMethod | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumConsentMethodNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumConsentMethodNullableFilter<$PrismaModel>
+}
+
+export type EnumConsentActorTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentActorType | Prisma.EnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ConsentActorType[] | Prisma.ListEnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ConsentActorType[] | Prisma.ListEnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumConsentActorTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.ConsentActorType | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumConsentActorTypeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumConsentActorTypeNullableFilter<$PrismaModel>
 }
 
 export type FloatFilter<$PrismaModel = never> = {
@@ -1581,6 +1632,27 @@ export type NestedEnumConsentStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumConsentStatusFilter<$PrismaModel> | $Enums.ConsentStatus
 }
 
+export type NestedEnumConsentPurposeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentPurpose | Prisma.EnumConsentPurposeFieldRefInput<$PrismaModel>
+  in?: $Enums.ConsentPurpose[] | Prisma.ListEnumConsentPurposeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ConsentPurpose[] | Prisma.ListEnumConsentPurposeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumConsentPurposeFilter<$PrismaModel> | $Enums.ConsentPurpose
+}
+
+export type NestedEnumConsentMethodNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentMethod | Prisma.EnumConsentMethodFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ConsentMethod[] | Prisma.ListEnumConsentMethodFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ConsentMethod[] | Prisma.ListEnumConsentMethodFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumConsentMethodNullableFilter<$PrismaModel> | $Enums.ConsentMethod | null
+}
+
+export type NestedEnumConsentActorTypeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentActorType | Prisma.EnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ConsentActorType[] | Prisma.ListEnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ConsentActorType[] | Prisma.ListEnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumConsentActorTypeNullableFilter<$PrismaModel> | $Enums.ConsentActorType | null
+}
+
 export type NestedEnumConsentStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ConsentStatus | Prisma.EnumConsentStatusFieldRefInput<$PrismaModel>
   in?: $Enums.ConsentStatus[] | Prisma.ListEnumConsentStatusFieldRefInput<$PrismaModel>
@@ -1589,6 +1661,36 @@ export type NestedEnumConsentStatusWithAggregatesFilter<$PrismaModel = never> = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumConsentStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumConsentStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumConsentPurposeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentPurpose | Prisma.EnumConsentPurposeFieldRefInput<$PrismaModel>
+  in?: $Enums.ConsentPurpose[] | Prisma.ListEnumConsentPurposeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ConsentPurpose[] | Prisma.ListEnumConsentPurposeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumConsentPurposeWithAggregatesFilter<$PrismaModel> | $Enums.ConsentPurpose
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumConsentPurposeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumConsentPurposeFilter<$PrismaModel>
+}
+
+export type NestedEnumConsentMethodNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentMethod | Prisma.EnumConsentMethodFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ConsentMethod[] | Prisma.ListEnumConsentMethodFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ConsentMethod[] | Prisma.ListEnumConsentMethodFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumConsentMethodNullableWithAggregatesFilter<$PrismaModel> | $Enums.ConsentMethod | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumConsentMethodNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumConsentMethodNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumConsentActorTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ConsentActorType | Prisma.EnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ConsentActorType[] | Prisma.ListEnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ConsentActorType[] | Prisma.ListEnumConsentActorTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumConsentActorTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.ConsentActorType | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumConsentActorTypeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumConsentActorTypeNullableFilter<$PrismaModel>
 }
 
 export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {

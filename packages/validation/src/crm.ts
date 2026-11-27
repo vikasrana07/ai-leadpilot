@@ -27,8 +27,19 @@ const budgetOrder = (v: { budgetMin?: number | null | undefined; budgetMax?: num
   v.budgetMin == null || v.budgetMax == null || v.budgetMin <= v.budgetMax;
 const budgetIssue = { message: 'Minimum budget cannot exceed maximum', path: ['budgetMin'] };
 
+/**
+ * Optional proof that the person agreed to WhatsApp marketing messages, supplied by whoever captured the lead (a form checkbox on the
+ * caller's site, a sales rep who asked). Without it, a lead is NOT eligible for broadcasts. `textVersion` = which wording they agreed to.
+ */
+export const leadConsentInputSchema = z.object({
+  whatsappMarketing: z.literal(true),
+  method: z.enum(['FORM_CHECKBOX', 'API']).default('API'),
+  textVersion: z.string().trim().max(100).optional(),
+});
+export type LeadConsentInput = z.infer<typeof leadConsentInputSchema>;
+
 export const createLeadSchema = leadFieldsSchema
-  .extend({ allowDuplicate: z.boolean().optional() })
+  .extend({ allowDuplicate: z.boolean().optional(), consent: leadConsentInputSchema.optional() })
   .refine((v) => Boolean(v.phone) || Boolean(v.email), { message: 'Provide a phone number or an email', path: ['phone'] })
   .refine(budgetOrder, budgetIssue);
 export type CreateLeadInput = z.infer<typeof createLeadSchema>;
@@ -79,6 +90,8 @@ export const importSchema = z.object({
   dryRun: z.boolean().default(true),
   duplicateStrategy: z.enum(['skip', 'import']).default('skip'),
   async: z.boolean().optional(),
+  /** The importer confirms they hold proof (form, signed consent) that rows marked "yes" in a whatsapp_consent column agreed to WhatsApp marketing. Without it those marks are ignored. */
+  consentAttestation: z.boolean().optional(),
 });
 export type ImportInput = z.infer<typeof importSchema>;
 
@@ -127,6 +140,7 @@ export const captureLeadSchema = z.object({
   budgetMin: z.number().nonnegative().max(1e12).optional(),
   budgetMax: z.number().nonnegative().max(1e12).optional(),
   propertyType: z.string().trim().max(80).optional(),
+  consent: leadConsentInputSchema.optional(),
 }).refine((v) => Boolean(v.phone) || Boolean(v.email), { message: 'Provide a phone number or an email', path: ['phone'] });
 export type CaptureLeadInput = z.infer<typeof captureLeadSchema>;
 /** `leads:create` is the original server-to-server capture scope (`POST /public/leads`); the rest are for the versioned public API (`/v1`). */

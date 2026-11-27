@@ -84,6 +84,7 @@ export const ModelName = {
   Message: 'Message',
   ConversationNote: 'ConversationNote',
   Consent: 'Consent',
+  ConsentSuppression: 'ConsentSuppression',
   WhatsappTemplate: 'WhatsappTemplate',
   WebhookEvent: 'WebhookEvent',
   AiAssistant: 'AiAssistant',
@@ -653,10 +654,29 @@ export const ConsentScalarFieldEnum = {
   channel: 'channel',
   status: 'status',
   source: 'source',
+  purpose: 'purpose',
+  method: 'method',
+  actorType: 'actorType',
+  actorMembershipId: 'actorMembershipId',
+  textVersion: 'textVersion',
+  evidence: 'evidence',
+  expiresAt: 'expiresAt',
   createdAt: 'createdAt'
 } as const
 
 export type ConsentScalarFieldEnum = (typeof ConsentScalarFieldEnum)[keyof typeof ConsentScalarFieldEnum]
+
+
+export const ConsentSuppressionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  channel: 'channel',
+  phoneHash: 'phoneHash',
+  reason: 'reason',
+  createdAt: 'createdAt'
+} as const
+
+export type ConsentSuppressionScalarFieldEnum = (typeof ConsentSuppressionScalarFieldEnum)[keyof typeof ConsentSuppressionScalarFieldEnum]
 
 
 export const WhatsappTemplateScalarFieldEnum = {

@@ -31,6 +31,12 @@ export type ConsentMinAggregateOutputType = {
   channel: string | null
   status: $Enums.ConsentStatus | null
   source: string | null
+  purpose: $Enums.ConsentPurpose | null
+  method: $Enums.ConsentMethod | null
+  actorType: $Enums.ConsentActorType | null
+  actorMembershipId: string | null
+  textVersion: string | null
+  expiresAt: Date | null
   createdAt: Date | null
 }
 
@@ -41,6 +47,12 @@ export type ConsentMaxAggregateOutputType = {
   channel: string | null
   status: $Enums.ConsentStatus | null
   source: string | null
+  purpose: $Enums.ConsentPurpose | null
+  method: $Enums.ConsentMethod | null
+  actorType: $Enums.ConsentActorType | null
+  actorMembershipId: string | null
+  textVersion: string | null
+  expiresAt: Date | null
   createdAt: Date | null
 }
 
@@ -51,6 +63,13 @@ export type ConsentCountAggregateOutputType = {
   channel: number
   status: number
   source: number
+  purpose: number
+  method: number
+  actorType: number
+  actorMembershipId: number
+  textVersion: number
+  evidence: number
+  expiresAt: number
   createdAt: number
   _all: number
 }
@@ -63,6 +82,12 @@ export type ConsentMinAggregateInputType = {
   channel?: true
   status?: true
   source?: true
+  purpose?: true
+  method?: true
+  actorType?: true
+  actorMembershipId?: true
+  textVersion?: true
+  expiresAt?: true
   createdAt?: true
 }
 
@@ -73,6 +98,12 @@ export type ConsentMaxAggregateInputType = {
   channel?: true
   status?: true
   source?: true
+  purpose?: true
+  method?: true
+  actorType?: true
+  actorMembershipId?: true
+  textVersion?: true
+  expiresAt?: true
   createdAt?: true
 }
 
@@ -83,6 +114,13 @@ export type ConsentCountAggregateInputType = {
   channel?: true
   status?: true
   source?: true
+  purpose?: true
+  method?: true
+  actorType?: true
+  actorMembershipId?: true
+  textVersion?: true
+  evidence?: true
+  expiresAt?: true
   createdAt?: true
   _all?: true
 }
@@ -166,6 +204,13 @@ export type ConsentGroupByOutputType = {
   channel: string
   status: $Enums.ConsentStatus
   source: string
+  purpose: $Enums.ConsentPurpose
+  method: $Enums.ConsentMethod | null
+  actorType: $Enums.ConsentActorType | null
+  actorMembershipId: string | null
+  textVersion: string | null
+  evidence: runtime.JsonValue | null
+  expiresAt: Date | null
   createdAt: Date
   _count: ConsentCountAggregateOutputType | null
   _min: ConsentMinAggregateOutputType | null
@@ -197,6 +242,13 @@ export type ConsentWhereInput = {
   channel?: Prisma.StringFilter<"Consent"> | string
   status?: Prisma.EnumConsentStatusFilter<"Consent"> | $Enums.ConsentStatus
   source?: Prisma.StringFilter<"Consent"> | string
+  purpose?: Prisma.EnumConsentPurposeFilter<"Consent"> | $Enums.ConsentPurpose
+  method?: Prisma.EnumConsentMethodNullableFilter<"Consent"> | $Enums.ConsentMethod | null
+  actorType?: Prisma.EnumConsentActorTypeNullableFilter<"Consent"> | $Enums.ConsentActorType | null
+  actorMembershipId?: Prisma.UuidNullableFilter<"Consent"> | string | null
+  textVersion?: Prisma.StringNullableFilter<"Consent"> | string | null
+  evidence?: Prisma.JsonNullableFilter<"Consent">
+  expiresAt?: Prisma.DateTimeNullableFilter<"Consent"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Consent"> | Date | string
 }
 
@@ -207,6 +259,13 @@ export type ConsentOrderByWithRelationInput = {
   channel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  method?: Prisma.SortOrderInput | Prisma.SortOrder
+  actorType?: Prisma.SortOrderInput | Prisma.SortOrder
+  actorMembershipId?: Prisma.SortOrderInput | Prisma.SortOrder
+  textVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  evidence?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -220,6 +279,13 @@ export type ConsentWhereUniqueInput = Prisma.AtLeast<{
   channel?: Prisma.StringFilter<"Consent"> | string
   status?: Prisma.EnumConsentStatusFilter<"Consent"> | $Enums.ConsentStatus
   source?: Prisma.StringFilter<"Consent"> | string
+  purpose?: Prisma.EnumConsentPurposeFilter<"Consent"> | $Enums.ConsentPurpose
+  method?: Prisma.EnumConsentMethodNullableFilter<"Consent"> | $Enums.ConsentMethod | null
+  actorType?: Prisma.EnumConsentActorTypeNullableFilter<"Consent"> | $Enums.ConsentActorType | null
+  actorMembershipId?: Prisma.UuidNullableFilter<"Consent"> | string | null
+  textVersion?: Prisma.StringNullableFilter<"Consent"> | string | null
+  evidence?: Prisma.JsonNullableFilter<"Consent">
+  expiresAt?: Prisma.DateTimeNullableFilter<"Consent"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Consent"> | Date | string
 }, "id">
 
@@ -230,6 +296,13 @@ export type ConsentOrderByWithAggregationInput = {
   channel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  method?: Prisma.SortOrderInput | Prisma.SortOrder
+  actorType?: Prisma.SortOrderInput | Prisma.SortOrder
+  actorMembershipId?: Prisma.SortOrderInput | Prisma.SortOrder
+  textVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  evidence?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ConsentCountOrderByAggregateInput
   _max?: Prisma.ConsentMaxOrderByAggregateInput
@@ -246,6 +319,13 @@ export type ConsentScalarWhereWithAggregatesInput = {
   channel?: Prisma.StringWithAggregatesFilter<"Consent"> | string
   status?: Prisma.EnumConsentStatusWithAggregatesFilter<"Consent"> | $Enums.ConsentStatus
   source?: Prisma.StringWithAggregatesFilter<"Consent"> | string
+  purpose?: Prisma.EnumConsentPurposeWithAggregatesFilter<"Consent"> | $Enums.ConsentPurpose
+  method?: Prisma.EnumConsentMethodNullableWithAggregatesFilter<"Consent"> | $Enums.ConsentMethod | null
+  actorType?: Prisma.EnumConsentActorTypeNullableWithAggregatesFilter<"Consent"> | $Enums.ConsentActorType | null
+  actorMembershipId?: Prisma.UuidNullableWithAggregatesFilter<"Consent"> | string | null
+  textVersion?: Prisma.StringNullableWithAggregatesFilter<"Consent"> | string | null
+  evidence?: Prisma.JsonNullableWithAggregatesFilter<"Consent">
+  expiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Consent"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Consent"> | Date | string
 }
 
@@ -256,6 +336,13 @@ export type ConsentCreateInput = {
   channel: string
   status: $Enums.ConsentStatus
   source: string
+  purpose?: $Enums.ConsentPurpose
+  method?: $Enums.ConsentMethod | null
+  actorType?: $Enums.ConsentActorType | null
+  actorMembershipId?: string | null
+  textVersion?: string | null
+  evidence?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  expiresAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -266,6 +353,13 @@ export type ConsentUncheckedCreateInput = {
   channel: string
   status: $Enums.ConsentStatus
   source: string
+  purpose?: $Enums.ConsentPurpose
+  method?: $Enums.ConsentMethod | null
+  actorType?: $Enums.ConsentActorType | null
+  actorMembershipId?: string | null
+  textVersion?: string | null
+  evidence?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  expiresAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -276,6 +370,13 @@ export type ConsentUpdateInput = {
   channel?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumConsentStatusFieldUpdateOperationsInput | $Enums.ConsentStatus
   source?: Prisma.StringFieldUpdateOperationsInput | string
+  purpose?: Prisma.EnumConsentPurposeFieldUpdateOperationsInput | $Enums.ConsentPurpose
+  method?: Prisma.NullableEnumConsentMethodFieldUpdateOperationsInput | $Enums.ConsentMethod | null
+  actorType?: Prisma.NullableEnumConsentActorTypeFieldUpdateOperationsInput | $Enums.ConsentActorType | null
+  actorMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  textVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  evidence?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -286,6 +387,13 @@ export type ConsentUncheckedUpdateInput = {
   channel?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumConsentStatusFieldUpdateOperationsInput | $Enums.ConsentStatus
   source?: Prisma.StringFieldUpdateOperationsInput | string
+  purpose?: Prisma.EnumConsentPurposeFieldUpdateOperationsInput | $Enums.ConsentPurpose
+  method?: Prisma.NullableEnumConsentMethodFieldUpdateOperationsInput | $Enums.ConsentMethod | null
+  actorType?: Prisma.NullableEnumConsentActorTypeFieldUpdateOperationsInput | $Enums.ConsentActorType | null
+  actorMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  textVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  evidence?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -296,6 +404,13 @@ export type ConsentCreateManyInput = {
   channel: string
   status: $Enums.ConsentStatus
   source: string
+  purpose?: $Enums.ConsentPurpose
+  method?: $Enums.ConsentMethod | null
+  actorType?: $Enums.ConsentActorType | null
+  actorMembershipId?: string | null
+  textVersion?: string | null
+  evidence?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  expiresAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -306,6 +421,13 @@ export type ConsentUpdateManyMutationInput = {
   channel?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumConsentStatusFieldUpdateOperationsInput | $Enums.ConsentStatus
   source?: Prisma.StringFieldUpdateOperationsInput | string
+  purpose?: Prisma.EnumConsentPurposeFieldUpdateOperationsInput | $Enums.ConsentPurpose
+  method?: Prisma.NullableEnumConsentMethodFieldUpdateOperationsInput | $Enums.ConsentMethod | null
+  actorType?: Prisma.NullableEnumConsentActorTypeFieldUpdateOperationsInput | $Enums.ConsentActorType | null
+  actorMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  textVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  evidence?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -316,6 +438,13 @@ export type ConsentUncheckedUpdateManyInput = {
   channel?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumConsentStatusFieldUpdateOperationsInput | $Enums.ConsentStatus
   source?: Prisma.StringFieldUpdateOperationsInput | string
+  purpose?: Prisma.EnumConsentPurposeFieldUpdateOperationsInput | $Enums.ConsentPurpose
+  method?: Prisma.NullableEnumConsentMethodFieldUpdateOperationsInput | $Enums.ConsentMethod | null
+  actorType?: Prisma.NullableEnumConsentActorTypeFieldUpdateOperationsInput | $Enums.ConsentActorType | null
+  actorMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  textVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  evidence?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -326,6 +455,13 @@ export type ConsentCountOrderByAggregateInput = {
   channel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  method?: Prisma.SortOrder
+  actorType?: Prisma.SortOrder
+  actorMembershipId?: Prisma.SortOrder
+  textVersion?: Prisma.SortOrder
+  evidence?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -336,6 +472,12 @@ export type ConsentMaxOrderByAggregateInput = {
   channel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  method?: Prisma.SortOrder
+  actorType?: Prisma.SortOrder
+  actorMembershipId?: Prisma.SortOrder
+  textVersion?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -346,11 +488,29 @@ export type ConsentMinOrderByAggregateInput = {
   channel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  purpose?: Prisma.SortOrder
+  method?: Prisma.SortOrder
+  actorType?: Prisma.SortOrder
+  actorMembershipId?: Prisma.SortOrder
+  textVersion?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type EnumConsentStatusFieldUpdateOperationsInput = {
   set?: $Enums.ConsentStatus
+}
+
+export type EnumConsentPurposeFieldUpdateOperationsInput = {
+  set?: $Enums.ConsentPurpose
+}
+
+export type NullableEnumConsentMethodFieldUpdateOperationsInput = {
+  set?: $Enums.ConsentMethod | null
+}
+
+export type NullableEnumConsentActorTypeFieldUpdateOperationsInput = {
+  set?: $Enums.ConsentActorType | null
 }
 
 
@@ -362,6 +522,13 @@ export type ConsentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   channel?: boolean
   status?: boolean
   source?: boolean
+  purpose?: boolean
+  method?: boolean
+  actorType?: boolean
+  actorMembershipId?: boolean
+  textVersion?: boolean
+  evidence?: boolean
+  expiresAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["consent"]>
 
@@ -372,6 +539,13 @@ export type ConsentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   channel?: boolean
   status?: boolean
   source?: boolean
+  purpose?: boolean
+  method?: boolean
+  actorType?: boolean
+  actorMembershipId?: boolean
+  textVersion?: boolean
+  evidence?: boolean
+  expiresAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["consent"]>
 
@@ -382,6 +556,13 @@ export type ConsentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   channel?: boolean
   status?: boolean
   source?: boolean
+  purpose?: boolean
+  method?: boolean
+  actorType?: boolean
+  actorMembershipId?: boolean
+  textVersion?: boolean
+  evidence?: boolean
+  expiresAt?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["consent"]>
 
@@ -392,10 +573,17 @@ export type ConsentSelectScalar = {
   channel?: boolean
   status?: boolean
   source?: boolean
+  purpose?: boolean
+  method?: boolean
+  actorType?: boolean
+  actorMembershipId?: boolean
+  textVersion?: boolean
+  evidence?: boolean
+  expiresAt?: boolean
   createdAt?: boolean
 }
 
-export type ConsentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "leadId" | "channel" | "status" | "source" | "createdAt", ExtArgs["result"]["consent"]>
+export type ConsentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "leadId" | "channel" | "status" | "source" | "purpose" | "method" | "actorType" | "actorMembershipId" | "textVersion" | "evidence" | "expiresAt" | "createdAt", ExtArgs["result"]["consent"]>
 
 export type $ConsentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Consent"
@@ -406,7 +594,23 @@ export type $ConsentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     leadId: string
     channel: string
     status: $Enums.ConsentStatus
+    /**
+     * Free-text origin, kept for back-compat; prefer `method`.
+     */
     source: string
+    purpose: $Enums.ConsentPurpose
+    method: $Enums.ConsentMethod | null
+    actorType: $Enums.ConsentActorType | null
+    actorMembershipId: string | null
+    /**
+     * Version/id of the wording the customer saw (e.g. widget checkbox text).
+     */
+    textVersion: string | null
+    /**
+     * Proof: IP, user agent, page URL, import batch id, attestation basis and reason. Never secrets.
+     */
+    evidence: runtime.JsonValue | null
+    expiresAt: Date | null
     createdAt: Date
   }, ExtArgs["result"]["consent"]>
   composites: {}
@@ -837,6 +1041,13 @@ export interface ConsentFieldRefs {
   readonly channel: Prisma.FieldRef<"Consent", 'String'>
   readonly status: Prisma.FieldRef<"Consent", 'ConsentStatus'>
   readonly source: Prisma.FieldRef<"Consent", 'String'>
+  readonly purpose: Prisma.FieldRef<"Consent", 'ConsentPurpose'>
+  readonly method: Prisma.FieldRef<"Consent", 'ConsentMethod'>
+  readonly actorType: Prisma.FieldRef<"Consent", 'ConsentActorType'>
+  readonly actorMembershipId: Prisma.FieldRef<"Consent", 'String'>
+  readonly textVersion: Prisma.FieldRef<"Consent", 'String'>
+  readonly evidence: Prisma.FieldRef<"Consent", 'Json'>
+  readonly expiresAt: Prisma.FieldRef<"Consent", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Consent", 'DateTime'>
 }
     
