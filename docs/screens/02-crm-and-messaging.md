@@ -31,7 +31,7 @@ This document covers the daily sales workspace: executive KPIs, lead management,
   2. **Customize Table**: Toggle visible columns, pin columns, reorder columns, and adjust row density (`useTablePreferences`).
   3. **Add or Import**: Click **Add lead** to create one manually, or **Import CSV** to bulk-upload leads.
   4. **Bulk Actions**: Select checkboxes to bulk-assign owners, move stages, add/remove tags, or delete leads.
-  5. **Import consent**: A CSV column `whatsapp_consent` (yes/true/1) is honoured only after the importer ticks the attestation checkbox in the import dialog ("I can show proof"). Rows are then recorded as marketing opt-ins with method `CSV_IMPORT`, the importer's name and an import batch id; without the tick the marks are ignored and the report says how many.
+  5. **Import consent**: A CSV column `whatsapp_consent` (yes/true/1) is honoured only after the importer ticks the attestation checkbox in the import dialog ("I can show proof"). Rows are then recorded as marketing opt-ins with method `CSV_IMPORT`, the importer's name and an import batch id; without the tick the marks are ignored and the report says how many. After a normal import the success toast confirms the effect ("Imported 2 rows · 1 WhatsApp opt-in recorded").
 - **Navigation & Direction**:
   - **Incoming**: Sidebar **Leads**, or **See all** link on a truncated `/pipeline` column (`/leads?stageId=...`).
   - **Outgoing**:

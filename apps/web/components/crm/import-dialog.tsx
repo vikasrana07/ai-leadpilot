@@ -95,7 +95,9 @@ export function ImportDialog({ open, onOpenChange, endpoint, title, hint, invali
         }
         reset(); onOpenChange(false);
       } else {
-        toast.success(`Imported ${res.created} ${res.created === 1 ? 'row' : 'rows'}`);
+        // The importer attested consent for some rows: say so, so they know the attestation took effect (and was recorded with their name).
+        const consent = res.consentRecorded ? ` · ${res.consentRecorded} WhatsApp ${res.consentRecorded === 1 ? 'opt-in' : 'opt-ins'} recorded` : '';
+        toast.success(`Imported ${res.created} ${res.created === 1 ? 'row' : 'rows'}${consent}`);
         await Promise.all(invalidate.map((k) => qc.invalidateQueries({ queryKey: k })));
         reset(); onOpenChange(false);
       }
