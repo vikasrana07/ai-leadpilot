@@ -65,7 +65,7 @@ export function PortalEmailCard() {
   const fullUrl = cfg.data?.endpointPath ? `${API_URL}${cfg.data.endpointPath}` : null;
 
   return (
-    <Card>
+    <Card data-testid="portal-email-card">
       <CardHeader>
         <div>
           <CardTitle className="flex items-center gap-2">
