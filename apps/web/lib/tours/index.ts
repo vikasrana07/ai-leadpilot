@@ -1,4 +1,5 @@
 export { matchTourRoute } from './match-route';
+export { reconcileIndex, resolveSteps, sameStepIds } from './resolve-steps';
 export type { ScreenTour, TourPlacement, TourStep } from './types';
 
 import { AI_AND_AUTOMATION_TOURS } from './screens/ai-and-automation';

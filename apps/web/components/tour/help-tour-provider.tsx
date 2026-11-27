@@ -1,13 +1,15 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useTerms } from '@/lib/pack';
-import { ALL_TOURS, matchTourRoute } from '@/lib/tours';
+import { ALL_TOURS, matchTourRoute, reconcileIndex, resolveSteps, sameStepIds } from '@/lib/tours';
 import type { ScreenTour, TourStep } from '@/lib/tours/types';
 
 const STORAGE_PREFIX = 'lp:tour:seen:';
+/** While a tour is open, how often (at most) the visible steps are re-checked as the page changes. */
+const RESOLVE_INTERVAL_MS = 150;
 
 export interface HelpTourContextValue {
   activeTour: ScreenTour | null;
@@ -54,8 +56,17 @@ export function HelpTourProvider({ children }: { children: ReactNode }) {
 
   const [seenIds, setSeenIds] = useState<string[]>(() => readSeenIds(storageKey));
   const [activeTour, setActiveTour] = useState<ScreenTour | null>(null);
+  // The tour's full step list, and the subset whose targets are on screen right now (`steps`). The subset is re-resolved while the tour is
+  // open, so a tour opened over a loading skeleton gains its steps as the page's data arrives instead of staying collapsed.
+  const [allSteps, setAllSteps] = useState<TourStep[]>([]);
   const [steps, setSteps] = useState<TourStep[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
+  const stepsRef = useRef<TourStep[]>([]);
+  const stepIndexRef = useRef(0);
+  useEffect(() => {
+    stepsRef.current = steps;
+    stepIndexRef.current = stepIndex;
+  }, [steps, stepIndex]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs seen tour IDs when user changes
@@ -66,9 +77,37 @@ export function HelpTourProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- resets active tour on route change
     setActiveTour(null);
+    setAllSteps([]);
     setSteps([]);
     setStepIndex(0);
   }, [pathname]);
+
+  // Re-resolve the visible steps while a tour is open: targets can appear (data loaded) or disappear (panel closed). The user keeps their
+  // place by step id. Mutations are throttled, and nothing is set when the visible steps did not change.
+  useEffect(() => {
+    if (!activeTour || allSteps.length === 0) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const recompute = () => {
+      timer = null;
+      const next = resolveSteps(allSteps, isTargetVisible);
+      if (next.length === 0 || sameStepIds(next, stepsRef.current)) return;
+      const index = reconcileIndex(stepsRef.current, stepIndexRef.current, next, allSteps);
+      stepsRef.current = next;
+      stepIndexRef.current = index;
+      setSteps(next);
+      setStepIndex(index);
+    };
+    const schedule = () => {
+      if (timer === null) timer = setTimeout(recompute, RESOLVE_INTERVAL_MS);
+    };
+    const observer = new MutationObserver(schedule);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
+    schedule(); // catches anything that changed between resolving the steps and attaching the observer
+    return () => {
+      observer.disconnect();
+      if (timer !== null) clearTimeout(timer);
+    };
+  }, [activeTour, allSteps]);
 
   const markSeen = useCallback(
     (tourId: string) => {
@@ -93,16 +132,12 @@ export function HelpTourProvider({ children }: { children: ReactNode }) {
       const tour = tourId ? ALL_TOURS.find((t) => t.id === tourId) : currentRouteTour;
       if (!tour) return;
 
-      const allSteps = tour.buildSteps(terms);
-      const visibleSteps = allSteps.filter((step) => !step.target || isTargetVisible(step.target));
-      const resolved = visibleSteps.length > 0 ? visibleSteps : allSteps.filter((step) => !step.target);
-      if (resolved.length === 0 && allSteps.length > 0) {
-        // Fallback to first step as centered card if no DOM targets are mounted yet (e.g. loading/empty state)
-        resolved.push({ ...allSteps[0]!, target: undefined, placement: 'center' });
-      }
+      const full = tour.buildSteps(terms);
+      const resolved = resolveSteps(full, isTargetVisible);
       if (resolved.length === 0) return;
 
       setActiveTour(tour);
+      setAllSteps(full);
       setSteps(resolved);
       setStepIndex(0);
     },
@@ -115,6 +150,7 @@ export function HelpTourProvider({ children }: { children: ReactNode }) {
         markSeen(activeTour.id);
       }
       setActiveTour(null);
+      setAllSteps([]);
       setSteps([]);
       setStepIndex(0);
     },
