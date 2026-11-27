@@ -94,7 +94,7 @@ function MetricRow({
     <div className="flex items-baseline justify-between gap-3 py-2 text-[13px] border-b border-border/50 last:border-0">
       <div>
         <span className="text-muted-foreground">{label}</span>
-        {hint && <span className="block text-[11px] text-muted-foreground/80">{hint}</span>}
+        {hint && <span className="block text-[11px] text-muted-foreground">{hint}</span>}
       </div>
       <span
         className={cn(

@@ -32,19 +32,21 @@ async function signIn(page: Page) {
 
 test('ops status: shows the firing alert with severity text, the health table, workers and the service levels', async ({ page }) => {
   await signIn(page);
-  await page.getByRole('link', { name: 'Ops status' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Ops status' })).toBeVisible();
-  const card = page.getByRole('listitem').filter({ hasText: 'Outbox events have failed' }).first();
+  await page.getByRole('navigation').getByRole('link', { name: 'Ops Status' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Operations & Reliability' })).toBeVisible();
+  // The redesigned page renders each firing alert as a card: title, severity and FIRING badges, trigger values and the runbook path.
+  const card = page.locator('div.rounded-lg').filter({ hasText: 'Outbox events have failed' }).filter({ hasText: 'Runbook:' }).first();
   await expect(card).toBeVisible();
-  await expect(card).toContainText('Sev 3');
-  await expect(card).toContainText('Firing');
+  await expect(card).toContainText('Severity 3');
+  await expect(card).toContainText('FIRING');
   await expect(card).toContainText('failed: 3');
   await expect(card).toContainText('docs/runbooks/worker-and-queues.md');
-  await expect(page.getByRole('heading', { name: 'Health' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Workers and queues' })).toBeVisible();
-  await expect(page.getByRole('table', { name: 'Service level objectives' })).toBeVisible();
-  await expect(page.getByRole('table', { name: 'Alert rules and their current state' })).toBeVisible();
-  await expect(page.getByText(/Last updated/)).toBeVisible();
+  await expect(page.getByText('Active Firing Incidents (1)')).toBeVisible();
+  await expect(page.getByText('Event Outbox & Pipeline')).toBeVisible();
+  await expect(page.getByText('Worker Instances & Heartbeats')).toBeVisible();
+  await expect(page.getByText('Service Level Objectives (SLOs)')).toBeVisible();
+  await expect(page.getByText(/Alert Rules Registry/)).toBeVisible();
+  await expect(page.getByText(/Last synced at/)).toBeVisible();
 });
 
 for (const scheme of ['light', 'dark'] as const) {
@@ -53,7 +55,7 @@ for (const scheme of ['light', 'dark'] as const) {
     const page = await ctx.newPage();
     await signIn(page);
     await page.goto('/platform/ops');
-    await expect(page.getByRole('heading', { level: 1, name: 'Ops status' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Operations & Reliability' })).toBeVisible();
     await expect(page.getByText('Outbox events have failed').first()).toBeVisible();
     await page.waitForLoadState('networkidle');
     const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();

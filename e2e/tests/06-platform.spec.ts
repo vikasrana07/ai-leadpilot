@@ -18,7 +18,7 @@ test('platform console: find a tenant, suspend it with a reason, see the tenant 
   await expect(page.getByRole('heading', { level: 1, name: 'Overview' })).toBeVisible();
   await expect(page.getByText('MRR (ex-GST)')).toBeVisible();
 
-  await page.getByRole('link', { name: 'Tenants' }).click();
+  await page.getByRole('navigation').getByRole('link', { name: 'Tenants' }).click();
   await page.getByLabel('Search').fill(acct.businessName);
   await page.getByRole('link', { name: acct.businessName }).click();
   await expect(page.getByRole('heading', { level: 1, name: acct.businessName })).toBeVisible();
@@ -36,12 +36,13 @@ test('platform console: find a tenant, suspend it with a reason, see the tenant 
 
   await page.getByRole('button', { name: 'Reactivate' }).click();
   await page.getByRole('dialog').getByLabel('Reason').fill('e2e: resolved with the customer');
-  await page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Reactivate Workspace' }).click();
   await expect(page.getByRole('button', { name: 'Suspend' })).toBeVisible();
   await tenant.reload();
   await expect(tenant.getByRole('heading', { level: 1, name: 'Leads' })).toBeVisible();
   await tenantCtx.close();
 
-  await page.getByRole('button', { name: 'Sign out' }).click();
+  await page.getByRole('button', { name: 'Platform admin account menu' }).click();
+  await page.getByRole('menuitem', { name: 'Sign Out' }).click();
   await expect(page).toHaveURL(/\/platform\/login/);
 });
