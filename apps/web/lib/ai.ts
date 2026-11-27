@@ -27,7 +27,7 @@ export interface ShadowStats {
   minAccuracyPct: number;
   readyForAutopilot: boolean;
 }
-export interface AiUsage { used: number; inputTokens: number; outputTokens: number; runs: number; cap: number; pct: number; warning: boolean; exceeded: boolean; resetsAt: string; killSwitch: boolean }
+export interface AiUsage { used: number; inputTokens: number; outputTokens: number; runs: number; cap: number; pct: number; warning: boolean; exceeded: boolean; resetsAt: string; killSwitch: boolean; level: 'OK' | 'WARN_80' | 'WARN_95' | 'EXCEEDED'; capSource: 'own' | 'plan'; graceLimit: number; inGrace: boolean; projectedExhaustionAt: string | null }
 export interface AiRun { id: string; conversationId: string; status: 'RUNNING' | 'COMPLETED' | 'FAILED' | 'SKIPPED'; model: string | null; promptVersion: string; inputTokens: number; outputTokens: number; latencyMs: number | null; error: string | null; tools: { name: string; ok: boolean }[]; guardViolations: string[]; outcome: string | null; createdAt: string }
 export interface KnowledgeDoc { id: string; title: string; filename: string; mime: string; sizeBytes: number; status: 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED'; error: string | null; chunkCount: number; category: string | null; createdAt: string; updatedAt: string }
 export interface KnowledgeHit { chunkId: string; documentId: string; title: string; content: string; score: number }

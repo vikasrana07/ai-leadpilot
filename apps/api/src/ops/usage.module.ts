@@ -37,7 +37,7 @@ class UsageController {
       return {
         plan: { key: plan.planKey, name: plan.planName, status: plan.status, restricted: plan.restricted, limits: plan.limits, features: plan.features, meters: meter },
         period: { from: r.from.toISOString(), to: r.to.toISOString(), timezone: tz },
-        ai: { runs: ai.runs, inputTokens: ai.inputTokens, outputTokens: ai.outputTokens, tokensUsed: ai.used, cap: ai.cap, pct: ai.pct, warning: ai.warning, exceeded: ai.exceeded },
+        ai: { runs: ai.runs, inputTokens: ai.inputTokens, outputTokens: ai.outputTokens, tokensUsed: ai.used, cap: ai.cap, pct: ai.pct, warning: ai.warning, exceeded: ai.exceeded, level: ai.level, capSource: ai.capSource, inGrace: ai.inGrace, projectedExhaustionAt: ai.projectedExhaustionAt, resetsAt: ai.resetsAt },
         messages: { inbound, aiReplies, agentReplies: agentMsgs, automatedTemplates: systemMsgs },
         leads: { created: leads }, appointments: { created: appts },
         automations: { succeeded: n('SUCCEEDED'), failed: n('FAILED'), skipped: n('SKIPPED') },

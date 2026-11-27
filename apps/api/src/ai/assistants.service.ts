@@ -1,3 +1,4 @@
+import { evaluateTokenCap } from './token-cap.js';
 import { EntitlementsService } from '../billing/entitlements.service.js';
 import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import type { Prisma } from '@leadpilot/database';
@@ -61,11 +62,15 @@ export class AssistantsService {
       const range = resolveRange({ range: 'month' }, t.timezone);
       const agg = await tx.aiRun.aggregate({ where: { tenantId, createdAt: { gte: range.from, lt: range.to } }, _sum: { inputTokens: true, outputTokens: true }, _count: { _all: true } });
       const used = (agg._sum.inputTokens ?? 0) + (agg._sum.outputTokens ?? 0);
-      // The tighter of the owner's own cap and the plan's allowance: a hard stop either way.
+      // The tighter of the owner's own cap and the plan's allowance: a hard stop either way (plus a small grace band, see token-cap.ts).
       const planCap = (await this.ent.compute(tx, tenantId)).limits.ai_tokens_monthly;
-      const own = a?.monthlyTokenCap ?? this.env.AI_DEFAULT_MONTHLY_TOKEN_CAP;
-      const cap = planCap === null ? own : Math.min(own, planCap);
-      return { used, inputTokens: agg._sum.inputTokens ?? 0, outputTokens: agg._sum.outputTokens ?? 0, runs: agg._count._all, cap, pct: Math.min(100, Math.round((used / cap) * 1000) / 10), warning: used >= cap * 0.8, exceeded: used >= cap, resetsAt: range.to.toISOString(), killSwitch: this.env.AI_KILL_SWITCH };
+      const ownCap = a?.monthlyTokenCap ?? this.env.AI_DEFAULT_MONTHLY_TOKEN_CAP;
+      const state = evaluateTokenCap({ used, ownCap, planCap, now: new Date(), monthStart: range.from, monthEnd: range.to, gracePct: this.env.AI_CAP_GRACE_PCT });
+      return {
+        used, inputTokens: agg._sum.inputTokens ?? 0, outputTokens: agg._sum.outputTokens ?? 0, runs: agg._count._all,
+        cap: state.cap, pct: state.pct, warning: state.warning, exceeded: state.exceeded, resetsAt: range.to.toISOString(), killSwitch: this.env.AI_KILL_SWITCH,
+        level: state.level, capSource: state.source, graceLimit: state.graceLimit, inGrace: state.inGrace, projectedExhaustionAt: state.projectedExhaustionAt,
+      };
     });
   }
 

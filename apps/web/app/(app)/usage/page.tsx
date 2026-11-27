@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { UsageSkeleton } from '@/components/skeletons';
 import { api } from '@/lib/api';
 import type { UsageView } from '@/lib/ops';
+import { aiCapMessage } from '@/lib/ai-cap';
 import { cn } from '@/lib/cn';
 import { useTerms } from '@/lib/pack';
 
@@ -47,6 +48,7 @@ export default function UsagePage() {
         <Card><CardHeader><CardTitle>AI assistant</CardTitle></CardHeader><CardBody>
           <div className="mb-2 flex items-center justify-between text-[13px]"><span>{n(u.ai.tokensUsed)} of {n(u.ai.cap)} tokens</span>{u.ai.exceeded ? <Badge tone="danger">Limit reached: chats are handed to your team</Badge> : u.ai.warning ? <Badge tone="warning">Over 80%</Badge> : <Badge tone="success">{u.ai.pct}%</Badge>}</div>
           <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={u.ai.pct} aria-valuemin={0} aria-valuemax={100} aria-label="AI token usage"><div className={cn('h-full rounded-full', u.ai.exceeded ? 'bg-danger' : u.ai.warning ? 'bg-warning' : 'bg-primary')} style={{ width: `${Math.max(2, u.ai.pct)}%` }} /></div>
+          {(() => { const m = aiCapMessage(u.ai); return m ? <p className={cn('mt-2 text-[12px]', m.tone === 'danger' ? 'text-danger' : 'text-warning')}>{m.text} <Link href={m.actionHref} className="font-medium underline">{m.actionLabel}</Link></p> : null; })()}
           <div className="mt-2 divide-y divide-border"><Row label="AI turns" value={n(u.ai.runs)} /><Row label="Input tokens" value={n(u.ai.inputTokens)} /><Row label="Output tokens" value={n(u.ai.outputTokens)} /></div></CardBody></Card>
         <Card><CardHeader><CardTitle>Messages</CardTitle></CardHeader><CardBody><div className="divide-y divide-border"><Row label="Received from customers" value={n(u.messages.inbound)} /><Row label="Sent by the AI assistant" value={n(u.messages.aiReplies)} /><Row label="Sent by your team" value={n(u.messages.agentReplies)} /><Row label="Template messages from automations" value={n(u.messages.automatedTemplates)} hint="WhatsApp conversation fees are billed by Meta to your own WhatsApp account." /></div><p className="text-helper mt-2">WhatsApp conversation fees are billed by Meta directly to your WhatsApp Business account, not by LeadPilot.</p></CardBody></Card>
         <Card><CardHeader><CardTitle>Work</CardTitle></CardHeader><CardBody><div className="divide-y divide-border"><Row label={`${terms.Leads} created`} value={n(u.leads.created)} /><Row label="Appointments created" value={n(u.appointments.created)} /><Row label="Automation runs completed" value={n(u.automations.succeeded)} /><Row label="Automation runs skipped" value={n(u.automations.skipped)} /><Row label="Automation runs failed" value={n(u.automations.failed)} /></div></CardBody></Card>

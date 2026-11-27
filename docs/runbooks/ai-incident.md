@@ -18,7 +18,7 @@ Tenant owner or platform admin: turn the assistant off (AI Assistant > settings)
 SELECT tenant_id, count(*) runs, sum(input_tokens + output_tokens) tokens
 FROM ai_runs WHERE created_at >= date_trunc('month', now()) GROUP BY tenant_id ORDER BY tokens DESC LIMIT 20;
 ```
-Compare with the plan limit (`plan_entitlements.ai_tokens_monthly`) and the tenant cap (`ai_assistants.monthly_token_cap`, default `AI_DEFAULT_MONTHLY_TOKEN_CAP`). The cap stops the model before the call. If a loop is suspected, kill switch first, then inspect `ai_runs.trace` (tools called, iterations) for the offending conversation.
+Compare with the plan limit (`plan_entitlements.ai_tokens_monthly`) and the tenant cap (`ai_assistants.monthly_token_cap`, default `AI_DEFAULT_MONTHLY_TOKEN_CAP`). The cap stops the model before the call. Past the cap there is a grace band (`AI_CAP_GRACE_PCT`, default 10%) that only conversations the AI replied in within the last 24h may use; new chats are handed to a person immediately, and everything is handed over beyond the grace limit (`apps/api/src/ai/token-cap.ts`). Set `AI_CAP_GRACE_PCT=0` for a strict hard stop. If a loop is suspected, kill switch first, then inspect `ai_runs.trace` (tools called, iterations) for the offending conversation.
 
 ## "The AI said something wrong" (price, availability, promise)
 1. Find it: `SELECT * FROM ai_runs WHERE conversation_id='<id>' ORDER BY created_at;` (`trace` has tool calls, retrieved chunk ids, guard violations, outcome).

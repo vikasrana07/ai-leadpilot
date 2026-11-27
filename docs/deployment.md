@@ -54,7 +54,7 @@ Required in production (the API refuses to start otherwise: `loadEnv` validation
 | `SIGNUP_PLAN` (e.g. `growth`), `BILLING_GRACE_DAYS` | trial/billing behaviour |
 | `WORKERS_ENABLED` | `false` on api tasks; the worker command forces `true` |
 | `QUEUE_PREFIX`, `AUTOMATION_MAX_ATTEMPTS`, `AUTOMATION_RETRY_BASE_MS` | defaults are fine |
-| `AI_KILL_SWITCH`, `AI_DEFAULT_MONTHLY_TOKEN_CAP` | operational switches |
+| `AI_KILL_SWITCH`, `AI_DEFAULT_MONTHLY_TOKEN_CAP`, `AI_CAP_GRACE_PCT` | operational switches (grace = percent above the cap that chats already in progress may use; 0 = strict stop) |
 | `LOG_FORMAT=json`, `LOG_LEVEL`, `ACCESS_LOG`, `METRICS_EMF=true`, `METRICS_INTERVAL_SECONDS`, `ALERTS_ENABLED=true`, `ALERT_EMAIL_TO`, `ALERT_REPEAT_HOURS` | logging, metrics and alerting (optional with defaults, but set them explicitly in production): `docs/monitoring.md` |
 | `THROTTLE_AUTH_LIMIT`, `THROTTLE_GLOBAL_LIMIT` | rate limits per minute per client |
 Web image: only `NEXT_PUBLIC_API_URL` (build arg). Reference list: `.env.example`.

@@ -22,6 +22,7 @@ import { SidebarContent } from './sidebar';
 import { NotificationBell } from './notification-bell';
 import { ThemeSwitcher } from './theme-switcher';
 import { WorkspaceSwitcher } from './workspace-switcher';
+import { AiCapBanner } from './ai-cap-banner';
 import { BillingBanner } from './billing-banner';
 import { DeletionBanner } from './deletion-banner';
 import { SupportBanner } from './support-banner';
@@ -155,6 +156,7 @@ function AppShellInner({ children }: { children: ReactNode }) {
         <VerifyEmailBanner />
         <DeletionBanner />
         <BillingBanner />
+        <AiCapBanner />
         <main
           id="main"
           tabIndex={-1}
