@@ -169,7 +169,7 @@ export function PlatformShell({
                 className={cn(
                   'group flex items-center gap-3 rounded-md px-3 py-2 text-[13px] font-medium transition-colors',
                   active
-                    ? 'bg-primary-soft text-primary font-semibold'
+                    ? 'bg-primary-soft text-foreground font-semibold'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                   collapsed && 'justify-center px-2'
                 )}
@@ -285,7 +285,7 @@ export function PlatformShell({
                       className={cn(
                         'flex items-center gap-3 rounded-md px-3 py-2.5 text-[14px] font-medium transition-colors',
                         active
-                          ? 'bg-primary-soft text-primary font-semibold'
+                          ? 'bg-primary-soft text-foreground font-semibold'
                           : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                       )}
                     >

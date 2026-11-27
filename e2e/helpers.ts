@@ -56,7 +56,7 @@ export async function loginViaUi(page: Page, a: Pick<Account, 'email' | 'passwor
   await page.goto('/login');
   await page.getByLabel('Email').fill(a.email);
   await page.getByLabel('Password').fill(a.password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 }
 
 // ---- the app's Select is a custom (Radix) listbox, not a native <select>: open the combobox, then work with role=option.

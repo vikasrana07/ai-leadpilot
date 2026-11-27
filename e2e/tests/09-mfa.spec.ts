@@ -15,7 +15,7 @@ test('two-step verification: set it up in Security, then sign-in needs the code 
   const a = await registerViaApi(request, 'mfa');
   await page.goto(`${WEB}/login`);
   await page.getByLabel('Email').fill(a.email); await page.getByLabel('Password').fill(a.password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.waitForURL('**/dashboard');
 
   await page.goto(`${WEB}/security`);
@@ -40,7 +40,7 @@ test('two-step verification: set it up in Security, then sign-in needs the code 
   await page.context().clearCookies();
   await page.goto(`${WEB}/login`);
   await page.getByLabel('Email').fill(a.email); await page.getByLabel('Password').fill(a.password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByLabel('Authentication code')).toBeVisible();
   await expect(page).toHaveURL(/\/login/);
   await page.getByLabel('Authentication code').fill('123456');
@@ -54,7 +54,7 @@ test('two-step verification: set it up in Security, then sign-in needs the code 
   await page.context().clearCookies();
   await page.goto(`${WEB}/login`);
   await page.getByLabel('Email').fill(a.email); await page.getByLabel('Password').fill(a.password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.getByRole('button', { name: 'Use a recovery code' }).click();
   await page.getByLabel('Recovery code').fill(codes[0] as string);
   await page.getByRole('button', { name: 'Verify' }).click();

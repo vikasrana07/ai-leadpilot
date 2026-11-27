@@ -21,7 +21,7 @@ test('login page fits the phone and can be completed', async ({ page }) => {
   await page.goto('/login');
   await noHorizontalScroll(page, '/login');
   await page.getByLabel('Email').fill(acct.email); await page.getByLabel('Password').fill(acct.password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).toHaveURL(/\/(dashboard|onboarding)/);
 });
 
