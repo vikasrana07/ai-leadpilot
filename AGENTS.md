@@ -1,8 +1,20 @@
 # AI LeadPilot — Agent Instructions
 
-## Project Structure & Knowledgebase
+## Mandatory Agent Workflow
 
-Before building a new feature or updating an existing one, consult the **[Agent Knowledgebase](docs/knowledgebase/README.md)** and **[Screen Documentation](docs/screens/README.md)**:
+Every AI coding agent working in this repository MUST follow these rules:
+
+1. **Read the documentation index first**: Start at **[docs/index.md](docs/index.md)** before exploring or modifying code.
+2. **Identify relevant screens and modules**: Use **[docs/screens/inventory.md](docs/screens/inventory.md)**, **[docs/screens/README.md](docs/screens/README.md)**, and **[docs/knowledgebase/README.md](docs/knowledgebase/README.md)** to locate the exact screens, API modules, and database models involved.
+3. **Read relevant documentation before changing code**: Review the matching docs under `docs/overview/`, `docs/architecture/`, `docs/database/`, `docs/api/`, `docs/workflows/`, `docs/business-rules/`, and `docs/screens/pages/` before editing.
+4. **Inspect only necessary source files**: Use the documented file paths to target your reads instead of scanning the entire codebase.
+5. **Follow existing project conventions**: Adhere strictly to the non-negotiable engineering rules below.
+6. **Update documentation alongside code changes**: Keep `docs/screens/`, `docs/index.md`, and related `docs/*` guides in sync in the same task.
+7. **Report conflicts between documentation and source code**: If you discover any mismatch between documentation and actual source code, explicitly report it and update the affected documentation.
+
+---
+
+## Project Structure & Knowledgebase
 
 - **Monorepo (`pnpm` + `turbo`)**:
   - `apps/web` (`@leadpilot/web`): Next.js 16 App Router (port 3100), React 19, Tailwind v4, React Query, `react-hook-form` + Zod.
@@ -31,19 +43,14 @@ Before building a new feature or updating an existing one, consult the **[Agent 
 Whenever you add a new feature, screen, or route, or update an existing feature's behavior, UI workflow, permissions, or navigation:
 
 1. **Update `docs/screens/`**:
+   - Update or create the per-screen doc in `docs/screens/pages/<slug>.md` and update `docs/screens/inventory.md`.
    - Update the corresponding module file in `docs/screens/`:
      - `docs/screens/01-auth-and-onboarding.md` — Auth, public, onboarding, data-deletion, invoice
      - `docs/screens/02-crm-and-messaging.md` — Dashboard, leads, pipeline, inbox, emails, campaigns, properties
      - `docs/screens/03-ai-and-automation.md` — AI assistant, knowledge base, appointments, tasks, automations, reports
      - `docs/screens/04-workspace-admin.md` — Team, roles, integrations, API keys, webhooks, billing, usage, audit, security, settings
      - `docs/screens/05-platform-console.md` — `/platform/*` staff console screens & non-product routes
-   - For any new or modified screen, ensure its entry accurately reflects:
-     - **Route & Access** (URL, permissions, plan/pack gating)
-     - **What It Does** (purpose and key UI sections/tabs/dialogs)
-     - **User Flow** (step-by-step actions)
-     - **Navigation & Direction** (incoming entry points and outgoing links/redirects)
-     - **Technical Reference** (`page.tsx` path and primary API endpoints)
    - If you add or remove a route or change screen-to-screen navigation, also update the index table and Mermaid flowcharts in `docs/screens/README.md`.
 
 2. **Update Related Docs**:
-   - If the change affects architecture, patterns, APIs, database schema, or user guides, update `docs/knowledgebase/` and the corresponding files under `docs/` as part of the same task before finishing.
+   - If the change affects architecture, patterns, APIs, database schema, workflows, or business rules, update `docs/index.md`, `docs/knowledgebase/`, and the corresponding files under `docs/` (`overview/`, `architecture/`, `database/`, `api/`, `workflows/`, `business-rules/`, `development/`) before finishing.
