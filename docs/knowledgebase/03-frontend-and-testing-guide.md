@@ -41,6 +41,7 @@
 - **Page Chrome**: `components/page/page-header.tsx` (`PageHeader` with title, description, breadcrumbs, actions).
 - **Tables**: `components/data-table/` (`DataTableToolbar`, `QuickViews`, `useTablePreferences` for column visibility/pinning/density).
 - **Forms**: Use `react-hook-form` + `zodResolver(schema)` from `@leadpilot/validation` and `handleApiError(err, setError)` from `apps/web/lib/forms.ts` to map backend `ZodPipe` errors onto form fields + `sonner` toasts.
+- **Help tours**: step definitions live in `apps/web/lib/tours/screens/*`; a step's `target` is a `data-tour="..."` attribute on the page. `HelpTourProvider` shows only steps whose target is on screen and **re-resolves them while a tour is open** (`lib/tours/resolve-steps.ts`: `resolveSteps`, `reconcileIndex`), so no screen needs to tell the tour when its data has loaded. Put `data-tour` on elements that exist once data is loaded; they are picked up automatically.
 
 ---
 
