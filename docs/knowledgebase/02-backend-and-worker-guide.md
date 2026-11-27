@@ -56,3 +56,15 @@ Worker logic lives in `apps/api/src/` so domain services are shared:
 
 - `apps/api/src/generate-openapi.ts` boots the NestJS Swagger document and writes `packages/shared-types/openapi.json`.
 - Run `pnpm codegen:api` from the repo root whenever you add or change API endpoints/DTOs to regenerate `apps/web/lib/api-generated/`.
+
+---
+
+## Public (unauthenticated) lookups and row-level security
+
+Public endpoints (portal email webhook, Slot Rescue claim, channel webhooks) resolve their tenant through a `SECURITY DEFINER` SQL function (`find_portal_email_by_key`, `find_slot_rescue_by_token`, ...) called via `db.userTx(null, ...)`. These run as the table owner, so **the table must be `NO FORCE ROW LEVEL SECURITY`**, otherwise the owner is filtered by the tenant policy and the lookup silently returns no rows (a 404 in production). The app role `leadpilot_app` stays subject to RLS. After the lookup, switch to `db.tenantTx({ tenantId }, ...)`.
+
+Guest actors (portal customers, Slot Rescue claimants) are built manually with a minimal permission set; grant only what the downstream service checks (for example `lead:write:all` when creating an appointment) and validate the target lead/offer first.
+
+## Per-member permission overrides
+
+`resolveEffectivePermissions(rolePermissions, overrides)` (`apps/api/src/common/permissions.util.ts`) applies per-member `GRANT`/`REVOKE` rows on top of role permissions. `TenantGuard` uses it for every request; managed in the UI via `components/team/member-permissions-dialog.tsx`.

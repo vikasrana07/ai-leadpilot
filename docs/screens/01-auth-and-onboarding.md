@@ -168,6 +168,20 @@ This document covers all unauthenticated entry screens, account recovery/invitat
 
 ---
 
+## `/p/claim/[token]` — Claim a Rescued Appointment Slot
+
+- **Route & Access**: `/p/claim/[token]?l=<leadId>` (Public, no sign-in; the unguessable token plus the lead id in the guest link authorise the claim)
+- **What It Does**: Landing page for **Slot Rescue**. When an appointment is cancelled, the workspace offers the freed slot to its top HOT/WARM leads; each receives a guest link. The page shows the business, title, location and time (in the workspace timezone) and a one-click **Claim this slot** button.
+- **User Flow**:
+  1. Open the guest link; the offer details load (`GET /portal/claim/:token`). Expired or already-claimed offers show an unavailable state.
+  2. Click **Claim this slot** (`POST /portal/claim/:token`). The first claimant gets a booked appointment; anyone else sees a "just claimed by another guest" message (409).
+- **Navigation & Direction**:
+  - **Incoming**: WhatsApp/notification message sent by Slot Rescue after a cancellation (see Slot Rescue card in `/appointments`).
+  - **Outgoing**: Terminal confirmation page; the booked appointment appears in `/appointments` and on the lead timeline.
+- **Technical Reference**: `apps/web/app/p/claim/[token]/page.tsx` · `GET/POST /portal/claim/:token`
+
+---
+
 ## `/data-deletion` — Meta Data Deletion Status
 
 - **Route & Access**: `/data-deletion?code=<code>` (Public, no sign-in required)

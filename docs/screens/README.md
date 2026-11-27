@@ -6,11 +6,11 @@ This guide explains **every screen** in the AI LeadPilot web application (`apps/
 
 | Guide | Scope | Screens Covered |
 |---|---|---|
-| [01 — Auth, Public & Onboarding](01-auth-and-onboarding.md) | Sign-in, registration, SSO, invites, workspace setup, public/invoice/portal pages | `/`, `/login`, `/register`, `/auth/sso/callback`, `/verify-email`, `/forgot-password`, `/reset-password`, `/accept-invite`, `/onboarding`, `/p/[key]`, `/data-deletion`, `/invoice/[id]` |
+| [01 — Auth, Public & Onboarding](01-auth-and-onboarding.md) | Sign-in, registration, SSO, invites, workspace setup, public/invoice/portal pages | `/`, `/login`, `/register`, `/auth/sso/callback`, `/verify-email`, `/forgot-password`, `/reset-password`, `/accept-invite`, `/onboarding`, `/p/[key]`, `/p/claim/[token]`, `/data-deletion`, `/invoice/[id]` |
 | [02 — CRM & Messaging](02-crm-and-messaging.md) | Daily sales operations, lead management, pipeline, chat, email, broadcasts | `/dashboard`, `/leads`, `/leads/[id]`, `/pipeline`, `/inbox`, `/emails`, `/campaigns`, `/campaigns/[id]`, `/properties` |
 | [03 — AI, Scheduling & Automation](03-ai-and-automation.md) | AI persona, knowledge base, appointments, tasks, visual workflows, reports | `/ai-assistant`, `/knowledge`, `/appointments`, `/tasks`, `/automations`, `/automations/new`, `/automations/[id]/edit`, `/reports` |
 | [04 — Workspace Admin & Settings](04-workspace-admin.md) | Team, RBAC, channels, developer APIs, billing, usage, audit, security | `/team`, `/roles`, `/integrations`, `/api-keys`, `/webhooks`, `/billing`, `/usage`, `/audit`, `/security`, `/settings` |
-| [05 — Platform Staff Console](05-platform-console.md) | Internal vendor administration, tenant lifecycle, ops health, non-product routes | `/platform/login`, `/platform`, `/platform/tenants`, `/platform/tenants/[id]`, `/platform/plans`, `/platform/ops`, `/platform/audit`, `/platform/deletions`, `/platform/security` |
+| [05 — Platform Staff Console](05-platform-console.md) | Internal vendor administration, tenant lifecycle, ops health, non-product routes | `/platform/login`, `/platform`, `/platform/tenants`, `/platform/tenants/[id]`, `/platform/plans`, `/platform/ops`, `/platform/health`, `/platform/audit`, `/platform/deletions`, `/platform/security` |
 
 ---
 
@@ -60,6 +60,7 @@ flowchart LR
   Automations -->|Edit / View run on canvas| AutoEdit["/automations/[id]/edit"]
   Automations --> Reports["/reports (Analytics & CSV)"]
   Inbox --> Reports
+  Appointments["/appointments"] -->|Slot Rescue offer| Claim["/p/claim/[token]"]
   Appointments["/appointments"] --> Reports
 ```
 
@@ -75,6 +76,7 @@ flowchart LR
   Platform --> Tenants["/platform/tenants"] --> TenantDetail["/platform/tenants/[id]"]
   Platform --> Plans["/platform/plans"]
   Platform --> Ops["/platform/ops"]
+  Platform --> Health["/platform/health"] --> Ops
   Platform --> PlatAudit["/platform/audit & /deletions & /security"]
 ```
 

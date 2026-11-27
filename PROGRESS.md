@@ -1,7 +1,7 @@
 # LeadPilot AI — Progress
 
 Legend: ☐ pending · ◐ in progress · ☑ done (verified) · Tags: **M** = MVP, **V** = V1.1, **L** = Later
-Last updated: 2026-11-25 · Current phase: **Phase 8: built and verified locally; NOT launch-ready; every real provider (Razorpay, Meta, OpenAI, SMTP, AWS KMS, Turnstile) and AWS deployment are unverified; awaiting user review**
+Last updated: 2026-11-27 · Current phase: **Phase 8 + 5 USP MVPs built; lint/typecheck/web tests verified locally; API integration tests require local Postgres (`localhost:5433`); real external providers and AWS deployment still unverified**
 
 ## Phase status
 | Phase | Status |
@@ -16,6 +16,7 @@ Last updated: 2026-11-25 · Current phase: **Phase 8: built and verified locally
 | 8 Launch blockers, V1.1, polish | ◐ built and tested locally (see Phase 8 verification); real KMS/Turnstile/Razorpay/Meta/OpenAI/SMTP unverified; Embedded Signup (mock-verified) and Google Calendar sync built afterwards |
 | 9 Visual automation builder | ◐ milestones 1-4 built and tested locally: graph model + versions + waits + API (c46972f), Outline editor, canvas (@xyflow/react 12.12.1), graph templates, user guide; real WhatsApp after a wait, worker restart while waiting, load with many waiting runs unverified |
 | 9b Industry packs v2 | ◐ coaching, healthcare, home services packs; pack-driven lead form, wording, scoring, AI guidance (7bd66f1); content needs review by people in each trade; clinic WhatsApp use needs legal review |
+| 10 USP MVPs (1–5) | ☑ **Slot Rescue**, **15-Second Voice-to-CRM**, **Shadow-to-Live AI Auto-Pilot**, **WhatsApp Promise-Tracker**, and **Revenue Leakage Radar** built and lint/typecheck/web-tested; API integration specs ready to run against local Postgres |
 | 7 Hardening & launch | ◐ E2E, security review, load test, restore drill, runbooks, Dockerfiles done; KMS key provider, bot protection, MFA, retention job, external security review, lawyer review of legal drafts, AWS deployment still open |
 
 ## Phase 0 deliverables
@@ -40,8 +41,8 @@ Last updated: 2026-11-25 · Current phase: **Phase 8: built and verified locally
 - ☑ M RLS on all tenant tables + isolation test suite
 - ☑ M Design tokens, light/dark/system theme, no-flash inline script (visually confirmed dark persistence; flash itself not measured)
 - ☑ M App shell: sidebar (collapse), header (workspace switcher, quick-create menu, command palette with navigation + quick actions + live lead search, theme, profile), breadcrumbs component
-- ◐ M i18n infrastructure: message-catalogue scaffold (`lib/i18n.ts`) + currencies/timezones + ₹ lakh/crore formatting; most UI strings remain inline English
-- ☐ V Permission overrides per member · ☑ L Fully custom roles
+- ☑ M i18n infrastructure: `I18nProvider` + `en.json` / `hi.json` message catalogues, header language switcher, currencies/timezones + ₹ lakh/crore formatting (remaining screens migrating incrementally)
+- ☑ V Permission overrides per member · ☑ L Fully custom roles
 - ☑ Responsive: verified in an emulated 390px viewport (phase 2): drawer nav, stacked filters, lead cards instead of a table, single-column dashboard. Kanban scrolls horizontally on phones by design
 - ☑ Design-review screens (sample data, labelled, gated in production): /design/dashboard, /design/inbox, /design/lead, /design/pipeline
 - ☑ Design pass 2 (2026-11-16, from user reference images): navy sidebar + tinted header tokens, KpiCard (count-up, delta, sparkline), inbox queue rail with counts and a "Join conversation" takeover. Pass 3 (user chose): deeper near-black navy #0e1433, denser cards (26px KPI numbers, tighter padding, 13px base type). Awaiting user feedback
@@ -60,7 +61,7 @@ Last updated: 2026-11-25 · Current phase: **Phase 8: built and verified locally
 - ☑ M Dashboard from real data: KPIs with deltas, acquisition trend, pipeline, sources, hot leads, follow-ups, agent table, date ranges incl. custom, tenant-timezone aware. Appointment/AI/automation tiles intentionally absent until those modules exist (API returns null, never invented)
 - ☑ M Team workload + round-robin assignment (safe under concurrent creates)
 - ◐ M i18n: message-catalogue scaffold + ₹ lakh/crore formatting only. Most strings are still inline English
-- ☐ V Portal email parsing · ☑ L Meta Lead Ads · ☐ L Google Sheets
+- ☑ V Portal email parsing · ☑ L Meta Lead Ads · ☑ L Google Sheets
 - ☑ Lead scoring built in phase 4 (manual score/temperature override also supported)
 
 ### Communication (Phase 3)
@@ -72,7 +73,7 @@ Last updated: 2026-11-25 · Current phase: **Phase 8: built and verified locally
 - ☑ M Website widget: public key + allowed origins, Shadow-DOM loader, lead capture, session tokens, polling, key rotation revokes sessions, admin UI with install snippet
 - ◐ M Retries/rate limits: bounded inline retry + manual retry now; scheduled background retries in phase 5 (ADR-0016)
 - ☑ Refresh-token race fixed (ADR-0015)
-- ◐ V Embedded Signup (mock-verified) · ◐ V Template manager/sync with Meta (read-only sync, mock-verified) · ☑ V Canned replies · ☑ L Broadcasts · ◐ L Email tracking (SES) · ☐ L Messenger/Instagram
+- ◐ V Embedded Signup (mock-verified) · ◐ V Template manager/sync with Meta (read-only sync, mock-verified) · ☑ V Canned replies · ☑ L Broadcasts · ◐ L Email tracking (SES) · ☑ L Messenger/Instagram (mock-verified)
 - ☐ Media is proxied, not stored (ADR-0017); attachments to leads and durable storage are phase 4
 
 ### AI (Phase 4)
@@ -87,7 +88,7 @@ Last updated: 2026-11-25 · Current phase: **Phase 8: built and verified locally
 - ☑ M Injection corpus and cross-tenant context test (see threat model)
 - ◐ M English + Hindi/Hinglish: configured and in the prompt; **replies in Hindi/Hinglish are untested** (needs a real model)
 - ☑ M Attachments on leads (DB table + RLS + composite FK, S3/MinIO storage + fail-closed virus scan, merge re-parenting, lead detail card)
-- ☑ V Voice-note transcription · ☐ V Additional Indian languages
+- ☑ V Additional Indian languages (Marathi, Tamil, Telugu, Kannada, Gujarati, Bengali added to AI_LANGUAGES + system prompt + UI)
 
 ### Automation, appointments, notifications (Phase 5)
 - ☑ M Appointments: CRUD, status machine, reschedule (linked history), availability + days off, week calendar + upcoming list, **no double booking enforced by Postgres exclusion constraints** (ADR-0026), DST-safe (ADR-0027)
@@ -99,12 +100,12 @@ Last updated: 2026-11-25 · Current phase: **Phase 8: built and verified locally
 - ☑ M Basic usage tracking (`GET /usage`, Usage page): metering only, no enforcement or billing (phase 6)
 - ☑ M AI scheduling tools enabled with a time-grounding output guard (ADR-0031)
 - ☑ M Redis-backed rate-limit store (counters shared across API instances; falls back to per-instance memory if Redis is down)
-- ☐ V Email / WhatsApp-to-staff / web push notifications · ☑ V Google Calendar · ☑ L Visual workflow editor (Phase 9)
+- ☑ V Email / WhatsApp-to-staff / web push notifications (VAPID Web Push + sw.js) · ☑ V Google Calendar · ☑ L Visual workflow editor (Phase 9)
 
 ### SaaS (Phase 6)
 - ☑ V Plans/entitlements (DB-driven, editable by platform admins), Razorpay subscriptions (mock-verified; **live client never run**), GST invoices (accountant review pending), dunning/grace, trial, plan gating in the backend
-- ☑ V Quotas + 80%/100% alerts (owners notified once), plan-limit bars on the Usage page · ☐ V richer usage history/dashboards
-- ☑ V Platform console (tenants, MRR, usage, plans, suspend/reactivate, complimentary/trial plans, audit) · ☑ V read-only support access (opt-out per workspace; default on: decision pending) · ☐ V platform health page
+- ☑ V Quotas + 80%/100% alerts (owners notified once), plan-limit bars on the Usage page · ☑ V 14-day usage history trend (`GET /usage/history` + chart)
+- ☑ V Platform console (tenants, MRR, usage, plans, suspend/reactivate, complimentary/trial plans, audit) · ☑ V read-only support access (opt-out per workspace; default on: decision pending) · ☑ V platform health page (`/platform/health`)
 - ☑ V Public API (`/v1`, scoped keys, `api_access` plan feature) + outbound webhooks (signed, SSRF-safe, retried)
 - ☑ V Reports (7) & CSV export (plan-gated)
 - ☑ V Compliance workflows: lead export/erasure, retention purge, workspace export, workspace deletion (legal review of retained invoices needed)
@@ -113,6 +114,11 @@ Last updated: 2026-11-25 · Current phase: **Phase 8: built and verified locally
 ### Quality & launch (Phase 7)
 - ☑ Full E2E suite (12 Playwright tests, desktop Chrome, local; CI job written but never run on GitHub) · ☑ Security review pass (self-review; `docs/security-review.md`) · ☑ Load test vs budgets (`docs/performance.md`; AI reply latency unmeasured) · ☑ Backup/restore drill (logical dump; RDS PITR not drilled)
 - ☑ Runbooks (9) · ☑ Deployment guide + Dockerfiles (images built and booted locally; AWS unverified) · ◐ SLOs/alerts (documented; only log/table-based SLIs measurable) · ◐ Legal templates (drafts written; **need a lawyer's review**) · ☑ DPDP single-lead export/erasure (API) · ☑ tenant-wide export/deletion, retention job, KMS key provider, bot protection, MFA (built in Phase 8; live KMS/Turnstile unverified)
+
+## Baseline verification (2026-11-27)
+- Local infra up (Postgres/Redis/MinIO/ClamAV via `pnpm infra:up`). `pnpm typecheck` ✔ · `pnpm lint` ✔ (0 errors, 14 warnings) · `pnpm test` ✔ (**API 921, web 127, database 28, validation 11**), including all five USP specs.
+- **Bugs found by running the previously unrun USP specs and fixed:** (1) portal-email webhook always 404: `portal_email_configs` had FORCE RLS, so the SECURITY DEFINER lookup saw no rows (migration `20261127130000_portal_email_no_force_rls`); (2) Slot Rescue claims always 403: the system actor lacked `lead:write:all`; (3) customer **Confirm** on a staff-booked (already CONFIRMED) appointment returned 409, now an idempotent no-op; stale test assertions in `slot-rescue` and `portal-m2` updated.
+- **Still not verified:** all real providers (Meta, OpenAI, Razorpay, SES/KMS/Turnstile), CI on GitHub, Playwright E2E for the new screens. See `docs/live-verification.md`.
 
 ## Phase 1 verification (2026-11-16)
 - `pnpm lint` ✔ (ESLint incl. no-explicit-any, plus tsc) · `pnpm typecheck` ✔ · `pnpm test` ✔ (13 DB/RLS + 30 API tests) · built API boots under plain Node (`smoke`) ✔

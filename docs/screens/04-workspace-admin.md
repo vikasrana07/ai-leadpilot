@@ -12,10 +12,11 @@ This document covers team management, role-based access control, channel & calen
   1. Click **Invite teammate**, enter email and select a role (loaded from `/roles`), and send a 7-day invitation link.
   2. Use the member action menu (`...`) to change a member's role, deactivate/reactivate access, or **Reset MFA** (requires a 5+ character audit reason).
   3. Resend or revoke pending invitations.
+  4. **Permissions** (member menu): open `MemberPermissionsDialog` to grant or revoke individual permissions on top of the member's role. Overrides are resolved by `resolveEffectivePermissions` and applied on every request.
 - **Navigation & Direction**:
   - **Incoming**: Admin sidebar **Team**.
   - **Outgoing**: Invited users receive an email link to `/accept-invite?token=...`; roles are configured in `/roles`.
-- **Technical Reference**: `apps/web/app/(app)/team/page.tsx` · `GET /team/members`, `GET/POST /team/invitations`, `POST /team/members/:id/mfa-reset`, `GET /roles`
+- **Technical Reference**: `apps/web/app/(app)/team/page.tsx` · `GET /team/members`, `GET/POST /team/invitations`, `POST /team/members/:id/mfa-reset`, `GET/PUT /team/members/:id/permissions`, `GET /roles`
 
 ---
 
@@ -42,6 +43,9 @@ This document covers team management, role-based access control, channel & calen
   - **Website Chat Widget** (`WidgetCard` — embeddable chat script & styling).
   - **Email / Amazon SES** (`SesCard` — outbound email sender configuration).
   - **Google Calendar** (`GoogleCalendarCard` — OAuth sync for appointments).
+  - **Portal Email Parsing** (`PortalEmailCard` — enable a private webhook endpoint that turns 99acres / MagicBricks / Housing enquiry emails (direct JSON or Amazon SES/SNS) into leads; rotate key; recent parse log).
+  - **Google Sheets** (`GoogleSheetsCard` — OAuth, pick a sheet, import new rows as leads, **Sync now**, disconnect).
+  - **Messenger / Instagram** (`MetaSocialCard` — connect Meta pages so DMs land in `/inbox`).
   - **Lead Capture API** — quick API key creation and `curl` snippet for `POST /public/leads`.
 - **User Flow**:
   1. Connect WhatsApp, configure the Web Widget, set up SES email, or link Google Calendar.
@@ -49,7 +53,7 @@ This document covers team management, role-based access control, channel & calen
 - **Navigation & Direction**:
   - **Incoming**: Admin sidebar **Integrations**, or **Connect a channel** CTA in `/inbox`.
   - **Outgoing**: Connected channels feed `/inbox`, `/campaigns`, `/emails`, and `/appointments`.
-- **Technical Reference**: `apps/web/app/(app)/integrations/page.tsx` · `GET/POST /channels*`, `GET/PUT /widget-config`, `GET/POST /integrations/google-calendar*`, `GET/POST/DELETE /api-keys`
+- **Technical Reference**: `apps/web/app/(app)/integrations/page.tsx` · `GET/POST /channels*`, `GET/PUT /widget-config`, `GET/POST /integrations/google-calendar*`, `GET/POST/DELETE /api-keys`, `GET/PUT /integrations/portal-email*`, `POST /webhooks/portal-email/:key`, `GET/PUT/DELETE /integrations/google-sheets*`, Meta social admin and webhook routes
 
 ---
 

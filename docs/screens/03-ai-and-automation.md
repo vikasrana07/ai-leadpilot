@@ -10,13 +10,13 @@ This document covers AI assistant configuration, the RAG knowledge base, appoint
 - **What It Does**: Configures how the AI assistant greets, answers, qualifies, and hands over conversations, defines lead scoring rules, and displays monthly token usage and recent AI runs.
 - **User Flow**:
   1. Monitor the **AI usage this month** progress bar at the top (shows token cap, 80% warning, or exceeded/kill-switch notices).
-  2. **Assistant tab**: Toggle AI **On/Off**, set name/business identity/description, pick **Languages** (`English`, `Hindi`, `Hinglish`) and **Tone**, edit welcome message, extra instructions, and disclosure text, enable/disable **Allowed tools**, and configure **Handover rules** (keywords, price negotiation, complaints, fallback message, and team working hours).
+  2. **Assistant tab**: Toggle AI **On/Off** and **Shadow-to-Live Auto-Pilot** (hold AI replies in Inbox for 1-tap approval, monitor Trust Score readiness, and click **Graduate to Live Auto-Pilot** when ready), set name/business identity/description, pick **Languages** (`English`, `Hindi`, `Hinglish`, and regional Indian languages) and **Tone**, edit welcome message, extra instructions, and disclosure text, enable/disable **Allowed tools**, and configure **Handover rules** (keywords, price negotiation, complaints, fallback message, and team working hours).
   3. **Lead scoring tab**: Configure qualification rules that determine Hot/Warm/Cold scores.
   4. **Activity & usage tab**: Inspect recent AI conversation runs and outcomes.
 - **Navigation & Direction**:
   - **Incoming**: Sidebar **AI Assistant**.
   - **Outgoing**: Works alongside `/knowledge` (answers from uploaded docs) and `/inbox` (handles live chats until handover).
-- **Technical Reference**: `apps/web/app/(app)/ai-assistant/page.tsx` · `GET/PUT /ai/assistant`, `GET/PUT /scoring/rules`, `GET /ai/usage`, `GET /ai/runs`
+- **Technical Reference**: `apps/web/app/(app)/ai-assistant/page.tsx` · `GET/PUT /ai/assistant`, `GET /ai/shadow-stats`, `POST /ai/shadow-mode/go-live`, `GET/PUT /scoring/rules`, `GET /ai/usage`, `GET /ai/runs`
 
 ---
 
@@ -43,11 +43,11 @@ This document covers AI assistant configuration, the RAG knowledge base, appoint
   1. Toggle between **Calendar** (weekly grid) and **List** views, and navigate weeks.
   2. **Book / Reschedule**: Click **New appointment** (or reschedule an existing one), pick a lead, agent, service type, duration, and choose an open time slot from `SlotPicker`.
   3. **Update Status**: Confirm pending bookings, mark completed, cancel, or mark **No-show** (triggers `NoShowRecoveryDialog`).
-  4. **Availability**: Open the **Availability** settings dialog to set weekly working hours and date-specific exceptions.
+  4. **Availability & Slot Rescue**: Open the **Availability** settings dialog to set weekly working hours and date-specific exceptions, and configure **Slot Rescue** (self-healing calendar backfill that automatically invites waitlisted leads via WhatsApp with a 1-tap public claim link when a confirmed slot is cancelled).
 - **Navigation & Direction**:
   - **Incoming**: Sidebar **Appointments**, or deep-linked from `/leads/[id]` (`?leadId=...`).
   - **Outgoing**: Links to lead profiles (`/leads/[id]`); syncs with Google Calendar if connected in `/integrations`.
-- **Technical Reference**: `apps/web/app/(app)/appointments/page.tsx` · `GET/POST /appointments`, `GET /appointments/slots`, `POST /appointments/:id/confirm|complete|cancel|no-show|reschedule`, `GET/PUT /appointments/availability`
+- **Technical Reference**: `apps/web/app/(app)/appointments/page.tsx` · `GET/POST /appointments`, `GET /appointments/slots`, `POST /appointments/:id/confirm|complete|cancel|no-show|reschedule`, `GET/PUT /appointments/availability`, `GET/PUT /appointments/slot-rescue/settings`, `GET/POST /portal/claim/:token` (public guest claim, page `/p/claim/[token]`)
 
 ---
 
@@ -103,13 +103,14 @@ This document covers AI assistant configuration, the RAG knowledge base, appoint
 ## `/reports` — Reports & Analytics
 
 - **Route & Access**: `/reports` (Requires `analytics:read:own`; manager-only tabs require `analytics:read:all` or `analytics:read:team`; CSV export requires `csv_export` plan feature)
-- **What It Does**: Provides interactive charts, summary metrics, and breakdown tables across 7 report domains: `Acquisition`, `Funnel`, `Agents`, `Response time`, `Appointments`, `AI`, and `Automations`.
+- **What It Does**: Provides the **Revenue Leakage Radar** (pipeline at risk vs. value protected by Slot Rescue, Voice-to-CRM, Promise-Tracker, and AI) alongside interactive charts, summary metrics, and breakdown tables across 7 report domains: `Acquisition`, `Funnel`, `Agents`, `Response time`, `Appointments`, `AI`, and `Automations`.
 - **User Flow**:
-  1. Select a **Report tab** (`Acquisition`, `Funnel`, `Agents`, `Response time`, `Appointments`, `AI`, `Automations`).
-  2. Pick a **Date range** (or custom start/end dates).
-  3. Review KPI summary cards, Recharts area/bar charts, and data tables.
-  4. Click **Export CSV** on any table (if enabled on the workspace's plan).
+  1. Review the **Revenue Leakage Radar (At Risk)** and **Value Protected by LeadPilot** cards at the top (scoped by date range and user permissions).
+  2. Select a **Report tab** (`Acquisition`, `Funnel`, `Agents`, `Response time`, `Appointments`, `AI`, `Automations`).
+  3. Pick a **Date range** (or custom start/end dates).
+  4. Review KPI summary cards, Recharts area/bar charts, and data tables.
+  5. Click **Export CSV** on any table (if enabled on the workspace's plan).
 - **Navigation & Direction**:
   - **Incoming**: Sidebar **Reports & Analytics**.
   - **Outgoing**: Terminal analytics view with CSV file download.
-- **Technical Reference**: `apps/web/app/(app)/reports/page.tsx` · `GET /reports/:key`, `GET /billing/summary`
+- **Technical Reference**: `apps/web/app/(app)/reports/page.tsx` · `GET /analytics/revenue-leakage`, `GET /reports/:key`, `GET /billing/summary`

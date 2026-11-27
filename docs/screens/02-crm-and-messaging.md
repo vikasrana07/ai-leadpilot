@@ -18,7 +18,7 @@ This document covers the daily sales workspace: executive KPIs, lead management,
   - **Outgoing**:
     - **Continue setup** -> `/onboarding`.
     - Click any lead in **Hot leads** or **Upcoming follow-ups** -> `/leads/[id]`.
-- **Technical Reference**: `apps/web/app/(app)/dashboard/page.tsx` · `GET /analytics/overview`, `GET /tenant/onboarding`
+- **Technical Reference**: `apps/web/app/(app)/dashboard/page.tsx` · `GET /analytics/overview`, `GET /analytics/morning-brief`, `GET /tenant/onboarding`
 
 ---
 
@@ -47,7 +47,7 @@ This document covers the daily sales workspace: executive KPIs, lead management,
 - **User Flow**:
   1. **Update Stage or Owner**: Change the pipeline stage dropdown (selecting a `LOST` stage prompts for a lost reason & note) or reassign the owner.
   2. **Edit Profile**: Click **Edit** to update name, phone, email, budget, location, interest, timeline, next follow-up, requirements, and custom fields.
-  3. **Communicate & Log**: Switch between **Activity** timeline and **Notes** tabs; add internal notes, tags, or virus-scanned file attachments (`LeadAttachmentsCard`, up to 10 MB); click **Send email** to open the tracked email composer (with optional follow-up templates pre-filled from lead, agent, and workspace context).
+  3. **Communicate & Log**: Switch between **Activity** timeline and **Notes** tabs; add internal notes, tags, or virus-scanned file attachments (`LeadAttachmentsCard`, up to 10 MB); click **Voice update** (`VoiceNoteDialog`) to record a 15-second voice memo or paste a transcript and atomically apply extracted budget/location/interest/timeline fields, note, and follow-up task; or click **Send email** to open the tracked email composer (with optional follow-up templates pre-filled from lead, agent, and workspace context).
   4. **AI Score & Dedupe**: Inspect or override the AI qualification score (`ScoreCard`), or click **Merge duplicates** (`lead:write:all`) to combine duplicate records (re-parenting attachments to the survivor).
   5. **Privacy / Delete**: Use the privacy menu (consent/export/erasure) or delete icon (`lead:delete`).
 - **Navigation & Direction**:
@@ -55,7 +55,7 @@ This document covers the daily sales workspace: executive KPIs, lead management,
   - **Outgoing**:
     - Breadcrumb **Leads** or **Back to leads** -> `/leads`.
     - Sent emails are tracked in `/emails`.
-- **Technical Reference**: `apps/web/app/(app)/leads/[id]/page.tsx` · `GET/PATCH/DELETE /leads/:id`, `POST /leads/:id/stage`, `GET/POST /leads/:id/notes`, `GET /leads/:id/activity`, `PUT /leads/:id/tags`, `GET/POST /leads/:id/attachments`, `GET /leads/:id/attachments/:attachmentId/download`, `DELETE /leads/:id/attachments/:attachmentId`, `GET /emails/templates`, `POST /emails/send`
+- **Technical Reference**: `apps/web/app/(app)/leads/[id]/page.tsx` · `GET/PATCH/DELETE /leads/:id`, `POST /leads/:id/stage`, `GET/POST /leads/:id/notes`, `GET /leads/:id/activity`, `PUT /leads/:id/tags`, `GET/POST /leads/:id/attachments`, `GET /leads/:id/attachments/:attachmentId/download`, `DELETE /leads/:id/attachments/:attachmentId`, `POST /leads/:id/voice-note`, `POST /leads/:id/voice-note/apply`, `GET /emails/templates`, `POST /emails/send`
 
 ---
 
@@ -80,17 +80,17 @@ This document covers the daily sales workspace: executive KPIs, lead management,
 ## `/inbox` — Shared Omnichannel Inbox
 
 - **Route & Access**: `/inbox` (Requires `conversation:read:own`; `Unassigned` queue requires `conversation:read:all`; reply/close requires `conversation:reply`)
-- **What It Does**: 3-pane real-time messaging workspace for **WhatsApp** and **Website Chat** conversations, supporting AI-to-human handover, internal notes, canned responses, WhatsApp 24-hour window & template sending, and a customer details sidebar.
+- **What It Does**: 3-pane real-time messaging workspace for **WhatsApp**, **Website Chat**, **Messenger**, and **Instagram** conversations, supporting AI-to-human handover, **Shadow-to-Live AI Draft** 1-tap approval/editing, **Open Promises** commitment tracking, internal notes, canned responses (`/`), WhatsApp 24-hour window & template sending, and a customer details sidebar.
 - **User Flow**:
   1. **Pick a Queue & Channel**: Filter by queue (`All open`, `Mine`, `Unassigned`, `Unread`, `AI handling`, `Closed`), channel (`All channels`, `WhatsApp`, `Website chat`), or search by name/phone/email.
-  2. **Read & Reply**: Select a conversation (`?c=<id>`). Opening an unread thread automatically marks it read. Reply in the thread, take over from AI (`Team` vs `AI handling`), or click **Close** / **Reopen**.
+  2. **Read, Review & Reply**: Select a conversation (`?c=<id>`). Opening an unread thread automatically marks it read. When **Shadow Mode** is active on an `AI` conversation, review the pending **AI Shadow Draft** above the footer with **Approve & Send**, **Edit & Send**, or **Dismiss**. Review any auto-captured **Open Promises** (with due/overdue status) and click **Insert follow-up** or **Done**. Reply in the thread, take over from AI (`Team` vs `AI handling`), or click **Close** / **Reopen**.
   3. **Inspect Customer**: View or edit lead details, tags, and consent in the right-hand **Customer details** panel (or drawer on smaller screens).
 - **Navigation & Direction**:
   - **Incoming**: Sidebar **Inbox**.
   - **Outgoing**:
     - Empty state CTA **Connect a channel** (`integration:manage`) -> `/integrations`.
     - Lead links inside `DetailsPanel` -> `/leads/[id]`.
-- **Technical Reference**: `apps/web/app/(app)/inbox/page.tsx` · `GET /conversations`, `GET /conversations/:id`, `POST /conversations/:id/read`, `POST /conversations/:id/close|reopen`, `GET /realtime/stream`
+- **Technical Reference**: `apps/web/app/(app)/inbox/page.tsx` · `GET /conversations`, `GET /conversations/:id`, `GET /conversations/:id/deal-pulse`, `GET /conversations/:id/shadow-draft`, `POST /conversations/:id/shadow-draft/review`, `GET /conversations/:id/promises`, `POST /conversations/:id/promises/:tid/complete`, `POST /conversations/:id/read`, `POST /conversations/:id/close|reopen`, `GET /realtime/stream`
 
 ---
 

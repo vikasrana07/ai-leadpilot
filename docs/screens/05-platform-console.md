@@ -94,6 +94,16 @@ This document covers the internal vendor administration console (`/platform/*`) 
 
 ---
 
+## `/platform/health` — Platform Health Summary
+
+- **Route & Access**: `/platform/health` (Authenticated platform staff)
+- **What It Does**: One-glance Healthy / Degraded badge combining readiness probes (`/health/ready`) with firing ops alerts, plus outbox backlog.
+- **User Flow**: Check the badge; follow **Open Ops Status** to `/platform/ops` for alert detail and runbooks.
+- **Navigation & Direction**: **Incoming**: Platform Shell. **Outgoing**: `/platform/ops`.
+- **Technical Reference**: `apps/web/app/platform/health/page.tsx` · `GET /health/ready`, `GET /platform/ops`
+
+---
+
 ## `/platform/audit` — Platform Audit Log
 
 - **Route & Access**: `/platform/audit` (Authenticated platform staff)
